@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.signal import fftconvolve, butter, sosfilt
 from scipy.io import wavfile
-from timeline import SEGMENTS, FLASHES, HARD_CUTS, DURATION
+from timeline import SEGMENTS, FLASHES, SCENES, DURATION
 
 SR = 44100
 N = int(SR * DURATION)
@@ -94,7 +94,7 @@ for i, n in enumerate([74, 78, 81, 86]):
     add(bell(n, vel=0.4), 2.4 + i * 0.12, pan=-0.2 + 0.15 * i)
 # ending chime
 for i, n in enumerate([74, 78, 81, 85, 88]):
-    add(bell(n, dur=5, vel=0.4), 116.2 + i * 0.18, pan=-0.4 + 0.2 * i)
+    add(bell(n, dur=5, vel=0.4), 116.8 + i * 0.18, pan=-0.4 + 0.2 * i)
 
 def whoosh(dur=0.7, up=True, gain=0.25):
     n = int(SR * dur); t = np.arange(n) / SR
@@ -109,17 +109,44 @@ def whoosh(dur=0.7, up=True, gain=0.25):
     return out * env * gain
 
 for i in range(len(SEGMENTS) - 1):
-    t1 = SEGMENTS[i][1]
-    if t1 in HARD_CUTS: continue
-    add(whoosh(0.75, up=i % 2 == 0, gain=0.22), t1 - 0.15, pan=-0.3 if i % 2 else 0.3)
+    t1, t2 = SEGMENTS[i][1], SEGMENTS[i + 1][0]
+    if t2 <= t1: continue   # pose switch hidden under a cut-away
+    add(whoosh(0.75, up=i % 2 == 0, gain=0.22), t1 - 0.1, pan=-0.3 if i % 2 else 0.3)
+
+# ---- ambience for the scenery cut-aways: starts and stops exactly on the cut
+def noise_bed(dur, lo, hi, lfo_hz, depth, gain):
+    n = int(SR * dur); t = np.arange(n) / SR
+    sos = butter(2, [lo, hi], 'band', fs=SR, output='sos')
+    x = sosfilt(sos, rng.standard_normal(n))
+    x /= np.abs(x).max() + 1e-9
+    env = (1 - depth) + depth * (0.5 + 0.5 * np.sin(2 * np.pi * lfo_hz * t - np.pi / 2))
+    edge = np.minimum(1, np.minimum(t / 0.04, (dur - t) / 0.05))
+    return x * env * edge * gain
+for s0, s1, name in SCENES:
+    d = s1 - s0
+    if name == 'night':      # crickets-ish shimmer + soft star chimes
+        add(noise_bed(d, 3800, 7000, 13.0, 0.8, 0.05), s0, pan=-0.4)
+        add(noise_bed(d, 4200, 7600, 11.0, 0.8, 0.05), s0 + 0.03, pan=0.4)
+        for j, n_ in enumerate([93, 90, 97, 95, 88]):
+            add(bell(n_, dur=2.5, vel=0.22), s0 + 0.5 + j * 0.85, pan=-0.6 + 0.3 * j)
+    elif name == 'field':    # wind through flowers
+        add(noise_bed(d, 300, 1800, 0.35, 0.6, 0.16), s0, pan=-0.2)
+        add(noise_bed(d, 500, 2600, 0.5, 0.6, 0.10), s0, pan=0.3)
+    elif name == 'sea':      # waves washing in
+        add(noise_bed(d, 120, 1400, 0.22, 0.85, 0.22), s0, pan=-0.3)
+        add(noise_bed(d, 900, 4000, 0.22, 0.85, 0.06), s0 + 0.2, pan=0.3)
+    elif name == 'sky':      # rising air
+        n = int(SR * d); t = np.arange(n) / SR
+        x = noise_bed(d, 400, 3000, 0.1, 0.0, 0.14) * np.minimum(1, t / d * 1.3)
+        add(x, s0)
 for tp, d in FLASHES:
     add(whoosh(1.4, up=True, gain=0.18), tp - 0.9)
     for j, n in enumerate([86, 90, 93]):
         add(bell(n, vel=0.3), tp - 0.05 + j * 0.08, pan=0.3 * (j - 1))
 # chip pops and value dings
-for tc in (50.4, 51.8, 53.2, 54.8, 56.6):
+for tc in (50.6, 52.0, 53.4, 55.0, 56.8):
     add(bell(88 + int(rng.integers(0, 3)) * 2, dur=1.5, vel=0.22), tc, pan=-0.5)
-for tc, n in ((88.4, 81), (90.2, 85), (92.6, 88)):
+for tc, n in ((91.3, 81), (92.4, 85), (93.7, 88)):
     add(bell(n, dur=3, vel=0.3), tc, pan=0.5)
 
 # reverb

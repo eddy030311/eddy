@@ -4,6 +4,7 @@ set -e
 cd "$(dirname "$0")"
 python3 prep_cutouts.py
 python3 film.py flows
+cp build/transition_poses.png assets/transition_poses.png
 python3 music.py
 TOTAL=2880; J=${JOBS:-4}; STEP=$(( (TOTAL + J - 1) / J ))
 rm -f build/seg_*.mp4 build/segs.txt

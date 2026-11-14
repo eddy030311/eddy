@@ -52,13 +52,13 @@ def hair_weight(name):
     _hair[name] = (m * below).astype(np.float32)
     return _hair[name]
 
-def deform(name, t, p):
+def deform(name, t, p, src=None):
     """Return displaced RGBA of pose `name` at time t with params p (dict)."""
-    rgba = load(name); P = POSES[name]
-    if 'eyes' in P and p.get('blink', 0) > 0.02:
+    rgba = load(name) if src is None else src; P = POSES[name]
+    if src is None and 'eyes' in P and p.get('blink', 0) > 0.02:
         ce, _ = closed_eyes(name); b = float(np.clip(p['blink'], 0, 1))
         rgba = rgba * (1 - b) + ce * b
-    if p.get('mouth', 0) > 0.03 and not P.get('mouth_open'):
+    if src is None and p.get('mouth', 0) > 0.03 and not P.get('mouth_open'):
         rgba = draw_mouth(rgba, P, p['mouth'], (0.0, 0.0))
     H, W = rgba.shape[:2]
     gx, gy = grid(W, H)

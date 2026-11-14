@@ -8,7 +8,7 @@ import numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont
 from scipy.interpolate import PchipInterpolator
 
-import rig
+import rig, ib, scenery
 from timeline import *
 
 FONT_SERIF = '/usr/share/fonts/opentype/noto/NotoSerifCJK-Regular.ttc'
@@ -212,14 +212,20 @@ def camera(t):
     return float(CAM[0](t)), float(CAM[1](t)), float(CAM[2](t))
 
 def state(t):
-    """('pose', name) or ('morph', a, b, u)."""
+    """('pose', name) or ('morph', a, b, u, kind)."""
     for i, (s0, s1, name) in enumerate(SEGMENTS):
         if s0 <= t < s1 or (i == len(SEGMENTS) - 1 and t >= s0):
             return ('pose', name)
         if i + 1 < len(SEGMENTS) and s1 <= t < SEGMENTS[i + 1][0]:
             nxt = SEGMENTS[i + 1]
-            return ('morph', name, nxt[2], (t - s1) / (nxt[0] - s1))
+            kind = TRANSITION_KIND.get((name, nxt[2]), 'flow')
+            return ('morph', name, nxt[2], (t - s1) / (nxt[0] - s1), kind)
     return ('none',)
+
+def scene_at(t):
+    for s0, s1, name in SCENES:
+        if s0 <= t < s1: return s0, s1, name
+    return None
 
 _rng = np.random.default_rng(11)
 BLINKS = []
@@ -228,6 +234,9 @@ while _tb < 120:
     BLINKS.append(_tb); _tb += float(_rng.uniform(2.6, 4.6))
     if _rng.random() < 0.18: BLINKS.append(_tb - 0.0 + 0.32)  # occasional double blink
 def blink_amt(t):
+    for a, b in EYES_CLOSED:
+        if a <= t < b: return 1.0
+        if b <= t < b + 0.09: return 0.6
     for b in BLINKS:
         d = t - b
         if 0 <= d < 0.21:
@@ -257,35 +266,33 @@ def pose_params(name, t):
     if name == 'full':
         p['head_nod'] += 1.2 * bump(t, 10.0, 0.25, 0.1, 0.4)          # hello nod
         p['head_rot'] += 0.07 * bump(t, 22.8, 0.8, 2.6, 0.9)          # curious tilt
-        p['head_rot'] += -0.065 * bump(t, 110.2, 0.7, 7.0, 1.0)       # "想聊些什么呢？"
-        p['head_nod'] += 0.8 * bump(t, 105.6, 0.3, 0.3, 0.6)
+        p['head_rot'] += -0.065 * bump(t, 112.6, 0.7, 4.6, 1.0)       # "想聊些什么呢？"
+        p['head_nod'] += 0.8 * bump(t, 108.8, 0.3, 0.3, 0.6)
         p['sway'] += 0.6 * math.sin(2 * math.pi * t / 9.0)
     elif name == 'think':
         p['head_rot'] += -0.04 * bump(t, 31.6, 0.8, 3.5, 0.8)
-        p['head_nod'] += 1.0 * bump(t, 36.6, 0.7, 3.0, 0.8)           # looking down, a little sad
+        p['head_nod'] += 0.9 * bump(t, 40.8, 0.2, 3.5, 0.8)           # head lowered, listening
+        p['head_rot'] += 0.03 * bump(t, 40.8, 0.2, 3.5, 0.9)
         p['head_rot'] += 0.035 * bump(t, 80.4, 0.7, 3.8, 0.8)
         p['head_nod'] += 0.7 * bump(t, 84.2, 0.3, 0.2, 0.5)
-    elif name == 'calm':
-        p['head_nod'] += 0.6 * bump(t, 41.4, 0.9, 2.0, 0.9)
-        p['head_rot'] += 0.03 * bump(t, 41.4, 1.0, 2.0, 1.0)
     elif name == 'offer':
-        u = t - SEGMENTS[3][0]
-        ay += 0.35 * math.exp(-u * 3.5) * math.cos(u * 9)              # settle after the reach
+        u = max(t - 50.0, 0.0)
+        ay += 0.35 * math.exp(-u * 3.5) * math.cos(u * 9)              # palm settles as we cut back in
         ay += -0.07 * math.sin(2 * math.pi * t / 2.7); ax += 0.04 * math.sin(2 * math.pi * t / 4.1)
-        for tc in (50.4, 51.8, 53.2, 54.8, 56.6):                      # lift the palm as each idea floats up
+        for tc in (50.6, 52.0, 53.4, 55.0, 56.8):                      # lift the palm as each idea floats up
             ay += -0.28 * bump(t, tc - 0.15, 0.15, 0.05, 0.45)
         p['head_rot'] += 0.06 * bump(t, 59.2, 0.8, 5.2, 1.0)
         p['head_nod'] += 0.5 * bump(t, 61.5, 0.3, 0.2, 0.5)
     elif name == 'point':
-        u = t - SEGMENTS[4][0]
+        u = t - SEGMENTS[3][0]
         ax += -0.32 * math.exp(-u * 4) * math.sin(u * 11 + 0.6)        # overshoot after the swing
-        for tc in (70.6, 75.1):
+        for tc in (70.8, 75.1):
             ax += -0.22 * bump(t, tc, 0.12, 0.15, 0.5)
             p['head_nod'] += 0.7 * bump(t, tc, 0.12, 0.15, 0.5)
         p['head_rot'] += -0.03 * bump(t, 75.0, 0.6, 3.6, 0.7)
     elif name == 'heart':
-        p['head_nod'] += 0.6 * bump(t, 91.4, 0.6, 1.5, 0.8) + 0.5 * bump(t, 96.0, 0.8, 2.5, 0.8)
-        p['head_rot'] += 0.045 * bump(t, 100.3, 0.8, 3.0, 0.8)
+        p['head_nod'] += 0.6 * bump(t, 91.6, 0.6, 1.5, 0.8) + 0.5 * bump(t, 96.1, 0.8, 2.5, 0.8)
+        p['head_rot'] += 0.045 * bump(t, 100.5, 0.8, 2.6, 0.5)
     p['arm'] = (ax, ay)
     return p
 
@@ -303,47 +310,82 @@ def to_screen(t, M_local):
     return (C @ Ml)[:2].astype(np.float32)
 
 _flows = {}
-def flows(a, b):
-    key = (a, b)
+def gray(x): return cv2.cvtColor((np.clip(x[..., :3] + (1 - x[..., 3:]), 0, 1) * 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+
+def key_image(k, t=None):
+    """Normalized-canvas image of a transition key (name, arm angle, foreshortening)."""
+    name, ang, fore = k
+    src = None if ang is None else ib.posed(name, ang, fore)
+    if t is None:
+        img = rig.load(name) if src is None else src
+    else:
+        p = pose_params(name, t); p['arm'] = (0.0, 0.0); p['mouth'] = 0.0
+        if src is not None: p['blink'] = 0.0
+        img = rig.deform(name, t, p, src=src)
+    return cv2.warpAffine(img, norm_affine(name), (CW, CH), flags=cv2.INTER_LINEAR)
+
+def flows(k0, k1):
+    tag = lambda k: k[0] if k[1] is None else f"{k[0]}{int(k[1])}x{int(k[2] * 100)}"
+    key = (tag(k0), tag(k1))
     if key in _flows: return _flows[key]
-    path = f'build/flow_{a}_{b}.npz'
+    path = f'build/flow_{key[0]}_{key[1]}.npz'
     if os.path.exists(path):
         z = np.load(path); _flows[key] = (z['fab'].astype(np.float32), z['fba'].astype(np.float32)); return _flows[key]
-    A_ = cv2.warpAffine(rig.load(a), norm_affine(a), (CW, CH)); B_ = cv2.warpAffine(rig.load(b), norm_affine(b), (CW, CH))
-    def gray(x): return cv2.cvtColor((np.clip(x[..., :3] + (1 - x[..., 3:]), 0, 1) * 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+    A_, B_ = key_image(k0), key_image(k1)
     dis = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_MEDIUM)
     fab = dis.calc(gray(A_), gray(B_), None); fba = dis.calc(gray(B_), gray(A_), None)
     np.savez_compressed(path, fab=fab.astype(np.float16), fba=fba.astype(np.float16))
     _flows[key] = (fab, fba)
     return _flows[key]
 
-def character(t):
-    """Premultiplied RGBA layer of the character in screen space, plus hand position helper."""
-    st = state(t)
-    if st[0] == 'none': return None
-    if st[0] == 'pose':
-        name = st[1]
-        img = rig.deform(name, t, pose_params(name, t))
-        M = to_screen(t, norm_affine(name))
-        return cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR)
-    _, a, b, u = st
-    fab, fba = flows(a, b)
-    Aimg = cv2.warpAffine(rig.deform(a, t, pose_params(a, t)), norm_affine(a), (CW, CH))
-    Bimg = cv2.warpAffine(rig.deform(b, t, pose_params(b, t)), norm_affine(b), (CW, CH))
+def transition_keys(a, b, kind):
+    return ib.BRANCHES[(a, b)] if kind == 'rig' else [(a, None, None), (b, None, None)]
+
+def flow_morph(k0, k1, t, e, blur, n=7):
+    fab, fba = flows(k0, k1)
+    Aimg, Bimg = key_image(k0, t), key_image(k1, t)
     gx, gy = rig.grid(CW, CH)
-    e = ease(u)
-    blur = 0.11 * math.sin(math.pi * u)
     acc = 0
-    samples = np.linspace(e - blur, e + blur, 7) if blur > 0.01 else [e]
+    samples = np.linspace(e - blur, e + blur, n) if blur > 0.01 else [e]
     for ts in samples:
         ts = float(np.clip(ts, 0, 1))
         At = cv2.remap(Aimg, gx - ts * fab[..., 0], gy - ts * fab[..., 1], cv2.INTER_LINEAR)
         Bt = cv2.remap(Bimg, gx - (1 - ts) * fba[..., 0], gy - (1 - ts) * fba[..., 1], cv2.INTER_LINEAR)
         w = smoothstep(0.38, 0.62, ts)
         acc = acc + At * (1 - w) + Bt * w
-    img = acc / len(samples)
-    I = np.float32([[1, 0, 0], [0, 1, 0]])
-    return cv2.warpAffine(img, to_screen(t, I), (W, H), flags=cv2.INTER_LINEAR)
+    return acc / len(samples)
+
+def transition_image(a, b, u, kind, t):
+    keys = transition_keys(a, b, kind)
+    n = len(keys) - 1
+    g = ease(u) * n
+    i = min(int(g), n - 1); f = g - i
+    k0, k1 = keys[i], keys[i + 1]
+    if k0[0] == k1[0] and k0[1] is not None and k1[1] is not None:
+        # same body: the arm swings rigidly on its joint (light motion blur)
+        acc = 0; ss = (f - 0.04, f, f + 0.04)
+        for fs in ss:
+            fs = min(max(fs, 0.0), 1.0)
+            ang = k0[1] + (k1[1] - k0[1]) * fs; fore = k0[2] + (k1[2] - k0[2]) * fs
+            acc = acc + key_image((k0[0], ang, fore), t)
+        return acc / len(ss)
+    blur = (0.11 if kind == "flow" else 0.05) * math.sin(math.pi * f)
+    return flow_morph(k0, k1, t, f, blur)
+
+def character(t):
+    """Premultiplied RGBA layer of the character in screen space."""
+    st = state(t)
+    if st[0] == 'none': return None
+    if st[0] == 'pose':
+        name = st[1]
+        img = rig.deform(name, t, pose_params(name, t))
+        M = to_screen(t, norm_affine(name))
+    else:
+        _, a, b, u, kind = st
+        img = transition_image(a, b, u, kind, t)
+        M = to_screen(t, np.float32([[1, 0, 0], [0, 1, 0]]))
+    flags = cv2.INTER_CUBIC if camera(t)[2] > 1.3 else cv2.INTER_LINEAR
+    return np.clip(cv2.warpAffine(img, M, (W, H), flags=flags), 0, 1)
 
 def hand_screen(t):
     """Screen position of the open palm in the 'offer' pose."""
@@ -451,18 +493,18 @@ def scene_overlays_back(img, t):
     orbit_cards(img, t, back=True)
 
 def orbit_cards(img, t, back):
-    al = fade(t, 104.2, 116.2, 1.2, 1.4)
+    al = fade(t, 108.2, 116.6, 1.2, 1.2)
     if al <= 0: return
     n = len(A.cards)
     cx, cy, s = camera(t)
     for i, card in enumerate(A.cards):
-        ang = 2 * math.pi * i / n + (t - 104) * 0.16
+        ang = 2 * math.pi * i / n + (t - 108) * 0.16
         depth = math.sin(ang)          # >0 front
         if (depth > 0) == back: continue
         x = W / 2 + 760 * math.cos(ang)
         y = 470 + 170 * math.sin(ang) + 10 * math.sin(t * 1.1 + i)
         sc = 0.66 + 0.34 * (depth + 1) / 2
-        k = ease((t - 104.4 - 0.12 * i) / 0.8)
+        k = ease((t - 108.4 - 0.12 * i) / 0.8)
         a = al * k * (0.55 + 0.45 * (depth + 1) / 2)
         if not back and abs(x - W / 2) < 260: a *= 0.35   # don't hide her face
         blit(img, card, x, y + 40 * (1 - k), alpha=a, scale=sc, angle=6 * math.cos(ang * 1.3))
@@ -478,7 +520,7 @@ def scene_overlays_front(img, t):
             blit(img, spr, W / 2, 300, alpha=al, scale=min(zoom, 3.0))
         draw_title(img, t, 2.4, 1 - ease((t - 6.6) / 1.0), y=560)
     # emphasis marks near her head (pointing scene)
-    for tc in (66.7, 70.6):
+    for tc in (67.0, 70.8):
         al = fade(t, tc, tc + 1.0, 0.08, 0.4)
         if al > 0:
             cx, cy, s = camera(t)
@@ -492,7 +534,7 @@ def scene_overlays_front(img, t):
                 img[...] = img * (1 - al) + ov * al
     # idea chips floating up from the open palm
     slots = [(330, 260), (560, 170), (300, 470), (560, 380), (420, 640)]
-    for i, tc in enumerate((50.4, 51.8, 53.2, 54.8, 56.6)):
+    for i, tc in enumerate((50.6, 52.0, 53.4, 55.0, 56.8)):
         if tc <= t < 66.3:
             k = ease((t - tc) / 1.1)
             hx, hy = hand_screen(min(t, tc + 0.01) if k < 1 else t)
@@ -505,8 +547,8 @@ def scene_overlays_front(img, t):
             if k < 1:  # sparkle trail
                 blit(img, A.sun_small, x - 40, y + 20, alpha=al * (1 - k), angle=t * 90, scale=1.2)
     # the three values
-    for i, tc in enumerate((88.4, 90.2, 92.6)):
-        al = fade(t, tc, 103.6, 0.7, 0.8)
+    for i, tc in enumerate((91.3, 92.4, 93.7)):
+        al = fade(t, tc, 103.7, 0.7, 0.6)
         if al > 0:
             k = ease((t - tc) / 0.9)
             y = 300 + 175 * i
@@ -514,29 +556,34 @@ def scene_overlays_front(img, t):
             blit(img, A.sun_small, x - 110, y, alpha=al, angle=(t - tc) * 25, scale=1.0 + 0.25 * math.sin(t * 2 + i))
             blit(img, A.values[i][0], x + 30, y - 8, alpha=al)
             blit(img, A.values[i][1], x + 30, y + 52, alpha=al * 0.9)
-    if 95.9 < t < 103.6:  # gentle connecting line
-        al = fade(t, 95.9, 103.6, 1.0, 0.8)
+    if 96.0 < t < 103.6:  # gentle connecting line
+        al = fade(t, 96.0, 103.7, 1.0, 0.6)
         y0, y1 = 300, 650
-        ov = img.copy(); cv2.line(ov, (1230, y0), (1230, int(y0 + (y1 - y0) * ease((t - 95.9) / 1.5))),
+        ov = img.copy(); cv2.line(ov, (1230, y0), (1230, int(y0 + (y1 - y0) * ease((t - 96.0) / 1.5))),
                                   tuple(float(v) for v in CORAL), 2, cv2.LINE_AA)
         img[...] = img * (1 - al * 0.6) + ov * al * 0.6
     orbit_cards(img, t, back=False)
     # ending card
-    if t > 116.0:
-        al = ease((t - 116.0) / 1.2)
-        k = ease((t - 116.2) / 1.6)
+    if t > 116.6:
+        al = ease((t - 116.6) / 1.2)
+        k = ease((t - 116.8) / 1.6)
         blit(img, A.sun_big, W / 2, 330, alpha=al, angle=(t - 116) * 8, scale=0.6 + 0.1 * k)
-        draw_title(img, t, 116.4, al, y=600, tagline=False)
-        blit(img, A.thanks, W / 2, 735, alpha=ease((t - 117.6) / 1.0))
+        draw_title(img, t, 117.0, al, y=600, tagline=False)
+        blit(img, A.thanks, W / 2, 735, alpha=ease((t - 118.0) / 0.9))
 
 # ----------------------------------------------------------------------------- frame
+SC = None
 def render(t):
+    sc = scene_at(t)
+    if sc is not None:   # hard cut to a landscape
+        img = SC.render(sc[2], t - sc[0], sc[1] - sc[0])
+        return finish(img, t)
     cx, cy, s = camera(t)
     img = background(t, cx, cy)
     scene_overlays_back(img, t)
     ch = character(t)
     if ch is not None:
-        vis = smoothstep(8.2, 9.6, t) * (1 - smoothstep(115.4, 116.8, t))
+        vis = smoothstep(8.2, 9.6, t) * (1 - smoothstep(116.3, 117.3, t))
         if vis > 0:
             if t < 9.8:  # rise in
                 dy = 40 * (1 - ease((t - 8.2) / 1.6))
@@ -548,6 +595,9 @@ def render(t):
             img = img * (1 - aura) + np.array([1.0, 0.86, 0.70]) * aura
             img = img * (1 - ch[..., 3:4]) + ch[..., :3]
     scene_overlays_front(img, t)
+    return finish(img, t)
+
+def finish(img, t):
     subtitles(img, t)
     for tp, dur in FLASHES:
         a = 1 - min(abs(t - tp) / (dur / 2), 1)
@@ -561,16 +611,21 @@ def render(t):
     return np.clip(img * 255 + 0.5, 0, 255).astype(np.uint8)
 
 def main():
-    global A
-    A = Assets()
+    global A, SC
+    A = Assets(); SC = scenery.Scenery()
     mode = sys.argv[1]
     if mode == 'still':
         t = float(sys.argv[2]); out = sys.argv[3]
         Image.fromarray(render(t)).save(out)
     elif mode == 'flows':
         for i in range(len(SEGMENTS) - 1):
-            a, b = SEGMENTS[i][2], SEGMENTS[i + 1][2]
-            if SEGMENTS[i][1] not in HARD_CUTS: flows(a, b); print('flow', a, b)
+            (_, s1, a), (s0, _, b) = SEGMENTS[i], SEGMENTS[i + 1]
+            if s0 <= s1: continue   # invisible switch under a cut-away
+            keys = transition_keys(a, b, TRANSITION_KIND.get((a, b), 'flow'))
+            for k0, k1 in zip(keys, keys[1:]):
+                if k0[0] != k1[0] or k0[1] is None or k1[1] is None:
+                    flows(k0, k1); print('flow', k0, k1)
+        ib.sheet('build/transition_poses.png')
     elif mode == 'frames':
         f0, f1, out = int(sys.argv[2]), int(sys.argv[3]), sys.argv[4]
         p = subprocess.Popen(['ffmpeg', '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24',
