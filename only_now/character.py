@@ -146,5 +146,5 @@ def render(shot, lt, dur):
     # everything except the light falls away into darkness at the end
     dark = sstep(0.55, 0.88, u)
     img = img * (1 - dark) + VOID * dark
-    palm_light(img, center[0], center[1], lt, scale=1.0 + 1.2 * push, strength=1.0, roundness=sstep(0.85, 1.0, u))
+    palm_light(img, center[0], center[1], lt, scale=(1.0 + 1.2 * push) * (1 - 0.82 * sstep(0.9, 1.0, u)), strength=1.0, roundness=sstep(0.85, 1.0, u))
     return img
