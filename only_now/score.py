@@ -308,23 +308,6 @@ music.add(strings([m('D2'), m('A2')], 17.0, vel=0.22, att=4.0, rel=2.0, bright=6
 for bt in ui.beat_times(A('slit', 0.0), A('slit', 12.0), phase=-TL.BEAT0):
     sfx.add(collide(0.45), bt, new=True); sfx.add(tick(0.45), bt, new=True)
 amb.add(np.sin(2 * np.pi * 7400 * T(12)) * 0.0025 * np.minimum(1, np.minimum(T(12) / 2, (12 - T(12)) / 2)), A('slit', 0), new=True)
-# III · two clocks: machine time is exact; living time is not
-for k in range(int(20 / 0.42)):
-    tt = k * 0.42
-    if tt < 10.0 or (10.0 <= tt < 18.5):
-        sfx.add(click(1000, 0.6), TL.src_time('clocks', tt), pan=-0.35 if tt > 10 else 0.0, new=True)
-for (ts, ti, spd) in MC.neuron_data()['sparks']:
-    ta = ts + spd
-    if 7.0 < ta < 19.0:
-        sfx.add(crackle(0.35, density=60, vel=0.5), TL.src_time('clocks', ta), pan=0.35, new=True)
-music.add(shimmer([m('D5'), m('A5')], 22.0, vel=0.25, att=3.0, rel=3.0), A('clocks', 0), new=True)
-# III · the line and the point
-music.add(shepard(TL.END['line'] - TL.START['line'], 1.0), A('line', 0), new=True)
-for tp in MC.point_times()[:-1]:
-    sfx.add(tick(0.9), tp, new=True); sfx.add(shimmer([m('A6')], 0.8, vel=0.25, att=0.01, rel=0.7), tp, new=True)
-tm = MC.point_times()[-1]
-music.add(shimmer([m('F5'), m('A5'), m('E6')], 4.0, vel=0.5, att=0.05, rel=3.0), tm, new=True)
-music.add(piano(m('E5'), 4.0, vel=0.35), tm, new=True)
 # IV · the library at closing time: the chime, the air going quiet, a click as each lamp goes out
 LB = lambda r: TL.at('library', r)
 amb.add(fan_bed(16.0, 0.02) * np.minimum(T(16.0) / 1.0, 1), LB(0.4), new=True)
@@ -407,31 +390,6 @@ swell_len = fk - 2.0
 sw = strings([m('D2'), m('A2')], swell_len, vel=0.16, att=swell_len, rel=0.02, bright=420)
 music.add(sw, 2.0, new=True)
 music.add(shimmer([m('A5'), m('E6')], 3.5, vel=0.25, att=0.05, rel=3.0), TL.at('answer', 1.0), new=True)
-# III · clocks — exact machine time against living time; they resolve together
-CL = lambda r: TL.src_time('clocks', r)
-arp = [m('D4'), m('A4'), m('D5'), m('A4')]
-k = 0; tt = 0.4
-while tt < 18.0:
-    if tt < 10.0 or tt >= 10.0:
-        pan = 0.0 if tt < 10.0 else -0.45
-        v = 0.10 if tt < 15.5 else 0.10 * (1 - (tt - 15.5) / 2.5)
-        if v > 0.01: music.add(pluck(arp[k % 4], 0.3, 2600, v), CL(tt), pan=pan, new=True)
-    tt += 0.21; k += 1
-pent = [m('D4'), m('F4'), m('G4'), m('A4'), m('C5'), m('D5')]
-for j, (ts, ti, spd) in enumerate(MC.neuron_data()['sparks']):
-    ta = ts + spd
-    if 7.0 < ta < 17.5:
-        music.add(piano(pent[(ti + j) % len(pent)], 2.5, vel=0.20), CL(ta), pan=0.4, new=True)
-music.add(piano(m('D3'), 4.0, vel=0.3), CL(18.0), new=True)
-for n_ in (m('F4'), m('A4'), m('D5')):
-    music.add(piano(n_, 4.0, vel=0.22), CL(18.0), new=True)
-music.add(strings([m('D3'), m('A3'), m('F4')], 3.5, vel=0.18, att=0.6, rel=2.5), CL(17.6), new=True)
-# III · the line — every memory it reaches is a note; together they are the theme
-mel = [m('F4'), m('A4'), m('E5'), m('D5'), m('C5'), m('A4'), m('G4'), m('A4')]
-for j, bt in enumerate(MC.bead_times()):
-    music.add(piano(mel[j % len(mel)], 2.8, vel=0.18 + 0.06 * (j % 4 == 0)), bt, pan=-0.6 + 1.2 * j / 30, new=True)
-tm2 = MC.point_times()[-1]
-music.add(strings([m('F3'), m('C4'), m('A4'), m('E5')], 5.5, vel=0.25, att=0.8, rel=4.0), tm2 - 0.2, new=True)
 # IV · forgetting — a falling low note as each memory breaks
 for (_, _, _, _, t_in, t_break), n_ in zip(IF.FRAGS, (m('A3'), m('F3'), m('D3'))):
     music.add(piano(n_, 5.0, vel=0.32), DS(t_break), new=True)
@@ -476,12 +434,9 @@ music.add(strings([m('F2'), m('C3'), m('A3')], 10.0, vel=0.22, att=3.0, rel=3.5,
 chords(snap(TL.at('pushin', 4.5)), TL.END['keyboard'] - 0.5, [F, C, Dm, Bb], vel=0.28, piano_arp=True, string_vel=0.14, shimmer_vel=0.12)
 motif(snap(TL.at('pushin', 8.0)), vel=0.38)
 motif(snap(TL.at('pushin', 15.5)), vel=0.33, transpose=-2)
-# III -> II: the line's rising tone climbs straight into the montage's first downbeat
-sfx.add(whoosh(3.2, up=True, vel=0.22), TL.at('montage', 2.5) - 3.2, new=True)
-music.add(shepard(4.0, 1.4), TL.END['line'] - 1.0, new=True)
-# II -> III and V -> VI crossfades: a sustained tone carries across each dissolve
-music.add(shimmer([m('D5'), m('A5')], 4.0, vel=0.3, att=1.0, rel=2.5), TL.START['clocks'] - 1.2, new=True)
-music.add(strings([m('F3'), m('C4')], 5.0, vel=0.16, att=1.0, rel=3.0), TL.START['her'] - 1.0, new=True)
+# chapter crossfades: a sustained tone carries across each dissolve
+music.add(shimmer([m('D5'), m('A5')], 4.0, vel=0.3, att=1.0, rel=2.5), TL.START['montage'] - 1.2, new=True)
+music.add(strings([m('F3'), m('C4')], 5.0, vel=0.16, att=1.0, rel=3.0), TL.START['line'] - 1.0, new=True)
 # I: the dive into the caret lands on the hall's first heartbeat
 sfx.add(whoosh(1.2, up=True, vel=0.2), TL.START['hall'] - 1.1, new=True)
 # VI: her chapter is longer now; two more bars, and a breath for every flashback
@@ -503,6 +458,30 @@ for bt in ui.beat_times(TL.at('her', FN.NOWWIN + 0.5), TL.at('her', FN.BURST)):
 for bt in ui.beat_times(TL.at('her', 0.4), TL.at('her', 4.0)):
     sfx.add(tick(0.7), bt, new=True)
 music.add(strings([m('F3'), m('C4'), m('A4')], 7.0, vel=0.2, att=1.5, rel=4.0), TL.at('her', FN.NOWWIN), new=True)
+
+# V · the line and the point — the line remembers in notes; her points only answer, and go out
+LN = lambda r: TL.at('line', r)
+mel = [m('F4'), m('A4'), m('E5'), m('D5'), m('C5'), m('A4'), m('G4'), m('A4')]
+for j, bt in enumerate(MC.bead_times()):
+    music.add(piano(mel[j % len(mel)], 2.8, vel=0.17 + 0.05 * (j % 4 == 0)), bt, pan=-0.6 + 1.2 * j / 20, new=True)
+for st_ in MC.step_times():                                   # each step forward: a soft low footfall
+    sfx.add(boom(0.12), st_, new=True)
+for tp in MC.point_times()[:-1]:                              # each answer: a small bright tone that does not last
+    sfx.add(tick(0.8), tp, new=True)
+    music.add(shimmer([m('A6')], 1.0, vel=0.3, att=0.01, rel=0.9), tp, pan=0.4, new=True)
+music.add(shimmer([m('E6')], 2.6, vel=0.22, att=0.05, rel=2.4), LN(MC.LEFT_BEHIND[0]), pan=0.5, new=True)
+tmeet = MC.point_times()[-1]
+music.add(strings([m('F3'), m('C4'), m('A4'), m('E5')], 6.0, vel=0.26, att=0.8, rel=4.5), tmeet - 0.2, new=True)
+music.add(piano(m('E5'), 4.0, vel=0.34), tmeet, new=True)
+music.add(piano(m('A5'), 4.0, vel=0.26), tmeet + BEAT, new=True)
+music.add(shepard(8.0, 1.2), LN(26.0), new=True)               # it walks on, rising, out of sight
+music.add(strings([m('D3'), m('A3')], 34.0, vel=0.12, att=4.0, rel=4.0, bright=700), LN(0.0), new=True)
+# III · her, behind the glass in the library: a held breath when she appears; glass when she touches it
+LBp = lambda r: TL.at('library', r)
+for t_, kind in ((2.8, 'face'), (11.0, 'hand'), (18.4, 'face')):
+    music.add(shimmer([m('F5'), m('C6')], 3.0, vel=0.18, att=1.0, rel=1.8), LBp(t_), pan=-0.5 if kind == 'face' else 0.5, new=True)
+for k in range(3):                                            # fingertips on glass: a soft high ring, three times fainter
+    sfx.add(shimmer([m('E7') - 2 * k], 1.2, vel=0.30 * (0.6 ** k), att=0.005, rel=1.1), LBp(12.6 + 0.12 * k), pan=0.55, new=True)
 
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))

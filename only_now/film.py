@@ -50,7 +50,7 @@ def raw(t):
     return raw_shot(shot_at(t), t)
 
 # chapter crossfades: incoming shot key -> seconds (the outgoing shot keeps moving underneath)
-XFADE = {'drift': 1.0, 'clocks': 1.6, 'her': 1.6}
+XFADE = {'drift': 1.0, 'montage': 1.0, 'line': 1.6}
 
 def grade_flashback(img):
     lum = img.mean(axis=2, keepdims=True)

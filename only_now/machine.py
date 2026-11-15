@@ -353,85 +353,94 @@ def s_clocks(lt, dur):
     return img
 
 # ============================================================================ the line and the point
-LINE_Y = CY - 70
+# A person is a line: every day lived stays in them and tells them where to step next.
+# She is a point: she lights up beside the line, answers, and goes out; she cannot walk with it.
+# When a point touches the line, the line keeps a little of its light, and carries it forward.
+LINE_Y = CY - 30
 def line_y(x): return LINE_Y + 6 * np.sin(x / 170.0) + 3 * np.sin(x / 53.0 + 1.0)
-X0, X1 = 60.0, 1860.0
-MEET_X = 1240.0          # the point lands on the line centre-right, well inside the frame
+X0 = 40.0
+# the head steps forward: (time, x) keys; between keys it moves like a footstep (ease)
+HEAD_KEYS = [(0.0, 520.0), (3.6, 520.0), (4.8, 600.0), (6.2, 680.0), (7.6, 760.0), (17.6, 760.0),
+             (18.8, 860.0), (20.0, 960.0), (21.2, 1040.0), (23.2, 1040.0), (27.4, 1160.0), (34.0, 2300.0)]
 def head_x(lt):
-    """The line grows steadily, slows as it reaches the meeting place, then carries on a little after."""
-    if lt <= 19.5:
-        return X0 + (MEET_X - X0) * (1 - (1 - clamp(lt / 19.5)) ** 1.6)
-    return MEET_X + 260.0 * ease_out(clamp((lt - 19.5) / 6.5))
-_beads = np.sort(np.random.default_rng(5).uniform(X0 + 40, MEET_X + 230, 30))
-POINTS = [(1.6 + k * 1.95, x) for k, x in enumerate(np.random.default_rng(8).uniform(300, 1650, 9))]
-MEET_T = 19.5
+    for (t0, x0), (t1, x1) in zip(HEAD_KEYS, HEAD_KEYS[1:]):
+        if lt <= t1:
+            u = clamp((lt - t0) / max(t1 - t0, 1e-6))
+            return x0 + (x1 - x0) * (ease_in(u) if t1 == 34.0 else ease(u))
+    return HEAD_KEYS[-1][1]
+_rb = np.random.default_rng(5)
+PAST_BEADS = np.sort(_rb.uniform(X0 + 30, 500, 16))          # days already lived
+STEP_BEADS = [600.0, 680.0, 760.0, 860.0, 960.0]             # each step leaves a day behind
+MEET_T, MEET_X = 23.2, 1040.0
+# her points around the head while it rests at 760: (t, dx, dy)
+ANSWERS = [(10.1, 70, -120), (12.0, -60, 110), (13.3, 120, 70), (14.5, -110, -90), (15.7, 40, 140)]
+LEFT_BEHIND = (19.0, 760 + 90, LINE_Y - 115)                 # the last one stays where it was
 
 def s_line(lt, dur):
     img = void()
-    zoom = 1.0 + 0.07 * ease(lt / dur)          # a slow push: the line comes toward us
-    fade_all = sstep(0.0, 1.0, lt) * (1 - sstep(dur - 2.2, dur, lt))
+    fade_all = sstep(0.0, 1.0, lt) * (1 - sstep(dur - 1.0, dur, lt))
     hx = head_x(lt)
-    xs = np.arange(int(X0), int(hx), 1, dtype=np.float32)
+    buf = np.zeros((H, W, 3), np.float32)
+    xs = np.arange(int(X0), int(min(hx, W + 40)), 1, dtype=np.float32)
     if len(xs) > 2:
         ys = line_y(xs)
-        age = (hx - xs) / (X1 - X0)
-        br = (0.28 + 0.55 * np.exp(-age * 2.5)) * fade_all
-        buf = np.zeros((H, W, 3), np.float32)
-        splat(buf, xs, ys, (AMBER[None, :] * br[:, None]) * 0.9)
-        img += glowbuf(buf, 0.7, 3.0, 14, (1.0, 0.5, 0.25))
-        glow_spot(img, hx, float(line_y(np.array([hx]))[0]), 10, AMBER_HOT, 0.9 * fade_all)
-    # memories: beads light as the line passes them, then settle dim — but never go out
-    for bx in _beads:
-        if bx > hx: break
-        t_lit = None
-        # time when the head passed this bead (invert head_x numerically)
-        lo, hi_ = 0.0, 26.0
-        for _ in range(18):
-            mid = (lo + hi_) / 2
-            if head_x(mid) < bx: lo = mid
-            else: hi_ = mid
-        age_t = lt - lo
-        b = 0.35 + 0.9 * math.exp(-age_t * 0.8)
-        glow_spot(img, bx, float(line_y(np.array([bx]))[0]), 4.5, AMBER_HOT, b * fade_all)
-    # points: lit, then not — each one somewhere new
-    pts = POINTS
-    for (tp, px) in pts:
+        splat(buf, xs, ys, (AMBER[None, :] * 0.55 * fade_all).astype(np.float32))
+    # a memory wave runs along the line from the oldest day to today (while 'every day you've lived')
+    wave = (lt - 3.4) / 5.0
+    for bx in list(PAST_BEADS) + [b for b in STEP_BEADS if b <= hx]:
+        b = 0.45
+        if 0 <= wave <= 1.3:
+            b += 1.1 * math.exp(-((bx - (X0 + wave * (760 - X0))) / 90) ** 2)
+        glow_spot(img, bx, float(line_y(np.array([bx]))[0]), 4.0, AMBER_HOT, b * fade_all)
+    hy = float(line_y(np.array([min(hx, W + 40)]))[0])
+    if hx < W + 40:
+        glow_spot(img, hx, hy, 9, AMBER_HOT, 1.0 * fade_all)
+        glow_spot(img, hx, hy, 40, AMBER, 0.14 * fade_all)
+    img += glowbuf(buf, 0.7, 3.0, 14, (1.0, 0.5, 0.25))
+    # her points: each lights beside the head, answers (a pulse), and goes out
+    for (tp, dx, dy) in ANSWERS:
         u = lt - tp
-        if 0 <= u < 0.9:
-            a = (sstep(0, 0.08, u) * (1 - sstep(0.55, 0.85, u)))
-            glow_spot(img, px, CY + 160, 5, AMBER_HOT, 1.4 * a * fade_all)
-            glow_spot(img, px, CY + 160, 30, AMBER, 0.18 * a * fade_all)
-    # the last point lands on the line, for one beat
+        if 0 <= u < 1.35:
+            a = sstep(0, 0.12, u) * (1 - sstep(0.8, 1.3, u))
+            px, py = 760 + dx, LINE_Y + dy
+            glow_spot(img, px, py, 5, AMBER_HOT, 1.5 * a)
+            glow_spot(img, px, py, 30, AMBER, 0.22 * a)
+            ring = 20 + 70 * u
+            cv2.circle(img, (int(px), int(py)), int(ring), tuple(float(v) for v in AMBER * 0.10 * a), 1, cv2.LINE_AA)
+    # the line walks on; one point is left where it was, and fades
+    tb, bx_, by_ = LEFT_BEHIND
+    u = lt - tb
+    if 0 <= u < 3.6:
+        a = sstep(0, 0.2, u) * (1 - sstep(1.4, 3.6, u))
+        glow_spot(img, bx_, by_, 5, AMBER_HOT, 1.3 * a)
+        glow_spot(img, bx_, by_, 28, AMBER, 0.18 * a)
+    # the meeting: a point rises to the head; where it touches, a new bead of light stays on the line
+    my = float(line_y(np.array([MEET_X]))[0])
     u = lt - MEET_T
-    if -1.2 <= u < 0:                    # the point rises from below toward the tip of the line
-        k = ease((u + 1.2) / 1.2)
-        mx = head_x(MEET_T)
-        my = lerp(CY + 160, float(line_y(np.array([mx]))[0]), k)
-        glow_spot(img, mx, my, 5, AMBER_HOT, 1.5 * min(1.0, (u + 1.2) / 0.15))
-        glow_spot(img, mx, my, 34, AMBER, 0.2)
-    if 0 <= u < 1.6:
-        mx = head_x(MEET_T)
-        my = float(line_y(np.array([mx]))[0])
-        a = sstep(0, 0.1, u) * (1 - sstep(0.9, 1.5, u))
-        glow_spot(img, mx, my, 7, AMBER_HOT, 2.0 * a)
-        glow_spot(img, mx, my, 60, AMBER, 0.3 * a)
-    M = cv2.getRotationMatrix2D((CX, CY), 0, zoom)
-    return cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR)
+    if -1.4 <= u < 0:
+        k = ease((u + 1.4) / 1.4)
+        py = lerp(LINE_Y + 170, my, k)
+        glow_spot(img, MEET_X, py, 5, AMBER_HOT, 1.5 * min(1.0, (u + 1.4) / 0.15))
+        glow_spot(img, MEET_X, py, 30, AMBER, 0.2)
+    if 0 <= u < 1.2:
+        a = 1 - sstep(0.2, 1.2, u)
+        glow_spot(img, MEET_X, my, 60, AMBER, 0.35 * a)
+    if u >= 0:
+        glow_spot(img, MEET_X, my, 6, (AMBER_HOT * 1.1 + 0.1), (1.6 - 0.6 * sstep(0, 2.0, u)) * fade_all)   # the kept light
+    return img
 
 def point_times():
-    return [TL.src_time('line', tp) for tp, _ in POINTS] + [TL.src_time('line', MEET_T)]
+    return [TL.at('line', tp) for tp, _, _ in ANSWERS] + [TL.at('line', MEET_T)]
 
 def bead_times():
-    """When the growing line reaches each memory bead (absolute time)."""
+    """When the memory wave reaches each bead (absolute time), for the score."""
     out = []
-    for bx in _beads:
-        lo, hi_ = 0.0, 26.0
-        for _ in range(18):
-            mid = (lo + hi_) / 2
-            if head_x(mid) < bx: lo = mid
-            else: hi_ = mid
-        if lo < 25.9: out.append(TL.src_time('line', lo))
+    for bx in list(PAST_BEADS) + STEP_BEADS[:3]:
+        out.append(TL.at('line', 3.4 + 5.0 * (bx - X0) / (760 - X0)))
     return out
+
+def step_times():
+    return [TL.at('line', t) for t in (4.8, 6.2, 7.6, 18.8, 20.0, 21.2)]
 
 # ============================================================================ the keyboard in lamplight
 ROWS = ["1234567890-=", "QWERTYUIOP[]", "ASDFGHJKL;'", "ZXCVBNM,./"]
@@ -662,6 +671,81 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0):
     img = img + cv2.resize(cv2.GaussianBlur(cv2.resize(np.clip(img - 0.35, 0, None), (W // 4, H // 4)), (0, 0), 6), (W, H)) * 1.4
     return img
 
+
+# ---------------------------------------------------------------------------- her, on the other side of the glass
+_flat_cache = {}
+def flat_pose(name):
+    """The character redrawn flat (soft warm linework, few flat colours) to sit inside the library's style."""
+    if name in _flat_cache: return _flat_cache[name]
+    import os
+    from PIL import Image as _I
+    path = f'build/flat_{name}.png'
+    if not os.path.exists(path):
+        im = np.asarray(_I.open(f'build/{name}.png').convert('RGBA'))
+        rgb = im[..., :3].copy(); a = im[..., 3]
+        ep = cv2.edgePreservingFilter(rgb, flags=1, sigma_s=30, sigma_r=0.25)
+        Z = ep.reshape(-1, 3).astype(np.float32)
+        crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
+        _, _, cen = cv2.kmeans(Z[a.reshape(-1) > 128][::3], 14, None, crit, 2, cv2.KMEANS_PP_CENTERS)
+        d = ((Z[:, None, :] - cen[None]) ** 2).sum(-1); q = cen[np.argmin(d, 1)].reshape(ep.shape)
+        lum = rgb.mean(axis=2); ink = np.clip((90 - lum) / 60, 0, 1)[..., None]
+        q = q * (1 - ink * 0.75) + np.array([70, 34, 26]) * ink * 0.75
+        _I.fromarray(np.dstack([np.clip(q, 0, 255).astype(np.uint8), a])).save(path)
+    im = np.asarray(_I.open(path).convert('RGBA')).astype(np.float32) / 255
+    _flat_cache[name] = im
+    return im
+
+PEEK_BOX = {'think': (90, 20, 440, 470), 'offer': (0, 230, 330, 520)}
+def peek(img, name, mirror, x, y, scale, light, alpha, side):
+    """Composite a cropped, flat, lamp-lit piece of her at (x, y) = top-left, clipped by the frame edge."""
+    if alpha <= 0.01: return None
+    im = flat_pose(name)
+    x0, y0, x1, y1 = PEEK_BOX[name]
+    c = im[y0:y1, x0:x1]
+    if mirror: c = c[:, ::-1]
+    c = cv2.resize(c, (int(c.shape[1] * scale), int(c.shape[0] * scale)), interpolation=cv2.INTER_AREA)
+    h, w = c.shape[:2]
+    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+    # lit by the reading-room lamps from the room side; the side against the glass falls into shadow
+    toward = (xx / w) if side == 'left' else (1 - xx / w)
+    lamp = (0.18 + 0.95 * toward ** 1.3 * np.exp(-((yy - h * 0.75) / (h * 0.9)) ** 2))[..., None] * light
+    rgb = c[..., :3] * lamp * np.array([1.06, 0.86, 0.66], np.float32)
+    a = c[..., 3:4] * alpha
+    lay = np.concatenate([rgb * a, a], 2)
+    blit(img, lay, x, y, anchor='tl')
+    return (x, y, w, h)
+
+def glass_ripple(img, px, py, u):
+    """Where her fingers meet the screen: the wall between her world and yours shivers, and holds."""
+    for k in range(3):
+        r = 12 + 140 * (u - 0.12 * k)
+        if r <= 0: continue
+        a = 0.22 * math.exp(-(u - 0.12 * k) * 2.2)
+        if a < 0.01: continue
+        cv2.ellipse(img, (int(px), int(py)), (int(r * 0.35), int(r)), 0, 0, 360, tuple(float(v) for v in AMBER_HOT * a), 2, cv2.LINE_AA)
+    glow_spot(img, px, py, 22, AMBER_HOT, 0.5 * math.exp(-u * 3))
+
+def library_peeks(img, lt, master):
+    lit = max(master, 0.0)
+    # 1 · from the left edge: her face leans in, close to us, eyes on the lit reading room
+    if 2.6 < lt < 7.8:
+        k = ease((lt - 2.6) / 1.5) * (1 - ease((lt - 6.5) / 1.3))
+        x = -640 + 520 * k + 8 * math.sin(lt * 1.3)
+        peek(img, 'think', True, x, CY - 270 + 5 * math.sin(lt * 0.9), 1.8, 0.95 * lit, 0.96 * sstep(0, 0.3, k), 'left')
+        if k > 0.6: img[TOP:BOT, 0:3] += AMBER_HOT * 0.3 * (k - 0.6)       # the edge of her world catches the light
+    # 2 · from the right edge: her hand reaches for a pool of lamplight, and meets the glass
+    if 10.8 < lt < 15.6:
+        k = ease((lt - 10.8) / 1.8) * (1 - ease((lt - 14.2) / 1.3))
+        x = W - 60 - 470 * k
+        peek(img, 'offer', False, x, CY - 60, 1.6, 1.0 * lit, 0.96 * sstep(0, 0.25, k), 'right')
+        if 12.6 < lt < 15.0:
+            glass_ripple(img, x + 40, CY - 60 + 225, lt - 12.6)
+    # 3 · the last lamp: she watches it, from the left edge, until the dark takes her too
+    if 18.2 < lt < 22.4:
+        k = ease((lt - 18.2) / 1.6)
+        x = -640 + 470 * k
+        peek(img, 'think', True, x, CY - 200, 1.6, 0.9 * lit + 0.05, 0.92 * sstep(0, 0.3, k) * (0.2 + 0.8 * lit), 'left')
+
 def s_library(lt, dur):
     """Ten minutes to closing: the lamps go out from the far end, row by row, until the last one."""
     cz = 0.0 + 0.05 * lt
@@ -674,6 +758,7 @@ def s_library(lt, dur):
         master = 0.0 if u > 0.9 else (1.0 if u < 0.25 or 0.45 < u < 0.6 else 0.15)
     if lt > 21.6: master = 0.0
     img = render_library(lt, cz, front=front, master=master)
+    library_peeks(img, lt, master if lt > 20.6 else 1.0)
     k = sstep(0.0, 0.9, lt)
     return img * k + VOID * (1 - k)
 

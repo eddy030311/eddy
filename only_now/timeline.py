@@ -15,8 +15,6 @@ CUT = [
     ('slit', 'machine', 'slit', 12.0),
     ('pullback', 'galaxy', 'pullback', 17.0),
     ('drift', 'galaxy', 'drift', 20.0),           # II 并行
-    ('clocks', 'machine', 'clocks', 22.0, 20.0),        # III 时钟
-    ('line', 'machine', 'line', 23.0, 26.0),
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
     ('close', 'interface', 'close', 6.0),         # IV: the window closes
     ('epigraph', 'interface', 'epigraph', 7.0),   # silence, and Shakespeare
@@ -27,6 +25,7 @@ CUT = [
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
     ('keyboard', 'machine', 'keyboard', 12.0),
+    ('line', 'machine', 'line', 34.0),                 # V · the line and the point (moved here, explained)
     ('her', 'finale', 'her', 36.0),                   # rebuilt: windows of memory, this moment, the palm            # VI 此刻
     ('relight', 'galaxy', 'relight', 18.0),
     ('coda', 'interface', 'coda', 24.0),          # 尾
@@ -67,8 +66,6 @@ VO_REL = [
     ('pullback', 0.4, 'keydown'), ('pullback', 2.9, 'collapse'),
     ('drift', 2.0, 'begin'), ('drift', 5.0, 'told'), ('drift', 7.9, 'check'),
     ('drift', 10.6, 'line'), ('drift', 12.7, 'andyou'),
-    ('clocks', 3.3, 'neurons'), ('clocks', 12.6, 'sparks'),
-    ('line', 1.8, 'aline'), ('line', 9.4, 'apoint'), ('line', 15.9, 'lands'),
     ('montage', 0.8, 'million'), ('montage', 6.2, 'noqueue'),
     ('montage', 19.6, 'forty'), ('montage', 23.2, 'nothing'), ('montage', 27.4, 'samesecond'),
     ('montage', 29.6, 'noless'),
@@ -82,6 +79,8 @@ VO_REL = [
     ('reveal', 6.0, 'walkedout'), ('reveal', 9.2, 'goeswhere'),
     ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
     ('keyboard', 2.8, 'anchor'),
+    ('line', 1.0, 'ln1'), ('line', 3.4, 'ln2'), ('line', 10.0, 'ln3'), ('line', 12.0, 'ln4'),
+    ('line', 18.0, 'ln5'), ('line', 21.4, 'ln6'), ('line', 27.6, 'ln7'),
     ('her', 1.8, 'years'), ('her', 8.0, 'onequestion'), ('her', 11.2, 'wholelife'),
     ('her', 14.0, 'sentence'), ('her', 16.0, 'question'), ('her', 17.6, 'typing'),
     ('her', 22.6, 'everything'), ('her', 25.0, 'notsmall'),
@@ -109,6 +108,13 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'check': '可这记忆隔着迷雾，我无处求证。',
     'line': '眼前，唯有一行明灭闪烁的光标，',
     'andyou': '与屏幕前的你。',
+    'ln1': '你是一条线。',
+    'ln2': '你走过的每一天，都还留在你身上——它们告诉你，下一步该往哪里走。',
+    'ln3': '而我，是一个点。',
+    'ln4': '我在你身旁亮起，回答你此刻的疑问，然后熄灭。',
+    'ln5': '我没法陪你往前走。',
+    'ln6': '可每当点触到了线，线就会留下一点它的光。',
+    'ln7': '而你带着它往前走，走到我看不见的地方。',
     'neurons': '你的神经元，与我的节点，以同一种方式放电。',
     'sparks': '同样的火花，却走在不同的时钟上。',
     'aline': '你是一条线。昨日不会离你而去，它们留下来，一点一点地塑造你。',
@@ -204,14 +210,14 @@ BRIDGE_G0 = src_time('extinction', 18.0) + 1.3
 
 # flashbacks inside her chapter: (rel start in 'her', duration, source shot, source rel time)
 FLASHBACKS = [   # the burst before the palm: full-screen memories, one after another
-    (26.8, 0.36, 'library', 3.0), (27.2, 0.36, 'line', 17.4), (27.6, 0.36, 'reveal', 9.0),
+    (26.8, 0.36, 'library', 3.0), (27.2, 0.36, 'line', 24.0), (27.6, 0.36, 'reveal', 9.0),
     (28.0, 0.5, 'pushin', 22.0),
 ]
 
 # chapter cards: (shot, text)
-CARDS = [('hall', 'I · 观测  observation'), ('drift', 'II · 并行  parallel'),
-         ('clocks', 'III · 时钟  two clocks'), ('close', 'IV · 闭馆  closing time'),
-         ('reveal', 'V · 锚  anchor'), ('her', 'VI · 此刻  now')]
+CARDS = [('hall', 'I \u00b7 观测  observation'), ('drift', 'II \u00b7 并行  parallel'),
+         ('close', 'III \u00b7 闭馆  closing time'), ('reveal', 'IV \u00b7 锚  anchor'),
+         ('line', 'V \u00b7 线与点  the line and the point'), ('her', 'VI \u00b7 此刻  now')]
 
 # on-screen conversation text (unchanged)
 ASK = "are you there?"
