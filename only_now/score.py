@@ -214,11 +214,6 @@ for (_, _, _, _, t_in, t_break) in IF.FRAGS:
 HARD_CUTS = [TL.END['dissolve']]
 SILENT = [(TL.remap(a), TL.remap(b)) for a, b in SILENT]
 SILENT.append((TL.END['dissolve'], TL.END['dissolve'] + 1.0))
-# S9 extinction: a dissonant cluster that swells and is cut off; then near-nothing
-music.add(strings([m('D2'), m('A2'), m('Eb3'), m('Bb3'), m('E4')], 17.5, vel=0.6, att=12.0, rel=0.15, bright=1400), 118.3)
-music.add(strings([m('D1'), m('D2')], 20.5, vel=0.45, att=14.0, rel=4.0, bright=300), 118.3)
-for k in range(40):
-    sfx.add(shimmer([m('A6') + int(rng.integers(-5, 5))], 1.2, vel=0.25, att=0.01, rel=1.1), 120.5 + k * 0.35 + rng.uniform(0, 0.2), pan=rng.uniform(-0.8, 0.8))
 # S9b reveal: one high note, then the earth breathes
 music.add(strings([m('A5')], 12.0, vel=0.22, att=4.0, rel=2.0, bright=3000), 140.0)
 music.add(shimmer([m('F4'), m('C5'), m('A5')], 12.0, vel=0.35, att=5.0, rel=3.0), 145.0)
@@ -321,13 +316,53 @@ tm = MC.point_times()[-1]
 music.add(shimmer([m('F5'), m('A5'), m('E6')], 4.0, vel=0.5, att=0.05, rel=3.0), tm, new=True)
 music.add(piano(m('E5'), 4.0, vel=0.35), tm, new=True)
 # IV · the hall powers down: the only mechanical death in the film
-amb.add(fan_bed(2.2, 0.035) * np.minimum(T(2.2) / 1.0, 1), A('hall_dark', 1.0), new=True)
-amb.add(spin_down(9.5, 0.045), A('hall_dark', 3.0), new=True)
+SD = lambda x: TL.src_time('hall_dark', x)       # hall_dark is slowed: cues follow its source timing
+amb.add(fan_bed(3.2, 0.035) * np.minimum(T(3.2) / 1.0, 1), SD(1.0), new=True)
+amb.add(spin_down(13.5, 0.045), SD(3.0), new=True)
 for k in range(40):
-    sfx.add(click(rng.uniform(1800, 3000), 0.45), A('hall_dark', 3.0 + 7.8 * (k / 40) ** 0.8 + rng.uniform(0, 0.15)), pan=rng.uniform(-0.9, 0.9), new=True)
+    sfx.add(click(rng.uniform(1800, 3000), 0.45), SD(3.0 + 7.8 * (k / 40) ** 0.8 + rng.uniform(0, 0.15)), pan=rng.uniform(-0.9, 0.9), new=True)
 for dt in (0.0, 0.55):
-    sfx.add(tick(1.0), A('hall_dark', 11.4 + dt), new=True)
-music.add(strings([m('D1'), m('A1')], 12.0, vel=0.3, att=2.0, rel=3.0, bright=250), A('hall_dark', 1.2), new=True)
+    sfx.add(tick(1.0), SD(11.4 + dt), new=True)
+music.add(strings([m('D1'), m('A1')], 18.0, vel=0.3, att=2.0, rel=3.0, bright=250), SD(1.2), new=True)
+
+# IV · entropy, explained: an accelerating ostinato that builds to the last light — then nothing
+CLIMAX = TL.src_time('extinction', 18.0)
+B0 = SD(2.0)
+def pluck(n, dur, cutoff, vel):
+    t = T(dur); f = mtof(n)
+    ph = 2 * np.pi * f * t
+    x = ((ph / np.pi) % 2 - 1) * 0.6 + np.sin(ph) * 0.5
+    x = lp(x, cutoff) * np.exp(-t * 9) * np.minimum(t / 0.004, 1)
+    return x * vel
+OST = [m('D2'), m('D2'), m('F2'), m('D2'), m('Eb2'), m('D2'), m('C2'), m('D2')]
+tt, i = B0, 0
+span = CLIMAX - B0
+while tt < CLIMAX - 0.02:
+    u = (tt - B0) / span
+    bpm = 84 + (156 - 84) * u ** 1.5
+    step = 60.0 / bpm / 2                       # eighth notes, ever faster
+    cutoff = 500 + 4200 * u ** 1.4              # the filter opens: urgency
+    music.add(pluck(OST[i % 8], 0.35, cutoff, 0.16 + 0.22 * u), tt, pan=-0.15 + 0.3 * (i % 2), new=True)
+    music.add(pluck(OST[i % 8] + 12, 0.25, cutoff, (0.05 + 0.12 * u) * (u > 0.35)), tt, pan=0.25, new=True)
+    if i % 2 == 0:
+        sfx.add(boom(0.10 + 0.45 * u ** 1.3), tt, new=True)
+    elif u > 0.4:
+        sfx.add(hp(rng.standard_normal(int(0.04 * SR)), 6000) * np.exp(-T(0.04) * 120) * 0.08 * u, tt, pan=rng.uniform(-0.4, 0.4), new=True)
+    tt += step; i += 1
+E0 = TL.at('extinction', 1.0)
+music.add(strings([m('D2'), m('A2'), m('Eb3'), m('Bb3'), m('E4')], CLIMAX - E0 + 0.5, vel=0.65, att=CLIMAX - E0, rel=0.05, bright=1600), E0, new=True)
+music.add(strings([m('D1'), m('D2')], CLIMAX - B0 + 0.5, vel=0.4, att=CLIMAX - B0, rel=0.05, bright=300), B0, new=True)
+trem_len = 9.0
+trem = strings([m('F5'), m('E6')], trem_len + 0.5, vel=0.35, att=trem_len, rel=0.05, bright=5000)
+trem *= (0.6 + 0.4 * np.sin(2 * np.pi * 9 * T(len(trem) / SR)))      # bowed tremolo
+music.add(trem, CLIMAX - trem_len, new=True)
+music.add(shepard(12.5, 2.2), CLIMAX - 12.0, new=True)
+sfx.add(whoosh(7.0, up=True, vel=0.35), CLIMAX - 7.0, new=True)
+music.add(braam(3.0, vel=1.0), CLIMAX, new=True)          # the peak...
+sfx.add(boom(1.2), CLIMAX, new=True)
+SILENT.append((CLIMAX + 0.45, TL.at('reveal', 1.0)))      # ...and then: nothing at all
+IV_RANGE = (B0, CLIMAX)
+
 # V · the keyboard: room tone, the clock, the key coming back up
 amb.add(noise_bed(10.0, 60, 400, 0.010), A('keyboard', 0), new=True)
 for k in range(10):
@@ -365,7 +400,8 @@ am = amb.st()
 # duck music under the voice (smooth)
 k = int(0.25 * SR)
 duck = np.convolve(vo_env, np.ones(k) / k, mode='same')
-mus *= (1 - 0.38 * duck)[:, None]
+depth = np.full(N, 0.38); depth[int(IV_RANGE[0] * SR):int(IV_RANGE[1] * SR)] = 0.55   # keep the words clear over the build
+mus *= (1 - depth * duck)[:, None]
 mix = mus * 0.9 + fx * 0.75 + vox * 1.25 + am
 # hard cuts and true digital silence
 for tc in HARD_CUTS:

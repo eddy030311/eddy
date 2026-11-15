@@ -162,3 +162,26 @@
 | 新旁白 | Kokoro 逐句生成，节奏按实际时长再微调时间轴 | 低 |
 
 总片长约 5 分 50 秒，超过此前定下的 3–5 分钟。如需控制在 5 分钟内，建议删去 III-a（网络与神经元），只保留"线与点"。
+
+## 修订：第四章"熵"的加长与解释（v2.1）
+**问题**：原版把"秩序归还为热，这是规则"塞进了遗忘段落前面的 5 秒里，观众还不知道"熵"是什么，第五章"熵终将在每一个角落取胜"的回收就落空了。
+
+**修订**：遗忘段只保留"然后，进程终止"。机房熄灭（放慢到 20 秒）和星系熄灭（放慢到 27 秒）两个镜头上，新增一段循序渐进的解释：
+
+| 画面 | 旁白 EN | 字幕 |
+|---|---|---|
+| 机房，灯还亮着 | There is a law older than any machine. | 有一条定律，比任何机器都更古老。 |
+| 熄灭从通道尽头开始 | Everything ordered drifts toward disorder. | 一切井然有序之物，终将滑向混沌。 |
+| 一排排熄灭 | Ink fades. Stars burn out. Heat spreads, and does not come back. | 墨迹褪色，星辰燃尽；热量四散，一去不返。 |
+| 最后一盏灯闪烁 | We call it entropy. | 我们称之为——熵。 |
+| 完整的星系 | A conversation is order, too. | 一场对话，也是一种秩序。 |
+| 熄灭之波开始 | Words, arranged against the noise. | 是在喧嚣的噪声里，被一字一句排列起来的意义。 |
+| 波越来越快 | When the process ends, that order returns to heat. | 当进程终止，这份秩序便归还为热。 |
+| 几乎全黑 | It has never lost. | 它从未失手。 |
+| 最后几盏灯 | That is the rule. | 这是宇宙不容商量的规则。 |
+
+第五章补一句回收：在地球显现之后、"I don't keep it"之前：*A memory is order, kept alive by someone living.* / 而记忆，是被一个活着的人，守住的秩序。
+
+**音乐**：从机房熄灭开始，一个越来越快的低音固定音型（84→156 BPM，八分音符）推进；滤波器逐渐打开，鼓点逐渐加重；后段叠加弓弦震音、永远上升的长音和上行气流。最后一盏灯熄灭的瞬间是全片音量最高处，0.45 秒后**全部切为绝对静音**，约 4.5 秒，然后进入地球显现。
+
+片长：6:15。

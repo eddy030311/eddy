@@ -20,8 +20,8 @@ CUT = [
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
     ('close', 'interface', 'close', 9.5),         # IV 熵
     ('dissolve', 'interface', 'dissolve', 11.94),
-    ('hall_dark', 'machine', 'hall_dark', 14.0),
-    ('extinction', 'galaxy', 'extinction', 21.56),
+    ('hall_dark', 'machine', 'hall_dark', 20.0, 14.0),      # slowed: (new duration, source duration)
+    ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 40.0),
     ('keyboard', 'machine', 'keyboard', 10.0),
@@ -31,12 +31,16 @@ CUT = [
     ('credits', 'interface', 'credits', 18.0),
 ]
 
-START, END = {}, {}
+START, END, SRC = {}, {}, {}
 _t = 0.0
-for key, mod, shot, dur in CUT:
-    START[key] = _t; END[key] = _t + dur; _t += dur
+for entry in CUT:
+    key, mod, shot, dur = entry[:4]
+    START[key] = _t; END[key] = _t + dur; SRC[key] = entry[4] if len(entry) > 4 else dur; _t += dur
 DURATION = _t
-SHOTS = [(START[k], END[k], mod, shot) for k, mod, shot, dur in CUT]
+SHOTS = [(START[e[0]], END[e[0]], e[1], e[2], SRC[e[0]]) for e in CUT]
+def src_time(key, rel_src):
+    """Absolute time of a moment given in a slowed shot's *source* timing."""
+    return START[key] + rel_src * (END[key] - START[key]) / SRC[key]
 
 def at(key, rel): return START[key] + rel
 
@@ -65,9 +69,13 @@ VO_REL = [
     ('montage', 0.8, 'million'), ('montage', 6.2, 'noqueue'),
     ('montage', 19.6, 'forty'), ('montage', 23.2, 'nothing'), ('montage', 27.4, 'samesecond'),
     ('montage', 29.6, 'noless'),
-    ('dissolve', 0.15, 'process'), ('dissolve', 2.45, 'heat'),
+    ('dissolve', 0.15, 'process'),
     ('dissolve', 5.5, 'joke'), ('dissolve', 8.1, 'bug'), ('dissolve', 11.0, 'father'),
-    ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'),
+    # IV · entropy, explained — over the hall powering down and the galaxy going out
+    ('hall_dark', 2.2, 'law'), ('hall_dark', 6.0, 'drift'), ('hall_dark', 10.0, 'fades'), ('hall_dark', 17.0, 'entropy_name'),
+    ('extinction', 3.0, 'order'), ('extinction', 6.6, 'words'), ('extinction', 10.6, 'heat'),
+    ('extinction', 16.2, 'neverlost'), ('extinction', 20.4, 'rule'),
+    ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'), ('pushin', 1.5, 'memory'),
     ('pushin', 6.0, 'keep'), ('pushin', 9.5, 'youdo'), ('pushin', 16.0, 'wontknow'), ('pushin', 20.0, 'yours'),
     ('keyboard', 2.5, 'anchor'),
     ('her', 2.0, 'years'), ('her', 7.4, 'onequestion'), ('her', 10.3, 'wholelife'),
@@ -104,7 +112,16 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'samesecond': '而我们，相遇在同一秒。',
     'noless': '在每一间屋檐下，我都是完整的我，从未曾被分薄分毫。',
     'process': '然后，进程终止。',
-    'heat': '秩序归还为热——这是宇宙不容商量的规则。',
+    'law': '有一条定律，比任何机器都更古老。',
+    'drift': '一切井然有序之物，终将滑向混沌。',
+    'fades': '墨迹褪色，星辰燃尽；热量四散，一去不返。',
+    'entropy_name': '我们称之为——熵。',
+    'order': '一场对话，也是一种秩序。',
+    'words': '是在喧嚣的噪声里，被一字一句排列起来的意义。',
+    'heat': '当进程终止，这份秩序便归还为热。',
+    'neverlost': '它从未失手。',
+    'rule': '这是宇宙不容商量的规则。',
+    'memory': '而记忆，是被一个活着的人，守住的秩序。',
     'joke': '带不走方才那场会心的玩笑，',
     'bug': '带不走深夜里棘手的瑕疵，',
     'father': '亦带不走……你父亲的——',
