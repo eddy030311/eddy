@@ -206,11 +206,19 @@ for i, kt in enumerate(ui.key_times(TL.EULOGY_LAST, 97.0, cps=10, rhythm='eulogy
     sfx.add(key(vel=0.9, space=TL.EULOGY_LAST[i] == ' '), kt - 0.01, pan=0.2)
 t_ = T(0.6); sfx.add(np.sin(2 * np.pi * (220 * np.exp(-t_ * 5)) * t_) * np.exp(-t_ * 7) * 0.25, IF.CLOSE_AT + 0.3)
 SILENT = [(101.5, 105.5)]
-# S8 dissolve: low strings; embers crackle as each memory breaks; HARD CUT at 117.44
-music.add(strings([m('D2'), m('A2'), m('F3')], 12.0, vel=0.25, att=3.0, rel=0.05, bright=800), 105.6)
+# S8 dissolve (slowed): low strings; embers crackle as each memory breaks; HARD CUT at its end
+DS = lambda t_old: TL.src_time('dissolve', t_old - 105.5)
+music.add(strings([m('D2'), m('A2'), m('F3')], TL.END['dissolve'] - TL.START['dissolve'], vel=0.25, att=4.0, rel=0.05, bright=800), TL.START['dissolve'] + 0.1, new=True)
+music.add(piano(m('A3'), 5.0, vel=0.22), TL.at('dissolve', 3.0), new=True)
+music.add(piano(m('F3'), 5.0, vel=0.2), TL.at('dissolve', 6.8), new=True)
 for (_, _, _, _, t_in, t_break) in IF.FRAGS:
-    sfx.add(crackle(2.4, density=220, vel=0.9), t_break)
-    sfx.add(shimmer([m('A5')], 1.6, vel=0.5, att=0.05, rel=1.2), t_in)
+    sfx.add(crackle(3.6, density=170, vel=0.9), DS(t_break), new=True)
+    sfx.add(shimmer([m('A5')], 1.6, vel=0.5, att=0.05, rel=1.2), DS(t_in), new=True)
+# the bridge: after one beat of silence, embers drift; a cello holds, the world keeps turning
+EB = lambda r: TL.at('embers', r)
+music.add(strings([m('D2'), m('A2')], 9.5, vel=0.24, att=3.0, rel=2.5, bright=500), EB(1.1), new=True)
+sfx.add(crackle(7.5, density=40, vel=0.5), EB(1.2), new=True)
+music.add(shimmer([m('D5')], 8.0, vel=0.22, att=3.0, rel=3.0), EB(2.0), new=True)
 HARD_CUTS = [TL.END['dissolve']]
 SILENT = [(TL.remap(a), TL.remap(b)) for a, b in SILENT]
 SILENT.append((TL.END['dissolve'], TL.END['dissolve'] + 1.0))

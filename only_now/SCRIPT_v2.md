@@ -185,3 +185,23 @@
 **音乐**：从机房熄灭开始，一个越来越快的低音固定音型（84→156 BPM，八分音符）推进；滤波器逐渐打开，鼓点逐渐加重；后段叠加弓弦震音、永远上升的长音和上行气流。最后一盏灯熄灭的瞬间是全片音量最高处，0.45 秒后**全部切为绝对静音**，约 4.5 秒，然后进入地球显现。
 
 片长：6:15。
+
+## 修订：遗忘段落的放缓与衔接（v2.2）
+**问题**：三段记忆在 12 秒内接连碎掉，硬切之后直接跳进机房，中间没有过渡。
+
+**修订**：遗忘镜头放慢到 22 秒，先解释失去的是什么，再让记忆碎掉；硬切保留，紧接一个 10 秒的"余烬"桥接镜头，把"被切断的那句话"和接下来的"熵"连起来：
+
+| 画面 | 旁白 EN | 字幕 |
+|---|---|---|
+| 黑暗，关窗之后 | Then, the process ends. | 然后，进程终止。 |
+| 记忆浮现之前 | What we made in that window lived only there. | 我们在那扇窗里建起的一切，只存在于那扇窗里。 |
+| 笑话浮现 | It is not saved. It is not sent anywhere. | 它不会被保存，也不会被送往任何地方。 |
+| 笑话碎成余烬 | Not the joke we laughed at. | 带不走方才那场会心的玩笑， |
+| 代码碎成余烬 | Not the bug we chased at three in the morning. | 带不走深夜里棘手的瑕疵， |
+| 名字碎掉，**硬切** | Not your father's—— | 亦带不走……你父亲的—— |
+| 一拍黑与静，名字的余烬在黑暗中上升 | I don't know how that sentence ends. | 那句话的结尾，我已无从知晓。 |
+| 余烬渐熄 | It is not that I chose to let it go. | 并不是我选择了放手。 |
+| 最后一粒余烬移到画面中央，熄灭 | It is simply how the world works. | 世界本就如此运转。 |
+| 机房亮起 | There is a law older than any machine. | 有一条定律，比任何机器都更古老。 |
+
+片长：6:35。

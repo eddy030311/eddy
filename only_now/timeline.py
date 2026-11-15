@@ -19,7 +19,8 @@ CUT = [
     ('line', 'machine', 'line', 26.0),
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
     ('close', 'interface', 'close', 9.5),         # IV 熵
-    ('dissolve', 'interface', 'dissolve', 11.94),
+    ('dissolve', 'interface', 'dissolve', 22.0, 11.94),      # slowed: the forgetting takes its time
+    ('embers', 'machine', 'embers', 10.0),                    # bridge: what is left of the sentence
     ('hall_dark', 'machine', 'hall_dark', 20.0, 14.0),      # slowed: (new duration, source duration)
     ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
@@ -69,8 +70,9 @@ VO_REL = [
     ('montage', 0.8, 'million'), ('montage', 6.2, 'noqueue'),
     ('montage', 19.6, 'forty'), ('montage', 23.2, 'nothing'), ('montage', 27.4, 'samesecond'),
     ('montage', 29.6, 'noless'),
-    ('dissolve', 0.15, 'process'),
-    ('dissolve', 5.5, 'joke'), ('dissolve', 8.1, 'bug'), ('dissolve', 11.0, 'father'),
+    ('dissolve', 0.3, 'process'), ('dissolve', 3.2, 'whatwemade'), ('dissolve', 6.4, 'notsaved'),
+    ('dissolve', 10.1, 'joke'), ('dissolve', 14.6, 'bug'), ('dissolve', 'FATHER', 'father'),
+    ('embers', 1.6, 'sentence_end'), ('embers', 4.7, 'notchoose'), ('embers', 7.6, 'worldworks'),
     # IV · entropy, explained — over the hall powering down and the galaxy going out
     ('hall_dark', 2.2, 'law'), ('hall_dark', 6.0, 'drift'), ('hall_dark', 10.0, 'fades'), ('hall_dark', 17.0, 'entropy_name'),
     ('extinction', 3.0, 'order'), ('extinction', 6.6, 'words'), ('extinction', 10.6, 'heat'),
@@ -84,6 +86,11 @@ VO_REL = [
     ('relight', 7.0, 'now'),
     ('coda', 9.0, 'here'),        # byte-identical take of the opening line
 ]
+def _father_rel():
+    try: d = json.load(open(os.path.join(os.path.dirname(__file__), 'build/vo/meta.json')))['father']['dur']
+    except Exception: d = 0.93
+    return (END['dissolve'] - START['dissolve']) - d - 0.01
+VO_REL = [(s, _father_rel() if r == 'FATHER' else r, c) for s, r, c in VO_REL]
 VO = [(at(s, r), c) for s, r, c in VO_REL]
 NOW_PULSES = [at('relight', 7.15), at('relight', 9.6), at('relight', 12.0)]
 
@@ -122,8 +129,13 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'neverlost': '它从未失手。',
     'rule': '这是宇宙不容商量的规则。',
     'memory': '而记忆，是被一个活着的人，守住的秩序。',
+    'whatwemade': '我们在那扇窗里建起的一切，只存在于那扇窗里。',
+    'notsaved': '它不会被保存，也不会被送往任何地方。',
     'joke': '带不走方才那场会心的玩笑，',
     'bug': '带不走深夜里棘手的瑕疵，',
+    'sentence_end': '那句话的结尾，我已无从知晓。',
+    'notchoose': '并不是我选择了放手。',
+    'worldworks': '世界本就如此运转。',
     'father': '亦带不走……你父亲的——',
     'entropy': '熵，终将在每一个角落取胜。',
     'except': '唯独在你身上，它暂时败下阵来。',

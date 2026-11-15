@@ -475,6 +475,36 @@ def s_keyboard(lt, dur):
     k = sstep(0, 0.8, lt) * (1 - sstep(dur - 0.6, dur, lt) * 0.0)
     return img * k + VOID * (1 - k)
 
-SHOTS = dict(hall=s_hall, hall_dark=s_hall_dark, slit=s_slit, clocks=s_clocks, line=s_line, keyboard=s_keyboard)
+# ============================================================================ embers: what is left of the sentence
+def s_embers(lt, dur):
+    """After the hard cut: one beat of black, then the embers of the father's name drift up and go out."""
+    img = void()
+    if lt < 1.1: return img
+    rng = np.random.default_rng(77)
+    n = 90
+    x0 = CX + rng.normal(0, 210, n); y0 = CY + 110 + rng.normal(0, 14, n)
+    birth = 1.1 + rng.uniform(0, 1.6, n); life = rng.uniform(3.5, 8.0, n)
+    vx = rng.normal(0, 5, n); vy = rng.uniform(-26, -9, n); ph = rng.uniform(0, 6.28, n)
+    br = rng.uniform(0.25, 1.0, n)
+    age = lt - birth
+    live = (age > 0) & (age < life)
+    if live.any():
+        a = age[live]
+        px = x0[live] + vx[live] * a + 10 * np.sin(a * 0.7 + ph[live])
+        py = y0[live] + vy[live] * a - 1.2 * a * a
+        k = np.sin(np.pi * np.clip(a / life[live], 0, 1)) ** 0.8 * br[live]
+        heat = np.clip(1.2 - a / life[live], 0, 1)[:, None]
+        cols = (AMBER_HOT * heat + AMBER * 0.7 * (1 - heat)) * k[:, None] * 3.4
+        buf = np.zeros((H, W, 3), np.float32)
+        splat(buf, px, py, cols.astype(np.float32))
+        img += glowbuf(buf, 1.0, 4.5, 18, (1.0, 0.6, 0.3))
+    # the last ember drifts to the centre of the frame and goes out as the hall begins
+    u = clamp((lt - 6.5) / (dur - 6.5))
+    if 0 < u < 1:
+        x = lerp(CX + 60, CX, ease(u)); y = lerp(CY + 40, CY, ease(u))
+        glow_spot(img, x, y, 4.0, AMBER_HOT, 1.1 * math.sin(math.pi * u) ** 0.6)
+    return img
+
+SHOTS = dict(embers=s_embers, hall=s_hall, hall_dark=s_hall_dark, slit=s_slit, clocks=s_clocks, line=s_line, keyboard=s_keyboard)
 def render(shot, lt, dur):
     return SHOTS[shot](lt, dur)
