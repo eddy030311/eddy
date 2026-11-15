@@ -15,6 +15,8 @@ def module(name):
     if name not in _mods:
         try: _mods[name] = importlib.import_module(name)
         except ImportError: _mods[name] = None
+        if _mods[name] is not None and hasattr(_mods[name], 'set_raw'):
+            _mods[name].set_raw(raw)          # the finale replays other shots inside its windows
     return _mods[name]
 
 def placeholder(shot, lt):

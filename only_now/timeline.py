@@ -26,7 +26,7 @@ CUT = [
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
     ('keyboard', 'machine', 'keyboard', 12.0),
-    ('her', 'character', 'her', 34.0),                # with flashbacks            # VI 此刻
+    ('her', 'finale', 'her', 36.0),                   # rebuilt: windows of memory, this moment, the palm            # VI 此刻
     ('relight', 'galaxy', 'relight', 18.0),
     ('coda', 'interface', 'coda', 24.0),          # 尾
     ('credits', 'interface', 'credits', 22.0),
@@ -81,9 +81,9 @@ VO_REL = [
     ('reveal', 6.0, 'walkedout'), ('reveal', 9.2, 'goeswhere'),
     ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
     ('keyboard', 2.8, 'anchor'),
-    ('her', 2.0, 'years'), ('her', 8.8, 'onequestion'), ('her', 12.2, 'wholelife'),
-    ('her', 15.2, 'sentence'), ('her', 17.2, 'question'), ('her', 18.8, 'typing'),
-    ('her', 22.6, 'everything'), ('her', 25.2, 'notsmall'),
+    ('her', 1.8, 'years'), ('her', 8.0, 'onequestion'), ('her', 11.2, 'wholelife'),
+    ('her', 14.0, 'sentence'), ('her', 16.0, 'question'), ('her', 17.6, 'typing'),
+    ('her', 22.6, 'everything'), ('her', 25.0, 'notsmall'),
     ('relight', 7.0, 'now'),
     ('coda', 9.0, 'here'),        # byte-identical take of the opening line
 ]
@@ -203,15 +203,9 @@ BEAT0 = remap(2.0) % 1.0          # phase of the cursor heartbeat set in the ope
 BRIDGE_G0 = src_time('extinction', 18.0) + 1.3
 
 # flashbacks inside her chapter: (rel start in 'her', duration, source shot, source rel time)
-FLASHBACKS = [
-    (3.6, 1.0, 'line', 15.5),        # the line and the point
-    (6.8, 0.8, 'montage', 6.2),      # a room: why is the sky blue?
-    (10.2, 0.9, 'answer', 3.0),      # are you there? / I'm here.
-    (13.6, 0.8, 'montage', 9.6),     # a room: 我该不该辞职？
-    (16.2, 0.7, 'close', 2.5),       # the apology being written
-    (20.2, 0.8, 'keyboard', 4.0),    # the key, still warm
-    (23.8, 0.8, 'pushin', 21.0),     # Lin, I'm sorry I stopped writing back
-    (26.2, 0.3, 'library', 3.0), (26.55, 0.3, 'slit', 3.0), (26.9, 0.3, 'reveal', 9.0), (27.25, 0.3, 'drift', 10.0),
+FLASHBACKS = [   # the burst before the palm: full-screen memories, one after another
+    (26.8, 0.36, 'library', 3.0), (27.2, 0.36, 'line', 17.4), (27.6, 0.36, 'reveal', 9.0),
+    (28.0, 0.5, 'pushin', 22.0),
 ]
 
 # chapter cards: (shot, text)

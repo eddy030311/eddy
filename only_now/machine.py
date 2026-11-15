@@ -356,8 +356,13 @@ def s_clocks(lt, dur):
 LINE_Y = CY - 70
 def line_y(x): return LINE_Y + 6 * np.sin(x / 170.0) + 3 * np.sin(x / 53.0 + 1.0)
 X0, X1 = 60.0, 1860.0
-def head_x(lt): return X0 + (X1 - X0) * ease_out(clamp(lt / 23.0)) ** 1.05
-_beads = np.sort(np.random.default_rng(5).uniform(X0 + 40, X1 - 60, 30))
+MEET_X = 1240.0          # the point lands on the line centre-right, well inside the frame
+def head_x(lt):
+    """The line grows steadily, slows as it reaches the meeting place, then carries on a little after."""
+    if lt <= 19.5:
+        return X0 + (MEET_X - X0) * (1 - (1 - clamp(lt / 19.5)) ** 1.6)
+    return MEET_X + 260.0 * ease_out(clamp((lt - 19.5) / 6.5))
+_beads = np.sort(np.random.default_rng(5).uniform(X0 + 40, MEET_X + 230, 30))
 POINTS = [(1.6 + k * 1.95, x) for k, x in enumerate(np.random.default_rng(8).uniform(300, 1650, 9))]
 MEET_T = 19.5
 
@@ -380,7 +385,7 @@ def s_line(lt, dur):
         if bx > hx: break
         t_lit = None
         # time when the head passed this bead (invert head_x numerically)
-        lo, hi_ = 0.0, 23.0
+        lo, hi_ = 0.0, 26.0
         for _ in range(18):
             mid = (lo + hi_) / 2
             if head_x(mid) < bx: lo = mid
@@ -398,8 +403,14 @@ def s_line(lt, dur):
             glow_spot(img, px, CY + 160, 30, AMBER, 0.18 * a * fade_all)
     # the last point lands on the line, for one beat
     u = lt - MEET_T
+    if -1.2 <= u < 0:                    # the point rises from below toward the tip of the line
+        k = ease((u + 1.2) / 1.2)
+        mx = head_x(MEET_T)
+        my = lerp(CY + 160, float(line_y(np.array([mx]))[0]), k)
+        glow_spot(img, mx, my, 5, AMBER_HOT, 1.5 * min(1.0, (u + 1.2) / 0.15))
+        glow_spot(img, mx, my, 34, AMBER, 0.2)
     if 0 <= u < 1.6:
-        mx = head_x(MEET_T) - 6
+        mx = head_x(MEET_T)
         my = float(line_y(np.array([mx]))[0])
         a = sstep(0, 0.1, u) * (1 - sstep(0.9, 1.5, u))
         glow_spot(img, mx, my, 7, AMBER_HOT, 2.0 * a)
@@ -414,12 +425,12 @@ def bead_times():
     """When the growing line reaches each memory bead (absolute time)."""
     out = []
     for bx in _beads:
-        lo, hi_ = 0.0, 23.0
+        lo, hi_ = 0.0, 26.0
         for _ in range(18):
             mid = (lo + hi_) / 2
             if head_x(mid) < bx: lo = mid
             else: hi_ = mid
-        if lo < 22.9: out.append(TL.src_time('line', lo))
+        if lo < 25.9: out.append(TL.src_time('line', lo))
     return out
 
 # ============================================================================ the keyboard in lamplight

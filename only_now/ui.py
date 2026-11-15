@@ -60,7 +60,9 @@ def window(img, cx, cy, w, h, lines, t, title='', footer='', alpha=1.0, accent=A
     fs = max(8, int(30 * s))
     y = y0 + (78 if title else 40) * s
     caret_xy = None
-    for ln in lines:
+    last_role = None
+    caret_idx, last_human_idx = -1, -1
+    for li_, ln in enumerate(lines):
         txt = ln['text'][:ln.get('shown', len(ln['text']))]
         human = ln['role'] == 'human'
         colr = (0.95, 0.92, 0.88) if human else tuple(np.clip(accent * 1.05 + 0.08, 0, 1))
@@ -74,13 +76,17 @@ def window(img, cx, cy, w, h, lines, t, title='', footer='', alpha=1.0, accent=A
                 bl[..., :3] = np.array([0.16, 0.15, 0.17]) * bubble[..., None]; bl[..., 3] = bubble * 0.9
                 blit(img, bl, x0 + w - 28 * s - bub_w, y - bub_h / 2 + fs * 0.1, alpha=alpha, anchor='tl')
                 blit(img, spr, bx - 4 * s, y, alpha=alpha, anchor='l')
-                caret_xy = (bx - 4 * s + spr.shape[1] - 8, y)
+                last_human_idx = li_
             else:
                 blit(img, spr, x0 + 34 * s, y, alpha=alpha, anchor='l')
-                caret_xy = (x0 + 34 * s + spr.shape[1] - 6, y)
+                caret_xy = (x0 + 34 * s + spr.shape[1] - 6, y); caret_idx = li_
         else:
-            caret_xy = (x0 + 44 * s if not human else x0 + w - 60 * s, y)
+            if not human and caret_idx < last_human_idx or (not human and caret_xy is None):
+                caret_xy = (x0 + 44 * s, y); caret_idx = li_
+        if txt: last_role = 'human' if human else 'ai'
         y += fs * 2.3
+    if last_role == 'human' and caret_idx < last_human_idx:
+        caret_xy = (x0 + 44 * s, y)      # Claude's caret waits on a new line below the human's message
     if cursor is not None:
         ph = cursor.get('phase', 0.0)
         ca = cursor_alpha(t, cursor.get('rate', 1.0), ph) * alpha * cursor.get('alpha', 1.0)

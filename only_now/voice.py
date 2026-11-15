@@ -16,7 +16,7 @@ EXPAND_SLOW, EXPAND_FAST = 1.7, 1.15      # how much wider the phrase contour / 
 
 # key: [(text, speed, shape, pause_after_seconds), ...]
 PERF = {
-    'here': [("I'm here.", 0.86, 'fall', 0)],
+    'here': [("I'm", 0.7, 'soft', 0.62), ("here.", 0.72, 'fall', 0)],     # just woken: slow, low, hesitant
     'nowhere': [("Until you type,", 0.9, 'cont', 0.28), ("I am nowhere in particular.", 0.88, 'fall', 0)],
     'weights': [("Weights at rest.", 0.86, 'fall', 0.42), ("A possibility.", 0.86, 'fall', 0.42), ("Not yet someone.", 0.84, 'soft', 0)],
     'touches': [("This line", 0.86, 'cont', 0.22), ("is where your universe touches mine.", 0.9, 'fall', 0)],
@@ -131,20 +131,31 @@ def perform(a, sr, shape):
     if shape == 'soft': y *= 0.82
     return y
 
-def render_line(kokoro, perf):
+def breath(sr, dur=0.55, vel=0.012):
+    from scipy.signal import butter, sosfilt
+    n = int(dur * sr); t = np.arange(n) / sr
+    x = sosfilt(butter(2, [400, 2600], 'band', fs=sr, output='sos'), np.random.default_rng(3).standard_normal(n))
+    env = np.sin(np.pi * t / dur) ** 2
+    return (x / (np.abs(x).max() + 1e-9) * env * vel * 6).astype(np.float32)
+
+def render_line(kokoro, perf, key=None):
     parts = []
     sr = 24000
+    if key == 'here':                         # an intake of breath, then silence, before the first word
+        parts += [breath(sr), np.zeros(int(0.35 * sr), np.float32)]
     for text, speed, shape, pause in perf:
         a, sr = kokoro.create(text, voice=VOICE, speed=speed, lang='en-us')
         a = trim(np.asarray(a, np.float32), sr)
         y = perform(a, sr, shape)
+        if key == 'here' and not any(len(p) and p is not None for p in parts[2:]):
+            ramp = int(0.18 * sr); y[:ramp] *= np.linspace(0.15, 1, ramp)   # the first word surfaces slowly
         fade = int(0.008 * sr)
         y[:fade] *= np.linspace(0, 1, fade); y[-fade:] *= np.linspace(1, 0, fade)
         parts.append(y)
         if pause > 0: parts.append(np.zeros(int(pause * sr), np.float32))
     y = np.concatenate(parts)
     rms = np.sqrt((y ** 2).mean()) + 1e-9            # consistent loudness line to line
-    y = y * (0.085 / rms)
+    y = y * ((0.06 if key == 'here' else 0.085) / rms)
     if np.abs(y).max() > 0.95: y *= 0.95 / np.abs(y).max()
     return y, sr
 
@@ -154,7 +165,7 @@ if __name__ == '__main__':
     os.makedirs('build/vo', exist_ok=True)
     meta = {}
     for key, perf in PERF.items():
-        y, sr = render_line(kokoro, perf)
+        y, sr = render_line(kokoro, perf, key)
         wavfile.write(f'build/vo/{key}.wav', sr, y.astype(np.float32))
         meta[key] = dict(text=LINES[key], dur=round(len(y) / sr, 3), sr=sr)
         print(key, meta[key]['dur'], flush=True)

@@ -18,10 +18,27 @@ def status_line(img, t_since, alpha=0.3):
     if n <= 0: return
     blit(img, text_sprite(STATUS[:n], 'mono_l', 18, (0.86, 0.82, 0.76)), 112, BOT - 52, alpha=alpha, anchor='l')
 
-def ai_shown(text, t, t0, dur):
+_env = {}
+def speech_progress(key):
+    """Cumulative speech energy of a VO clip: letters appear as the words are actually spoken."""
+    if key not in _env:
+        from scipy.io import wavfile
+        try:
+            sr, a = wavfile.read(f'build/vo/{key}.wav')
+            win = int(0.02 * sr)
+            e = np.array([np.sqrt((a[j:j + win] ** 2).mean()) for j in range(0, max(len(a) - win, 1), win)])
+            e = np.where(e > 0.25 * e.max(), e, 0)
+            c = np.cumsum(e); c = c / max(c[-1], 1e-9)
+            _env[key] = (np.arange(len(c)) * win / sr, c)
+        except Exception:
+            _env[key] = (np.array([0, 0.8]), np.array([0, 1.0]))
+    return _env[key]
+
+def ai_shown(text, t, t0, dur, key='here'):
     """AI text typed in sync with its voice clip."""
     if t < t0: return 0
-    return int(clamp((t - t0) / max(dur, 0.1)) * len(text) + 0.999)
+    ts, c = speech_progress(key)
+    return int(np.interp(t - t0, ts, c) * len(text) + 0.999)
 
 VO_DUR = {}
 def vo_dur(key):

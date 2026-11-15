@@ -235,7 +235,7 @@ for k, ch in enumerate([Dm, Bb, F, C, Dm, Bb, F]):
     music.add(piano(ch[0], 4.0, vel=0.28), 190.2 + k * BAR)
     music.add(piano(ch[2] + 12, 3.0, vel=0.2), 190.2 + k * BAR + 1.5 * BEAT)
 music.add(shimmer([m('F5'), m('C6')], 24.0, vel=0.3, att=4.0, rel=4.0), 190.0)
-sfx.add(whoosh(0.6, up=True, vel=0.12), 200.6)
+
 motif(203.0, vel=0.38)
 # S12 relight: "Now." and two wordless pulses, then the music lets go
 chords(214.0, 229.5, [Dm, Bb, F, C], vel=0.4, string_vel=0.3, shimmer_vel=0.3)
@@ -491,6 +491,16 @@ for (fs, fd, sk, sr_) in TL.FLASHBACKS:
     rev = shimmer([m('A5') + (2 if fd < 0.5 else 0)], 0.6 + fd, vel=0.35, att=0.5 + fd * 0.5, rel=0.08)
     sfx.add(rev, TL.at('her', fs) - 0.4, pan=0.2, new=True)
     sfx.add(whoosh(0.5 + fd * 0.4, up=True, vel=0.12), TL.at('her', fs) - 0.25, new=True)
+
+# VI rebuilt: a soft chime as each window of memory arrives; the heartbeat ticks again under 'this moment'
+import finale as FN
+for (ap, key_, rel_, wx_, wy_, acc_) in FN.WINDOWS:
+    music.add(shimmer([m('A5') if wx_ < 0 else m('E6')], 2.0, vel=0.28, att=0.4, rel=1.6), TL.at('her', ap + 0.6), pan=0.5 * np.sign(wx_), new=True)
+for bt in ui.beat_times(TL.at('her', FN.NOWWIN + 0.5), TL.at('her', FN.BURST)):
+    sfx.add(tick(0.5), bt, new=True)
+for bt in ui.beat_times(TL.at('her', 0.4), TL.at('her', 4.0)):
+    sfx.add(tick(0.7), bt, new=True)
+music.add(strings([m('F3'), m('C4'), m('A4')], 7.0, vel=0.2, att=1.5, rel=4.0), TL.at('her', FN.NOWWIN), new=True)
 
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))
