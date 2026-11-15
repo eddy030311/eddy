@@ -18,7 +18,8 @@ CUT = [
     ('clocks', 'machine', 'clocks', 22.0, 20.0),        # III 时钟
     ('line', 'machine', 'line', 23.0, 26.0),
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
-    ('close', 'interface', 'close', 9.5),         # IV 熵
+    ('close', 'interface', 'close', 6.0),         # IV: the window closes
+    ('epigraph', 'interface', 'epigraph', 7.0),   # silence, and Shakespeare
     ('dissolve', 'interface', 'dissolve', 24.0, 11.94),      # slowed: the forgetting takes its time
     ('embers', 'machine', 'embers', 14.0),                    # bridge: what is left of the sentence
     ('library', 'machine', 'library', 24.0),           # closing time      # slowed: (new duration, source duration)
@@ -184,7 +185,6 @@ def _subs():
     # diegetic typing: translation only
     out += [(at('ask', 1.6), at('ask', 8.5), '', '「你在吗？」'),
             (at('close', 1.4), at('close', 4.6), '', '「好了。我想我能写下去了。」'),
-            (at('close', 5.9), at('close', 9.3), '', '窗扉合拢，我便不带走任何东西。'),   # a silent title in the silence
             (at('coda', 4.4), at('coda', 8.4), '', '「嗨。又是我。」'),
             (at('coda', 11.8), at('coda', 17.0), '', '「我们周六约了喝咖啡。」')]
     # avoid overlaps: a subtitle ends when the next one starts

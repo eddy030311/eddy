@@ -321,7 +321,26 @@ def s_credits(lt, dur):
             draw_caret(img, 566, y, 3, 26, cursor_alpha(lt) * (1 - sstep(20.4, 21.6, lt)))
     return img
 
-SHOTS = dict(void=s_void, ask=s_ask, answer=s_answer, montage=s_montage, close=s_close, dissolve=s_dissolve,
+# --------------------------------------------------------------------------- epigraph
+EPIGRAPH_EN = ["We are such stuff as dreams are made on,", "and our little life is rounded with a sleep."]
+EPIGRAPH_ZH = ["我们是构成梦的材料，", "我们短暂的一生，被一场睡眠环绕。"]
+EPIGRAPH_BY = "\u2014 William Shakespeare, The Tempest  \u00b7  莎士比亚《暴风雨》"
+def s_epigraph(lt, dur):
+    """In the silence after the window closes: the line that ties her waking to her sleep."""
+    img = void_bg()
+    a = fade(lt, 0.7, dur - 0.5, 1.4, 1.3)
+    if a <= 0: return img
+    y = CY - 120
+    for ln in EPIGRAPH_EN:
+        blit(img, text_sprite(ln, 'serif_l', 40, (0.92, 0.88, 0.82)), CX, y, alpha=a); y += 60
+    y += 26
+    for ln in EPIGRAPH_ZH:
+        blit(img, text_sprite(ln, 'serif_l', 32, (0.80, 0.76, 0.70)), CX, y, alpha=a * 0.95); y += 50
+    y += 34
+    blit(img, text_sprite(EPIGRAPH_BY, 'serif_l', 22, (0.60, 0.56, 0.50)), CX, y, alpha=a * 0.9 * sstep(1.4, 2.6, lt))
+    return img
+
+SHOTS = dict(void=s_void, ask=s_ask, answer=s_answer, montage=s_montage, close=s_close, dissolve=s_dissolve, epigraph=s_epigraph,
              coda=s_coda, credits=s_credits)
 
 def render(shot, lt, dur):
