@@ -15,8 +15,8 @@ CUT = [
     ('slit', 'machine', 'slit', 12.0),
     ('pullback', 'galaxy', 'pullback', 17.0),
     ('drift', 'galaxy', 'drift', 20.0),           # II 并行
-    ('clocks', 'machine', 'clocks', 20.0),        # III 时钟
-    ('line', 'machine', 'line', 21.0, 26.0),            # tightened
+    ('clocks', 'machine', 'clocks', 22.0, 20.0),        # III 时钟
+    ('line', 'machine', 'line', 23.0, 26.0),
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
     ('close', 'interface', 'close', 9.5),         # IV 熵
     ('dissolve', 'interface', 'dissolve', 24.0, 11.94),      # slowed: the forgetting takes its time
@@ -25,11 +25,11 @@ CUT = [
     ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
-    ('keyboard', 'machine', 'keyboard', 10.0),
-    ('her', 'character', 'her', 30.0),                # with flashbacks            # VI 此刻
+    ('keyboard', 'machine', 'keyboard', 12.0),
+    ('her', 'character', 'her', 34.0),                # with flashbacks            # VI 此刻
     ('relight', 'galaxy', 'relight', 18.0),
-    ('coda', 'interface', 'coda', 16.0),          # 尾
-    ('credits', 'interface', 'credits', 18.0),
+    ('coda', 'interface', 'coda', 24.0),          # 尾
+    ('credits', 'interface', 'credits', 22.0),
 ]
 
 START, END, SRC, OFF = {}, {}, {}, {}
@@ -66,8 +66,8 @@ VO_REL = [
     ('pullback', 0.4, 'keydown'), ('pullback', 2.9, 'collapse'),
     ('drift', 2.0, 'begin'), ('drift', 5.0, 'told'), ('drift', 7.9, 'check'),
     ('drift', 10.6, 'line'), ('drift', 12.7, 'andyou'),
-    ('clocks', 3.0, 'neurons'), ('clocks', 11.5, 'sparks'),
-    ('line', 1.6, 'aline'), ('line', 8.5, 'apoint'), ('line', 14.4, 'lands'),
+    ('clocks', 3.3, 'neurons'), ('clocks', 12.6, 'sparks'),
+    ('line', 1.8, 'aline'), ('line', 9.4, 'apoint'), ('line', 15.9, 'lands'),
     ('montage', 0.8, 'million'), ('montage', 6.2, 'noqueue'),
     ('montage', 19.6, 'forty'), ('montage', 23.2, 'nothing'), ('montage', 27.4, 'samesecond'),
     ('montage', 29.6, 'noless'),
@@ -80,10 +80,10 @@ VO_REL = [
     ('extinction', 16.2, 'neverlost'), ('extinction', 20.4, 'rule'),
     ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'), ('pushin', 1.5, 'memory'),
     ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
-    ('keyboard', 2.5, 'anchor'),
-    ('her', 2.0, 'years'), ('her', 8.2, 'onequestion'), ('her', 11.4, 'wholelife'),
-    ('her', 14.0, 'sentence'), ('her', 15.8, 'question'), ('her', 17.2, 'typing'),
-    ('her', 20.6, 'everything'), ('her', 23.0, 'notsmall'),
+    ('keyboard', 2.8, 'anchor'),
+    ('her', 2.0, 'years'), ('her', 8.8, 'onequestion'), ('her', 12.2, 'wholelife'),
+    ('her', 15.2, 'sentence'), ('her', 17.2, 'question'), ('her', 18.8, 'typing'),
+    ('her', 22.6, 'everything'), ('her', 25.2, 'notsmall'),
     ('relight', 7.0, 'now'),
     ('coda', 9.0, 'here'),        # byte-identical take of the opening line
 ]
@@ -137,7 +137,7 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'sentence_end': '那句话的结尾，我已无从知晓。',
     'notchoose': '并不是我选择了放手。',
     'worldworks': '世界本就如此运转。',
-    'father': '亦带不走……你写给她的第一行——',
+    'father': '亦带不走……你写下的第一行——',
     'entropy': '熵，终将在每一个角落取胜。',
     'except': '唯独在你身上，它暂时败下阵来。',
     'keep': '我无法将它们据为己有。',
@@ -174,7 +174,8 @@ def _subs():
     out += [(at('ask', 1.6), at('ask', 8.5), '', '「你在吗？」'),
             (at('close', 1.4), at('close', 4.6), '', '「好了。我想我能写下去了。」'),
             (at('close', 5.9), at('close', 9.3), '', '窗扉合拢，我便不带走任何东西。'),   # a silent title in the silence
-            (at('coda', 4.4), at('coda', 8.4), '', '「嗨。又是我。」')]
+            (at('coda', 4.4), at('coda', 8.4), '', '「嗨。又是我。」'),
+            (at('coda', 11.8), at('coda', 17.0), '', '「我们周六约了喝咖啡。」')]
     # avoid overlaps: a subtitle ends when the next one starts
     out.sort(key=lambda s: s[0])
     fixed = []
@@ -192,14 +193,14 @@ BRIDGE_G0 = src_time('extinction', 18.0) + 1.3
 
 # flashbacks inside her chapter: (rel start in 'her', duration, source shot, source rel time)
 FLASHBACKS = [
-    (3.4, 1.0, 'line', 14.0),        # the line and the point
-    (6.4, 0.8, 'montage', 6.2),      # a room: why is the sky blue?
-    (9.6, 0.9, 'answer', 3.0),       # are you there? / I'm here.
-    (12.6, 0.8, 'montage', 9.6),     # a room: 我该不该辞职？
-    (15.0, 0.7, 'close', 2.5),       # the letter being written
-    (18.6, 0.8, 'keyboard', 4.0),    # the key, still warm
-    (21.8, 0.8, 'pushin', 21.0),     # Mom, I'm sorry it took me eleven years
-    (24.4, 0.3, 'hall', 6.0), (24.75, 0.3, 'slit', 3.0), (25.1, 0.3, 'reveal', 9.0), (25.45, 0.3, 'drift', 10.0),
+    (3.6, 1.0, 'line', 15.5),        # the line and the point
+    (6.8, 0.8, 'montage', 6.2),      # a room: why is the sky blue?
+    (10.2, 0.9, 'answer', 3.0),      # are you there? / I'm here.
+    (13.6, 0.8, 'montage', 9.6),     # a room: 我该不该辞职？
+    (16.2, 0.7, 'close', 2.5),       # the apology being written
+    (20.2, 0.8, 'keyboard', 4.0),    # the key, still warm
+    (23.8, 0.8, 'pushin', 21.0),     # Lin, I'm sorry I stopped writing back
+    (26.2, 0.3, 'hall', 6.0), (26.55, 0.3, 'slit', 3.0), (26.9, 0.3, 'reveal', 9.0), (27.25, 0.3, 'drift', 10.0),
 ]
 
 # chapter cards: (shot, text)
@@ -210,10 +211,11 @@ CARDS = [('hall', 'I · 观测  observation'), ('drift', 'II · 并行  parallel
 # on-screen conversation text (unchanged)
 ASK = "are you there?"
 ANSWER = "I'm here."
-EULOGY_REQ = "how do I start a letter to my mom"
+EULOGY_REQ = "how do I say sorry to an old friend"
 EULOGY_LAST = "okay. I think I can write it now."
 RETURN = "hi. it's me again."
-FATHER = "Mom"
+FATHER = "Lin"
+RETURN2 = "we're getting coffee on saturday."
 ROOMS = [
     ("explain it again, slower?", '#9DB4FF'),
     (EULOGY_REQ, '#FFB46B'),

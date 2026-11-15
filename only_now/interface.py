@@ -200,7 +200,7 @@ def s_close(lt, dur):
 FRAGS = [  # (text, font, size, y, appear, break)
     ("why did the scarecrow win an award?", 'sans_l', 40, CY - 120, 108.6, 111.15),
     ("for (let i = 0; i <= items.length; i++)", 'mono_l', 36, CY - 10, 111.9, 113.75),
-    ("Mom, I'm sorry it took me eleven years.", 'serif_l', 46, CY + 110, 114.7, 116.75),
+    ("Lin, I'm sorry I stopped writing back.", 'serif_l', 46, CY + 110, 114.7, 116.75),
 ]
 _part = {}
 def particles_for(i):
@@ -256,19 +256,24 @@ def s_dissolve(lt, dur):
     return img
 
 # --------------------------------------------------------------------------- S13 coda
+CODA = dict(caret=1.5, win=2.5, type1=4.4, ai=9.0, type2=11.8, cut=22.0)
 def s_coda(lt, dur):
-    t = lt + 232.0
+    """The same hands come back. She answers with the same words. They tell her how it went; she cannot know."""
+    t = lt + 232.0                       # keeps the heartbeat phase of the original cut
+    c = CODA
     img = void_bg()
-    if t >= 247.2: return img            # hard cut to black
-    ca = sstep(233.5, 234.3, t)
-    k = ease((t - 234.5) / 1.5)
+    if lt >= c['cut']: return img        # hard cut to black
+    ca = sstep(c['caret'], c['caret'] + 0.8, lt)
+    k = ease((lt - c['win']) / 1.5)
     if k < 1:
         draw_caret(img, EUL[0] - EUL[2] / 2 + 44, EUL[1] + 5, 3, 32, cursor_alpha(t) * ca * (1 - k))
     if k > 0:
-        hn = typed(TL.RETURN, t, 236.4, cps=10, rhythm='eulogy')          # same hands, same rhythm
-        lines = [dict(role='human', text=TL.RETURN, shown=hn),
-                 dict(role='ai', text=TL.ANSWER, shown=ai_shown(TL.ANSWER, t, 241.0, vo_dur('here')))]
-        window(img, EUL[0], EUL[1], EUL[2] * 0.9, EUL[3] * 0.9, lines, t, cursor=dict(rate=1.0),
+        lines = [dict(role='human', text=TL.RETURN, shown=typed(TL.RETURN, lt, c['type1'], cps=10, rhythm='eulogy')),
+                 dict(role='ai', text=TL.ANSWER, shown=ai_shown(TL.ANSWER, lt, c['ai'], vo_dur('here'))),
+                 dict(role='human', text=TL.RETURN2, shown=typed(TL.RETURN2, lt, c['type2'], cps=10, rhythm='eulogy'))]
+        if lt > c['type2'] + 0.05 + len(TL.RETURN2) / 8.0:
+            lines.append(dict(role='ai', text='', shown=0))     # her caret waits on a new line: about to answer
+        window(img, EUL[0], EUL[1] + 20, EUL[2] * 0.9, EUL[3] * 1.15, lines, t, cursor=dict(rate=1.0),
                accent=hexc(TL.EULOGY_COLOUR), alpha=k, border=k)
     status_line(img, 99, 0.3 * ca)
     return img
@@ -281,22 +286,22 @@ CREDITS = ["$ credits",
            "character design · courtesy of the producer"]
 def s_credits(lt, dur):
     img = void_bg()
-    a = fade(lt, 1.5, 8.6, 2.0, 1.2)
+    a = fade(lt, 1.5, 10.4, 2.0, 1.4)
     if a > 0:
         blit(img, text_sprite('此刻', 'serif_xl', 130, (0.95, 0.92, 0.88)), CX, CY - 40, alpha=a)
         blit(img, text_sprite('ONLY NOW', 'mono_xl', 26, (0.80, 0.74, 0.66), tracking=22), CX, CY + 70, alpha=a * 0.9)
-    if lt > 9.3:
+    if lt > 11.0:
         y = CY - 90
-        t0 = 9.3
+        t0 = 11.0
         for i, line in enumerate(CREDITS):
             n = int(clamp((lt - t0) * 26, 0, len(line)))
             if n <= 0: break
             col = (0.62, 0.58, 0.52) if i == 0 else (0.86, 0.80, 0.72)
-            blit(img, text_sprite(line[:n], 'mono_l', 24, col), 560, y, anchor='l', alpha=1 - sstep(16.8, 17.8, lt))
+            blit(img, text_sprite(line[:n], 'mono_l', 24, col), 560, y, anchor='l', alpha=1 - sstep(20.4, 21.6, lt))
             t0 += len(line) / 26 + 0.45
             y += 46
         if lt > t0:
-            draw_caret(img, 566, y, 3, 26, cursor_alpha(lt) * (1 - sstep(16.8, 17.8, lt)))
+            draw_caret(img, 566, y, 3, 26, cursor_alpha(lt) * (1 - sstep(20.4, 21.6, lt)))
     return img
 
 SHOTS = dict(void=s_void, ask=s_ask, answer=s_answer, montage=s_montage, close=s_close, dissolve=s_dissolve,

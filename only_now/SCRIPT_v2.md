@@ -214,3 +214,12 @@
   - III 线 → II 蒙太奇：线的永远上升长音一路爬进蒙太奇的第一个强拍。
   - IV → V：高潮之后只停 1 秒，然后一盏光在黑暗里随心跳明灭，低音 D 托着；地球显现时，D 小调转为同音的 F 大调。心跳逐渐变成书房里的挂钟，房间里的音乐全部落在同一个脉搏上。
 - **人物闪回**：VI 延长到 30 秒，她的每一句台词都闪回一个片中出现过的瞬间（线与点、一个房间、第一扇窗、写信的窗口、键盘、信纸），最后在"此刻"之前快速连闪机房、光缝、地球和星河。
+
+## 修订 v2.5：例子改为"老同学、老朋友"；片长 7:01
+- **例子**：不用家人。改为向一位失联多年的老同学、老朋友道歉。
+  - 蒙太奇里的房间：*how do I say sorry to an old friend*
+  - 碎掉的那一行：*Lin, I'm sorry I stopped writing back.*
+  - 硬切：*Not the first line of your——* / 亦带不走……你写下的第一行——
+  - 书桌上的信：*Lin, / I'm sorry I stopped writing back. / I still have the mixtape you made me in our last year of school. / I don't know who drifted first. I think it was me. / Coffee, if you're ever back in town?*
+- **结尾回收**：*hi. it's me again.* / *I'm here.*（与开场同一条录音）之后，朋友多打了一句 *we're getting coffee on saturday.*（「我们周六约了喝咖啡。」）。观众知道了后来怎样，她却永远不会知道。她的光标在新的一行上闪着，正要回答，此时切黑。
+- **加长**：她的章节 34 秒（闪回更从容），时钟 22 秒，线与点 23 秒，键盘 12 秒，尾声 24 秒，片尾 22 秒。

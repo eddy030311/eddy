@@ -166,7 +166,7 @@ def chords(t0, t1, prog, vel=0.4, piano_arp=True, string_vel=0.0, shimmer_vel=0.
 # S1–S3: near-silence, room tone, heartbeat ticks
 amb.add(noise_bed(27.5, 40, 300, 0.012), 0.0)
 amb.add(np.sin(2 * np.pi * 41 * T(27)) * 0.006 * np.minimum(T(27) / 3, 1), 0.0)
-TICK_ON = [(2.0, 100.5, 1.0), (233.5, 247.2, 1.0)]
+TICK_ON = [(2.0, 100.5, 1.0)]
 for t0, t1, v in TICK_ON:
     for bt in ui.beat_times(t0, t1):
         if t0 >= 200: g = 1.0
@@ -245,18 +245,25 @@ for i, tp in enumerate(TL.NOW_PULSES):
     music.add(shimmer([m('F5'), m('A5'), m('C6')], 5.0, vel=0.45, att=0.05, rel=3.5), tp, new=True)
 music.add(strings([m('F2'), m('C3'), m('A3'), m('E4')], 8.0, vel=0.35, att=0.5, rel=5.0), 226.0)
 # S13 coda: room tone, the heartbeat returns, the same hands typing, one piano note; hard cut
-amb.add(noise_bed(15.0, 40, 300, 0.012), 232.3)
-for i, kt in enumerate(ui.key_times(TL.RETURN, 236.4, cps=10, rhythm='eulogy')):
-    sfx.add(key(vel=0.9, space=TL.RETURN[i] == ' '), kt - 0.01, pan=0.2)
-music.add(piano(m('D5'), 3.0, vel=0.3), 244.4)
-HARD_CUTS.append(TL.remap(247.2))
-SILENT.append((TL.remap(247.2), TL.remap(249.3)))
+CO = lambda r: TL.at('coda', r)
+C_ = IF.CODA
+amb.add(noise_bed(C_['cut'] - 0.3, 40, 300, 0.012), CO(0.3), new=True)
+for bt in ui.beat_times(CO(C_['caret']), CO(C_['cut']), phase=-(TL.START['coda'] % 1.0)):
+    sfx.add(tick(), bt, gain=0.9, new=True)
+for txt, t0_ in ((TL.RETURN, C_['type1']), (TL.RETURN2, C_['type2'])):
+    for i, kt in enumerate(ui.key_times(txt, t0_, cps=10, rhythm='eulogy')):
+        sfx.add(key(vel=0.9, space=txt[i] == ' '), CO(kt) - 0.01, pan=0.2, new=True)
+music.add(piano(m('F4'), 4.0, vel=0.22), CO(C_['type2'] + 4.6), new=True)
+music.add(piano(m('A4'), 4.0, vel=0.2), CO(C_['type2'] + 4.6 + BEAT), new=True)
+music.add(piano(m('D5'), 5.0, vel=0.26), CO(C_['type2'] + 4.6 + 2 * BEAT), new=True)
+HARD_CUTS.append(CO(C_['cut']))
+SILENT.append((CO(C_['cut']), TL.at('credits', 1.3)))
 # S14 credits: the title, the motif one last time
 music.add(strings([m('D3'), m('A3'), m('F4')], 9.0, vel=0.25, att=2.5, rel=4.0, bright=1200), 249.3)
 motif(250.4, vel=0.4)
 music.add(piano(m('D4'), 6.0, vel=0.3), 250.4 + 4 * BEAT)
 for k in range(130):
-    sfx.add(key(vel=0.25), 257.3 + k * 0.05 + rng.uniform(0, 0.02), pan=-0.3, gain=0.4)
+    sfx.add(key(vel=0.25), 259.0 + k * 0.05 + rng.uniform(0, 0.02), pan=-0.3, gain=0.4)
 
 
 # ================================================================== extended-cut scenes (absolute times)
@@ -305,14 +312,14 @@ amb.add(np.sin(2 * np.pi * 7400 * T(12)) * 0.0025 * np.minimum(1, np.minimum(T(1
 for k in range(int(20 / 0.42)):
     tt = k * 0.42
     if tt < 10.0 or (10.0 <= tt < 18.5):
-        sfx.add(click(1000, 0.6), A('clocks', tt), pan=-0.35 if tt > 10 else 0.0, new=True)
+        sfx.add(click(1000, 0.6), TL.src_time('clocks', tt), pan=-0.35 if tt > 10 else 0.0, new=True)
 for (ts, ti, spd) in MC.neuron_data()['sparks']:
     ta = ts + spd
     if 7.0 < ta < 19.0:
-        sfx.add(crackle(0.35, density=60, vel=0.5), A('clocks', ta), pan=0.35, new=True)
-music.add(shimmer([m('D5'), m('A5')], 20.0, vel=0.25, att=3.0, rel=3.0), A('clocks', 0), new=True)
+        sfx.add(crackle(0.35, density=60, vel=0.5), TL.src_time('clocks', ta), pan=0.35, new=True)
+music.add(shimmer([m('D5'), m('A5')], 22.0, vel=0.25, att=3.0, rel=3.0), A('clocks', 0), new=True)
 # III · the line and the point
-music.add(shepard(26.0, 1.0), A('line', 0), new=True)
+music.add(shepard(TL.END['line'] - TL.START['line'], 1.0), A('line', 0), new=True)
 for tp in MC.point_times()[:-1]:
     sfx.add(tick(0.9), tp, new=True); sfx.add(shimmer([m('A6')], 0.8, vel=0.25, att=0.01, rel=0.7), tp, new=True)
 tm = MC.point_times()[-1]
@@ -385,7 +392,7 @@ sw = strings([m('D2'), m('A2')], swell_len, vel=0.16, att=swell_len, rel=0.02, b
 music.add(sw, 2.0, new=True)
 music.add(shimmer([m('A5'), m('E6')], 3.5, vel=0.25, att=0.05, rel=3.0), TL.at('answer', 1.0), new=True)
 # III · clocks — exact machine time against living time; they resolve together
-CL = lambda r: TL.at('clocks', r)
+CL = lambda r: TL.src_time('clocks', r)
 arp = [m('D4'), m('A4'), m('D5'), m('A4')]
 k = 0; tt = 0.4
 while tt < 18.0:
@@ -462,7 +469,7 @@ music.add(strings([m('F3'), m('C4')], 5.0, vel=0.16, att=1.0, rel=3.0), TL.START
 # I: the dive into the caret lands on the hall's first heartbeat
 sfx.add(whoosh(1.2, up=True, vel=0.2), TL.START['hall'] - 1.1, new=True)
 # VI: her chapter is longer now; two more bars, and a breath for every flashback
-for k2, ch in enumerate([Dm, Bb]):
+for k2, ch in enumerate([Dm, Bb, F]):
     music.add(piano(ch[0], 4.0, vel=0.26), TL.at('her', 24.2) + k2 * BAR, new=True)
     music.add(piano(ch[2] + 12, 3.0, vel=0.18), TL.at('her', 24.2) + k2 * BAR + 1.5 * BEAT, new=True)
 music.add(shimmer([m('F5'), m('C6')], 8.0, vel=0.25, att=1.0, rel=4.0), TL.at('her', 22.0), new=True)

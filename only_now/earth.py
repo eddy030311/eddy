@@ -1000,15 +1000,15 @@ def _page_tex():
         s = int(pt * 0.3528 * mm)
         while font(fname, s).getlength(txt) > maxw and s > 10: s -= 2
         return s
-    lines_body = ["I'm sorry it took me eleven years to write this.",
-                  "I still make your soup on Sundays.",
-                  "It never tastes the way yours did.",
-                  "Will you tell me what I'm doing wrong?"]
+    lines_body = ["I'm sorry I stopped writing back.",
+                  "I still have the mixtape you made me in our last year of school.",
+                  "I don't know who drifted first. I think it was me.",
+                  "Coffee, if you're ever back in town?"]
     left = 27 * mm
     maxw = 0.21 * ppm - 2 * left
     sb = min(size_fit(t, 'serif', 19.5, maxw) for t in lines_body)
     st = int(sb * 1.22)
-    title = "Mom,"
+    title = "Lin,"
     d.text((left, 31 * mm), title, font=font('serif_m' if False else 'serif', st), fill=18, anchor='ls')
     # years, letterspaced
     yrs = "15 · XI · 2026"
