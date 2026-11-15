@@ -15,7 +15,8 @@ BAR = 4 * BEAT
 
 class Bus:
     def __init__(self): self.L = np.zeros(N); self.R = np.zeros(N)
-    def add(self, sig, t0, gain=1.0, pan=0.0):
+    def add(self, sig, t0, gain=1.0, pan=0.0, new=False):
+        if not new: t0 = TL.remap(t0)        # cues written on the original cut move with their shot
         i = int(round(t0 * SR))
         if i >= N or len(sig) == 0: return
         if i < 0: sig = sig[-i:]; i = 0
@@ -210,8 +211,9 @@ music.add(strings([m('D2'), m('A2'), m('F3')], 12.0, vel=0.25, att=3.0, rel=0.05
 for (_, _, _, _, t_in, t_break) in IF.FRAGS:
     sfx.add(crackle(2.4, density=220, vel=0.9), t_break)
     sfx.add(shimmer([m('A5')], 1.6, vel=0.5, att=0.05, rel=1.2), t_in)
-HARD_CUTS = [117.44]
-SILENT.append((117.44, 118.3))
+HARD_CUTS = [TL.END['dissolve']]
+SILENT = [(TL.remap(a), TL.remap(b)) for a, b in SILENT]
+SILENT.append((TL.END['dissolve'], TL.END['dissolve'] + 1.0))
 # S9 extinction: a dissonant cluster that swells and is cut off; then near-nothing
 music.add(strings([m('D2'), m('A2'), m('Eb3'), m('Bb3'), m('E4')], 17.5, vel=0.6, att=12.0, rel=0.15, bright=1400), 118.3)
 music.add(strings([m('D1'), m('D2')], 20.5, vel=0.45, att=14.0, rel=4.0, bright=300), 118.3)
@@ -240,23 +242,103 @@ motif(203.0, vel=0.38)
 # S12 relight: "Now." and two wordless pulses, then the music lets go
 chords(214.0, 229.5, [Dm, Bb, F, C], vel=0.4, string_vel=0.3, shimmer_vel=0.3)
 for i, tp in enumerate(TL.NOW_PULSES):
-    music.add(braam(6.0, root=m('F1'), vel=0.55 + 0.2 * i, major=True), tp)
-    sfx.add(boom(0.5 + 0.2 * i), tp)
-    music.add(shimmer([m('F5'), m('A5'), m('C6')], 5.0, vel=0.45, att=0.05, rel=3.5), tp)
+    music.add(braam(6.0, root=m('F1'), vel=0.55 + 0.2 * i, major=True), tp, new=True)
+    sfx.add(boom(0.5 + 0.2 * i), tp, new=True)
+    music.add(shimmer([m('F5'), m('A5'), m('C6')], 5.0, vel=0.45, att=0.05, rel=3.5), tp, new=True)
 music.add(strings([m('F2'), m('C3'), m('A3'), m('E4')], 8.0, vel=0.35, att=0.5, rel=5.0), 226.0)
 # S13 coda: room tone, the heartbeat returns, the same hands typing, one piano note; hard cut
 amb.add(noise_bed(15.0, 40, 300, 0.012), 232.3)
 for i, kt in enumerate(ui.key_times(TL.RETURN, 236.4, cps=10, rhythm='eulogy')):
     sfx.add(key(vel=0.9, space=TL.RETURN[i] == ' '), kt - 0.01, pan=0.2)
 music.add(piano(m('D5'), 3.0, vel=0.3), 244.4)
-HARD_CUTS.append(247.2)
-SILENT.append((247.2, 249.3))
+HARD_CUTS.append(TL.remap(247.2))
+SILENT.append((TL.remap(247.2), TL.remap(249.3)))
 # S14 credits: the title, the motif one last time
 music.add(strings([m('D3'), m('A3'), m('F4')], 9.0, vel=0.25, att=2.5, rel=4.0, bright=1200), 249.3)
 motif(250.4, vel=0.4)
 music.add(piano(m('D4'), 6.0, vel=0.3), 250.4 + 4 * BEAT)
 for k in range(130):
     sfx.add(key(vel=0.25), 257.3 + k * 0.05 + rng.uniform(0, 0.02), pan=-0.3, gain=0.4)
+
+
+# ================================================================== extended-cut scenes (absolute times)
+import machine as MC
+def A(key, rel): return TL.at(key, rel)
+def fan_bed(dur, vel):
+    x = bp(rng.standard_normal(int(SR * dur)), 70, 900); x /= np.abs(x).max() + 1e-9
+    t = T(dur); hum = sum(np.sin(2 * np.pi * 120 * k * t) / k for k in (1, 2, 3)) * 0.12
+    return (x + hum) * vel
+def spin_down(dur, vel):
+    n = int(SR * dur); t = T(dur); x = rng.standard_normal(n); out = np.zeros(n); blk = 2048
+    for i in range(0, n, blk):
+        u = i / n; fc = 900 * (1 - u) ** 2 + 40
+        out[i:i + blk] = lp(x[max(0, i - 8192):i + blk], fc)[-len(out[i:i + blk]):]
+    f = 120 * (1 - t / dur) ** 1.6 + 1
+    hum = np.sin(2 * np.pi * np.cumsum(f) / SR) * 0.35 + np.sin(2 * np.pi * np.cumsum(2 * f) / SR) * 0.15
+    env = (1 - t / dur) ** 0.8
+    return (out / (np.abs(out).max() + 1e-9) * 0.8 + hum) * env * vel
+def collide(vel=1.0):
+    t = T(0.6); return (np.sin(2 * np.pi * 30 * t) * np.exp(-t * 7) + np.sin(2 * np.pi * 61 * t) * np.exp(-t * 11) * 0.4) * vel * 0.9
+def click(f=1000, vel=1.0):
+    t = T(0.02); return np.sin(2 * np.pi * f * t) * np.exp(-t * 600) * vel * 0.15
+def shepard(dur, vel):
+    t = T(dur); s = np.zeros_like(t)
+    rate = 1 / 26.0                     # one octave over the whole shot, never arriving
+    for k in range(7):
+        oc = (k + t * rate) % 7
+        f = 55 * 2 ** oc
+        amp = np.exp(-((oc - 3.5) / 1.6) ** 2)
+        s += np.sin(2 * np.pi * np.cumsum(f) / SR) * amp
+    env = np.minimum(1, np.minimum(t / 2.0, (dur - t) / 2.5)).clip(0)
+    return s * env * vel * 0.05
+
+# I · the machine hall: fans, drives, the heartbeat made enormous
+amb.add(fan_bed(16.3, 0.035) * np.minimum(T(16.3) / 1.2, 1), A('hall', 0), new=True)
+for k in range(28):
+    sfx.add(click(rng.uniform(2500, 4200), 0.5), A('hall', rng.uniform(0.5, 15.5)), pan=rng.uniform(-0.8, 0.8), new=True)
+for bt in ui.beat_times(A('hall', 0.6), A('hall', 16.0)):
+    sfx.add(tick(1.0), bt, gain=0.8, new=True); sfx.add(boom(0.035), bt, new=True)
+music.add(strings([m('D2'), m('A2')], 17.0, vel=0.22, att=4.0, rel=2.0, bright=600), A('hall', 0.5), new=True)
+# I · the slit: each blink is a collision of two universes
+for bt in ui.beat_times(A('slit', 0.0), A('slit', 12.0)):
+    sfx.add(collide(0.45), bt, new=True); sfx.add(tick(0.45), bt, new=True)
+amb.add(np.sin(2 * np.pi * 7400 * T(12)) * 0.0025 * np.minimum(1, np.minimum(T(12) / 2, (12 - T(12)) / 2)), A('slit', 0), new=True)
+# III · two clocks: machine time is exact; living time is not
+for k in range(int(20 / 0.42)):
+    tt = k * 0.42
+    if tt < 10.0 or (10.0 <= tt < 18.5):
+        sfx.add(click(1000, 0.6), A('clocks', tt), pan=-0.35 if tt > 10 else 0.0, new=True)
+for (ts, ti, spd) in MC.neuron_data()['sparks']:
+    ta = ts + spd
+    if 7.0 < ta < 19.0:
+        sfx.add(crackle(0.35, density=60, vel=0.5), A('clocks', ta), pan=0.35, new=True)
+music.add(shimmer([m('D5'), m('A5')], 20.0, vel=0.25, att=3.0, rel=3.0), A('clocks', 0), new=True)
+# III · the line and the point
+music.add(shepard(26.0, 1.0), A('line', 0), new=True)
+for tp in MC.point_times()[:-1]:
+    sfx.add(tick(0.9), tp, new=True); sfx.add(shimmer([m('A6')], 0.8, vel=0.25, att=0.01, rel=0.7), tp, new=True)
+tm = MC.point_times()[-1]
+music.add(shimmer([m('F5'), m('A5'), m('E6')], 4.0, vel=0.5, att=0.05, rel=3.0), tm, new=True)
+music.add(piano(m('E5'), 4.0, vel=0.35), tm, new=True)
+# IV · the hall powers down: the only mechanical death in the film
+amb.add(fan_bed(2.2, 0.035) * np.minimum(T(2.2) / 1.0, 1), A('hall_dark', 1.0), new=True)
+amb.add(spin_down(9.5, 0.045), A('hall_dark', 3.0), new=True)
+for k in range(40):
+    sfx.add(click(rng.uniform(1800, 3000), 0.45), A('hall_dark', 3.0 + 7.8 * (k / 40) ** 0.8 + rng.uniform(0, 0.15)), pan=rng.uniform(-0.9, 0.9), new=True)
+for dt in (0.0, 0.55):
+    sfx.add(tick(1.0), A('hall_dark', 11.4 + dt), new=True)
+music.add(strings([m('D1'), m('A1')], 12.0, vel=0.3, att=2.0, rel=3.0, bright=250), A('hall_dark', 1.2), new=True)
+# V · the keyboard: room tone, the clock, the key coming back up
+amb.add(noise_bed(10.0, 60, 400, 0.010), A('keyboard', 0), new=True)
+for k in range(10):
+    amb.add(clock_tick(tock=k % 2 == 1), A('keyboard', 0.6 + k), gain=0.9, new=True)
+sfx.add(key(vel=0.35), A('keyboard', 2.2), new=True)
+music.add(strings(F, 10.5, vel=0.14, att=2.0, rel=3.0), A('keyboard', 0), new=True)
+music.add(piano(m('F4'), 3.0, vel=0.25), A('keyboard', 2.4), new=True)
+music.add(piano(m('A4'), 3.0, vel=0.22), A('keyboard', 2.4 + BEAT), new=True)
+music.add(piano(m('E5'), 4.0, vel=0.22), A('keyboard', 2.4 + 2 * BEAT), new=True)
+for k in range(10):
+    amb.add(chirp(vel=0.35), A('keyboard', 1.0 + k * 0.85 + rng.uniform(0, 0.3)), pan=-0.6, new=True)
 
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))
@@ -265,7 +347,7 @@ for t0, k in TL.VO:
     sr, a = wavfile.read(f'build/vo/{k}.wav')
     a = resample_poly(a.astype(np.float64), SR, sr)
     a = hp(a, 90) * 0.9
-    vo.add(a, t0)
+    vo.add(a, t0, new=True)
     i0 = int(t0 * SR); vo_env[i0:i0 + len(a)] = 1.0
 
 # ------------------------------------------------------------------ mix

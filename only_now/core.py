@@ -152,7 +152,13 @@ def subtitles(frame, t, subs):
             if zh: blit(frame, text_sprite(zh, 'serif', 34, (0.93, 0.90, 0.86)), W / 2, SUB_ZH_Y, alpha=a)
             if en: blit(frame, text_sprite(en, 'serif_l', 28, (0.74, 0.71, 0.67)), W / 2, SUB_EN_Y, alpha=a)
 
-def finish(img, t, subs, grain=0.022, vignette=True, bars=True):
+def cards(frame, t, cards_abs):
+    for (t0, text) in cards_abs:
+        if t0 <= t <= t0 + 3.4:
+            a = fade(t, t0, t0 + 3.4, 0.8, 1.0) * 0.42
+            blit(frame, text_sprite(text, 'sans_l', 20, (0.86, 0.80, 0.72), tracking=2), 112, BOT - 52, alpha=a, anchor='l')
+
+def finish(img, t, subs, grain=0.022, vignette=True, bars=True, cards_abs=()):
     """img: float RGB full frame. Applies tonemap, vignette, grain, letterbox, subtitles. Returns uint8."""
     act = img[TOP:BOT]
     act = tonemap(act)
@@ -164,6 +170,7 @@ def finish(img, t, subs, grain=0.022, vignette=True, bars=True):
         act = act + g * grain * (0.35 + 0.65 * np.sqrt(np.clip(lum, 0, 1)))
     out = np.zeros((H, W, 3), np.float32)
     out[TOP:BOT] = act
+    if cards_abs: cards(out, t, cards_abs)
     if not bars:
         out[:TOP] = img[:TOP]; out[BOT:] = img[BOT:]
     subtitles(out, t, subs)

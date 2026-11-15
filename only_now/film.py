@@ -32,7 +32,7 @@ def render(t):
     s0, s1, mod, shot = shot_at(t)
     m = module(mod)
     img = m.render(shot, t - s0, s1 - s0) if m is not None else placeholder(shot, t - s0)
-    return core.finish(img, t, TL.SUBS)
+    return core.finish(img, t, TL.SUBS, cards_abs=[(TL.at(k, 0.6), txt) for k, txt in TL.CARDS])
 
 def main():
     mode = sys.argv[1]
