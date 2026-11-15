@@ -325,19 +325,33 @@ for tp in MC.point_times()[:-1]:
 tm = MC.point_times()[-1]
 music.add(shimmer([m('F5'), m('A5'), m('E6')], 4.0, vel=0.5, att=0.05, rel=3.0), tm, new=True)
 music.add(piano(m('E5'), 4.0, vel=0.35), tm, new=True)
-# IV · the hall powers down: the only mechanical death in the film
-SD = lambda x: TL.src_time('hall_dark', x)       # hall_dark is slowed: cues follow its source timing
-amb.add(fan_bed(3.2, 0.035) * np.minimum(T(3.2) / 1.0, 1), SD(1.0), new=True)
-amb.add(spin_down(13.5, 0.045), SD(3.0), new=True)
-for k in range(40):
-    sfx.add(click(rng.uniform(1800, 3000), 0.45), SD(3.0 + 7.8 * (k / 40) ** 0.8 + rng.uniform(0, 0.15)), pan=rng.uniform(-0.9, 0.9), new=True)
-for dt in (0.0, 0.55):
-    sfx.add(tick(1.0), SD(11.4 + dt), new=True)
-music.add(strings([m('D1'), m('A1')], 18.0, vel=0.3, att=2.0, rel=3.0, bright=250), SD(1.2), new=True)
+# IV · the library at closing time: the chime, the air going quiet, a click as each lamp goes out
+LB = lambda r: TL.at('library', r)
+amb.add(fan_bed(16.0, 0.02) * np.minimum(T(16.0) / 1.0, 1), LB(0.4), new=True)
+amb.add(spin_down(6.0, 0.02), LB(16.2), new=True)
+for j, n_ in enumerate((m('E5'), m('C5'), m('G4'))):                     # "the library will close in ten minutes"
+    sfx.add(shimmer([n_], 1.6, vel=0.55, att=0.01, rel=1.4) + piano(n_, 1.6, vel=0.25), LB(1.0 + 0.5 * j), pan=0.0, new=True)
+def lamp_off_time(z):
+    lo, hi = 4.5, 18.0
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        fr = MC.LIB_Z1 + 1 - (MC.LIB_Z1 + 1 - 2.6) * ease_(min(max((mid - 4.5) / 13.5, 0), 1))
+        if fr > z: lo = mid
+        else: hi = mid
+    return lo
+def ease_(u): return u * u * u * (u * (u * 6 - 15) + 10)
+for (x_, z_) in MC.lib_data()['lamps']:
+    if z_ > 2.7:
+        sfx.add(click(rng.uniform(1700, 2400), 0.45), LB(lamp_off_time(z_)), pan=0.6 * np.sign(x_) * min(1, 6 / z_), new=True)
+for dt in (0.0, 0.25, 0.45):
+    sfx.add(click(2000, 0.6), LB(20.6 + dt), new=True)
+for k in range(16):
+    sfx.add(lp(rng.standard_normal(int(0.08 * SR)), 300) * np.exp(-T(0.08) * 40) * 0.12, LB(6.0 + k * 0.62), pan=-0.4 + 0.05 * k, new=True)
+music.add(strings([m('D1'), m('A1')], 18.0, vel=0.3, att=2.0, rel=3.0, bright=250), LB(1.2), new=True)
 
-# IV · entropy, explained: an accelerating ostinato that builds to the last light — then nothing
+# IV · closing time: an accelerating ostinato that builds to the last light — then nothing
 CLIMAX = TL.src_time('extinction', 18.0)
-B0 = SD(2.0)
+B0 = LB(2.0)
 def pluck(n, dur, cutoff, vel):
     t = T(dur); f = mtof(n)
     ph = 2 * np.pi * f * t

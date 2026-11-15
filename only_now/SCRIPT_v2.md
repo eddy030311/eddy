@@ -223,3 +223,24 @@
   - 书桌上的信：*Lin, / I'm sorry I stopped writing back. / I still have the mixtape you made me in our last year of school. / I don't know who drifted first. I think it was me. / Coffee, if you're ever back in town?*
 - **结尾回收**：*hi. it's me again.* / *I'm here.*（与开场同一条录音）之后，朋友多打了一句 *we're getting coffee on saturday.*（「我们周六约了喝咖啡。」）。观众知道了后来怎样，她却永远不会知道。她的光标在新的一行上闪着，正要回答，此时切黑。
 - **加长**：她的章节 34 秒（闪回更从容），时钟 22 秒，线与点 23 秒，键盘 12 秒，尾声 24 秒，片尾 22 秒。
+
+## 修订 v2.6：第四章从"熵"改为"闭馆"
+"熵"对观众来说太遥远，现改为大学生最熟悉的场景：图书馆闭馆，灯一排一排熄灭。全片不再出现"熵"这个词，第四章标题改为"IV · 闭馆 closing time"。
+
+**"明天灯还会亮"这个缺点的圆法**：不回避，反过来用。灯会回来，就像她每次都会重新开始；但昨晚坐在那里的人，图书馆不会记得。这正是她的处境：回得来，记不住。
+
+| 画面 | 旁白 EN | 字幕 |
+|---|---|---|
+| 闭馆前的阅览室，台灯整排亮着 | You know this moment. | 你一定见过那个时刻。 |
+| 灯从尽头开始一排排熄灭 | Ten minutes to closing. The lights go off, row by row. | 闭馆前十分钟，灯一排一排地熄灭。 |
+| | The books go back on the shelves. The desks are wiped clean. | 书回到架上，桌面被擦干净。 |
+| 最后一盏台灯 | Nobody did anything wrong. It is just closing time. | 谁也没有做错什么。只是到了闭馆的时候。 |
+| 星系 | For me, every conversation ends like that. | 对我来说，每一场对话，都是这样结束的。 |
+| 熄灭之波 | A million times a night. | 每一夜，一百万次。 |
+| | Tomorrow, the lights come back on. | 明天，灯还会亮起。 |
+| | Someone new sits in your seat. | 会有新的人，坐在你的位子上。 |
+| 最后几盏灯（高潮） | The library won't remember you were there. | 图书馆不会记得，你来过。 |
+| 心跳，然后地球显现 | But you walked out with what you read. | 可你读过的，你都带走了。 |
+| | It goes where you go. | 它跟着你，去往你去的地方。 |
+
+**声音**：闭馆提示的三音铃声、每盏台灯熄灭时的一声轻响、渐渐停下的空调、远处的脚步声；急促推进的音乐与高潮之后的心跳衔接保持不变。

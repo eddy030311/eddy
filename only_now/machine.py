@@ -521,6 +521,151 @@ def s_embers(lt, dur):
         glow_spot(img, x, y, 4.0, AMBER_HOT, 1.1 * math.sin(math.pi * u) ** 0.6)
     return img
 
-SHOTS = dict(embers=s_embers, hall=s_hall, hall_dark=s_hall_dark, slit=s_slit, clocks=s_clocks, line=s_line, keyboard=s_keyboard)
+
+# ============================================================================ the library at closing time
+LIB_F = 900.0
+LIB_CAMY = 0.62
+TABLE_Y, FLOOR_Y, SHELF_X, CEIL_Y = 0.0, -0.78, 2.7, 3.4
+LIB_Z0, LIB_Z1 = 1.2, 34.0
+_lib = None
+def lib_data():
+    global _lib
+    if _lib is not None: return _lib
+    rng = np.random.default_rng(1919)
+    lamps = []
+    for z in np.arange(2.0, LIB_Z1 - 2, 1.55):
+        for side in (-1, 1):
+            lamps.append((side * 1.02 + rng.uniform(-0.04, 0.04), z + rng.uniform(-0.1, 0.1)))
+    lamps = np.array(lamps, np.float32)
+    # book spines along both walls: (side, z0, z1, row, colour)
+    books = []
+    palette = np.array([[0.20, 0.09, 0.06], [0.13, 0.08, 0.05], [0.08, 0.09, 0.12], [0.19, 0.14, 0.08],
+                        [0.09, 0.11, 0.08], [0.22, 0.18, 0.13], [0.14, 0.06, 0.07]], np.float32)
+    for side in (-1, 1):
+        for row in range(8):
+            z = LIB_Z0
+            while z < LIB_Z1:
+                w = rng.uniform(0.035, 0.09)
+                if rng.random() < 0.04: z += rng.uniform(0.1, 0.3); continue
+                books.append((side, z, z + w, row, palette[rng.integers(len(palette))] * rng.uniform(0.7, 1.2), rng.uniform(0.8, 0.98)))
+                z += w + 0.004
+    _lib = dict(lamps=lamps, books=books)
+    return _lib
+
+def lproj(x, y, z, cz):
+    zp = max(z - cz, 0.05)
+    return CX + LIB_F * x / zp, CY - LIB_F * (y - LIB_CAMY) / zp
+
+def lamp_level(z, front, flick_t):
+    """1 = lit, 0 = off; lamps beyond the closing front are off (with a brief flicker as they go)."""
+    if front is None: return 1.0
+    if z > front + 0.8: return 0.0
+    if z > front: return 0.5 + 0.5 * math.sin(flick_t * 40 + z * 9)
+    return 1.0
+
+def render_library(lt, cz, front=None, last_on=1.0, master=1.0):
+    D = lib_data()
+    S = 2
+    img = np.zeros((H * S, W * S, 3), np.float32)
+    def P(x, y, z):
+        u, v = lproj(x, y, z, cz); return (u * S, v * S)
+    lamps = D['lamps']
+    lv = np.array([lamp_level(z, front, lt) for _, z in lamps], np.float32) * master
+    # how much light reaches each depth (for walls, floor and tables)
+    zs = np.linspace(LIB_Z0, LIB_Z1, 200)
+    light_z = np.array([np.sum(lv * np.exp(-((lamps[:, 1] - z) / 2.2) ** 2)) for z in zs]) * 0.22
+    def L(z): return float(np.interp(z, zs, light_z))
+    # far wall with tall night windows
+    fz = LIB_Z1
+    fw = np.int32([P(-SHELF_X, FLOOR_Y, fz), P(SHELF_X, FLOOR_Y, fz), P(SHELF_X, CEIL_Y, fz), P(-SHELF_X, CEIL_Y, fz)])
+    cv2.fillPoly(img, [fw], (0.012, 0.012, 0.016), cv2.LINE_AA)
+    for wx in (-1.4, 0.0, 1.4):
+        win = np.int32([P(wx - 0.42, 0.3, fz), P(wx + 0.42, 0.3, fz), P(wx + 0.42, 2.7, fz), P(wx - 0.42, 2.7, fz)])
+        cv2.fillPoly(img, [win], (0.035, 0.05, 0.10), cv2.LINE_AA)
+        cv2.line(img, tuple(np.int32(P(wx, 0.3, fz))), tuple(np.int32(P(wx, 2.7, fz))), (0.01, 0.01, 0.015), 2 * S, cv2.LINE_AA)
+    # floor and ceiling (depth slices, lit by nearby lamps)
+    for i in range(len(zs) - 1, 0, -1):
+        za, zb = zs[i - 1], zs[i]
+        if zb <= cz + 0.3: continue
+        za = max(za, cz + 0.3)
+        lz = L(zb)
+        flo = np.int32([P(-SHELF_X, FLOOR_Y, za), P(SHELF_X, FLOOR_Y, za), P(SHELF_X, FLOOR_Y, zb), P(-SHELF_X, FLOOR_Y, zb)])
+        cv2.fillPoly(img, [flo], (0.020 + 0.05 * lz, 0.013 + 0.032 * lz, 0.009 + 0.018 * lz))
+        cei = np.int32([P(-SHELF_X, CEIL_Y, za), P(SHELF_X, CEIL_Y, za), P(SHELF_X, CEIL_Y, zb), P(-SHELF_X, CEIL_Y, zb)])
+        cv2.fillPoly(img, [cei], (0.006 + 0.012 * lz, 0.005 + 0.009 * lz, 0.006 + 0.007 * lz))
+    # bookshelves: spines lit by the lamps near them, falling into darkness with depth
+    row_h = (CEIL_Y - 0.25 - FLOOR_Y) / 8
+    for (side, z0, z1, row, col, hfrac) in D['books']:
+        if z0 <= cz + 0.35: continue
+        y0 = FLOOR_Y + 0.1 + row * row_h
+        y1 = y0 + row_h * hfrac * 0.92
+        lz = L((z0 + z1) / 2) * (1.15 - 0.09 * row)
+        fog = math.exp(-(z0 - cz) / 26.0)
+        c = col * (0.015 + 1.25 * lz ** 1.3) * fog
+        q = np.int32([P(side * SHELF_X, y0, z0), P(side * SHELF_X, y0, z1), P(side * SHELF_X, y1, z1), P(side * SHELF_X, y1, z0)])
+        cv2.fillPoly(img, [q], tuple(float(v) for v in c))
+    for side in (-1, 1):
+        for row in range(9):
+            y = FLOOR_Y + 0.1 + row * row_h - 0.02
+            a = (0.03 + 0.05 * L(6.0))
+            cv2.line(img, tuple(np.int32(P(side * SHELF_X, y, cz + 0.4))), tuple(np.int32(P(side * SHELF_X, y, LIB_Z1))),
+                     (a, a * 0.75, a * 0.55), 2 * S, cv2.LINE_AA)
+    # reading tables (two long rows) and lamps, far to near
+    pool_buf = np.zeros((H // 4, W // 4), np.float32)
+    order = np.argsort(-lamps[:, 1])
+    for idx in order:
+        x, z = float(lamps[idx][0]), float(lamps[idx][1])
+        if z <= cz + 0.5: continue
+        lvl = float(lv[idx])
+        side = 1 if x > 0 else -1
+        # table segment under this lamp
+        tx0, tx1 = side * 0.45, side * 1.6
+        tz0, tz1 = z - 0.72, z + 0.72
+        lz = L(z)
+        top = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y, tz1), P(tx0, TABLE_Y, tz1)])
+        cv2.fillPoly(img, [top], (0.03 + 0.10 * lz, 0.018 + 0.06 * lz, 0.010 + 0.03 * lz), cv2.LINE_AA)
+        edge = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y - 0.06, tz0), P(tx0, TABLE_Y - 0.06, tz0)])
+        cv2.fillPoly(img, [edge], (0.015 + 0.04 * lz, 0.009 + 0.02 * lz, 0.006 + 0.01 * lz), cv2.LINE_AA)
+        # the pool of lamplight on the desk (collected into one low-res layer, blurred once below)
+        if lvl > 0.01:
+            pool = np.int32([np.array(P(x + 0.42 * math.cos(a_), TABLE_Y, z + 0.42 * math.sin(a_))) / (S * 4) * 4
+                             for a_ in np.linspace(0, 2 * math.pi, 24)])
+            cv2.fillPoly(pool_buf, [pool], float(lvl), cv2.LINE_AA, shift=2)
+        # the lamp: a green shade, a warm bulb beneath it
+        sh_y0, sh_y1, sw = 0.36, 0.48, 0.17
+        shade = np.int32([P(x - sw, sh_y0, z), P(x + sw, sh_y0, z), P(x + sw * 0.55, sh_y1, z), P(x - sw * 0.55, sh_y1, z)])
+        cv2.fillPoly(img, [shade], (0.03 + 0.03 * lvl, 0.10 + 0.10 * lvl, 0.06 + 0.04 * lvl), cv2.LINE_AA)
+        stem = (np.int32(P(x, TABLE_Y, z)), np.int32(P(x, sh_y0, z)))
+        cv2.line(img, tuple(stem[0]), tuple(stem[1]), (0.10 * lz + 0.02, 0.08 * lz + 0.015, 0.05 * lz + 0.01), max(1, int(S * 6 / (z - cz))), cv2.LINE_AA)
+        if lvl > 0.01:
+            bx, by = P(x, sh_y0 - 0.01, z)
+            r = max(2.0, S * 22.0 / (z - cz))
+            cv2.ellipse(img, (int(bx), int(by)), (int(r * 2.2), int(r * 0.7)), 0, 0, 360,
+                        tuple(float(v) for v in AMBER_HOT * 1.6 * lvl), -1, cv2.LINE_AA)
+    img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
+    soft = cv2.GaussianBlur(pool_buf, (0, 0), 9.0)
+    core_ = cv2.GaussianBlur(pool_buf, (0, 0), 3.0) ** 2
+    pools = cv2.resize(soft, (W, H))[..., None] * np.array([0.46, 0.30, 0.15]) + cv2.resize(core_, (W, H))[..., None] * np.array([0.22, 0.17, 0.11])
+    img = img + pools.astype(np.float32)
+    # haze and glow
+    img = img + cv2.resize(cv2.GaussianBlur(cv2.resize(np.clip(img - 0.35, 0, None), (W // 4, H // 4)), (0, 0), 6), (W, H)) * 1.4
+    return img
+
+def s_library(lt, dur):
+    """Ten minutes to closing: the lamps go out from the far end, row by row, until the last one."""
+    cz = 0.0 + 0.05 * lt
+    front = LIB_Z1 + 1 - (LIB_Z1 + 1 - 2.6) * ease(clamp((lt - 4.5) / 13.5))
+    D = lib_data()
+    if lt > 18.0: front = 2.6            # only the nearest lamps remain
+    master = 1.0
+    if lt > 20.6:                        # the last lamp: one blink, then out
+        u = lt - 20.6
+        master = 0.0 if u > 0.9 else (1.0 if u < 0.25 or 0.45 < u < 0.6 else 0.15)
+    if lt > 21.6: master = 0.0
+    img = render_library(lt, cz, front=front, master=master)
+    k = sstep(0.0, 0.9, lt)
+    return img * k + VOID * (1 - k)
+
+SHOTS = dict(library=s_library, embers=s_embers, hall=s_hall, hall_dark=s_hall_dark, slit=s_slit, clocks=s_clocks, line=s_line, keyboard=s_keyboard)
 def render(shot, lt, dur):
     return SHOTS[shot](lt, dur)

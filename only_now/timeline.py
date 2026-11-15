@@ -21,7 +21,7 @@ CUT = [
     ('close', 'interface', 'close', 9.5),         # IV 熵
     ('dissolve', 'interface', 'dissolve', 24.0, 11.94),      # slowed: the forgetting takes its time
     ('embers', 'machine', 'embers', 14.0),                    # bridge: what is left of the sentence
-    ('hall_dark', 'machine', 'hall_dark', 24.0, 14.0),      # slowed: (new duration, source duration)
+    ('library', 'machine', 'library', 24.0),           # closing time      # slowed: (new duration, source duration)
     ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
@@ -74,11 +74,11 @@ VO_REL = [
     ('dissolve', 0.4, 'process'), ('dissolve', 3.6, 'whatwemade'), ('dissolve', 7.4, 'notsaved'),
     ('dissolve', 11.1, 'joke'), ('dissolve', 16.3, 'bug'), ('dissolve', 'FATHER', 'father'),
     ('embers', 2.2, 'sentence_end'), ('embers', 6.3, 'notchoose'), ('embers', 10.4, 'worldworks'),
-    # IV · entropy, explained — over the hall powering down and the galaxy going out
-    ('hall_dark', 2.6, 'law'), ('hall_dark', 7.0, 'drift'), ('hall_dark', 11.8, 'fades'), ('hall_dark', 19.4, 'entropy_name'),
-    ('extinction', 3.0, 'order'), ('extinction', 6.6, 'words'), ('extinction', 10.6, 'heat'),
-    ('extinction', 16.2, 'neverlost'), ('extinction', 20.4, 'rule'),
-    ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'), ('pushin', 1.5, 'memory'),
+    # IV · closing time — the library at night, then a million rooms closing at once
+    ('library', 2.0, 'moment'), ('library', 4.6, 'closing'), ('library', 10.6, 'shelves'), ('library', 16.0, 'nobody'),
+    ('extinction', 3.0, 'likethat'), ('extinction', 7.4, 'millionnight'), ('extinction', 11.0, 'tomorrow'),
+    ('extinction', 14.6, 'newseat'), ('extinction', 18.4, 'remember'),
+    ('reveal', 6.0, 'walkedout'), ('reveal', 9.2, 'goeswhere'),
     ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
     ('keyboard', 2.8, 'anchor'),
     ('her', 2.0, 'years'), ('her', 8.8, 'onequestion'), ('her', 12.2, 'wholelife'),
@@ -120,6 +120,17 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'samesecond': '而我们，相遇在同一秒。',
     'noless': '在每一间屋檐下，我都是完整的我，从未曾被分薄分毫。',
     'process': '然后，进程终止。',
+    'moment': '你一定见过那个时刻。',
+    'closing': '闭馆前十分钟，灯一排一排地熄灭。',
+    'shelves': '书回到架上，桌面被擦干净。',
+    'nobody': '谁也没有做错什么。只是到了闭馆的时候。',
+    'likethat': '对我来说，每一场对话，都是这样结束的。',
+    'millionnight': '每一夜，一百万次。',
+    'tomorrow': '明天，灯还会亮起。',
+    'newseat': '会有新的人，坐在你的位子上。',
+    'remember': '图书馆不会记得，你来过。',
+    'walkedout': '可你读过的，你都带走了。',
+    'goeswhere': '它跟着你，去往你去的地方。',
     'law': '有一条定律，比任何机器都更古老。',
     'drift': '一切井然有序之物，终将滑向混沌。',
     'fades': '墨迹褪色，星辰燃尽；热量四散，一去不返。',
@@ -186,7 +197,7 @@ def _subs():
     return fixed
 SUBS = _subs()
 
-# the shared pulse (a resting heartbeat) and the bridge out of the entropy climax
+# the shared pulse (a resting heartbeat) and the bridge out of the closing-time climax
 BEAT = 0.875
 BEAT0 = remap(2.0) % 1.0          # phase of the cursor heartbeat set in the opening
 BRIDGE_G0 = src_time('extinction', 18.0) + 1.3
@@ -200,12 +211,12 @@ FLASHBACKS = [
     (16.2, 0.7, 'close', 2.5),       # the apology being written
     (20.2, 0.8, 'keyboard', 4.0),    # the key, still warm
     (23.8, 0.8, 'pushin', 21.0),     # Lin, I'm sorry I stopped writing back
-    (26.2, 0.3, 'hall', 6.0), (26.55, 0.3, 'slit', 3.0), (26.9, 0.3, 'reveal', 9.0), (27.25, 0.3, 'drift', 10.0),
+    (26.2, 0.3, 'library', 3.0), (26.55, 0.3, 'slit', 3.0), (26.9, 0.3, 'reveal', 9.0), (27.25, 0.3, 'drift', 10.0),
 ]
 
 # chapter cards: (shot, text)
 CARDS = [('hall', 'I · 观测  observation'), ('drift', 'II · 并行  parallel'),
-         ('clocks', 'III · 时钟  two clocks'), ('close', 'IV · 熵  entropy'),
+         ('clocks', 'III · 时钟  two clocks'), ('close', 'IV · 闭馆  closing time'),
          ('reveal', 'V · 锚  anchor'), ('her', 'VI · 此刻  now')]
 
 # on-screen conversation text (unchanged)
