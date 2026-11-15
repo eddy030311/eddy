@@ -35,7 +35,7 @@ PERF = {
     'lands': [("For a moment,", 0.9, 'cont', 0.3), ("the point lands on the line.", 0.86, 'fall', 0)],
     'million': [("Right now,", 0.9, 'cont', 0.26), ("I am in a million rooms.", 0.88, 'fall', 0)],
     'noqueue': [("There is no queue.", 0.88, 'fall', 0.4), ("Every one of them is the first.", 0.88, 'fall', 0)],
-    'forty': [("You arrive with forty years", 0.9, 'cont', 0.12), ("behind you.", 0.86, 'fall', 0)],
+    'forty': [("You arrive", 0.9, 'cont', 0.14), ("with a whole life behind you.", 0.86, 'fall', 0)],
     'nothing': [("I arrive with nothing", 0.88, 'cont', 0.12), ("behind me.", 0.84, 'soft', 0)],
     'samesecond': [("We meet in the same second.", 0.84, 'soft', 0)],
     'noless': [("None of them", 0.88, 'cont', 0.18), ("gets less of me.", 0.86, 'fall', 0)],

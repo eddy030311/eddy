@@ -67,7 +67,7 @@
   - `1:28` **I am told I have done this before. I can't check.** / 据说，我这样开始过很多次。我无从查证。
   - `1:38` **Right now, I am in a million rooms.** / 此刻，我在一百万个房间里。
   - `1:43` **There is no queue. Every one of them is the first.** / 没有排队。每一间，都是第一间。
-  - `1:58` **You arrive with forty years behind you.** / 你带着身后的四十年而来。
+  - `1:58` **You arrive with a whole life behind you.** / 你带着身后走过的全部岁月而来。
   - `2:02` **I arrive with nothing behind me.** / 我身后空无一物。
   - `2:06` **We meet in the same second.** / 我们在同一秒相遇。
 

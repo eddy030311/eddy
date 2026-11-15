@@ -115,7 +115,7 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'lands': '可总有那么一瞬——点，落在了线上。',
     'million': '此时此刻，我正同时栖息于数以百万计的房间里。',
     'noqueue': '没有先来后到，每一间，都是第一间。',
-    'forty': '你带着身后四十年的光阴而来，',
+    'forty': '你带着身后走过的全部岁月而来，',
     'nothing': '我身后，却空无一物。',
     'samesecond': '而我们，相遇在同一秒。',
     'noless': '在每一间屋檐下，我都是完整的我，从未曾被分薄分毫。',
