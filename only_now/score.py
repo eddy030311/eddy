@@ -350,6 +350,7 @@ for k in range(16):
 music.add(strings([m('D1'), m('A1')], 18.0, vel=0.3, att=2.0, rel=3.0, bright=250), LB(1.2), new=True)
 
 # IV · closing time: an accelerating ostinato that builds to the last light — then nothing
+iv = Bus()                     # the closing-time build gets its own bus so it can sink away after the climax
 CLIMAX = TL.src_time('extinction', 18.0)
 B0 = LB(2.0)
 def pluck(n, dur, cutoff, vel):
@@ -366,25 +367,26 @@ while tt < CLIMAX - 0.02:
     bpm = 84 + (156 - 84) * u ** 1.5
     step = 60.0 / bpm / 2                       # eighth notes, ever faster
     cutoff = 500 + 4200 * u ** 1.4              # the filter opens: urgency
-    music.add(pluck(OST[i % 8], 0.35, cutoff, 0.16 + 0.22 * u), tt, pan=-0.15 + 0.3 * (i % 2), new=True)
-    music.add(pluck(OST[i % 8] + 12, 0.25, cutoff, (0.05 + 0.12 * u) * (u > 0.35)), tt, pan=0.25, new=True)
+    iv.add(pluck(OST[i % 8], 0.35, cutoff, 0.16 + 0.22 * u), tt, pan=-0.15 + 0.3 * (i % 2), new=True)
+    iv.add(pluck(OST[i % 8] + 12, 0.25, cutoff, (0.05 + 0.12 * u) * (u > 0.35)), tt, pan=0.25, new=True)
     if i % 2 == 0:
-        sfx.add(boom(0.10 + 0.45 * u ** 1.3), tt, new=True)
+        iv.add(boom(0.10 + 0.45 * u ** 1.3), tt, new=True)
     elif u > 0.4:
-        sfx.add(hp(rng.standard_normal(int(0.04 * SR)), 6000) * np.exp(-T(0.04) * 120) * 0.08 * u, tt, pan=rng.uniform(-0.4, 0.4), new=True)
+        iv.add(hp(rng.standard_normal(int(0.04 * SR)), 6000) * np.exp(-T(0.04) * 120) * 0.08 * u, tt, pan=rng.uniform(-0.4, 0.4), new=True)
     tt += step; i += 1
 E0 = TL.at('extinction', 1.0)
-music.add(strings([m('D2'), m('A2'), m('Eb3'), m('Bb3'), m('E4')], CLIMAX - E0 + 0.5, vel=0.65, att=CLIMAX - E0, rel=0.05, bright=1600), E0, new=True)
-music.add(strings([m('D1'), m('D2')], CLIMAX - B0 + 0.5, vel=0.4, att=CLIMAX - B0, rel=0.05, bright=300), B0, new=True)
+iv.add(strings([m('D2'), m('A2'), m('Eb3'), m('Bb3'), m('E4')], CLIMAX - E0 + 4.0, vel=0.65, att=CLIMAX - E0, rel=3.5, bright=1600), E0, new=True)
+iv.add(strings([m('D1'), m('D2')], CLIMAX - B0 + 4.0, vel=0.4, att=CLIMAX - B0, rel=3.5, bright=300), B0, new=True)
 trem_len = 9.0
-trem = strings([m('F5'), m('E6')], trem_len + 0.5, vel=0.35, att=trem_len, rel=0.05, bright=5000)
+trem = strings([m('F5'), m('E6')], trem_len + 3.0, vel=0.35, att=trem_len, rel=2.8, bright=5000)
 trem *= (0.6 + 0.4 * np.sin(2 * np.pi * 9 * T(len(trem) / SR)))      # bowed tremolo
-music.add(trem, CLIMAX - trem_len, new=True)
-music.add(shepard(12.5, 2.2), CLIMAX - 12.0, new=True)
-sfx.add(whoosh(7.0, up=True, vel=0.35), CLIMAX - 7.0, new=True)
-music.add(braam(3.0, vel=1.0), CLIMAX, new=True)          # the peak...
-sfx.add(boom(1.2), CLIMAX, new=True)
-SILENT.append((CLIMAX + 0.45, TL.BRIDGE_G0 - 0.05))      # ...one breath of nothing, then a heartbeat in the dark
+iv.add(trem, CLIMAX - trem_len, new=True)
+iv.add(shepard(12.5, 2.2), CLIMAX - 12.0, new=True)
+iv.add(whoosh(7.0, up=True, vel=0.35), CLIMAX - 7.0, new=True)
+iv.add(braam(6.0, vel=1.0), CLIMAX, new=True)          # the peak...
+iv.add(boom(1.2), CLIMAX, new=True)
+# ...then the whole build sinks away (see the mix: a falling low-pass and a long tail), and the heartbeat rises out of it
+sfx.add(whoosh(3.0, up=False, vel=0.14), CLIMAX + 0.3, new=True)
 IV_RANGE = (B0, CLIMAX)
 
 # V · the keyboard: room tone, the clock, the key coming back up
@@ -520,7 +522,17 @@ def reverb(st, secs, wet, seed=0):
     irL /= np.sqrt((irL ** 2).sum()); irR /= np.sqrt((irR ** 2).sum())
     return st + wet * np.stack([fftconvolve(st[:, 0], irL)[:N], fftconvolve(st[:, 1], irR)[:N]], 1)
 
-mus = reverb(music.st(), 4.2, 0.45, 1)
+ivs = iv.st()
+i0 = int((CLIMAX + 0.25) * SR); i1 = min(N, int((CLIMAX + 6.5) * SR))
+seg = ivs[i0:i1].copy(); tt_ = np.arange(len(seg)) / SR
+sunk = np.zeros_like(seg); blk_ = 1024
+for j in range(0, len(seg), blk_):
+    fc = 220 + 7500 * np.exp(-(j / SR) / 0.9)          # the build recedes, as if sinking under water
+    sos = butter(2, fc, 'low', fs=SR, output='sos')
+    sunk[j:j + blk_] = sosfilt(sos, seg[max(0, j - 8192):j + blk_], axis=0)[-len(sunk[j:j + blk_]):]
+ivs[i0:i1] = sunk * np.exp(-tt_ / 1.6)[:, None]
+ivs[i1:] = 0
+mus = reverb(music.st() + ivs, 4.2, 0.5, 1)
 fx = reverb(sfx.st(), 1.4, 0.18, 2)
 vox = reverb(vo.st(), 0.9, 0.10, 3)
 am = amb.st()
