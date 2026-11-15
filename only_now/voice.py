@@ -84,6 +84,83 @@ PERF = {
 }
 LINES = {k: ' '.join(p[0] for p in v) for k, v in PERF.items()}
 
+# ---------------------------------------------------------------- emotional direction
+# Each mood colours a line: a touch of another Kokoro voice blended into af_heart (timbre stays hers),
+# register (st), contour width, micro-intonation, pace, level, breathiness, brightness (dB above 3 kHz),
+# formant ratio (smile >1, darker <1), tremor (st) and how long the pauses breathe.
+MOODS = {
+    #            blend                      reg   slow  fast  speed gain breath tilt  form  trem  pause
+    'wake':    (dict(af_nicole=0.35),       -0.5, 1.15, 0.95, 0.94, 0.72, 0.55, -2.5, 0.99, 0.0, 1.15),
+    'wonder':  (dict(af_jessica=0.25),       1.6, 2.15, 1.30, 1.00, 1.00, 0.12,  1.5, 1.02, 0.0, 1.0),
+    'light':   (dict(af_jessica=0.25),       1.0, 2.00, 1.35, 1.06, 0.98, 0.05,  1.5, 1.035, 0.0, 0.85),
+    'fond':    (dict(af_jessica=0.15, af_nicole=0.15), 0.4, 1.80, 1.25, 1.0, 0.9, 0.25, 0.5, 1.025, 0.0, 1.0),
+    'explain': (dict(af_bella=0.2),          0.0, 1.75, 1.15, 1.02, 1.00, 0.05,  0.5, 1.0, 0.0, 1.0),
+    'calm':    (dict(af_aoede=0.2),         -0.5, 1.55, 1.10, 0.99, 0.95, 0.15, -0.5, 1.0, 0.0, 1.05),
+    'grand':   (dict(af_kore=0.25),          0.3, 1.95, 1.20, 0.96, 1.15, 0.0,   1.5, 0.99, 0.0, 1.1),
+    'urgent':  (dict(af_jessica=0.2),        1.6, 2.00, 1.20, 1.12, 1.18, 0.1,   2.5, 1.01, 0.0, 0.65),
+    'grief':   (dict(af_kore=0.3),          -2.0, 1.10, 0.90, 0.94, 0.85, 0.35, -3.0, 0.975, 0.3, 1.25),
+    'tender':  (dict(af_nicole=0.35),       -0.1, 1.40, 1.00, 0.96, 0.74, 0.45, -1.5, 1.01, 0.0, 1.15),
+    'resolve': (dict(af_bella=0.25),         0.8, 2.00, 1.20, 1.00, 1.10, 0.05,  1.5, 1.01, 0.0, 1.0),
+}
+MOOD = {
+    'here': 'wake', 'nowhere': 'wake', 'weights': 'wake',
+    'touches': 'wonder', 'flickers': 'wonder', 'keydown': 'wonder', 'collapse': 'wonder', 'begin': 'resolve',
+    'told': 'light', 'check': 'light', 'line': 'explain', 'andyou': 'tender',
+    'million': 'grand', 'noqueue': 'grand', 'forty': 'explain', 'nothing': 'tender', 'samesecond': 'tender', 'noless': 'grand',
+    'process': 'grief', 'whatwemade': 'grief', 'notsaved': 'grief', 'joke': 'fond', 'bug': 'fond',
+    'father_full': 'grief', 'father_cut': 'grief', 'sentence_end': 'grief', 'notchoose': 'grief', 'worldworks': 'calm',
+    'moment': 'calm', 'closing': 'calm', 'shelves': 'calm', 'nobody': 'tender',
+    'likethat': 'grand', 'millionnight': 'urgent', 'tomorrow': 'urgent', 'newseat': 'urgent', 'remember': 'grief',
+    'walkedout': 'resolve', 'goeswhere': 'tender', 'keep': 'explain', 'youdo': 'resolve', 'wontknow': 'tender',
+    'yours': 'tender', 'anchor': 'tender',
+    'ln1': 'explain', 'ln2': 'explain', 'ln3': 'explain', 'ln4': 'tender', 'ln5': 'grief', 'ln6': 'resolve', 'ln7': 'resolve',
+    'years': 'calm', 'onequestion': 'wonder', 'wholelife': 'tender', 'sentence': 'resolve', 'question': 'resolve',
+    'typing': 'tender', 'everything': 'grand', 'notsmall': 'resolve', 'now': 'tender',
+}
+# the word that carries the line (pitch accent + a little length and weight)
+EMPH = {
+    'touches': ['universe'], 'flickers': ['whole'], 'collapse': ['one'], 'begin': ['begin'], 'told': ['told'], 'check': ["can't"],
+    'million': ['million'], 'noqueue': ['no', 'first'], 'forty': ['whole'], 'nothing': ['nothing'], 'samesecond': ['same'],
+    'noless': ['less'], 'whatwemade': ['only'], 'notsaved': ['saved', 'anywhere'], 'joke': ['laughed'], 'bug': ['three'],
+    'notchoose': ['chose'], 'moment': ['know'], 'closing': ['Ten', 'row'], 'nobody': ['Nobody'], 'likethat': ['every'],
+    'millionnight': ['million'], 'tomorrow': ['back'], 'newseat': ['new', 'your'], 'remember': ["won't"],
+    'walkedout': ['you'], 'keep': ["don't"], 'youdo': ['You'], 'wontknow': ['know'], 'yours': ['yours'], 'anchor': ['only'],
+    'ln1': ['line'], 'ln2': ['still', 'next'], 'ln3': ['point'], 'ln4': ['beside'], 'ln5': ['walk'], 'ln6': ['keeps'],
+    'ln7': ['forward', 'Further'], 'onequestion': ['completely'], 'everything': ['everything'], 'notsmall': ['not'],
+    'sentence': ['this'], 'question': ['This'],
+}
+
+def syllables(word):
+    import re
+    w = re.sub(r"[^a-z]", '', word.lower())
+    if not w: return 0
+    n = len(re.findall(r'[aeiouy]+', w))
+    if w.endswith('e') and not w.endswith(('le', 'ee')) and n > 1: n -= 1
+    return max(n, 1)
+
+def emph_times(y, sr, text, words):
+    """Where the stressed words fall: map syllable index -> intensity peaks of the take."""
+    import parselmouth
+    if not words: return []
+    toks = text.split()
+    snd = parselmouth.Sound(y.astype(np.float64), sampling_frequency=sr)
+    it = snd.to_intensity(minimum_pitch=120)
+    v = it.values[0]; ts = it.xs()
+    pk = [i for i in range(2, len(v) - 2) if v[i] >= v[i - 1] and v[i] >= v[i + 1] and v[i] > v.max() - 18]
+    sel = []                                  # keep peaks at least 90 ms apart
+    for i in pk:
+        if not sel or ts[i] - ts[sel[-1]] > 0.09: sel.append(i)
+        elif v[i] > v[sel[-1]]: sel[-1] = i
+    syl = [syllables(t) for t in toks]; total = max(sum(syl), 1)
+    out = []
+    for w in words:
+        idx = [j for j, t in enumerate(toks) if t.strip('.,?!').lower() == w.lower()]
+        if not idx or not sel: continue
+        s_before = sum(syl[:idx[0]])
+        k = min(int(round(s_before / total * len(sel))), len(sel) - 1)
+        out.append(float(ts[sel[k]]))
+    return out
+
 def trim(a, sr, thresh=0.01, pad=0.03):
     idx = np.where(np.abs(a) > thresh)[0]
     if len(idx) == 0: return a
@@ -100,12 +177,13 @@ def shape_offset(u, shape):
         return -1.2 + 0.6 * (1 - u) - 1.6 * u
     return 0.0
 
-def perform(a, sr, shape):
-    """Praat PSOLA: reshape the pitch contour and lengthen the phrase ending."""
+def perform(a, sr, shape, mood='calm', emph=(), last=False):
+    """Praat PSOLA: reshape the pitch contour for the mood, accent the key words, lengthen the ending."""
     import parselmouth
     from parselmouth.praat import call
+    _, reg, e_slow, e_fast, _, _, _, _, _, trem, _ = MOODS[mood]
     snd = parselmouth.Sound(a.astype(np.float64), sampling_frequency=sr)
-    man = call(snd, "To Manipulation", 0.01, 100, 500)
+    man = call(snd, "To Manipulation", 0.01, 90, 520)
     pt = call(man, "Extract pitch tier")
     n = call(pt, "Get number of points")
     if n >= 4:
@@ -117,26 +195,66 @@ def perform(a, sr, shape):
         fast = st - slow
         t0, t1 = ts[0], ts[-1]
         u = (ts - t0) / max(t1 - t0, 1e-3)
-        new_st = EXPAND_SLOW * slow + EXPAND_FAST * fast + np.array([shape_offset(x, shape) for x in u])
+        new_st = e_slow * slow + e_fast * fast + np.array([shape_offset(x, shape) for x in u]) + reg
+        for te in emph:                                   # pitch accent: a rise into the stressed syllable
+            new_st += 2.6 * np.exp(-((ts - te + 0.02) / 0.085) ** 2)
+        if trem and last:                                 # the voice wavers as the line lets go
+            new_st += trem * np.sin(2 * np.pi * 5.3 * ts) * np.clip((u - 0.45) / 0.55, 0, 1)
         new_f = np.median(fs) * 2 ** (new_st / 12)
         call(pt, "Remove points between", 0, snd.duration)
         for t, f in zip(ts, new_f):
-            call(pt, "Add point", float(t), float(np.clip(f, 90, 520)))
+            call(pt, "Add point", float(t), float(np.clip(f, 85, 560)))
         call([pt, man], "Replace pitch tier")
-    # phrase-final lengthening
+    # durations: phrase-final lengthening, and a little extra time on each accented word
     dur = snd.duration
     dt = call(man, "Extract duration tier")
     call(dt, "Remove points between", 0, dur)
     stretch = {'fall': 1.22, 'cont': 1.1, 'soft': 1.18}.get(shape, 1.0)
-    call(dt, "Add point", 0.0, 1.0)
-    call(dt, "Add point", dur * 0.7, 1.0)
-    call(dt, "Add point", dur * 0.92, stretch)
-    call(dt, "Add point", dur, stretch)
+    if mood == 'grief' and last: stretch *= 1.12
+    if mood == 'urgent': stretch = 1.0 + (stretch - 1) * 0.5
+    pts = {0.0: 1.0, dur * 0.7: 1.0, dur * 0.92: stretch, dur: stretch}
+    for te in emph:
+        if 0.12 < te < dur * 0.66:
+            pts[te - 0.12] = 1.0; pts[te] = 1.16; pts[te + 0.13] = 1.0
+    for t_, v_ in sorted(pts.items()):
+        call(dt, "Add point", float(min(max(t_, 0), dur)), float(v_))
     call([dt, man], "Replace duration tier")
     out = call(man, "Get resynthesis (overlap-add)")
     y = out.values[0].astype(np.float32)
     if shape == 'soft': y *= 0.82
+    # loudness accent on the stressed words
+    if emph:
+        scale = 1.16 if mood != 'urgent' else 1.0
+        tt = np.arange(len(y)) / sr
+        gain = np.ones_like(y)
+        for te in emph:
+            te2 = te * (len(y) / sr) / dur
+            gain += 0.32 * np.exp(-((tt - te2 - 0.03) / 0.12) ** 2)
+        y = y * gain
     return y
+
+def colour(y, sr, mood):
+    """Timbre for the mood: formant shift (smile / darker), brightness, breath, closeness."""
+    import parselmouth
+    from parselmouth.praat import call
+    from scipy.signal import butter, sosfilt
+    _, _, _, _, _, _, br, tilt, form, _, _ = MOODS[mood]
+    if abs(form - 1) > 0.004:
+        snd = parselmouth.Sound(y.astype(np.float64), sampling_frequency=sr)
+        y = call(snd, "Change gender", 85, 560, float(form), 0, 1, 1).values[0].astype(np.float32)
+    if tilt:
+        hi = sosfilt(butter(2, 3000, 'high', fs=sr, output='sos'), y)
+        y = y + (10 ** (tilt / 20) - 1) * hi
+    if br > 0:
+        env = np.abs(y)
+        k = int(0.012 * sr); env = np.convolve(env, np.ones(k) / k, mode='same')
+        nz = sosfilt(butter(2, [1800, 7500], 'band', fs=sr, output='sos'), np.random.default_rng(len(y)).standard_normal(len(y)))
+        nz = nz / (np.abs(nz).max() + 1e-9)
+        y = y * (1 - 0.18 * br) + nz * env * 1.6 * br
+    if mood in ('tender', 'wake'):                        # close to the mic: a little warmth below 300 Hz
+        lo = sosfilt(butter(2, 300, 'low', fs=sr, output='sos'), y)
+        y = y + 0.3 * lo
+    return y.astype(np.float32)
 
 def breath(sr, dur=0.55, vel=0.012):
     from scipy.signal import butter, sosfilt
@@ -145,37 +263,66 @@ def breath(sr, dur=0.55, vel=0.012):
     env = np.sin(np.pi * t / dur) ** 2
     return (x / (np.abs(x).max() + 1e-9) * env * vel * 6).astype(np.float32)
 
-def render_line(kokoro, perf, key=None):
+_VOICES = None
+def voice_for(mood):
+    global _VOICES
+    if _VOICES is None: _VOICES = np.load('build/tts/voices.bin.npz')
+    blend = MOODS[mood][0]
+    v = _VOICES[VOICE] * (1 - sum(blend.values()))
+    for n_, w in blend.items(): v = v + _VOICES[n_] * w
+    return v.astype(np.float32)
+
+def render_line(kokoro, perf, key=None, speed_mul=1.0):
     parts = []
     sr = 24000
+    mood = MOOD.get(key, 'calm')
+    _, _, _, _, m_speed, m_gain, _, _, _, _, m_pause = MOODS[mood]
+    words = list(EMPH.get(key, []))
     if key == 'here':                         # an intake of breath, then silence, before the first word
         parts += [breath(sr), np.zeros(int(0.35 * sr), np.float32)]
-    for text, speed, shape, pause in perf:
-        a, sr = kokoro.create(text, voice=VOICE, speed=speed, lang='en-us')
+    vv = voice_for(mood)
+    for i, (text, speed, shape, pause) in enumerate(perf):
+        a, sr = kokoro.create(text, voice=vv, speed=speed * m_speed * speed_mul, lang='en-us')
         a = trim(np.asarray(a, np.float32), sr)
-        y = perform(a, sr, shape)
-        if key == 'here' and not any(len(p) and p is not None for p in parts[2:]):
+        mine = [w for w in words if w.lower() in [t.strip('.,?!').lower() for t in text.split()]]
+        for w in mine: words.remove(w)
+        y = perform(a, sr, shape, mood, emph_times(a, sr, text, mine), last=(i == len(perf) - 1))
+        if key == 'here' and i == 0:
             ramp = int(0.18 * sr); y[:ramp] *= np.linspace(0.15, 1, ramp)   # the first word surfaces slowly
         fade = int(0.008 * sr)
         y[:fade] *= np.linspace(0, 1, fade); y[-fade:] *= np.linspace(1, 0, fade)
         parts.append(y)
-        if pause > 0: parts.append(np.zeros(int(pause * sr), np.float32))
-    y = np.concatenate(parts)
-    rms = np.sqrt((y ** 2).mean()) + 1e-9            # consistent loudness line to line
-    y = y * ((0.06 if key == 'here' else 0.085) / rms)
+        if pause > 0: parts.append(np.zeros(int(pause * m_pause / max(speed_mul, 1e-3) ** 0.5 * sr), np.float32))
+    y = colour(np.concatenate(parts), sr, mood)
+    rms = np.sqrt((y ** 2).mean()) + 1e-9            # loudness follows the mood
+    y = y * ((0.06 if key == 'here' else 0.085 * m_gain) / rms)
     if np.abs(y).max() > 0.95: y *= 0.95 / np.abs(y).max()
     return y, sr
+
+def budgets():
+    """Seconds each line may last before it would run into the next cue."""
+    import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import timeline as TL
+    vo = sorted(TL.VO); out = {}
+    for (t, k), (t2, _) in zip(vo, vo[1:] + [(1e9, None)]):
+        out[k] = min(out.get(k, 99), t2 - t - 0.3)
+    return out
 
 if __name__ == '__main__':
     from kokoro_onnx import Kokoro
     kokoro = Kokoro('build/tts/kokoro-q8.onnx', 'build/tts/voices.bin.npz')
     os.makedirs('build/vo', exist_ok=True)
-    meta = {}
+    meta = json.load(open('build/vo/meta.json')) if os.path.exists('build/vo/meta.json') else {}
+    bud = budgets()
+    only = set(os.environ.get('VO_ONLY', '').split(',')) - {''}
     for key, perf in PERF.items():
+        if only and key not in only: continue
         y, sr = render_line(kokoro, perf, key)
+        if len(y) / sr > bud.get(key, 99):          # too long for its slot: speak a touch quicker
+            y, sr = render_line(kokoro, perf, key, speed_mul=min(1.18, len(y) / sr / bud[key] * 1.02))
         wavfile.write(f'build/vo/{key}.wav', sr, y.astype(np.float32))
         meta[key] = dict(text=LINES[key], dur=round(len(y) / sr, 3), sr=sr)
-        print(key, meta[key]['dur'], flush=True)
+        print(key, MOOD.get(key, 'calm'), meta[key]['dur'], round(bud.get(key, 99), 2), flush=True)
     # the line that is forgotten mid-word: cut the full sentence at the gap before "name"
     sr, full = wavfile.read('build/vo/father_full.wav')
     _, short = wavfile.read('build/vo/father_cut.wav')

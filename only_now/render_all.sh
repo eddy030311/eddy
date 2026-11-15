@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 [ -f build/tts/kokoro-q8.onnx ] || ./setup_tts.sh
 [ -f build/think.png ] || cp ../claude_film/build/{think,point,calm,offer,heart,full}.png build/
-python3 -I voice.py
+[ -n "$SKIP_VO" ] || python3 -I voice.py
 python3 score.py
 FPS=24; TOTAL=$(python3 -c "import timeline;print(int(timeline.DURATION*$FPS))"); J=${JOBS:-4}
 STEP=$(( (TOTAL + J - 1) / J ))

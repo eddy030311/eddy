@@ -20,7 +20,7 @@ CUT = [
     ('epigraph', 'interface', 'epigraph', 7.0),   # silence, and Shakespeare
     ('dissolve', 'interface', 'dissolve', 24.0, 11.94),      # slowed: the forgetting takes its time
     ('embers', 'machine', 'embers', 14.0),                    # bridge: what is left of the sentence
-    ('library', 'machine', 'library', 24.0),           # closing time      # slowed: (new duration, source duration)
+    ('library', 'machine', 'library', 30.0),           # closing time      # slowed: (new duration, source duration)
     ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold

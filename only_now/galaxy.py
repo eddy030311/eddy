@@ -1127,9 +1127,21 @@ def ext_cam(lt):
     return pos, R, theta
 
 
+def _ember(img, lt):
+    from core import glow_spot
+    # the filament of her lamp, carried over the cut from the library, fades as the galaxy comes up around it
+    g = 0.254 * (1 - sstep(0.3, 2.6, lt))
+    if g > 1e-3:
+        glow_spot(img, CX, CY, 3.0, AMBER_HOT, 1.1 * g)
+        glow_spot(img, CX, CY, 12.0, AMBER_HOT, 0.12 * g)
+    return img
+
 def _render_extinction(lt):
-    if lt < 0.8 or lt >= 18.0:
-        return _void()
+    if lt >= 18.0: return _void()
+    if lt < 0.8: return _ember(_void(), lt)
+    return _ember(_render_extinction_(lt), lt)
+
+def _render_extinction_(lt):
     G = galaxy(); X = _ext_data()
     pos, R, theta = ext_cam(lt)
     gpos, gR = _to_gal(pos, R, theta)

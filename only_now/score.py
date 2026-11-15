@@ -310,27 +310,26 @@ for bt in ui.beat_times(A('slit', 0.0), A('slit', 12.0), phase=-TL.BEAT0):
 amb.add(np.sin(2 * np.pi * 7400 * T(12)) * 0.0025 * np.minimum(1, np.minimum(T(12) / 2, (12 - T(12)) / 2)), A('slit', 0), new=True)
 # IV · the library at closing time: the chime, the air going quiet, a click as each lamp goes out
 LB = lambda r: TL.at('library', r)
-amb.add(fan_bed(16.0, 0.02) * np.minimum(T(16.0) / 1.0, 1), LB(0.4), new=True)
-amb.add(spin_down(6.0, 0.02), LB(16.2), new=True)
+amb.add(fan_bed(20.6, 0.02) * np.minimum(T(20.6) / 1.0, 1), LB(0.4), new=True)
+amb.add(spin_down(6.0, 0.02), LB(20.8), new=True)
 for j, n_ in enumerate((m('E5'), m('C5'), m('G4'))):                     # "the library will close in ten minutes"
     sfx.add(shimmer([n_], 1.6, vel=0.55, att=0.01, rel=1.4) + piano(n_, 1.6, vel=0.25), LB(1.0 + 0.5 * j), pan=0.0, new=True)
-def lamp_off_time(z):
-    lo, hi = 4.5, 18.0
-    for _ in range(30):
-        mid = (lo + hi) / 2
-        fr = MC.LIB_Z1 + 1 - (MC.LIB_Z1 + 1 - 2.6) * ease_(min(max((mid - 4.5) / 13.5, 0), 1))
-        if fr > z: lo = mid
-        else: hi = mid
-    return lo
-def ease_(u): return u * u * u * (u * (u * 6 - 15) + 10)
-for (x_, z_) in MC.lib_data()['lamps']:
-    if z_ > 2.7:
-        sfx.add(click(rng.uniform(1700, 2400), 0.45), LB(lamp_off_time(z_)), pan=0.6 * np.sign(x_) * min(1, 6 / z_), new=True)
-for dt in (0.0, 0.25, 0.45):
-    sfx.add(click(2000, 0.6), LB(20.6 + dt), new=True)
+LD = MC.lib_data()
+for j_, (x_, z_) in enumerate(LD['lamps']):
+    if j_ == LD['her'] or z_ < 1.2: continue
+    sfx.add(click(rng.uniform(1700, 2400), 0.45 * min(1.0, 4.0 / max(z_ - 1.0, 1.0)) ** 0.5), LB(MC.lamp_off_time(z_)),
+            pan=0.6 * np.sign(x_) * min(1, 6 / z_), new=True)
+# her lamp: it falters once, and goes out — the loudest click in the room, because it is the only sound left
+for dt, v_ in ((-0.6, 0.25), (-0.38, 0.22), (-0.18, 0.25), (-0.05, 0.22), (0.0, 0.75)):
+    sfx.add(click(2000, v_), LB(MC.LIB_OFF + dt), new=True)
+sfx.add(lp(rng.standard_normal(int(1.2 * SR)), 900) * np.exp(-T(1.2) * 3.5) * 0.02, LB(MC.LIB_OFF), new=True)   # the filament ticking as it cools
+# she looks at us: one held note, very quiet, over a room that has gone still
+music.add(piano(m('A4'), 5.0, vel=0.22), LB(MC.LIB_LOOK[0] + 0.4), new=True)
+music.add(piano(m('E5'), 5.0, vel=0.16), LB(MC.LIB_LOOK[0] + 0.4 + BEAT), new=True)
+music.add(shimmer([m('A5'), m('E6')], 4.0, vel=0.14, att=1.2, rel=2.5), LB(MC.LIB_LOOK[0] + 0.2), new=True)
 for k in range(16):
     sfx.add(lp(rng.standard_normal(int(0.08 * SR)), 300) * np.exp(-T(0.08) * 40) * 0.12, LB(6.0 + k * 0.62), pan=-0.4 + 0.05 * k, new=True)
-music.add(strings([m('D1'), m('A1')], 18.0, vel=0.3, att=2.0, rel=3.0, bright=250), LB(1.2), new=True)
+music.add(strings([m('D1'), m('A1')], 24.0, vel=0.3, att=2.0, rel=3.0, bright=250), LB(1.2), new=True)
 
 # IV · closing time: an accelerating ostinato that builds to the last light — then nothing
 iv = Bus()                     # the closing-time build gets its own bus so it can sink away after the climax
@@ -371,6 +370,9 @@ iv.add(boom(1.2), CLIMAX, new=True)
 # ...then the whole build sinks away (see the mix: a falling low-pass and a long tail), and the heartbeat rises out of it
 sfx.add(whoosh(3.0, up=False, vel=0.14), CLIMAX + 0.3, new=True)
 IV_RANGE = (B0, CLIMAX)
+_h = np.ones(N); _tt = np.arange(N) / SR
+_h -= 0.72 * np.clip((_tt - LB(MC.LIB_CUT - 0.3)) / 0.6, 0, 1) * np.clip((LB(MC.LIB_OFF + 0.4) - _tt) / 0.5, 0, 1)
+iv.L *= _h; iv.R *= _h
 
 # V · the keyboard: room tone, the clock, the key coming back up
 amb.add(noise_bed(10.0, 60, 400, 0.010), A('keyboard', 0), new=True)
@@ -476,13 +478,6 @@ music.add(piano(m('E5'), 4.0, vel=0.34), tmeet, new=True)
 music.add(piano(m('A5'), 4.0, vel=0.26), tmeet + BEAT, new=True)
 music.add(shepard(8.0, 1.2), LN(26.0), new=True)               # it walks on, rising, out of sight
 music.add(strings([m('D3'), m('A3')], 34.0, vel=0.12, att=4.0, rel=4.0, bright=700), LN(0.0), new=True)
-# III · her, behind the glass in the library: a held breath when she appears; glass when she touches it
-LBp = lambda r: TL.at('library', r)
-for t_, kind in ((2.8, 'face'), (11.0, 'hand'), (18.4, 'face')):
-    music.add(shimmer([m('F5'), m('C6')], 3.0, vel=0.18, att=1.0, rel=1.8), LBp(t_), pan=-0.5 if kind == 'face' else 0.5, new=True)
-for k in range(3):                                            # fingertips on glass: a soft high ring, three times fainter
-    sfx.add(shimmer([m('E7') - 2 * k], 1.2, vel=0.30 * (0.6 ** k), att=0.005, rel=1.1), LBp(12.6 + 0.12 * k), pan=0.55, new=True)
-
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))
 vo_env = np.zeros(N)
