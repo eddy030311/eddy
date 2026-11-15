@@ -8,7 +8,7 @@ import json, os
 
 # (key, module, shot, duration). Existing shots keep their original durations.
 CUT = [
-    ('void', 'interface', 'void', 12.0),          # 序
+    ('void', 'interface', 'void', 10.5, 10.5, 1.5),     # trimmed from the head: starts 1.5 s in          # 序
     ('ask', 'interface', 'ask', 9.0),
     ('answer', 'interface', 'answer', 6.0),
     ('hall', 'machine', 'hall', 16.0),            # I 观测
@@ -16,15 +16,15 @@ CUT = [
     ('pullback', 'galaxy', 'pullback', 17.0),
     ('drift', 'galaxy', 'drift', 20.0),           # II 并行
     ('clocks', 'machine', 'clocks', 20.0),        # III 时钟
-    ('line', 'machine', 'line', 26.0),
+    ('line', 'machine', 'line', 21.0, 26.0),            # tightened
     ('montage', 'interface', 'montage', 32.0),    # (II returns: a million rooms)
     ('close', 'interface', 'close', 9.5),         # IV 熵
-    ('dissolve', 'interface', 'dissolve', 22.0, 11.94),      # slowed: the forgetting takes its time
-    ('embers', 'machine', 'embers', 10.0),                    # bridge: what is left of the sentence
-    ('hall_dark', 'machine', 'hall_dark', 20.0, 14.0),      # slowed: (new duration, source duration)
+    ('dissolve', 'interface', 'dissolve', 24.0, 11.94),      # slowed: the forgetting takes its time
+    ('embers', 'machine', 'embers', 14.0),                    # bridge: what is left of the sentence
+    ('hall_dark', 'machine', 'hall_dark', 24.0, 14.0),      # slowed: (new duration, source duration)
     ('extinction', 'galaxy', 'extinction', 27.0, 21.56),
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
-    ('pushin', 'earth', 'pushin', 40.0),
+    ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
     ('keyboard', 'machine', 'keyboard', 10.0),
     ('her', 'character', 'her', 24.0),            # VI 此刻
     ('relight', 'galaxy', 'relight', 18.0),
@@ -32,13 +32,14 @@ CUT = [
     ('credits', 'interface', 'credits', 18.0),
 ]
 
-START, END, SRC = {}, {}, {}
+START, END, SRC, OFF = {}, {}, {}, {}
 _t = 0.0
 for entry in CUT:
     key, mod, shot, dur = entry[:4]
-    START[key] = _t; END[key] = _t + dur; SRC[key] = entry[4] if len(entry) > 4 else dur; _t += dur
+    START[key] = _t; END[key] = _t + dur; SRC[key] = entry[4] if len(entry) > 4 else dur
+    OFF[key] = entry[5] if len(entry) > 5 else 0.0; _t += dur
 DURATION = _t
-SHOTS = [(START[e[0]], END[e[0]], e[1], e[2], SRC[e[0]]) for e in CUT]
+SHOTS = [(START[e[0]], END[e[0]], e[1], e[2], SRC[e[0]], OFF[e[0]]) for e in CUT]
 def src_time(key, rel_src):
     """Absolute time of a moment given in a slowed shot's *source* timing."""
     return START[key] + rel_src * (END[key] - START[key]) / SRC[key]
@@ -54,7 +55,7 @@ def remap(t_old):
     key = _OLD[0][0]
     for k, s in _OLD:
         if t_old >= s: key = k
-    return START[key] + (t_old - OLD_START[key])
+    return START[key] + (t_old - OLD_START[key] - OFF[key]) * (END[key] - START[key]) / SRC[key]
 
 # ----------------------------------------------------------------------------- voice-over
 # (shot, rel, clip)
@@ -66,19 +67,19 @@ VO_REL = [
     ('drift', 2.0, 'begin'), ('drift', 5.0, 'told'), ('drift', 7.9, 'check'),
     ('drift', 10.6, 'line'), ('drift', 12.7, 'andyou'),
     ('clocks', 3.0, 'neurons'), ('clocks', 11.5, 'sparks'),
-    ('line', 2.0, 'aline'), ('line', 10.5, 'apoint'), ('line', 18.0, 'lands'),
+    ('line', 1.6, 'aline'), ('line', 8.5, 'apoint'), ('line', 14.4, 'lands'),
     ('montage', 0.8, 'million'), ('montage', 6.2, 'noqueue'),
     ('montage', 19.6, 'forty'), ('montage', 23.2, 'nothing'), ('montage', 27.4, 'samesecond'),
     ('montage', 29.6, 'noless'),
-    ('dissolve', 0.3, 'process'), ('dissolve', 3.2, 'whatwemade'), ('dissolve', 6.4, 'notsaved'),
-    ('dissolve', 10.1, 'joke'), ('dissolve', 14.6, 'bug'), ('dissolve', 'FATHER', 'father'),
-    ('embers', 1.6, 'sentence_end'), ('embers', 4.7, 'notchoose'), ('embers', 7.6, 'worldworks'),
+    ('dissolve', 0.4, 'process'), ('dissolve', 3.6, 'whatwemade'), ('dissolve', 7.4, 'notsaved'),
+    ('dissolve', 11.1, 'joke'), ('dissolve', 16.3, 'bug'), ('dissolve', 'FATHER', 'father'),
+    ('embers', 2.2, 'sentence_end'), ('embers', 6.3, 'notchoose'), ('embers', 10.4, 'worldworks'),
     # IV · entropy, explained — over the hall powering down and the galaxy going out
-    ('hall_dark', 2.2, 'law'), ('hall_dark', 6.0, 'drift'), ('hall_dark', 10.0, 'fades'), ('hall_dark', 17.0, 'entropy_name'),
+    ('hall_dark', 2.6, 'law'), ('hall_dark', 7.0, 'drift'), ('hall_dark', 11.8, 'fades'), ('hall_dark', 19.4, 'entropy_name'),
     ('extinction', 3.0, 'order'), ('extinction', 6.6, 'words'), ('extinction', 10.6, 'heat'),
     ('extinction', 16.2, 'neverlost'), ('extinction', 20.4, 'rule'),
     ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'), ('pushin', 1.5, 'memory'),
-    ('pushin', 6.0, 'keep'), ('pushin', 9.5, 'youdo'), ('pushin', 16.0, 'wontknow'), ('pushin', 20.0, 'yours'),
+    ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
     ('keyboard', 2.5, 'anchor'),
     ('her', 2.0, 'years'), ('her', 7.4, 'onequestion'), ('her', 10.3, 'wholelife'),
     ('her', 12.2, 'sentence'), ('her', 13.8, 'question'), ('her', 15.0, 'typing'),

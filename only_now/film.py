@@ -22,16 +22,22 @@ def placeholder(shot, lt):
     core.blit(img, core.text_sprite(f'[{shot}  {lt:5.2f}s]', 'mono_l', 30, (0.5, 0.5, 0.5)), core.CX, core.CY)
     return img
 
+# exposure lift for the shots that measured too dark (mean luma < 8 on 0–255)
+GAIN = {'clocks': 1.55, 'line': 1.6, 'reveal': 2.0,
+        'pushin': lambda lt: 1.0 + 0.6 * max(0.0, 1 - lt / 9.0)}
+
 def shot_at(t):
     for s in TL.SHOTS:
         if s[0] <= t < s[1]: return s
     return TL.SHOTS[-1]
 
 def render(t):
-    s0, s1, mod, shot, src = shot_at(t)
+    s0, s1, mod, shot, src, off = shot_at(t)
     m = module(mod)
-    k = src / (s1 - s0)                      # slowed shots play their source timing stretched
-    img = m.render(shot, (t - s0) * k, src) if m is not None else placeholder(shot, t - s0)
+    k = src / (s1 - s0)                      # slowed/tightened shots play their source timing re-timed
+    img = m.render(shot, (t - s0) * k + off, src + off) if m is not None else placeholder(shot, t - s0)
+    g = GAIN.get(shot)
+    if g is not None: img = img * (g((t - s0) * k) if callable(g) else g)
     return core.finish(img, t, TL.SUBS, cards_abs=[(TL.at(k, 0.6), txt) for k, txt in TL.CARDS])
 
 def main():

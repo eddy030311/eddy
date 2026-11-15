@@ -362,6 +362,7 @@ MEET_T = 19.5
 
 def s_line(lt, dur):
     img = void()
+    zoom = 1.0 + 0.07 * ease(lt / dur)          # a slow push: the line comes toward us
     fade_all = sstep(0.0, 1.0, lt) * (1 - sstep(dur - 2.2, dur, lt))
     hx = head_x(lt)
     xs = np.arange(int(X0), int(hx), 1, dtype=np.float32)
@@ -402,10 +403,23 @@ def s_line(lt, dur):
         a = sstep(0, 0.1, u) * (1 - sstep(0.9, 1.5, u))
         glow_spot(img, mx, my, 7, AMBER_HOT, 2.0 * a)
         glow_spot(img, mx, my, 60, AMBER, 0.3 * a)
-    return img
+    M = cv2.getRotationMatrix2D((CX, CY), 0, zoom)
+    return cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR)
 
 def point_times():
-    return [TL.at('line', tp) for tp, _ in POINTS] + [TL.at('line', MEET_T)]
+    return [TL.src_time('line', tp) for tp, _ in POINTS] + [TL.src_time('line', MEET_T)]
+
+def bead_times():
+    """When the growing line reaches each memory bead (absolute time)."""
+    out = []
+    for bx in _beads:
+        lo, hi_ = 0.0, 23.0
+        for _ in range(18):
+            mid = (lo + hi_) / 2
+            if head_x(mid) < bx: lo = mid
+            else: hi_ = mid
+        if lo < 22.9: out.append(TL.src_time('line', lo))
+    return out
 
 # ============================================================================ the keyboard in lamplight
 ROWS = ["1234567890-=", "QWERTYUIOP[]", "ASDFGHJKL;'", "ZXCVBNM,./"]
@@ -483,7 +497,8 @@ def s_embers(lt, dur):
     rng = np.random.default_rng(77)
     n = 90
     x0 = CX + rng.normal(0, 210, n); y0 = CY + 110 + rng.normal(0, 14, n)
-    birth = 1.1 + rng.uniform(0, 1.6, n); life = rng.uniform(3.5, 8.0, n)
+    sc = dur / 10.0
+    birth = 1.1 + rng.uniform(0, 1.6 * sc, n); life = rng.uniform(3.5, 8.0, n) * sc ** 0.8
     vx = rng.normal(0, 5, n); vy = rng.uniform(-26, -9, n); ph = rng.uniform(0, 6.28, n)
     br = rng.uniform(0.25, 1.0, n)
     age = lt - birth

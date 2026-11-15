@@ -383,6 +383,54 @@ music.add(piano(m('E5'), 4.0, vel=0.22), A('keyboard', 2.4 + 2 * BEAT), new=True
 for k in range(10):
     amb.add(chirp(vel=0.35), A('keyboard', 1.0 + k * 0.85 + rng.uniform(0, 0.3)), pan=-0.6, new=True)
 
+# ================================================================== pacing pass: every chapter gets an arc and synced events
+# 序 — anticipation: a breath that grows under the lone cursor and stops dead on the first keystroke
+first_key = ui.key_times(TL.ASK, 13.6, cps=11, rhythm='first-visitor')[0]
+fk = TL.remap(first_key - 0.01)
+swell_len = fk - 2.0
+sw = strings([m('D2'), m('A2')], swell_len, vel=0.16, att=swell_len, rel=0.02, bright=420)
+music.add(sw, 2.0, new=True)
+music.add(shimmer([m('A5'), m('E6')], 3.5, vel=0.25, att=0.05, rel=3.0), TL.at('answer', 1.0), new=True)
+# III · clocks — exact machine time against living time; they resolve together
+CL = lambda r: TL.at('clocks', r)
+arp = [m('D4'), m('A4'), m('D5'), m('A4')]
+k = 0; tt = 0.4
+while tt < 18.0:
+    if tt < 10.0 or tt >= 10.0:
+        pan = 0.0 if tt < 10.0 else -0.45
+        v = 0.10 if tt < 15.5 else 0.10 * (1 - (tt - 15.5) / 2.5)
+        if v > 0.01: music.add(pluck(arp[k % 4], 0.3, 2600, v), CL(tt), pan=pan, new=True)
+    tt += 0.21; k += 1
+pent = [m('D4'), m('F4'), m('G4'), m('A4'), m('C5'), m('D5')]
+for j, (ts, ti, spd) in enumerate(MC.neuron_data()['sparks']):
+    ta = ts + spd
+    if 7.0 < ta < 17.5:
+        music.add(piano(pent[(ti + j) % len(pent)], 2.5, vel=0.20), CL(ta), pan=0.4, new=True)
+music.add(piano(m('D3'), 4.0, vel=0.3), CL(18.0), new=True)
+for n_ in (m('F4'), m('A4'), m('D5')):
+    music.add(piano(n_, 4.0, vel=0.22), CL(18.0), new=True)
+music.add(strings([m('D3'), m('A3'), m('F4')], 3.5, vel=0.18, att=0.6, rel=2.5), CL(17.6), new=True)
+# III · the line — every memory it reaches is a note; together they are the theme
+mel = [m('F4'), m('A4'), m('E5'), m('D5'), m('C5'), m('A4'), m('G4'), m('A4')]
+for j, bt in enumerate(MC.bead_times()):
+    music.add(piano(mel[j % len(mel)], 2.8, vel=0.18 + 0.06 * (j % 4 == 0)), bt, pan=-0.6 + 1.2 * j / 30, new=True)
+tm2 = MC.point_times()[-1]
+music.add(strings([m('F3'), m('C4'), m('A4'), m('E5')], 5.5, vel=0.25, att=0.8, rel=4.0), tm2 - 0.2, new=True)
+# IV · forgetting — a falling low note as each memory breaks
+for (_, _, _, _, t_in, t_break), n_ in zip(IF.FRAGS, (m('A3'), m('F3'), m('D3'))):
+    music.add(piano(n_, 5.0, vel=0.32), DS(t_break), new=True)
+    music.add(piano(n_ - 12, 5.0, vel=0.2), DS(t_break), new=True)
+# V · the desk — the dawn theme: strings open as the page appears; the theme blooms as day breaks
+PI = lambda r: TL.at('pushin', r)
+music.add(strings([m('F3'), m('A3'), m('C4'), m('E4')], 26.0, vel=0.22, att=8.0, rel=6.0, bright=1800), PI(8.0), new=True)
+dawn = TL.src_time('pushin', 22.0)
+for j, (n_, b, l) in enumerate(MOTIF):
+    music.add(piano(n_ + 12, l * BEAT + 3.5, vel=0.32), dawn + b * BEAT, pan=0.2, new=True)
+    music.add(piano(n_, l * BEAT + 3.5, vel=0.22), dawn + b * BEAT, pan=-0.1, new=True)
+for j, n_ in enumerate((m('F3'), m('E3'), m('D3'), m('C3'))):
+    music.add(strings([n_ - 12, n_], BAR + 0.6, vel=0.20, att=1.0, rel=1.2, bright=700), dawn + j * BAR, new=True)
+music.add(shimmer([m('C6'), m('F6')], 12.0, vel=0.3, att=4.0, rel=4.0), dawn + 1.0, new=True)
+
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))
 vo_env = np.zeros(N)
