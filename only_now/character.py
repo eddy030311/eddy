@@ -137,14 +137,14 @@ def render(shot, lt, dur):
         return blank_pages(lt)
     # F3 the open palm, a blinking light above it; push into the light
     u = (lt - 11.9) / (dur - 11.9)
-    push = ease(sstep(0.55, 1.0, u))
+    push = ease(sstep(0.72, 1.0, u))
     s = 2.1 + 0.2 * u + 9.0 * push ** 2.2
     cx0, cy0 = 1060 - 60 * u, 600
     center = (lerp(cx0, END_POINT[0], push), lerp(cy0, END_POINT[1], push))
     img = room(lt)
     img = place(img, 'offer', t, PALM_LIGHT, s, center, focus_r=280 * (1 + 3 * push), dof=1 - 0.6 * push)
     # everything except the light falls away into darkness at the end
-    dark = sstep(0.55, 0.88, u)
+    dark = sstep(0.74, 0.93, u)
     img = img * (1 - dark) + VOID * dark
-    palm_light(img, center[0], center[1], lt, scale=(1.0 + 1.2 * push) * (1 - 0.82 * sstep(0.9, 1.0, u)), strength=1.0, roundness=sstep(0.85, 1.0, u))
+    palm_light(img, center[0], center[1], lt, scale=(1.0 + 1.2 * push) * (1 - 0.82 * sstep(0.9, 1.0, u)), strength=1.0, roundness=sstep(0.9, 1.0, u))
     return img

@@ -1000,18 +1000,18 @@ def _page_tex():
         s = int(pt * 0.3528 * mm)
         while font(fname, s).getlength(txt) > maxw and s > 10: s -= 2
         return s
-    lines_body = ["My father fixed things. Radios, bicycles,",
-                  "the hinge on our kitchen door that he said",
-                  "would outlive us both. It did.",
-                  "He never said much. He didn't need to."]
+    lines_body = ["I'm sorry it took me eleven years to write this.",
+                  "I still make your soup on Sundays.",
+                  "It never tastes the way yours did.",
+                  "Will you tell me what I'm doing wrong?"]
     left = 27 * mm
     maxw = 0.21 * ppm - 2 * left
     sb = min(size_fit(t, 'serif', 19.5, maxw) for t in lines_body)
     st = int(sb * 1.22)
-    title = "For my father, " + FATHER
+    title = "Mom,"
     d.text((left, 31 * mm), title, font=font('serif_m' if False else 'serif', st), fill=18, anchor='ls')
     # years, letterspaced
-    yrs = "1951 – 2026"
+    yrs = "15 · XI · 2026"
     fy = font('serif_l', int(sb * 0.86)); x = left
     for ch in yrs:
         d.text((x, 41.5 * mm), ch, font=fy, fill=70, anchor='ls'); x += fy.getlength(ch) + 0.9 * mm

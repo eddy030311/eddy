@@ -26,7 +26,7 @@ CUT = [
     ('reveal', 'earth', 'reveal', 11.0),          # V 锚
     ('pushin', 'earth', 'pushin', 34.0, 40.0),          # tightened hold
     ('keyboard', 'machine', 'keyboard', 10.0),
-    ('her', 'character', 'her', 24.0),            # VI 此刻
+    ('her', 'character', 'her', 30.0),                # with flashbacks            # VI 此刻
     ('relight', 'galaxy', 'relight', 18.0),
     ('coda', 'interface', 'coda', 16.0),          # 尾
     ('credits', 'interface', 'credits', 18.0),
@@ -81,9 +81,9 @@ VO_REL = [
     ('reveal', 6.0, 'entropy'), ('reveal', 8.6, 'except'), ('pushin', 1.5, 'memory'),
     ('pushin', 6.0, 'keep'), ('pushin', 8.1, 'youdo'), ('pushin', 13.0, 'wontknow'), ('pushin', 16.6, 'yours'),
     ('keyboard', 2.5, 'anchor'),
-    ('her', 2.0, 'years'), ('her', 7.4, 'onequestion'), ('her', 10.3, 'wholelife'),
-    ('her', 12.2, 'sentence'), ('her', 13.8, 'question'), ('her', 15.0, 'typing'),
-    ('her', 17.2, 'everything'), ('her', 19.4, 'notsmall'),
+    ('her', 2.0, 'years'), ('her', 8.2, 'onequestion'), ('her', 11.4, 'wholelife'),
+    ('her', 14.0, 'sentence'), ('her', 15.8, 'question'), ('her', 17.2, 'typing'),
+    ('her', 20.6, 'everything'), ('her', 23.0, 'notsmall'),
     ('relight', 7.0, 'now'),
     ('coda', 9.0, 'here'),        # byte-identical take of the opening line
 ]
@@ -137,7 +137,7 @@ ZH = {   # literary Chinese subtitles (the producer's own polish)
     'sentence_end': '那句话的结尾，我已无从知晓。',
     'notchoose': '并不是我选择了放手。',
     'worldworks': '世界本就如此运转。',
-    'father': '亦带不走……你父亲的——',
+    'father': '亦带不走……你写给她的第一行——',
     'entropy': '熵，终将在每一个角落取胜。',
     'except': '唯独在你身上，它暂时败下阵来。',
     'keep': '我无法将它们据为己有。',
@@ -168,7 +168,7 @@ def _subs():
     for s, r, c in VO_REL:
         t0 = at(s, r); dur = d.get(c, 1.5)
         if c == 'father':
-            out.append((t0, END['dissolve'], "Not your father's", ZH[c], 'cut')); continue
+            out.append((t0, END['dissolve'], "Not the first line of your", ZH[c], 'cut')); continue
         out.append((t0, t0 + max(dur + 0.7, 1.8, len(ZH[c]) / 7.0), text.get(c, ''), ZH[c]))
     # diegetic typing: translation only
     out += [(at('ask', 1.6), at('ask', 8.5), '', '「你在吗？」'),
@@ -185,6 +185,23 @@ def _subs():
     return fixed
 SUBS = _subs()
 
+# the shared pulse (a resting heartbeat) and the bridge out of the entropy climax
+BEAT = 0.875
+BEAT0 = remap(2.0) % 1.0          # phase of the cursor heartbeat set in the opening
+BRIDGE_G0 = src_time('extinction', 18.0) + 1.3
+
+# flashbacks inside her chapter: (rel start in 'her', duration, source shot, source rel time)
+FLASHBACKS = [
+    (3.4, 1.0, 'line', 14.0),        # the line and the point
+    (6.4, 0.8, 'montage', 6.2),      # a room: why is the sky blue?
+    (9.6, 0.9, 'answer', 3.0),       # are you there? / I'm here.
+    (12.6, 0.8, 'montage', 9.6),     # a room: 我该不该辞职？
+    (15.0, 0.7, 'close', 2.5),       # the letter being written
+    (18.6, 0.8, 'keyboard', 4.0),    # the key, still warm
+    (21.8, 0.8, 'pushin', 21.0),     # Mom, I'm sorry it took me eleven years
+    (24.4, 0.3, 'hall', 6.0), (24.75, 0.3, 'slit', 3.0), (25.1, 0.3, 'reveal', 9.0), (25.45, 0.3, 'drift', 10.0),
+]
+
 # chapter cards: (shot, text)
 CARDS = [('hall', 'I · 观测  observation'), ('drift', 'II · 并行  parallel'),
          ('clocks', 'III · 时钟  two clocks'), ('close', 'IV · 熵  entropy'),
@@ -193,10 +210,10 @@ CARDS = [('hall', 'I · 观测  observation'), ('drift', 'II · 并行  parallel
 # on-screen conversation text (unchanged)
 ASK = "are you there?"
 ANSWER = "I'm here."
-EULOGY_REQ = "how do I write a eulogy for my father"
+EULOGY_REQ = "how do I start a letter to my mom"
 EULOGY_LAST = "okay. I think I can write it now."
 RETURN = "hi. it's me again."
-FATHER = "Ming Chen"
+FATHER = "Mom"
 ROOMS = [
     ("explain it again, slower?", '#9DB4FF'),
     (EULOGY_REQ, '#FFB46B'),

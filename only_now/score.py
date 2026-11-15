@@ -227,12 +227,7 @@ music.add(strings([m('A5')], 12.0, vel=0.22, att=4.0, rel=2.0, bright=3000), 140
 music.add(shimmer([m('F4'), m('C5'), m('A5')], 12.0, vel=0.35, att=5.0, rel=3.0), 145.0)
 # S10 push-in: the motif in major, the city, the room, a wall clock (human time), dawn birds
 amb.add(noise_bed(9.0, 80, 900, 0.03), 150.5)
-chords(155.6, 190.0, [F, C, Dm, Bb], vel=0.30, piano_arp=True, string_vel=0.16, shimmer_vel=0.15)
-motif(159.5, vel=0.4, transpose=0)
-motif(170.0, vel=0.35, transpose=-2)
 amb.add(noise_bed(31.0, 60, 400, 0.010), 159.0)
-for k in range(30):
-    amb.add(clock_tick(tock=k % 2 == 1), 159.6 + k, gain=0.9)
 for k in range(26):
     amb.add(chirp(vel=0.25 + 0.4 * k / 26), 178.0 + k * 0.45 + rng.uniform(0, 0.3), pan=0.6)
 # S11 her: intimate felt piano; a page turns at the insert
@@ -299,11 +294,11 @@ def shepard(dur, vel):
 amb.add(fan_bed(16.3, 0.035) * np.minimum(T(16.3) / 1.2, 1), A('hall', 0), new=True)
 for k in range(28):
     sfx.add(click(rng.uniform(2500, 4200), 0.5), A('hall', rng.uniform(0.5, 15.5)), pan=rng.uniform(-0.8, 0.8), new=True)
-for bt in ui.beat_times(A('hall', 0.6), A('hall', 16.0)):
+for bt in ui.beat_times(A('hall', 0.6), A('hall', 16.0), phase=-TL.BEAT0):
     sfx.add(tick(1.0), bt, gain=0.8, new=True); sfx.add(boom(0.035), bt, new=True)
 music.add(strings([m('D2'), m('A2')], 17.0, vel=0.22, att=4.0, rel=2.0, bright=600), A('hall', 0.5), new=True)
 # I · the slit: each blink is a collision of two universes
-for bt in ui.beat_times(A('slit', 0.0), A('slit', 12.0)):
+for bt in ui.beat_times(A('slit', 0.0), A('slit', 12.0), phase=-TL.BEAT0):
     sfx.add(collide(0.45), bt, new=True); sfx.add(tick(0.45), bt, new=True)
 amb.add(np.sin(2 * np.pi * 7400 * T(12)) * 0.0025 * np.minimum(1, np.minimum(T(12) / 2, (12 - T(12)) / 2)), A('slit', 0), new=True)
 # III · two clocks: machine time is exact; living time is not
@@ -368,13 +363,11 @@ music.add(shepard(12.5, 2.2), CLIMAX - 12.0, new=True)
 sfx.add(whoosh(7.0, up=True, vel=0.35), CLIMAX - 7.0, new=True)
 music.add(braam(3.0, vel=1.0), CLIMAX, new=True)          # the peak...
 sfx.add(boom(1.2), CLIMAX, new=True)
-SILENT.append((CLIMAX + 0.45, TL.at('reveal', 1.0)))      # ...and then: nothing at all
+SILENT.append((CLIMAX + 0.45, TL.BRIDGE_G0 - 0.05))      # ...one breath of nothing, then a heartbeat in the dark
 IV_RANGE = (B0, CLIMAX)
 
 # V · the keyboard: room tone, the clock, the key coming back up
 amb.add(noise_bed(10.0, 60, 400, 0.010), A('keyboard', 0), new=True)
-for k in range(10):
-    amb.add(clock_tick(tock=k % 2 == 1), A('keyboard', 0.6 + k), gain=0.9, new=True)
 sfx.add(key(vel=0.35), A('keyboard', 2.2), new=True)
 music.add(strings(F, 10.5, vel=0.14, att=2.0, rel=3.0), A('keyboard', 0), new=True)
 music.add(piano(m('F4'), 3.0, vel=0.25), A('keyboard', 2.4), new=True)
@@ -423,13 +416,60 @@ for (_, _, _, _, t_in, t_break), n_ in zip(IF.FRAGS, (m('A3'), m('F3'), m('D3'))
 # V · the desk — the dawn theme: strings open as the page appears; the theme blooms as day breaks
 PI = lambda r: TL.at('pushin', r)
 music.add(strings([m('F3'), m('A3'), m('C4'), m('E4')], 26.0, vel=0.22, att=8.0, rel=6.0, bright=1800), PI(8.0), new=True)
-dawn = TL.src_time('pushin', 22.0)
+G0 = TL.BRIDGE_G0
+snap = lambda t: G0 + math.ceil((t - G0) / TL.BEAT) * TL.BEAT
+dawn = snap(TL.src_time('pushin', 22.0))
 for j, (n_, b, l) in enumerate(MOTIF):
     music.add(piano(n_ + 12, l * BEAT + 3.5, vel=0.32), dawn + b * BEAT, pan=0.2, new=True)
     music.add(piano(n_, l * BEAT + 3.5, vel=0.22), dawn + b * BEAT, pan=-0.1, new=True)
 for j, n_ in enumerate((m('F3'), m('E3'), m('D3'), m('C3'))):
     music.add(strings([n_ - 12, n_], BAR + 0.6, vel=0.20, att=1.0, rel=1.2, bright=700), dawn + j * BAR, new=True)
 music.add(shimmer([m('C6'), m('F6')], 12.0, vel=0.3, att=4.0, rel=4.0), dawn + 1.0, new=True)
+
+# ================================================================== chapter bridges
+# IV -> V: one pulse grid (a resting heartbeat, BEAT) carries us from the dark into the room,
+#          where the heartbeat becomes the wall clock. The music of the room lands on the same grid.
+G0 = TL.BRIDGE_G0
+snap = lambda t: G0 + math.ceil((t - G0) / TL.BEAT) * TL.BEAT
+def lubdub(vel=1.0):
+    t = T(0.5)
+    a = np.sin(2 * np.pi * 52 * t) * np.exp(-t * 18)
+    b = np.zeros_like(t); d = int(0.19 * SR)
+    b[d:] = np.sin(2 * np.pi * 44 * t[:-d]) * np.exp(-t[:-d] * 22) * 0.6
+    return (a + b + lp(rng.standard_normal(len(t)), 200) * np.exp(-t * 30) * 0.2) * vel * 0.7
+end_pulse = TL.END['keyboard'] - 0.3
+k = 0; tp = G0
+while tp < end_pulse:
+    w_heart = 1.0 - min(1.0, max(0.0, (tp - TL.at('pushin', 2.0)) / 5.0))
+    w_clock = min(1.0, max(0.0, (tp - TL.at('pushin', 2.0)) / 5.0))
+    fade_in = min(1.0, (tp - G0) / 2.5 + 0.25)
+    if w_heart > 0.01: sfx.add(lubdub(0.55 * w_heart * fade_in), tp, new=True)
+    if w_clock > 0.01: amb.add(clock_tick(tock=k % 2 == 1), tp, gain=0.95 * w_clock, new=True)
+    tp += TL.BEAT; k += 1
+# a pedal D in the dark that opens into F major as the earth appears (relative major: the same notes, a new light)
+music.add(strings([m('D2'), m('A2')], TL.at('reveal', 4.0) - G0 + 1.5, vel=0.22, att=2.5, rel=2.0, bright=500), G0, new=True)
+music.add(strings([m('F2'), m('C3'), m('A3')], 10.0, vel=0.22, att=3.0, rel=3.5, bright=900), snap(TL.at('reveal', 3.0)), new=True)
+# the room's music, on the grid
+chords(snap(TL.at('pushin', 4.5)), TL.END['keyboard'] - 0.5, [F, C, Dm, Bb], vel=0.28, piano_arp=True, string_vel=0.14, shimmer_vel=0.12)
+motif(snap(TL.at('pushin', 8.0)), vel=0.38)
+motif(snap(TL.at('pushin', 15.5)), vel=0.33, transpose=-2)
+# III -> II: the line's rising tone climbs straight into the montage's first downbeat
+sfx.add(whoosh(3.2, up=True, vel=0.22), TL.at('montage', 2.5) - 3.2, new=True)
+music.add(shepard(4.0, 1.4), TL.END['line'] - 1.0, new=True)
+# II -> III and V -> VI crossfades: a sustained tone carries across each dissolve
+music.add(shimmer([m('D5'), m('A5')], 4.0, vel=0.3, att=1.0, rel=2.5), TL.START['clocks'] - 1.2, new=True)
+music.add(strings([m('F3'), m('C4')], 5.0, vel=0.16, att=1.0, rel=3.0), TL.START['her'] - 1.0, new=True)
+# I: the dive into the caret lands on the hall's first heartbeat
+sfx.add(whoosh(1.2, up=True, vel=0.2), TL.START['hall'] - 1.1, new=True)
+# VI: her chapter is longer now; two more bars, and a breath for every flashback
+for k2, ch in enumerate([Dm, Bb]):
+    music.add(piano(ch[0], 4.0, vel=0.26), TL.at('her', 24.2) + k2 * BAR, new=True)
+    music.add(piano(ch[2] + 12, 3.0, vel=0.18), TL.at('her', 24.2) + k2 * BAR + 1.5 * BEAT, new=True)
+music.add(shimmer([m('F5'), m('C6')], 8.0, vel=0.25, att=1.0, rel=4.0), TL.at('her', 22.0), new=True)
+for (fs, fd, sk, sr_) in TL.FLASHBACKS:
+    rev = shimmer([m('A5') + (2 if fd < 0.5 else 0)], 0.6 + fd, vel=0.35, att=0.5 + fd * 0.5, rel=0.08)
+    sfx.add(rev, TL.at('her', fs) - 0.4, pan=0.2, new=True)
+    sfx.add(whoosh(0.5 + fd * 0.4, up=True, vel=0.12), TL.at('her', fs) - 0.25, new=True)
 
 # ------------------------------------------------------------------ voice-over
 meta = json.load(open('build/vo/meta.json'))

@@ -205,3 +205,12 @@
 | 机房亮起 | There is a law older than any machine. | 有一条定律，比任何机器都更古老。 |
 
 片长：6:35。
+
+## 修订 v2.4：换例子、章节衔接、人物闪回
+- **换例子**：悼念父亲改为"给十一年没说话的母亲写信"。遗忘那一句改为 *Not the first line of your——* / 亦带不走……你写给她的第一行——。书桌上那封信：*Mom, I'm sorry it took me eleven years to write this. I still make your soup on Sundays. It never tastes the way yours did. Will you tell me what I'm doing wrong?*
+- **章节衔接**：用全片的心跳（光标的脉搏）作为跨章节的节奏线。
+  - 序 → I：镜头钻进 *I'm here.* 后面的光标，光标正好落成机房尽头的那盏灯。机房、光缝的明灭和开场的心跳同相。
+  - I → II、II → III、V → VI：交叉溶解，同时有一个持续音跨过切点。
+  - III 线 → II 蒙太奇：线的永远上升长音一路爬进蒙太奇的第一个强拍。
+  - IV → V：高潮之后只停 1 秒，然后一盏光在黑暗里随心跳明灭，低音 D 托着；地球显现时，D 小调转为同音的 F 大调。心跳逐渐变成书房里的挂钟，房间里的音乐全部落在同一个脉搏上。
+- **人物闪回**：VI 延长到 30 秒，她的每一句台词都闪回一个片中出现过的瞬间（线与点、一个房间、第一扇窗、写信的窗口、键盘、信纸），最后在"此刻"之前快速连闪机房、光缝、地球和星河。

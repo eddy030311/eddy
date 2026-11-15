@@ -74,7 +74,7 @@ def render_hall(T, cam, lit, pulse=True, off_front=None, keep_center=1.0):
     sx, sy, zz = proj(x, y, z, cam)
     b = D['base'][vis] * lit
     if pulse:
-        b = b * (0.35 + 0.65 * heartbeat_vec(T - z * 0.035))     # the heartbeat travels down the hall
+        b = b * (0.35 + 0.65 * heartbeat_vec(T - TL.BEAT0 - z * 0.035))     # the heartbeat travels down the hall
     tw = D['twk'][vis]
     act = 0.55 + 0.45 * np.sin(T * D['fr'][vis] + D['ph'][vis])
     b = np.where(tw, b * act, b)
@@ -167,6 +167,7 @@ def s_slit(lt, dur):
     gx, gy = grid(W, H)
     dist = np.abs(gx - xc)
     # ripples: every heartbeat the two universes collide at the line
+    T = T - TL.BEAT0                  # stay in phase with the opening heartbeat
     beat = math.floor(T)
     for kb in range(3):
         tb = T - (beat - kb)

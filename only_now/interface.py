@@ -59,6 +59,15 @@ def s_answer(lt, dur):
     img = void_bg()
     hero_window(img, t, len(TL.ASK), ai_shown(TL.ANSWER, t, 22.0, vo_dur('here')))
     status_line(img, 99, 0.3 * (1 - sstep(4.5, 6.0, lt)))
+    # match cut into the machine hall: dive into the caret until it becomes the light at the end of the hall
+    u = sstep(dur - 1.1, dur, lt)
+    if u > 0:
+        cx_, cy_ = 690.0, 499.0
+        z = 1 + 9 * u ** 2
+        tx, ty = lerp(cx_, CX, u), lerp(cy_, CY, u)
+        M = np.float32([[z, 0, tx - z * cx_], [0, z, ty - z * cy_]])
+        img = cv2.warpAffine(img, M, (W, H), flags=cv2.INTER_LINEAR, borderValue=tuple(float(v) for v in VOID))
+        if u > 0.3: img = cv2.GaussianBlur(img, (0, 0), 1 + 6 * u)
     return img
 
 # --------------------------------------------------------------------------- S6 montage
@@ -191,7 +200,7 @@ def s_close(lt, dur):
 FRAGS = [  # (text, font, size, y, appear, break)
     ("why did the scarecrow win an award?", 'sans_l', 40, CY - 120, 108.6, 111.15),
     ("for (let i = 0; i <= items.length; i++)", 'mono_l', 36, CY - 10, 111.9, 113.75),
-    ("For my father, " + TL.FATHER, 'serif_l', 48, CY + 110, 114.7, 116.75),
+    ("Mom, I'm sorry it took me eleven years.", 'serif_l', 46, CY + 110, 114.7, 116.75),
 ]
 _part = {}
 def particles_for(i):

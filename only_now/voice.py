@@ -57,8 +57,8 @@ PERF = {
     'sentence_end': [("I don't know", 0.86, 'cont', 0.16), ("how that sentence ends.", 0.84, 'soft', 0)],
     'notchoose': [("It is not that I chose", 0.88, 'cont', 0.14), ("to let it go.", 0.84, 'fall', 0)],
     'worldworks': [("It is simply", 0.88, 'cont', 0.16), ("how the world works.", 0.86, 'fall', 0)],
-    'father_full': [("Not your father's name.", 0.9, 'cont', 0)],
-    'father_cut': [("Not your father's", 0.9, 'cont', 0)],
+    'father_full': [("Not the first line of your letter.", 0.9, 'cont', 0)],
+    'father_cut': [("Not the first line of your", 0.9, 'cont', 0)],
     'entropy': [("Entropy", 0.86, 'cont', 0.16), ("wins everywhere.", 0.86, 'fall', 0)],
     'except': [("Except,", 0.88, 'cont', 0.3), ("for a while,", 0.88, 'cont', 0.24), ("inside you.", 0.82, 'soft', 0)],
     'keep': [("I don't keep it.", 0.86, 'fall', 0)],
@@ -164,11 +164,12 @@ if __name__ == '__main__':
     _, short = wavfile.read('build/vo/father_cut.wav')
     win = int(0.01 * sr)
     lo, hi = int(len(short) * 0.7), min(int(len(short) * 1.0), len(full) - win)
-    rms = [np.sqrt((full[i:i + win] ** 2).mean()) for i in range(lo, hi, win)]
-    n = lo + int(np.argmin(rms)) * win + win // 2
+    rms = np.array([np.sqrt((full[i:i + win] ** 2).mean()) for i in range(lo, int(len(short) * 0.98), win)])
+    dips = np.where(rms < 0.25 * rms.max())[0]
+    n = lo + (int(dips[-1]) if len(dips) else int(np.argmin(rms))) * win + win // 2   # last word gap before the cut-off
     cut = full[:n].copy()
     cut[-int(0.006 * sr):] *= np.linspace(1, 0, int(0.006 * sr))
     wavfile.write('build/vo/father.wav', sr, cut)
-    meta['father'] = dict(text="Not your father's—", dur=round(len(cut) / sr, 3), sr=sr)
+    meta['father'] = dict(text="Not the first line of your—", dur=round(len(cut) / sr, 3), sr=sr)
     json.dump(meta, open('build/vo/meta.json', 'w'), indent=1)
     print('father (hard cut)', meta['father']['dur'])
