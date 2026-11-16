@@ -81,64 +81,86 @@ def cassette(img, T, z, light):
     rs = cv2.warpAffine(spr, cv2.getRotationMatrix2D((spr.shape[1] / 2, spr.shape[0] / 2), 9, 1.0), (spr.shape[1], spr.shape[0]))
     blit(img, rs * light, p[0], p[1])
 
-def person(lt, T, z):
-    """Her back, as a silhouette (after the producer's reference): long wavy hair loose down the back, a black ribbon
-    bow on each side of the head with long tails, puff sleeves, gloves with frilled lace cuffs. Everything she is
-    lives in the outline, which the screen catches."""
+DRAFT = "hey. can I ask you something"
+TYPE_T = (2.4, 4.9)        # she types a first line...
+DEL_T = (6.2, 7.0)         # ...looks at it, and deletes it
+def draft_shown(lt):
+    n = len(DRAFT)
+    if lt < TYPE_T[0]: return 0
+    if lt < TYPE_T[1]: return int(n * (lt - TYPE_T[0]) / (TYPE_T[1] - TYPE_T[0]))
+    if lt < DEL_T[0]: return n
+    if lt < DEL_T[1]: return int(n * (1 - (lt - DEL_T[0]) / (DEL_T[1] - DEL_T[0])))
+    return 0
+
+def _spline(pts, closed=True, n=8):
+    P = np.asarray(pts, np.float64)
+    P = np.vstack([P[-1], P, P[0], P[1]]) if closed else np.vstack([P[0], P, P[-1]])
+    out = []
+    for i in range(1, len(P) - 2):
+        p0, p1, p2, p3 = P[i - 1], P[i], P[i + 1], P[i + 2]
+        for t in np.linspace(0, 1, n, endpoint=False):
+            out.append(0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t ** 3))
+    return np.array(out)
+
+HEAD = np.array([700.0, 520.0])      # her head centre in the base layout
+HS = 1.05                            # local units -> base layout
+
+def person(lt, T, z, T1=None, z1=1.0):
+    """A slender girl at the desk, seen from behind (after the producer's reference): long wavy hair down her back,
+    a ribbon bow on each side, small puff sleeves, slim arms to the keyboard (hidden by her back, elbows at her sides).
+    Pure silhouette: everything she is lives in the outline the screen catches. Local units: head centre (0,0)."""
     m = np.zeros((H, W), np.float32)
-    def P(pts): return np.int32(np.round(T(np.array(pts, np.float64)) * 8))
-    def fill(pts): cv2.fillPoly(m, [P(pts)], 1.0, cv2.LINE_AA, 3)
-    def ell(c, ax, ay, ang=0.0):
-        p = T(np.array([c], np.float64))[0]
-        cv2.ellipse(m, (int(p[0] * 8), int(p[1] * 8)), (max(1, int(ax * z * 8)), max(1, int(ay * z * 8))), ang, 0, 360, 1.0, -1, cv2.LINE_AA, 3)
-    def stroke(pts, w):
-        cv2.polylines(m, [P(pts)], False, 1.0, max(1, int(round(w * z))), cv2.LINE_AA, 3)
-    hes = sstep(4.2, 5.0, lt) * (1 - sstep(7.4, 8.4, lt))            # the hesitation: a finger lifts, waits
-    sway = 2.0 * math.sin(lt * 0.6)
-    hx, hy = 640.0, 552.0 + 2.5 * math.sin(lt * 0.5)
-    # shoulders, a narrow back, the puff sleeves
-    fill([(300, 1200), (330, 900), (420, 800), (540, 760), (740, 760), (860, 800), (950, 900), (990, 1200)])
-    for (cx, ang) in ((430.0, -18), (850.0, 18)):
-        ell((cx, 810.0), 78, 62, ang)
-        for k in range(3):                                           # the gathered puff: a few soft folds on its crown
-            a_ = math.radians(235 + k * 30 if cx < 640 else -55 - k * 30)
-            ell((cx + 74 * math.cos(a_), 810 + 58 * math.sin(a_)), 14, 10)
-    # forearms in slim sleeves to the keyboard, gloved hands with lace frills at the wrist
-    fill([(860, 850), (930, 860), (1012, 722), (962, 712)])        # her right arm, from under the puff sleeve
-    for wx, lift in ((988.0, hes),):
-        wy = 724.0
-        frill = []
-        for k in range(16):                                          # the cuff: a ruffle of little points
-            a_ = k * math.pi / 8
-            r_ = 30 if k % 2 == 0 else 21
-            frill.append((wx + r_ * math.cos(a_), wy + 0.55 * r_ * math.sin(a_)))
-        fill(frill)
-        hy_ = 700 - 10 * lift
-        ell((wx, hy_), 30, 15)
-        fx = wx - 16
-        fill([(fx - 5, hy_), (fx + 5, hy_), (fx + 4, hy_ - 26 * lift - 8), (fx - 4, hy_ - 26 * lift - 8)])
-    # the head (from behind), and the long hair falling in waves down her back
-    ell((hx, hy), 104, 118, -4)
-    left, right = [], []
-    for y in np.linspace(hy - 10, 1220, 60):
-        f = sstep(hy + 40, hy + 260, y)                              # the hair widens below the head, then falls straight
-        wv = 9 * math.sin(y / 36 + 1.0 + sway * 0.05) + 5 * math.sin(y / 15 + 0.4)
-        wv2 = 9 * math.sin(y / 33 + 2.1 - sway * 0.05) + 5 * math.sin(y / 13 + 1.7)
-        left.append((hx - 100 - 38 * f + wv, y)); right.append((hx + 100 + 34 * f + wv2, y))
-    fill(left + right[::-1])
-    for (x0, y0, sd) in ((hx - 136, 820, -1), (hx + 132, 880, 1), (hx - 130, 960, -1)):        # a few loose curls at the edge
-        pts = [(x0 + sd * 14 * math.sin(k / 5 * math.pi) + sd * k * 2, y0 + k * 7) for k in range(7)]
-        stroke(pts, 5)
-    # a ribbon bow on each side, low at the back of the head: two round loops like wings, a pinched knot, V-cut tails
-    for side in (-1, 1):
-        bx, by = hx + side * 92, hy + 18
-        ell((bx + side * 40, by - 14), 40, 23, side * -12)
-        ell((bx + side * 36, by + 20), 34, 19, side * 22)
-        ell((bx, by), 12, 15)
-        for (dx_, ln, w_) in ((side * 18, 160, 13), (side * 2, 132, 12)):
-            tx, ty = bx + dx_, by + ln
-            fill([(bx - w_ / 2, by + 8), (bx + w_ / 2, by + 8), (tx + w_ / 2 + 3 * math.sin(lt * 0.7), ty),
-                  (tx + 3 * math.sin(lt * 0.7), ty - 10), (tx - w_ / 2 + 3 * math.sin(lt * 0.7), ty)])
+    typing = (TYPE_T[0] < lt < TYPE_T[1]) or (DEL_T[0] < lt < DEL_T[1])
+    br = 1.2 * math.sin(lt * 2 * math.pi / 4.2)
+    nod = (0.8 * math.sin(lt * 5.5) if typing else 0.0)
+    def L(pts, dy=0.0):
+        p = np.asarray(pts, np.float64) * HS + HEAD + np.array([0.0, dy])
+        return T(p)
+    def fill(pts, dy=0.0):
+        cv2.fillPoly(m, [np.int32(np.round(L(pts, dy) * 8))], 1.0, cv2.LINE_AA, 3)
+    def ell(c, ax, ay, ang=0.0, dy=0.0):
+        p = L([c], dy)[0]
+        cv2.ellipse(m, (int(p[0] * 8), int(p[1] * 8)), (max(1, int(ax * HS * z * 8)), max(1, int(ay * HS * z * 8))), ang, 0, 360, 1.0, -1, cv2.LINE_AA, 3)
+    # body: slim neck, sloping shoulders, a narrow back to the waist
+    fill(_spline([(-14, 50), (14, 50), (20, 112), (62, 128), (96, 146), (104, 200), (92, 260), (84, 330), (86, 420),
+                  (-86, 420), (-84, 330), (-92, 260), (-104, 200), (-96, 146), (-62, 128), (-20, 112)]), dy=br * 0.4)
+    # small puff sleeves at the shoulders, a few soft folds on top
+    for sd in (-1, 1):
+        ell((sd * 104, 158), 30, 26, sd * 12, dy=br * 0.5)
+        ell((sd * 96, 138), 13, 9, sd * 25, dy=br * 0.5)
+        ell((sd * 120, 144), 11, 8, sd * -15, dy=br * 0.5)
+    # slim upper arms down to the elbows at her sides (the forearms go forward, hidden by her back)
+    tap = 1.4 * max(0.0, math.sin(lt * 11.0)) if typing else 0.0
+    for sd in (-1, 1):
+        dy = tap * (sd > 0)
+        fill(_spline([(sd * 96, 170), (sd * 120, 176), (sd * 122, 240), (sd * 116, 292), (sd * 100, 296), (sd * 98, 240)]), dy=dy)
+    # the head and the long wavy hair, one outline: around the crown, down the sides, flowing down her back
+    yy = np.linspace(20, 430, 34)
+    def edge(y, sd):
+        w = 62 + 6 * sstep(20, 70, y) + 16 * sstep(110, 250, y) + 6 * sstep(250, 400, y)
+        wave = 4.0 * math.sin(y / 26 + (1.3 if sd > 0 else 0.2) + lt * 0.5) + 2.0 * math.sin(y / 9.0 + (2.0 if sd > 0 else 0.7))
+        return sd * (w + wave)
+    crown = [(70 * math.cos(a_), -6 - 78 * math.sin(a_)) for a_ in np.linspace(0.05 * math.pi, 0.95 * math.pi, 13)]
+    right = [(edge(y, 1), y) for y in yy]
+    left = [(edge(y, -1), y) for y in yy[::-1]]
+    hair = np.vstack([np.array(right), np.array(left), np.array(crown[::-1])])
+    fill(_spline(hair, n=4), dy=nod)
+    # a few loose curls breaking the outline, low on the back
+    for (y0, sd) in ((230, -1), (290, 1), (350, -1)):
+        x0 = edge(y0, sd)
+        pts = [(x0 + sd * (5 * math.sin(k / 4 * math.pi) + 1.5 * k), y0 + 6 * k) for k in range(6)]
+        cv2.polylines(m, [np.int32(np.round(L(pts, nod) * 8))], False, 1.0, max(1, int(round(3.0 * z))), cv2.LINE_AA, 3)
+    # a ribbon bow on each side, tied on the hair just behind the ears: two loops like small wings, a knot, two tails
+    for sd in (-1, 1):
+        bx, by = sd * 60, 26
+        loop_up = _spline([(bx, by), (bx + sd * 22, by - 26), (bx + sd * 48, by - 22), (bx + sd * 44, by - 4), (bx + sd * 14, by - 2)])
+        loop_dn = _spline([(bx, by + 2), (bx + sd * 16, by + 6), (bx + sd * 40, by + 20), (bx + sd * 30, by + 32), (bx + sd * 10, by + 14)])
+        fill(loop_up, dy=nod); fill(loop_dn, dy=nod)
+        ell((bx + sd * 4, by + 2), 9, 10, dy=nod)
+        sw = 3 * math.sin(lt * 0.8 + sd)
+        for (dx_, ln, w_) in ((sd * 20, 120, 9), (sd * 8, 100, 8)):
+            tx = bx + dx_ + sw
+            fill([(bx + sd * 2 - w_ / 2, by + 8), (bx + sd * 2 + w_ / 2, by + 8), (tx + w_ / 2, by + ln), (tx, by + ln - 8), (tx - w_ / 2, by + ln)], dy=nod)
     return m
 
 def render(shot, lt, dur):
@@ -174,15 +196,18 @@ def render(shot, lt, dur):
     poly(img, T, [(716, 236), (1304, 236), (1304, 596), (716, 596)], np.array([0.075, 0.070, 0.090]) * (0.9 + 0.1 * screen))
     wc = T(np.array([[SC[0], SC[1]]]))[0]
     sk = K0 * z
-    window(img, wc[0], wc[1], WIN[2] * sk, WIN[3] * sk, [], 0.0, cursor=None, alpha=1 - sstep(0.85, 1.0, e), border=0.8)
+    n_ = draft_shown(lt)
+    lines = [dict(role='human', text=DRAFT, shown=n_)] if n_ > 0 else []
+    window(img, wc[0], wc[1], WIN[2] * sk, WIN[3] * sk, lines, 0.0, cursor=None, alpha=1 - sstep(0.85, 1.0, e), border=0.8, scale_text=sk)
     cp = T(np.array([CARET]))[0]
-    draw_caret(img, cp[0], cp[1], max(1, 3 * sk), 32 * sk, blink)
+    if n_ == 0:
+        draw_caret(img, cp[0], cp[1], max(1, 3 * sk), 32 * sk, blink)
     # the screen's light falling on the room
     glow_spot(img, wc[0], wc[1], 380 * z, np.array([0.55, 0.48, 0.42]), 0.18 * screen * (1 - e))
     cassette(img, T, z, screen * 1.15)
     # them: a silhouette, rim-lit by the screen on the side that faces it
     if zf < 6:
-        m = person(lt, Tf, zf)
+        m = person(lt, Tf, zf, T, z)
         sh = np.float32([[1, 0, -7 * zf], [0, 1, 5 * zf]])
         inner = cv2.warpAffine(m, sh, (W, H))
         rim = np.clip(m - inner, 0, 1)
