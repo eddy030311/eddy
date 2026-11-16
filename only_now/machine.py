@@ -573,7 +573,19 @@ def lib_data():
                 if rng.random() < 0.04: z += rng.uniform(0.1, 0.3); continue
                 books.append((side, z, z + w, row, palette[rng.integers(len(palette))] * rng.uniform(0.7, 1.2), rng.uniform(0.8, 0.98)))
                 z += w + 0.004
-    _lib = dict(lamps=lamps, books=books, her=her)
+    # other readers: real people at a dozen seats, bent over their books (never at her table)
+    readers = []
+    cands = [(i, c) for i in range(len(lamps)) for c in range(2) if i != her and 2.6 < lamps[i][1] < 22.0]
+    pick = rng.choice(len(cands), size=13, replace=False)
+    pal = [(0.10, 0.12, 0.20), (0.12, 0.12, 0.13), (0.20, 0.13, 0.08), (0.14, 0.15, 0.10), (0.20, 0.08, 0.09),
+           (0.46, 0.41, 0.34), (0.24, 0.22, 0.20)]
+    hairs = [(0.04, 0.03, 0.03), (0.11, 0.07, 0.04), (0.22, 0.13, 0.07), (0.05, 0.04, 0.04)]
+    for k in pick:
+        i, c = cands[k]
+        readers.append(dict(lamp=i, chair=c, cloth=np.array(pal[rng.integers(len(pal))], np.float32),
+                            hair=np.array(hairs[rng.integers(len(hairs))], np.float32), bow=rng.uniform(0.4, 1.0),
+                            w=rng.uniform(0.17, 0.22), h=rng.uniform(-0.03, 0.04), ph=rng.uniform(0, 6.3), long=rng.random() < 0.4))
+    _lib = dict(lamps=lamps, books=books, her=her, readers=readers)
     return _lib
 
 LIB_CAM = dict(x=0.0, y=LIB_CAMY, f=LIB_F, pitch=0.0)   # the library camera: lateral offset, height, lens, tilt down
@@ -606,6 +618,73 @@ def chair(img, P, x, z, lit, S):
         cv2.fillPoly(img, [q], col, cv2.LINE_AA)
     hi = tuple(float(c * 1.8) for c in col)              # the worn top edge of the rail catches the light
     cv2.line(img, tuple(np.int32(P(x - w, 0.44, z))), tuple(np.int32(P(x + w, 0.44, z))), hi, max(1, S), cv2.LINE_AA)
+
+SKIN_R = np.array([0.78, 0.60, 0.49], np.float32)
+def reader_light(lvl, nf, lz):
+    return nf * (0.06 + 0.25 * lz + 0.85 * lvl) * np.array([1.0, 0.86, 0.68], np.float32)
+
+def reader_body(img, P, x, z, R, lit, t, S):
+    """A real reader behind the table: torso, neck, bowed head. Solid — the light stops at them."""
+    w, sh = R['w'], 0.30 + R['h']
+    bow = R['bow'] * (0.92 + 0.08 * math.sin(t * 0.6 + R['ph']))
+    zb = z - 0.08
+    torso = np.int32([P(x - w, -0.02, zb), P(x + w, -0.02, zb), P(x + w, sh - 0.05, zb - 0.05 * bow),
+                      P(x + w * 0.65, sh, zb - 0.07 * bow), P(x - w * 0.65, sh, zb - 0.07 * bow), P(x - w, sh - 0.05, zb - 0.05 * bow)])
+    cv2.fillPoly(img, [torso], tuple(float(v) for v in R['cloth'] * lit), cv2.LINE_AA)
+    hy, hz = sh + 0.10 - 0.07 * bow, zb - 0.07 - 0.13 * bow
+    nk = np.int32([P(x - 0.035, sh - 0.01, zb - 0.07 * bow), P(x + 0.035, sh - 0.01, zb - 0.07 * bow), P(x + 0.03, hy, hz), P(x - 0.03, hy, hz)])
+    cv2.fillPoly(img, [nk], tuple(float(v) for v in SKIN_R * lit * 0.7), cv2.LINE_AA)
+    cx_, cy_ = P(x, hy, hz)
+    rx = abs(P(x + 0.085, hy, hz)[0] - cx_); ry = rx * 1.12
+    cv2.ellipse(img, (int(cx_), int(cy_)), (max(1, int(rx)), max(1, int(ry))), 0, 0, 360, tuple(float(v) for v in SKIN_R * lit * 0.85), -1, cv2.LINE_AA)
+    # the hair: bowed heads show mostly the crown
+    cv2.ellipse(img, (int(cx_), int(cy_ - ry * (0.10 + 0.08 * bow))), (max(1, int(rx * 1.08)), max(1, int(ry * (0.92 + 0.12 * bow)))), 0, 0, 360,
+                tuple(float(v) for v in R['hair'] * lit * 1.4), -1, cv2.LINE_AA)
+    # the crown catches a little of the lamp
+    cv2.ellipse(img, (int(cx_ - rx * 0.25), int(cy_ - ry * 0.55)), (max(1, int(rx * 0.35)), max(1, int(ry * 0.18))), -20, 0, 360,
+                tuple(float(v) for v in (R['hair'] * 1.4 + 0.05) * lit * 1.6), -1, cv2.LINE_AA)
+    if R['long']:
+        hl = np.int32([P(x - 0.09, hy, hz), P(x + 0.09, hy, hz), P(x + 0.11, sh - 0.12, zb - 0.06), P(x - 0.11, sh - 0.12, zb - 0.06)])
+        cv2.fillPoly(img, [hl], tuple(float(v) for v in R['hair'] * lit * 1.3), cv2.LINE_AA)
+    return (cx_, cy_)
+
+def reader_arms(img, P, x, z, R, lit, t, S):
+    """Forearms on the table and an open book: drawn over the pool of light, which they block."""
+    zb = z - 0.08
+    bz0, bz1 = zb - 0.30, zb - 0.47
+    turn = 0.5 + 0.5 * math.sin(t * 0.21 + R['ph'] * 3)
+    book = np.int32([P(x - 0.14, 0.012, bz0), P(x + 0.14, 0.012, bz0), P(x + 0.14, 0.012, bz1), P(x - 0.14, 0.012, bz1)])
+    cv2.fillPoly(img, [book], tuple(float(v) for v in np.array([0.86, 0.80, 0.68]) * lit * 1.1), cv2.LINE_AA)
+    cv2.line(img, tuple(np.int32(P(x, 0.012, bz0))), tuple(np.int32(P(x, 0.012, bz1))), tuple(float(v) for v in np.array([0.5, 0.45, 0.38]) * lit), max(1, S), cv2.LINE_AA)
+    for sx in (-1, 1):
+        e = (x + sx * (R['w'] - 0.02), 0.03, zb - 0.06)
+        hnd = (x + sx * (0.08 + 0.02 * turn * (sx > 0)), 0.02, bz0 - 0.04)
+        up = np.int32([P(x + sx * (R['w'] - 0.06), 0.26 + R['h'], zb - 0.05), P(x + sx * (R['w'] + 0.01), 0.24 + R['h'], zb - 0.05),
+                       P(e[0] + sx * 0.03, e[1], e[2]), P(e[0] - sx * 0.04, e[1], e[2])])
+        cv2.fillPoly(img, [up], tuple(float(v) for v in R['cloth'] * lit * 0.9), cv2.LINE_AA)
+        fo = np.int32([P(e[0] - 0.035, e[1], e[2]), P(e[0] + 0.035, e[1], e[2]), P(hnd[0] + 0.025, hnd[1], hnd[2]), P(hnd[0] - 0.025, hnd[1], hnd[2])])
+        cv2.fillPoly(img, [fo], tuple(float(v) for v in R['cloth'] * lit), cv2.LINE_AA)
+        hx, hy_ = P(*hnd)
+        rr = abs(P(hnd[0] + 0.03, hnd[1], hnd[2])[0] - hx)
+        cv2.ellipse(img, (int(hx), int(hy_)), (max(1, int(rr)), max(1, int(rr * 0.7))), 0, 0, 360, tuple(float(v) for v in SKIN_R * lit), -1, cv2.LINE_AA)
+
+def pool_local(img, P, x, z, lvl, tx0, tx1, tz0, tz1, S):
+    """The pool of lamplight, laid on its own table top only (so whatever stands in front of it hides it)."""
+    pts = np.array([P(x + 0.42 * math.cos(a_), TABLE_Y, z + 0.42 * math.sin(a_)) for a_ in np.linspace(0, 2 * math.pi, 24)], np.float64)
+    top = np.array([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y, tz1), P(tx0, TABLE_Y, tz1)], np.float64)
+    r = 4 * S                                         # work at a quarter of the output resolution
+    pad = 30 * r
+    x0, y0 = int(max(min(pts[:, 0].min(), top[:, 0].min()) - pad, 0)), int(max(min(pts[:, 1].min(), top[:, 1].min()) - pad, 0))
+    x1 = int(min(max(pts[:, 0].max(), top[:, 0].max()) + pad, img.shape[1])); y1 = int(min(max(pts[:, 1].max(), top[:, 1].max()) + pad, img.shape[0]))
+    if x1 - x0 < r or y1 - y0 < r: return
+    bw, bh = max(1, (x1 - x0) // r), max(1, (y1 - y0) // r)
+    buf = np.zeros((bh, bw), np.float32); msk = np.zeros((bh, bw), np.float32)
+    cv2.fillPoly(buf, [np.int32((pts - (x0, y0)) / r * 4)], float(lvl), cv2.LINE_AA, shift=2)
+    cv2.fillPoly(msk, [np.int32((top - (x0, y0)) / r * 4)], 1.0, cv2.LINE_AA, shift=2)
+    soft = cv2.GaussianBlur(buf, (0, 0), 9.0); core = cv2.GaussianBlur(buf, (0, 0), 3.0) ** 2
+    lay = (soft[..., None] * np.array([0.46, 0.30, 0.15], np.float32) + core[..., None] * np.array([0.22, 0.17, 0.11], np.float32)) * msk[..., None]
+    lay = cv2.resize(lay, (x1 - x0, y1 - y0), interpolation=cv2.INTER_LINEAR)
+    img[y0:y1, x0:x1] += lay
 
 def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None, her=None):
     D = lib_data()
@@ -672,17 +751,24 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None, he
         if her is not None and idx == D['her']:
             her_mask = np.zeros(img.shape[:2], np.float32)
             her(img, S, her_mask)                    # she sits in her chair, behind her table
+        here = [R for R in D['readers'] if R['lamp'] == idx]
+        rl = reader_light(lvl, nf, lz)
+        for R in here:
+            reader_body(img, P, side * CHAIR_X[R['chair']], z + TABLE_HALF + 0.2, R, rl, lt, S)
         tx0, tx1 = side * 0.45, side * 1.6
         tz0, tz1 = z - TABLE_HALF, z + TABLE_HALF
         top = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y, tz1), P(tx0, TABLE_Y, tz1)])
         cv2.fillPoly(img, [top], (nf * (0.03 + 0.10 * lz), nf * (0.018 + 0.06 * lz), nf * (0.010 + 0.03 * lz)), cv2.LINE_AA)
         edge = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y - 0.06, tz0), P(tx0, TABLE_Y - 0.06, tz0)])
         cv2.fillPoly(img, [edge], (nf * (0.015 + 0.04 * lz), nf * (0.009 + 0.02 * lz), nf * (0.006 + 0.01 * lz)), cv2.LINE_AA)
-        # the pool of lamplight on the desk (collected into one low-res layer, blurred once below)
+        # the pool of lamplight on the desk, then whatever lies on the desk over it
         if lvl > 0.01:
+            pool_local(img, P, x, z, lvl * nf, min(tx0, tx1), max(tx0, tx1), tz0, tz1, S)
             pool = np.int32([np.array(P(x + 0.42 * math.cos(a_), TABLE_Y, z + 0.42 * math.sin(a_))) / (S * 4) * 4
                              for a_ in np.linspace(0, 2 * math.pi, 24)])
             cv2.fillPoly(pool_buf, [pool], float(lvl * nf), cv2.LINE_AA, shift=2)
+        for R in here:
+            reader_arms(img, P, side * CHAIR_X[R['chair']], z + TABLE_HALF + 0.2, R, rl, lt, S)
         # the lamp: a green shade, a warm bulb beneath it
         sh_y0, sh_y1, sw = 0.36, 0.48, 0.17
         shade = np.int32([P(x - sw, sh_y0, z), P(x + sw, sh_y0, z), P(x + sw * 0.55, sh_y1, z), P(x - sw * 0.55, sh_y1, z)])
@@ -703,7 +789,9 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None, he
     soft = cv2.GaussianBlur(pool_buf, (0, 0), 9.0)
     core_ = cv2.GaussianBlur(pool_buf, (0, 0), 3.0) ** 2
     pools = cv2.resize(soft, (W, H))[..., None] * np.array([0.46, 0.30, 0.15]) + cv2.resize(core_, (W, H))[..., None] * np.array([0.22, 0.17, 0.11])
-    img = img + pools.astype(np.float32)
+    if her is not None and 'her_mask' in dir():      # she is not solid: the lamplight passes through her
+        hm = cv2.resize(her_mask, (W, H), interpolation=cv2.INTER_AREA)[..., None]
+        img = img + (pools * hm * 0.8).astype(np.float32)
     # haze and glow
     src = np.clip(img - 0.35, 0, None)
     if her is not None and 'her_mask' in dir():      # she is lit, not a light: keep her out of the lamp haze
@@ -866,6 +954,7 @@ def place_sprite(img, S, sp, cz, gain=1.0, breath=0.0, mask=None):
     nw, nh = max(2, int(w * sc)), max(2, int(h * sc * (1 + 0.004 * breath)))
     out = cv2.resize(spr, (nw, nh), interpolation=cv2.INTER_AREA if sc < 1 else cv2.INTER_CUBIC)
     out = np.clip(out, 0, None); out[..., :3] = np.minimum(out[..., :3], out[..., 3:4]) * gain
+    out *= 0.86                                      # not quite solid: what is behind her shows through
     x0, y0 = u * S - sp['ax'] * sc, v * S - sp['ay'] * sc * (1 + 0.004 * breath)
     blit(img, out, x0, y0, anchor='tl')
     if mask is not None:
