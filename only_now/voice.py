@@ -234,7 +234,7 @@ def perform(a, sr, shape, mood='calm', emph=(), last=False):
     return y
 
 def colour(y, sr, mood):
-    """Timbre for the mood: formant shift (smile / darker), brightness, breath, closeness."""
+    """Timbre for the mood: formant shift (smile / darker), brightness, closeness."""
     import parselmouth
     from parselmouth.praat import call
     from scipy.signal import butter, sosfilt
@@ -245,12 +245,7 @@ def colour(y, sr, mood):
     if tilt:
         hi = sosfilt(butter(2, 3000, 'high', fs=sr, output='sos'), y)
         y = y + (10 ** (tilt / 20) - 1) * hi
-    if br > 0:
-        env = np.abs(y)
-        k = int(0.012 * sr); env = np.convolve(env, np.ones(k) / k, mode='same')
-        nz = sosfilt(butter(2, [1800, 7500], 'band', fs=sr, output='sos'), np.random.default_rng(len(y)).standard_normal(len(y)))
-        nz = nz / (np.abs(nz).max() + 1e-9)
-        y = y * (1 - 0.18 * br) + nz * env * 1.6 * br
+    # (no synthetic breath noise: it read as hiss on the slow, soft lines. Breathiness comes from the voice blend.)
     if mood in ('tender', 'wake'):                        # close to the mic: a little warmth below 300 Hz
         lo = sosfilt(butter(2, 300, 'low', fs=sr, output='sos'), y)
         y = y + 0.3 * lo
