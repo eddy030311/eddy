@@ -202,17 +202,76 @@ for k in range(1500):          # the split: thousands of rooms typing at once (t
 sfx.add(whoosh(2.4, up=True, vel=0.25), 93.4)
 # S7 close: one held note under the last typing; then true digital silence
 music.add(strings([m('A2')], 5.2, vel=0.28, att=1.0, rel=0.6, bright=700), 96.0)
-# 序 · the desk at night: the laptop's fan, the city far off, one note as we lean in toward the screen
+# 序 · the desk at night (20 keyframes, 0.75 s each). Everything is quiet and close; every sound is hers.
 DK = lambda r: TL.at('desk', r)
-amb.add(noise_bed(14.6, 120, 900, 0.010) * np.minimum(T(14.6) / 1.5, 1), DK(0.2), new=True)
-amb.add(noise_bed(14.6, 60, 260, 0.008), DK(0.2), pan=0.5, new=True)
 import opening as OP
 _kf = lambda k: (k - 1) * OP.FRAME_DUR                           # start of keyframe k (1-based)
-sfx.add(lp(rng.standard_normal(int(0.5 * SR)), 900) * np.exp(-T(0.5) * 5) * 0.02, DK(_kf(8)), pan=-0.3, new=True)    # chin to hand
-_sig = bp(rng.standard_normal(int(1.6 * SR)), 300, 1800) * np.sin(np.pi * np.minimum(T(1.6) / 1.6, 1)) ** 2 * 0.05
-sfx.add(_sig, DK(_kf(16)), pan=-0.25, new=True)                    # the deep breath
-music.add(piano(m('A3'), 5.0, vel=0.16), DK(_kf(18)), new=True)    # back to the keys
-music.add(shimmer([m('E5'), m('A5')], 4.0, vel=0.12, att=2.0, rel=1.5), DK(_kf(19)), new=True)
+OPEN_END = OP.N * OP.FRAME_DUR
+def _env(n, a, r):                                                # attack / release envelope, in seconds
+    t = T(n); return np.minimum(1, t / max(a, 1e-3)) * np.minimum(1, (n - t) / max(r, 1e-3))
+def breath_in(dur, vel):                                          # air drawn in through the nose: rising, narrow
+    t = T(dur); x = rng.standard_normal(len(t)); y = np.zeros_like(x); blk = 1024
+    for i in range(0, len(x), blk):
+        u = i / len(x); y[i:i + blk] = bp(x[max(0, i - 4096):i + blk], 500 + 900 * u, 2400 + 2600 * u)[-len(y[i:i + blk]):]
+    return y / (np.abs(y).max() + 1e-9) * np.sin(np.pi * t / dur) ** 1.5 * vel
+def breath_out(dur, vel, voiced=0.0):                             # let out through the mouth: falling, wider, a hint of voice
+    t = T(dur); x = rng.standard_normal(len(t)); y = np.zeros_like(x); blk = 1024
+    for i in range(0, len(x), blk):
+        u = i / len(x); y[i:i + blk] = bp(x[max(0, i - 4096):i + blk], 260 + 300 * (1 - u), 1700 + 900 * (1 - u))[-len(y[i:i + blk]):]
+    y = y / (np.abs(y).max() + 1e-9)
+    if voiced: y = y + voiced * np.sin(2 * np.pi * np.cumsum(190 * (1 - 0.18 * t / dur)) / SR) * np.exp(-t * 3) * 0.4
+    return y * (np.minimum(1, t / 0.08) * (1 - t / dur) ** 1.4) * vel
+def rustle(dur, vel, bright=2500):                                # sleeve / cardigan moving: soft, grainy
+    t = T(dur); x = bp(rng.standard_normal(len(t)), 700, bright)
+    grain = 0.6 + 0.4 * np.abs(lp(rng.standard_normal(len(t)), 25)) * 6
+    return x / (np.abs(x).max() + 1e-9) * grain / grain.max() * np.sin(np.pi * t / dur) ** 2 * vel
+def hair(dur, vel):                                               # long hair sliding over fabric: very high, very soft
+    t = T(dur); x = hp(rng.standard_normal(len(t)), 4500)
+    return x / (np.abs(x).max() + 1e-9) * np.sin(np.pi * t / dur) ** 3 * vel
+def creak(vel):                                                   # the chair, shifting her weight: a short wooden groan
+    t = T(0.35); f = 95 + 35 * np.sin(np.pi * t / 0.35)
+    tone = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * 0.5 + np.sin(2 * np.pi * np.cumsum(2.7 * f) / SR) * 0.3
+    return bp(tone, 120, 1400) * np.sin(np.pi * t / 0.35) ** 2 * vel
+def touch(vel):                                                   # skin on skin, a palm on the desk: a soft low thud
+    t = T(0.12); return (lp(rng.standard_normal(len(t)), 420) * 3 + np.sin(2 * np.pi * 85 * t)) * np.exp(-t * 38) * vel
+def keyrest(vel):                                                 # fingers settling onto the keys, not pressing them
+    t = T(0.05); return bp(rng.standard_normal(len(t)), 1800, 6000) * np.exp(-t * 260) * vel
+# the room: the laptop's fan (no mains hum), the city far below the window, a car passing once
+amb.add(bp(rng.standard_normal(int(SR * OPEN_END)), 160, 1100) * 0.006 * _env(OPEN_END, 1.2, 0.03), DK(0.0), pan=0.15, new=True)
+amb.add(lp(rng.standard_normal(int(SR * OPEN_END)), 260) * 0.020 * _env(OPEN_END, 2.0, 0.03), DK(0.0), pan=-0.4, new=True)
+_car = lp(rng.standard_normal(int(SR * 4.0)), 500) * np.sin(np.pi * T(4.0) / 4.0) ** 2 * 0.030
+amb.add(np.stack([_car * np.linspace(0.9, 0.3, len(_car)), _car * np.linspace(0.3, 0.9, len(_car))], 1), DK(1.2), new=True)
+# I  凝视 · 犹豫 — her fingers rest on the keys; nothing; one breath
+for k_ in (1, 3):
+    sfx.add(keyrest(0.05), DK(_kf(k_) + 0.18), pan=0.15, new=True)
+sfx.add(breath_in(0.9, 0.018), DK(_kf(4) + 0.1), pan=-0.2, new=True)
+sfx.add(breath_out(1.1, 0.014), DK(_kf(5) + 0.15), pan=-0.2, new=True)
+# II 思考 · 抬手 — the hand leaves the keys, the sleeve, the chair, the chin on the hand
+sfx.add(keyrest(0.04), DK(_kf(6) + 0.05), pan=0.15, new=True)
+sfx.add(rustle(0.9, 0.030), DK(_kf(6) + 0.25), pan=0.05, new=True)
+sfx.add(creak(0.020), DK(_kf(7) + 0.3), pan=-0.35, new=True)
+sfx.add(touch(0.10), DK(_kf(8) + 0.1), pan=-0.1, new=True)
+sfx.add(rustle(0.5, 0.012, 1800), DK(_kf(9) + 0.2), pan=-0.1, new=True)
+# III 懊恼 · 崩落 — the thought won't come: a short frustrated breath, her head sinks, hair slides, a heavier sigh
+sfx.add(breath_out(0.55, 0.020, voiced=0.25), DK(_kf(11) + 0.2), pan=-0.15, new=True)
+sfx.add(hair(1.4, 0.012), DK(_kf(12) + 0.1), pan=-0.3, new=True)
+sfx.add(rustle(1.0, 0.026), DK(_kf(13) + 0.1), pan=-0.05, new=True)
+sfx.add(touch(0.08), DK(_kf(14) + 0.15), pan=-0.15, new=True)
+sfx.add(breath_out(1.6, 0.024, voiced=0.15), DK(_kf(15) + 0.05), pan=-0.15, new=True)
+# IV 平复 · 回归 — a deep breath in, held, let out; the hands come down; fingers find the keys again
+sfx.add(breath_in(1.4, 0.026), DK(_kf(16) + 0.05), pan=-0.15, new=True)
+sfx.add(breath_out(1.8, 0.020), DK(_kf(17) + 0.55), pan=-0.15, new=True)
+sfx.add(rustle(0.8, 0.026), DK(_kf(18) + 0.05), pan=0.05, new=True)
+sfx.add(touch(0.07), DK(_kf(18) + 0.55), pan=0.1, new=True)
+sfx.add(creak(0.014), DK(_kf(19) + 0.1), pan=-0.35, new=True)
+for j_, dt_ in enumerate((0.0, 0.07, 0.16, 0.21)):
+    sfx.add(keyrest(0.06), DK(_kf(20) + 0.1 + dt_), pan=0.05 + 0.06 * j_, new=True)
+# the music: one low string that only listens; a second that rubs against it when the thought won't come; resolved
+music.add(strings([m('D2')], OPEN_END - 0.5, vel=0.10, att=3.5, rel=0.4, bright=380), DK(0.3), new=True)
+music.add(strings([m('Eb3')], 4.2, vel=0.06, att=1.8, rel=1.6, bright=600), DK(_kf(11)), new=True)
+music.add(strings([m('A2'), m('F3')], 4.0, vel=0.08, att=1.6, rel=0.4, bright=700), DK(_kf(16)), new=True)
+music.add(piano(m('D4'), 4.0, vel=0.12), DK(_kf(18) + 0.55), new=True)
+music.add(piano(m('A4'), 3.5, vel=0.10), DK(_kf(18) + 0.55 + BEAT), new=True)
 # the conversation: their keys; a soft note each time her answer arrives; a warm bed under it all
 TK = lambda r: TL.at('talk', r)
 for role_, txt_, t0_, _ in TL.TALK:
@@ -437,9 +496,9 @@ for k in range(10):
 # 序 — anticipation: a breath that grows under the lone cursor and stops dead on the first keystroke
 first_key = ui.key_times(TL.ASK, 13.6, cps=11, rhythm='first-visitor')[0]
 fk = TL.remap(first_key - 0.01)
-swell_len = fk - 2.0
+swell_len = fk - TL.START['void']
 sw = strings([m('D2'), m('A2')], swell_len, vel=0.16, att=swell_len, rel=0.02, bright=420)
-music.add(sw, 2.0, new=True)
+music.add(sw, TL.START['void'], new=True)
 music.add(shimmer([m('A5'), m('E6')], 3.5, vel=0.25, att=0.05, rel=3.0), TL.at('answer', 1.0), new=True)
 # IV · forgetting — a falling low note as each memory breaks
 for (_, _, _, _, t_in, t_break), n_ in zip(IF.FRAGS, (m('A3'), m('F3'), m('D3'))):
