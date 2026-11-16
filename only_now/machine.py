@@ -573,18 +573,36 @@ def lib_data():
                 if rng.random() < 0.04: z += rng.uniform(0.1, 0.3); continue
                 books.append((side, z, z + w, row, palette[rng.integers(len(palette))] * rng.uniform(0.7, 1.2), rng.uniform(0.8, 0.98)))
                 z += w + 0.004
-    # other readers: real people at a dozen seats, bent over their books (never at her table)
+    # other readers: real people — students in arty, modern clothes — bent over their work (never at her table)
     readers = []
     cands = [(i, c) for i in range(len(lamps)) for c in range(2) if i != her and 2.6 < lamps[i][1] < 22.0]
-    pick = rng.choice(len(cands), size=13, replace=False)
-    pal = [(0.10, 0.12, 0.20), (0.12, 0.12, 0.13), (0.20, 0.13, 0.08), (0.14, 0.15, 0.10), (0.20, 0.08, 0.09),
-           (0.46, 0.41, 0.34), (0.24, 0.22, 0.20)]
-    hairs = [(0.04, 0.03, 0.03), (0.11, 0.07, 0.04), (0.22, 0.13, 0.07), (0.05, 0.04, 0.04)]
+    pick = rng.choice(len(cands), size=16, replace=False)
+    OUTFITS = {   # name: (main colour choices, inner colour)
+        'hoodie': [(0.62, 0.52, 0.30), (0.30, 0.36, 0.30), (0.55, 0.27, 0.22), (0.62, 0.60, 0.56)],
+        'cardigan': [(0.48, 0.38, 0.22), (0.22, 0.28, 0.36), (0.50, 0.30, 0.32)],
+        'denim': [(0.22, 0.32, 0.48), (0.30, 0.40, 0.55)],
+        'stripe': [(0.78, 0.74, 0.66), (0.20, 0.24, 0.36)],
+        'turtle': [(0.12, 0.12, 0.13), (0.46, 0.20, 0.18), (0.70, 0.64, 0.52)],
+        'vest': [(0.36, 0.30, 0.22), (0.18, 0.26, 0.24)],
+    }
+    HAIR = [(0.05, 0.04, 0.04), (0.13, 0.08, 0.05), (0.26, 0.15, 0.08), (0.42, 0.30, 0.18), (0.08, 0.06, 0.06)]
+    HATS = [None, None, None, 'beanie', 'cap', 'beret', 'bucket']
+    HATC = [(0.75, 0.55, 0.20), (0.62, 0.18, 0.16), (0.16, 0.18, 0.22), (0.80, 0.78, 0.72), (0.30, 0.38, 0.28)]
+    PHONES = [(0.92, 0.90, 0.86), (0.10, 0.10, 0.11), (0.72, 0.80, 0.86), (0.86, 0.70, 0.66)]
     for k in pick:
         i, c = cands[k]
-        readers.append(dict(lamp=i, chair=c, cloth=np.array(pal[rng.integers(len(pal))], np.float32),
-                            hair=np.array(hairs[rng.integers(len(hairs))], np.float32), bow=rng.uniform(0.4, 1.0),
-                            w=rng.uniform(0.17, 0.22), h=rng.uniform(-0.03, 0.04), ph=rng.uniform(0, 6.3), long=rng.random() < 0.4))
+        kind = list(OUTFITS)[rng.integers(len(OUTFITS))]
+        hat = HATS[rng.integers(len(HATS))]
+        readers.append(dict(
+            lamp=i, chair=c, kind=kind, cloth=np.array(OUTFITS[kind][rng.integers(len(OUTFITS[kind]))], np.float32),
+            inner=np.array([(0.90, 0.88, 0.84), (0.20, 0.20, 0.22), (0.80, 0.70, 0.55)][rng.integers(3)], np.float32),
+            hair=np.array(HAIR[rng.integers(len(HAIR))], np.float32),
+            style=['short', 'long', 'bun', 'pony', 'bob'][rng.integers(5)] if hat is None else ['short', 'long', 'bob'][rng.integers(3)],
+            hat=hat, hatc=np.array(HATC[rng.integers(len(HATC))], np.float32), pompom=rng.random() < 0.5,
+            phones=rng.random() < 0.45, phc=np.array(PHONES[rng.integers(len(PHONES))], np.float32),
+            prop=['book', 'book', 'laptop', 'laptop', 'notes'][rng.integers(5)], cup=rng.random() < 0.5, cupx=rng.choice([-1, 1]),
+            stickers=rng.uniform(0, 1, (4, 3)).astype(np.float32),
+            bow=rng.uniform(0.4, 1.0), w=rng.uniform(0.17, 0.22), h=rng.uniform(-0.03, 0.04), ph=rng.uniform(0, 6.3)))
     _lib = dict(lamps=lamps, books=books, her=her, readers=readers)
     return _lib
 
@@ -623,50 +641,137 @@ SKIN_R = np.array([0.78, 0.60, 0.49], np.float32)
 def reader_light(lvl, nf, lz):
     return nf * (0.06 + 0.25 * lz + 0.85 * lvl) * np.array([1.0, 0.86, 0.68], np.float32)
 
+def _col(c, lit, k=1.0): return tuple(float(v) for v in np.asarray(c, np.float32) * lit * k)
+
 def reader_body(img, P, x, z, R, lit, t, S):
-    """A real reader behind the table: torso, neck, bowed head. Solid — the light stops at them."""
+    """A real reader behind the table: clothes, neck, bowed head, hair, hat, headphones. Solid — the light stops at them."""
+    Q = lambda pts, c: cv2.fillPoly(img, [np.int32([P(*p) for p in pts])], c, cv2.LINE_AA)
+    def L_(pts, c, wd):
+        q = np.int32([P(*p) for p in pts])
+        px = abs(P(pts[0][0] + wd, pts[0][1], pts[0][2])[0] - P(*pts[0])[0])
+        cv2.polylines(img, [q], False, c, max(1, int(round(px))), cv2.LINE_AA)
     w, sh = R['w'], 0.30 + R['h']
     bow = R['bow'] * (0.92 + 0.08 * math.sin(t * 0.6 + R['ph']))
-    zb = z - 0.08
-    torso = np.int32([P(x - w, -0.02, zb), P(x + w, -0.02, zb), P(x + w, sh - 0.05, zb - 0.05 * bow),
-                      P(x + w * 0.65, sh, zb - 0.07 * bow), P(x - w * 0.65, sh, zb - 0.07 * bow), P(x - w, sh - 0.05, zb - 0.05 * bow)])
-    cv2.fillPoly(img, [torso], tuple(float(v) for v in R['cloth'] * lit), cv2.LINE_AA)
+    zb = z - 0.08; zt = zb - 0.07 * bow
+    cl, inn = R['cloth'], R['inner']
+    # the hood or the ponytail sit behind the shoulders
+    if R['kind'] == 'hoodie':
+        Q([(x - 0.12, sh - 0.02, zt + 0.03), (x + 0.12, sh - 0.02, zt + 0.03), (x + 0.10, sh + 0.06, zt + 0.04), (x - 0.10, sh + 0.06, zt + 0.04)], _col(cl, lit, 0.75))
+    torso = [(x - w, -0.02, zb), (x + w, -0.02, zb), (x + w, sh - 0.05, zb - 0.05 * bow), (x + w * 0.65, sh, zt), (x - w * 0.65, sh, zt), (x - w, sh - 0.05, zb - 0.05 * bow)]
+    Q(torso, _col(cl, lit))
+    k = R['kind']
+    if k == 'stripe':                                     # a striped knit
+        for j in range(5):
+            y0 = 0.02 + j * (sh - 0.06) / 5
+            Q([(x - w, y0, zb), (x + w, y0, zb), (x + w, y0 + 0.022, zb), (x - w, y0 + 0.022, zb)], _col(inn if np.mean(cl) < 0.5 else (0.16, 0.20, 0.32), lit))
+    if k == 'cardigan':                                   # open front over a shirt, a row of buttons
+        Q([(x - 0.05, sh, zt), (x + 0.05, sh, zt), (x + 0.07, -0.02, zb), (x - 0.07, -0.02, zb)], _col(inn, lit))
+        for j in range(3):
+            cx_, cy_ = P(x - 0.075, 0.06 + j * 0.07, zb)
+            cv2.circle(img, (int(cx_), int(cy_)), max(1, int(S * 0.9)), _col((0.85, 0.75, 0.55), lit), -1, cv2.LINE_AA)
+    if k == 'denim':                                      # a denim jacket: tee underneath, a light collar, yoke seams
+        Q([(x - 0.045, sh, zt), (x + 0.045, sh, zt), (x + 0.03, sh - 0.10, zt), (x - 0.03, sh - 0.10, zt)], _col((0.90, 0.88, 0.84), lit))
+        for sx in (-1, 1):
+            Q([(x + sx * 0.04, sh + 0.005, zt), (x + sx * 0.12, sh - 0.01, zt), (x + sx * 0.06, sh - 0.09, zt)], _col(cl, lit, 1.35))
+            L_([(x + sx * w * 0.95, sh - 0.11, zb), (x + sx * 0.05, sh - 0.12, zb)], _col(cl, lit, 1.5), 0.006)
+    if k == 'vest':                                       # a collared shirt under a sweater vest
+        Q([(x - 0.06, sh, zt), (x + 0.06, sh, zt), (x, sh - 0.11, zt)], _col((0.88, 0.86, 0.82), lit))
+        for sx in (-1, 1):
+            Q([(x + sx * w, sh - 0.05, zb), (x + sx * w * 0.65, sh, zt), (x + sx * w * 0.62, sh - 0.12, zb)], _col((0.88, 0.86, 0.82), lit))
+    if k == 'hoodie':                                     # drawstrings
+        for sx in (-1, 1):
+            L_([(x + sx * 0.035, sh - 0.01, zt), (x + sx * 0.04, sh - 0.13, zt)], _col((0.92, 0.90, 0.86), lit), 0.005)
+    # neck (a turtleneck covers it)
     hy, hz = sh + 0.10 - 0.07 * bow, zb - 0.07 - 0.13 * bow
-    nk = np.int32([P(x - 0.035, sh - 0.01, zb - 0.07 * bow), P(x + 0.035, sh - 0.01, zb - 0.07 * bow), P(x + 0.03, hy, hz), P(x - 0.03, hy, hz)])
-    cv2.fillPoly(img, [nk], tuple(float(v) for v in SKIN_R * lit * 0.7), cv2.LINE_AA)
+    Q([(x - 0.035, sh - 0.01, zt), (x + 0.035, sh - 0.01, zt), (x + 0.03, hy, hz), (x - 0.03, hy, hz)], _col(cl if k == 'turtle' else (0.78, 0.60, 0.49), lit, 0.8))
     cx_, cy_ = P(x, hy, hz)
     rx = abs(P(x + 0.085, hy, hz)[0] - cx_); ry = rx * 1.12
-    cv2.ellipse(img, (int(cx_), int(cy_)), (max(1, int(rx)), max(1, int(ry))), 0, 0, 360, tuple(float(v) for v in SKIN_R * lit * 0.85), -1, cv2.LINE_AA)
-    # the hair: bowed heads show mostly the crown
-    cv2.ellipse(img, (int(cx_), int(cy_ - ry * (0.10 + 0.08 * bow))), (max(1, int(rx * 1.08)), max(1, int(ry * (0.92 + 0.12 * bow)))), 0, 0, 360,
-                tuple(float(v) for v in R['hair'] * lit * 1.4), -1, cv2.LINE_AA)
-    # the crown catches a little of the lamp
-    cv2.ellipse(img, (int(cx_ - rx * 0.25), int(cy_ - ry * 0.55)), (max(1, int(rx * 0.35)), max(1, int(ry * 0.18))), -20, 0, 360,
-                tuple(float(v) for v in (R['hair'] * 1.4 + 0.05) * lit * 1.6), -1, cv2.LINE_AA)
-    if R['long']:
-        hl = np.int32([P(x - 0.09, hy, hz), P(x + 0.09, hy, hz), P(x + 0.11, sh - 0.12, zb - 0.06), P(x - 0.11, sh - 0.12, zb - 0.06)])
-        cv2.fillPoly(img, [hl], tuple(float(v) for v in R['hair'] * lit * 1.3), cv2.LINE_AA)
+    E = lambda dx, dy, ax, ay, c, ang=0: cv2.ellipse(img, (int(cx_ + dx * rx), int(cy_ + dy * ry)), (max(1, int(ax * rx)), max(1, int(ay * ry))), ang, 0, 360, c, -1, cv2.LINE_AA)
+    hc = R['hair']
+    if R['style'] == 'pony':                              # the ponytail falls behind
+        Q([(x - 0.03, hy + 0.04, hz + 0.08), (x + 0.03, hy + 0.04, hz + 0.08), (x + 0.025, sh - 0.10, zt + 0.06), (x - 0.02, sh - 0.10, zt + 0.06)], _col(hc, lit, 1.3))
+    if R['style'] in ('long', 'bob'):
+        drop = sh - 0.14 if R['style'] == 'long' else hy - 0.06
+        Q([(x - 0.095, hy + 0.02, hz), (x + 0.095, hy + 0.02, hz), (x + 0.11, drop, zt), (x - 0.11, drop, zt)], _col(hc, lit, 1.3))
+    E(0, 0, 1.0, 1.0, _col((0.78, 0.60, 0.49), lit, 0.85))                    # face (mostly hidden as they read)
+    E(0, -0.10 - 0.08 * bow, 1.08, 0.92 + 0.12 * bow, _col(hc, lit, 1.4))     # hair
+    # clearer hair: strands sweeping from the crown, a parting, a little shine
+    for j in range(5):
+        a0 = -2.6 + j * 0.55
+        p0 = (int(cx_ - rx * 0.1), int(cy_ - ry * 0.5))
+        p1 = (int(cx_ + rx * 0.95 * math.cos(a0 + 0.5)), int(cy_ - ry * 0.1 + ry * 0.9 * math.sin(a0 + 0.5)))
+        cv2.line(img, p0, p1, _col(hc, lit, 0.75), max(1, int(rx * 0.07)), cv2.LINE_AA)
+    cv2.line(img, (int(cx_ - rx * 0.1), int(cy_ - ry * 0.95)), (int(cx_ - rx * 0.05), int(cy_ - ry * 0.2)), _col(hc, lit, 2.2), max(1, int(rx * 0.06)), cv2.LINE_AA)
+    E(-0.3, -0.55, 0.32, 0.16, _col(hc * 1.4 + 0.05, lit, 1.6), -20)
+    if R['style'] == 'bun':
+        E(0.0, -1.05, 0.42, 0.36, _col(hc, lit, 1.5))
+    # hats
+    hat, hcol = R['hat'], R['hatc']
+    if hat == 'beanie':
+        E(0, -0.30, 1.10, 0.85, _col(hcol, lit))
+        cv2.rectangle(img, (int(cx_ - rx * 1.1), int(cy_ - ry * 0.10)), (int(cx_ + rx * 1.1), int(cy_ + ry * 0.22)), _col(hcol, lit, 1.25), -1, cv2.LINE_AA)
+        for j in range(6):
+            xx_ = cx_ - rx * 0.9 + j * rx * 0.36
+            cv2.line(img, (int(xx_), int(cy_ - ry * 0.08)), (int(xx_), int(cy_ + ry * 0.2)), _col(hcol, lit, 0.8), max(1, int(rx * 0.05)), cv2.LINE_AA)
+        if R['pompom']: E(0.0, -1.18, 0.34, 0.30, _col(hcol, lit, 1.4))
+    elif hat == 'cap':
+        E(0, -0.28, 1.08, 0.82, _col(hcol, lit))
+        E(0, 0.42, 0.95, 0.30, _col(hcol, lit, 0.7))                          # the brim, toward us as they bow
+        E(0, -0.95, 0.12, 0.08, _col(hcol, lit, 1.3))
+    elif hat == 'beret':
+        E(0.15, -0.55, 1.15, 0.55, _col(hcol, lit), -12)
+        E(0.15, -1.05, 0.08, 0.10, _col(hcol, lit, 0.8))
+    elif hat == 'bucket':
+        E(0, 0.05, 1.45, 0.55, _col(hcol, lit, 0.8))
+        E(0, -0.35, 1.0, 0.75, _col(hcol, lit))
+    # headphones: a band over the head, a cup over each ear
+    if R['phones']:
+        pc = R['phc']
+        cv2.ellipse(img, (int(cx_), int(cy_ - ry * 0.1)), (int(rx * 1.12), int(ry * 1.0)), 0, 180, 360, _col(pc, lit, 0.9), max(1, int(rx * 0.16)), cv2.LINE_AA)
+        for sx in (-1, 1):
+            E(sx * 1.08, 0.05, 0.28, 0.40, _col(pc, lit))
+            E(sx * 1.12, 0.05, 0.12, 0.25, _col(pc, lit, 0.6))
     return (cx_, cy_)
 
 def reader_arms(img, P, x, z, R, lit, t, S):
-    """Forearms on the table and an open book: drawn over the pool of light, which they block."""
+    """Forearms on the table and what they are working on: drawn over the pool of light, which they block."""
+    Q = lambda pts, c: cv2.fillPoly(img, [np.int32([P(*p) for p in pts])], c, cv2.LINE_AA)
     zb = z - 0.08
     bz0, bz1 = zb - 0.30, zb - 0.47
     turn = 0.5 + 0.5 * math.sin(t * 0.21 + R['ph'] * 3)
-    book = np.int32([P(x - 0.14, 0.012, bz0), P(x + 0.14, 0.012, bz0), P(x + 0.14, 0.012, bz1), P(x - 0.14, 0.012, bz1)])
-    cv2.fillPoly(img, [book], tuple(float(v) for v in np.array([0.86, 0.80, 0.68]) * lit * 1.1), cv2.LINE_AA)
-    cv2.line(img, tuple(np.int32(P(x, 0.012, bz0))), tuple(np.int32(P(x, 0.012, bz1))), tuple(float(v) for v in np.array([0.5, 0.45, 0.38]) * lit), max(1, S), cv2.LINE_AA)
+    cl = R['cloth']
+    if R['prop'] == 'book':
+        Q([(x - 0.14, 0.012, bz0), (x + 0.14, 0.012, bz0), (x + 0.14, 0.012, bz1), (x - 0.14, 0.012, bz1)], _col((0.86, 0.80, 0.68), lit, 1.1))
+        cv2.line(img, tuple(np.int32(P(x, 0.012, bz0))), tuple(np.int32(P(x, 0.012, bz1))), _col((0.5, 0.45, 0.38), lit), max(1, S), cv2.LINE_AA)
+    elif R['prop'] == 'notes':
+        Q([(x - 0.10, 0.012, bz0), (x + 0.10, 0.012, bz0), (x + 0.11, 0.012, bz1), (x - 0.09, 0.012, bz1)], _col((0.92, 0.90, 0.84), lit, 1.1))
+        for j in range(4):
+            yy = bz0 - 0.03 - j * 0.035
+            cv2.line(img, tuple(np.int32(P(x - 0.08, 0.013, yy))), tuple(np.int32(P(x + 0.06, 0.013, yy))), _col((0.45, 0.55, 0.75), lit, 0.8), max(1, S // 2), cv2.LINE_AA)
+    # sleeves and hands
     for sx in (-1, 1):
         e = (x + sx * (R['w'] - 0.02), 0.03, zb - 0.06)
         hnd = (x + sx * (0.08 + 0.02 * turn * (sx > 0)), 0.02, bz0 - 0.04)
-        up = np.int32([P(x + sx * (R['w'] - 0.06), 0.26 + R['h'], zb - 0.05), P(x + sx * (R['w'] + 0.01), 0.24 + R['h'], zb - 0.05),
-                       P(e[0] + sx * 0.03, e[1], e[2]), P(e[0] - sx * 0.04, e[1], e[2])])
-        cv2.fillPoly(img, [up], tuple(float(v) for v in R['cloth'] * lit * 0.9), cv2.LINE_AA)
-        fo = np.int32([P(e[0] - 0.035, e[1], e[2]), P(e[0] + 0.035, e[1], e[2]), P(hnd[0] + 0.025, hnd[1], hnd[2]), P(hnd[0] - 0.025, hnd[1], hnd[2])])
-        cv2.fillPoly(img, [fo], tuple(float(v) for v in R['cloth'] * lit), cv2.LINE_AA)
+        Q([(x + sx * (R['w'] - 0.06), 0.26 + R['h'], zb - 0.05), (x + sx * (R['w'] + 0.01), 0.24 + R['h'], zb - 0.05),
+           (e[0] + sx * 0.03, e[1], e[2]), (e[0] - sx * 0.04, e[1], e[2])], _col(cl, lit, 0.9))
+        Q([(e[0] - 0.035, e[1], e[2]), (e[0] + 0.035, e[1], e[2]), (hnd[0] + 0.025, hnd[1], hnd[2]), (hnd[0] - 0.025, hnd[1], hnd[2])], _col(cl, lit))
+        if R['kind'] == 'denim':                              # sleeves rolled up
+            Q([(hnd[0] - 0.027, 0.02, hnd[2] + 0.06), (hnd[0] + 0.027, 0.02, hnd[2] + 0.06), (hnd[0] + 0.027, 0.02, hnd[2] + 0.03), (hnd[0] - 0.027, 0.02, hnd[2] + 0.03)], _col(cl, lit, 1.4))
         hx, hy_ = P(*hnd)
         rr = abs(P(hnd[0] + 0.03, hnd[1], hnd[2])[0] - hx)
-        cv2.ellipse(img, (int(hx), int(hy_)), (max(1, int(rr)), max(1, int(rr * 0.7))), 0, 0, 360, tuple(float(v) for v in SKIN_R * lit), -1, cv2.LINE_AA)
+        cv2.ellipse(img, (int(hx), int(hy_)), (max(1, int(rr)), max(1, int(rr * 0.7))), 0, 0, 360, _col((0.78, 0.60, 0.49), lit), -1, cv2.LINE_AA)
+    if R['prop'] == 'laptop':                                 # the lid faces us: stickers on it, the screen's glow on their face
+        Q([(x - 0.15, 0.012, bz0), (x + 0.15, 0.012, bz0), (x + 0.15, 0.012, bz0 + 0.02), (x - 0.15, 0.012, bz0 + 0.02)], _col((0.55, 0.56, 0.58), lit))
+        Q([(x - 0.15, 0.012, bz0 + 0.02), (x + 0.15, 0.012, bz0 + 0.02), (x + 0.15, 0.21, bz0 + 0.08), (x - 0.15, 0.21, bz0 + 0.08)], _col((0.62, 0.63, 0.66), lit))
+        for (u, v, c) in R['stickers']:
+            sx_, sy_ = x - 0.12 + 0.24 * u, 0.05 + 0.13 * v
+            col = [(0.85, 0.45, 0.35), (0.40, 0.65, 0.55), (0.90, 0.80, 0.40), (0.50, 0.55, 0.85)][int(c * 3.99)]
+            Q([(sx_ - 0.018, sy_ - 0.015, bz0 + 0.05), (sx_ + 0.018, sy_ - 0.015, bz0 + 0.05), (sx_ + 0.018, sy_ + 0.015, bz0 + 0.06), (sx_ - 0.018, sy_ + 0.015, bz0 + 0.06)], _col(col, lit, 1.1))
+    if R['cup']:                                              # a takeaway coffee, with a kraft sleeve
+        cxw, czw = x + R['cupx'] * 0.22, bz0 + 0.02
+        Q([(cxw - 0.03, 0.0, czw), (cxw + 0.03, 0.0, czw), (cxw + 0.036, 0.12, czw), (cxw - 0.036, 0.12, czw)], _col((0.92, 0.90, 0.86), lit))
+        Q([(cxw - 0.032, 0.04, czw), (cxw + 0.032, 0.04, czw), (cxw + 0.034, 0.08, czw), (cxw - 0.034, 0.08, czw)], _col((0.62, 0.45, 0.28), lit))
+        Q([(cxw - 0.038, 0.12, czw), (cxw + 0.038, 0.12, czw), (cxw + 0.036, 0.135, czw), (cxw - 0.036, 0.135, czw)], _col((0.20, 0.20, 0.22), lit))
 
 def pool_local(img, P, x, z, lvl, tx0, tx1, tz0, tz1, S):
     """The pool of lamplight, laid on its own table top only (so whatever stands in front of it hides it)."""
