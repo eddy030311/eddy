@@ -94,7 +94,11 @@ def compose(t):
     return img
 
 def render(t):
-    return core.finish(compose(t), t, TL.SUBS, cards_abs=[(TL.at(k, 0.6), txt) for k, txt in TL.CARDS])
+    area = None
+    if TL.START['desk'] <= t < TL.END['desk']:
+        m = module('opening')
+        if m is not None and hasattr(m, 'area'): area = m.area(t - TL.START['desk'])
+    return core.finish(compose(t), t, TL.SUBS, cards_abs=[(TL.at(k, 0.6), txt) for k, txt in TL.CARDS], area=area)
 
 def main():
     mode = sys.argv[1]

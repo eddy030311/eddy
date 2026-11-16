@@ -206,8 +206,13 @@ music.add(strings([m('A2')], 5.2, vel=0.28, att=1.0, rel=0.6, bright=700), 96.0)
 DK = lambda r: TL.at('desk', r)
 amb.add(noise_bed(14.6, 120, 900, 0.010) * np.minimum(T(14.6) / 1.5, 1), DK(0.2), new=True)
 amb.add(noise_bed(14.6, 60, 260, 0.008), DK(0.2), pan=0.5, new=True)
-music.add(piano(m('A3'), 5.0, vel=0.16), DK(8.8), new=True)
-music.add(shimmer([m('E5'), m('A5')], 6.0, vel=0.12, att=3.0, rel=2.5), DK(9.4), new=True)
+import opening as OP
+_fr = lambda k: OP.ANIM[0] + k / (OP.N - 1) * (OP.ANIM[1] - OP.ANIM[0])
+_sig = bp(rng.standard_normal(int(1.3 * SR)), 300, 1800) * np.sin(np.pi * np.minimum(T(1.3) / 1.3, 1)) ** 2 * 0.05
+sfx.add(_sig, DK(_fr(33.5)), pan=-0.25, new=True)                   # her sigh
+sfx.add(lp(rng.standard_normal(int(0.5 * SR)), 900) * np.exp(-T(0.5) * 5) * 0.02, DK(_fr(11)), pan=-0.3, new=True)   # chin to hand
+music.add(piano(m('A3'), 5.0, vel=0.16), DK(OP.PUSH[0] + 0.2), new=True)
+music.add(shimmer([m('E5'), m('A5')], 6.0, vel=0.12, att=3.0, rel=2.5), DK(OP.PUSH[0] + 0.8), new=True)
 # the conversation: their keys; a soft note each time her answer arrives; a warm bed under it all
 TK = lambda r: TL.at('talk', r)
 for role_, txt_, t0_, _ in TL.TALK:

@@ -158,18 +158,21 @@ def cards(frame, t, cards_abs):
             a = fade(t, t0, t0 + 3.4, 0.8, 1.0) * 0.42
             blit(frame, text_sprite(text, 'sans_l', 20, (0.86, 0.80, 0.72), tracking=2), 112, BOT - 52, alpha=a, anchor='l')
 
-def finish(img, t, subs, grain=0.022, vignette=True, bars=True, cards_abs=()):
-    """img: float RGB full frame. Applies tonemap, vignette, grain, letterbox, subtitles. Returns uint8."""
-    act = img[TOP:BOT]
+def finish(img, t, subs, grain=0.022, vignette=True, bars=True, cards_abs=(), area=None):
+    """img: float RGB full frame. Applies tonemap, vignette, grain, letterbox, subtitles. Returns uint8.
+    area=(top, bot): a different picture area for this frame (the opening starts wider, then closes to 2.39)."""
+    top, bot = (TOP, BOT) if area is None else (int(area[0]), int(area[1]))
+    ah = bot - top
+    act = img[top:bot]
     act = tonemap(act)
-    if vignette: act = act * _VIG
+    if vignette: act = act * (_VIG if ah == AH else cv2.resize(_VIG, (W, ah), interpolation=cv2.INTER_LINEAR).reshape(ah, W, -1))
     if grain > 0:
         g = _GRAIN[int(t * FPS) % len(_GRAIN)]
-        g = cv2.resize(g, (W, AH), interpolation=cv2.INTER_LINEAR)[..., None]
+        g = cv2.resize(g, (W, ah), interpolation=cv2.INTER_LINEAR)[..., None]
         lum = act.mean(axis=2, keepdims=True)
         act = act + g * grain * (0.35 + 0.65 * np.sqrt(np.clip(lum, 0, 1)))
     out = np.zeros((H, W, 3), np.float32)
-    out[TOP:BOT] = act
+    out[top:bot] = act
     if cards_abs: cards(out, t, cards_abs)
     if not bars:
         out[:TOP] = img[:TOP]; out[BOT:] = img[BOT:]
