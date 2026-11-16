@@ -547,8 +547,9 @@ LIB_F = 900.0
 LIB_CAMY = 0.62
 TABLE_Y, FLOOR_Y, SHELF_X, CEIL_Y = 0.0, -0.78, 2.7, 3.4
 LIB_Z0, LIB_Z1 = 1.2, 34.0
-HER_LAMP = (1.42, 8.25)                 # her lamp, on her table
-HER_X, HER_Z = 1.86, 8.5                # where she sits: the far side of the table, facing the aisle
+TABLE_HALF = 0.55                       # every table: 1.15 wide (x 0.45..1.6), 1.1 deep; two chairs on its far side
+CHAIR_X = (0.72, 1.36)
+HER_X = 1.36                            # she sits in the second chair of her table, facing the camera
 _lib = None
 def lib_data():
     global _lib
@@ -560,7 +561,6 @@ def lib_data():
             lamps.append((side * 1.02 + rng.uniform(-0.04, 0.04), z + rng.uniform(-0.1, 0.1)))
     lamps = np.array(lamps, np.float32)
     her = int(np.argmin(np.abs(lamps[:, 1] - 8.2) + (lamps[:, 0] < 0) * 99))
-    lamps[her] = (HER_LAMP[0], HER_LAMP[1])
     # book spines along both walls: (side, z0, z1, row, colour)
     books = []
     palette = np.array([[0.20, 0.09, 0.06], [0.13, 0.08, 0.05], [0.08, 0.09, 0.12], [0.19, 0.14, 0.08],
@@ -576,10 +576,16 @@ def lib_data():
     _lib = dict(lamps=lamps, books=books, her=her)
     return _lib
 
-LIB_CAM = dict(x=0.0, y=LIB_CAMY, f=LIB_F)        # the library camera's lateral offset, height and lens (set per frame)
+LIB_CAM = dict(x=0.0, y=LIB_CAMY, f=LIB_F, pitch=0.0)   # the library camera: lateral offset, height, lens, tilt down
+def lib_depth(y, z, cz):
+    p = LIB_CAM['pitch']
+    return -(y - LIB_CAM['y']) * math.sin(p) + (z - cz) * math.cos(p)
 def lproj(x, y, z, cz):
-    zp = max(z - cz, 0.05)
-    return CX + LIB_CAM['f'] * (x - LIB_CAM['x']) / zp, CY - LIB_CAM['f'] * (y - LIB_CAM['y']) / zp
+    p = LIB_CAM['pitch']
+    dy, dz = y - LIB_CAM['y'], z - cz
+    zp = max(-dy * math.sin(p) + dz * math.cos(p), 0.05)
+    up = dy * math.cos(p) + dz * math.sin(p)
+    return CX + LIB_CAM['f'] * (x - LIB_CAM['x']) / zp, CY - LIB_CAM['f'] * up / zp
 
 def lamp_level(z, front, flick_t):
     """1 = lit, 0 = off; lamps beyond the closing front are off (with a brief flicker as they go)."""
@@ -588,7 +594,20 @@ def lamp_level(z, front, flick_t):
     if z > front: return 0.5 + 0.5 * math.sin(flick_t * 40 + z * 9)
     return 1.0
 
-def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None):
+def chair(img, P, x, z, lit, S):
+    """A reading-room chair seen from behind its table: two posts, a top rail and a lower rail, dark wood."""
+    col = (0.035 + 0.16 * lit, 0.020 + 0.09 * lit, 0.012 + 0.05 * lit)
+    w, pw = 0.21, 0.028
+    for sx in (-1, 1):
+        q = np.int32([P(x + sx * w - pw, FLOOR_Y, z), P(x + sx * w + pw, FLOOR_Y, z), P(x + sx * w + pw, 0.44, z), P(x + sx * w - pw, 0.44, z)])
+        cv2.fillPoly(img, [q], col, cv2.LINE_AA)
+    for (y0, y1) in ((0.33, 0.44), (0.12, 0.16)):
+        q = np.int32([P(x - w, y0, z), P(x + w, y0, z), P(x + w, y1, z), P(x - w, y1, z)])
+        cv2.fillPoly(img, [q], col, cv2.LINE_AA)
+    hi = tuple(float(c * 1.8) for c in col)              # the worn top edge of the rail catches the light
+    cv2.line(img, tuple(np.int32(P(x - w, 0.44, z))), tuple(np.int32(P(x + w, 0.44, z))), hi, max(1, S), cv2.LINE_AA)
+
+def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None, her=None):
     D = lib_data()
     S = 2
     img = np.zeros((H * S, W * S, 3), np.float32)
@@ -597,7 +616,7 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None):
     lamps = D['lamps']
     lv = np.array([lamp_level(z, front, lt) for _, z in lamps], np.float32) * master
     if her_lvl is not None: lv[D['her']] = her_lvl
-    near = lambda z: sstep(0.45, 1.7, z - cz)       # things the camera backs past come out of the dark
+    near = (lambda z: sstep(0.45, 1.7, z - cz)) if LIB_CAM.get('nearfade', True) else (lambda z: 1.0)   # things the camera backs past come out of the dark
     # how much light reaches each depth (for walls, floor and tables)
     zs = np.linspace(LIB_Z0, LIB_Z1, 200)
     light_z = np.array([np.sum(lv * np.exp(-((lamps[:, 1] - z) / 2.2) ** 2)) for z in zs]) * 0.22
@@ -646,10 +665,15 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None):
         lvl = float(lv[idx])
         nf = near(z)
         side = 1 if x > 0 else -1
-        # table segment under this lamp (hers is wider: she sits at its far side)
-        tx0, tx1 = side * 0.45, side * (2.15 if idx == D['her'] else 1.6)
-        tz0, tz1 = z - 0.72, z + 0.72
-        lz = L(z) + (0.5 * lvl if idx == D['her'] else 0.0)
+        # the two chairs pushed in at the far side of this table (drawn first: they are behind it)
+        lz = L(z)
+        for cxx in CHAIR_X:
+            chair(img, P, side * cxx, z + TABLE_HALF + 0.2, nf * (0.6 * lz + 0.25 * lvl), S)
+        if her is not None and idx == D['her']:
+            her_mask = np.zeros(img.shape[:2], np.float32)
+            her(img, S, her_mask)                    # she sits in her chair, behind her table
+        tx0, tx1 = side * 0.45, side * 1.6
+        tz0, tz1 = z - TABLE_HALF, z + TABLE_HALF
         top = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y, tz1), P(tx0, TABLE_Y, tz1)])
         cv2.fillPoly(img, [top], (nf * (0.03 + 0.10 * lz), nf * (0.018 + 0.06 * lz), nf * (0.010 + 0.03 * lz)), cv2.LINE_AA)
         edge = np.int32([P(tx0, TABLE_Y, tz0), P(tx1, TABLE_Y, tz0), P(tx1, TABLE_Y - 0.06, tz0), P(tx0, TABLE_Y - 0.06, tz0)])
@@ -659,144 +683,116 @@ def render_library(lt, cz, front=None, last_on=1.0, master=1.0, her_lvl=None):
             pool = np.int32([np.array(P(x + 0.42 * math.cos(a_), TABLE_Y, z + 0.42 * math.sin(a_))) / (S * 4) * 4
                              for a_ in np.linspace(0, 2 * math.pi, 24)])
             cv2.fillPoly(pool_buf, [pool], float(lvl * nf), cv2.LINE_AA, shift=2)
-        if idx == D['her']: continue            # her lamp is drawn in front of her, after she is composited
         # the lamp: a green shade, a warm bulb beneath it
         sh_y0, sh_y1, sw = 0.36, 0.48, 0.17
         shade = np.int32([P(x - sw, sh_y0, z), P(x + sw, sh_y0, z), P(x + sw * 0.55, sh_y1, z), P(x - sw * 0.55, sh_y1, z)])
         cv2.fillPoly(img, [shade], (nf * (0.03 + 0.03 * lvl), nf * (0.10 + 0.10 * lvl), nf * (0.06 + 0.04 * lvl)), cv2.LINE_AA)
+        cv2.line(img, tuple(np.int32(P(x - sw, sh_y0, z))), tuple(np.int32(P(x + sw, sh_y0, z))),
+                 (nf * 0.20 * lvl + 0.02, nf * 0.30 * lvl + 0.03, nf * 0.14 * lvl + 0.02), max(1, int(S * 2 * LIB_CAM['f'] / LIB_F / max(z - cz, 0.3))), cv2.LINE_AA)
         stem = (np.int32(P(x, TABLE_Y, z)), np.int32(P(x, sh_y0, z)))
-        cv2.line(img, tuple(stem[0]), tuple(stem[1]), (0.10 * lz + 0.02, 0.08 * lz + 0.015, 0.05 * lz + 0.01), max(1, int(S * 6 / (z - cz))), cv2.LINE_AA)
+        fk = LIB_CAM['f'] / LIB_F
+        cv2.line(img, tuple(stem[0]), tuple(stem[1]), (0.10 * lz + 0.02, 0.08 * lz + 0.015, 0.05 * lz + 0.01), max(1, int(S * 6 * fk / (z - cz))), cv2.LINE_AA)
         if lvl > 0.01:
             bx, by = P(x, sh_y0 - 0.01, z)
-            r = max(2.0, S * 22.0 / (z - cz))
-            cv2.ellipse(img, (int(bx), int(by)), (int(r * 2.2), int(r * 0.7)), 0, 0, 360,
-                        tuple(float(v) for v in AMBER_HOT * 1.6 * lvl * nf), -1, cv2.LINE_AA)
+            r = max(2.0, S * 22.0 * fk / (z - cz))
+            cv2.ellipse(img, (int(bx), int(by)), (int(r * 2.2), max(1, int(r * 0.45))), 0, 0, 360,
+                        (0.62 * lvl * nf, 0.36 * lvl * nf, 0.15 * lvl * nf), -1, cv2.LINE_AA)    # the warm mouth of the shade
+            cv2.ellipse(img, (int(bx), int(by)), (max(1, int(r * 0.8)), max(1, int(r * 0.22))), 0, 0, 360,
+                        tuple(float(v) for v in AMBER_HOT * 1.3 * lvl * nf), -1, cv2.LINE_AA)    # the bulb
     img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
     soft = cv2.GaussianBlur(pool_buf, (0, 0), 9.0)
     core_ = cv2.GaussianBlur(pool_buf, (0, 0), 3.0) ** 2
     pools = cv2.resize(soft, (W, H))[..., None] * np.array([0.46, 0.30, 0.15]) + cv2.resize(core_, (W, H))[..., None] * np.array([0.22, 0.17, 0.11])
     img = img + pools.astype(np.float32)
     # haze and glow
-    img = img + cv2.resize(cv2.GaussianBlur(cv2.resize(np.clip(img - 0.35, 0, None), (W // 4, H // 4)), (0, 0), 6), (W, H)) * 1.4
+    src = np.clip(img - 0.35, 0, None)
+    if her is not None and 'her_mask' in dir():      # she is lit, not a light: keep her out of the lamp haze
+        src = src * (1 - cv2.resize(her_mask, (W, H), interpolation=cv2.INTER_AREA))[..., None]
+    img = img + cv2.resize(cv2.GaussianBlur(cv2.resize(src, (W // 4, H // 4)), (0, 0), 6), (W, H)) * 1.4
     return img
 
 
 # ---------------------------------------------------------------------------- her, at her table in the library
-_flat = {}
-def flat_her():
-    """The character redrawn flat (soft warm linework, 14 flat colours) to sit inside the library's style.
-    Open and closed eyes share one palette so a blink never shifts a colour."""
-    if _flat: return _flat
+_her = {}
+def her_assets():
+    """Claude from the producer's expression sheet (优雅沉思), flat-styled; open and closed eyes share one palette."""
+    if _her: return _her
     import os, sys
     from PIL import Image as _I
+    import her_asset
+    her_asset.build()
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'claude_film'))
     import rig
-    paths = {k: f'build/flat_think_{k}.png' for k in ('open', 'closed')}
-    if not all(os.path.exists(p) for p in paths.values()):
-        src = rig.load('think'); cl, _ = rig.closed_eyes('think')
-        def straight(pm):
-            a = pm[..., 3:4]; return np.concatenate([np.where(a > 1e-4, pm[..., :3] / np.maximum(a, 1e-4), 0), a], 2)
-        ims = {'open': straight(src), 'closed': straight(cl)}
-        cen = None
-        for k in ('open', 'closed'):
-            im = (np.clip(ims[k], 0, 1) * 255).astype(np.uint8)
-            rgb = np.ascontiguousarray(im[..., :3]); al = im[..., 3]
-            ep = cv2.edgePreservingFilter(rgb, flags=1, sigma_s=30, sigma_r=0.25)
-            Z = ep.reshape(-1, 3).astype(np.float32)
-            if cen is None:
-                crit = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
-                _, _, cen = cv2.kmeans(Z[al.reshape(-1) > 128][::3], 14, None, crit, 2, cv2.KMEANS_PP_CENTERS)
-            d = ((Z[:, None, :] - cen[None]) ** 2).sum(-1); q = cen[np.argmin(d, 1)].reshape(ep.shape)
-            lum = rgb.mean(axis=2); ink = np.clip((90 - lum) / 60, 0, 1)[..., None]
-            q = q * (1 - ink * 0.75) + np.array([70, 34, 26]) * ink * 0.75
-            _I.fromarray(np.dstack([np.clip(q, 0, 255).astype(np.uint8), al])).save(paths[k])
-    for k, p in paths.items():
-        im = np.asarray(_I.open(p).convert('RGBA')).astype(np.float32) / 255
-        im[..., :3] *= im[..., 3:4]                      # premultiplied from here on
-        _flat[k] = np.ascontiguousarray(im)
-    _flat['rig'] = rig
-    return _flat
+    rig.POSES['think2'] = her_asset.rig_pose()
+    for k, n in (('open', 'think2'), ('closed', 'think2_closed')):
+        im = np.asarray(_I.open(f'build/{n}.png').convert('RGBA')).astype(np.float32) / 255
+        im[..., :3] *= im[..., 3:4]
+        _her[k] = np.ascontiguousarray(im)
+    L = her_asset.to_local
+    _her['eyes'] = [(*L(E['c']), E['rx'] * her_asset.UP, E['ry'] * her_asset.UP) for E in (her_asset.EYE_R, her_asset.EYE_L)]
+    mid = rig.POSES['think2']['mid']
+    _her['mid'] = mid
+    _her['rig'] = rig
+    return _her
 
-HER_S = 0.00144           # world units per source pixel
-HER_TOP, HER_CUT, HER_CX = 40, 470, 258      # source rows: top of her head, the table edge; her centre column
-EYES = [(260, 310, 140, 168), (202, 245, 163, 190)]
-def gaze_warp(rgba, gx, gy):
-    """Move the irises: gx > 0 looks to screen-left (her right), gy > 0 looks up. Lids barely move."""
+HER_S = 0.00123 / 2                 # world units per asset pixel (2x asset)
+HER_EYE_Y = 0.40                    # her eyes, above the table top
+def her_cut_row():
+    A = her_assets(); return A['mid'][1] + HER_EYE_Y / HER_S
+
+def gaze_warp(rgba, gx, gy, eyes):
+    """Move the irises: gx > 0 looks to screen-left, gy > 0 looks up."""
     if abs(gx) < 0.02 and abs(gy) < 0.02: return rgba
-    x0, y0, x1, y1 = 180, 120, 330, 210
-    sub = rgba[y0:y1, x0:x1]
-    h, w = sub.shape[:2]
-    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    dx = np.zeros((h, w), np.float32); dy = np.zeros((h, w), np.float32)
-    for (ex0, ex1, et, eb) in EYES:
-        cx, cy = (ex0 + ex1) / 2 - x0, (et + eb) / 2 - y0
-        rx, ry = (ex1 - ex0) / 2, (eb - et) / 2
-        wgt = np.exp(-(((xx - cx) / (rx * 0.62)) ** 2 + ((yy - cy) / (ry * 0.75)) ** 2) * 1.6)
-        dx += -gx * rx * 0.28 * wgt; dy += -gy * ry * 0.22 * wgt
-    out = rgba.copy()
-    out[y0:y1, x0:x1] = cv2.remap(sub, xx - dx, yy - dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
+    out = rgba
+    for (cx, cy, rx, ry) in eyes:
+        x0, y0 = int(cx - rx * 1.6), int(cy - ry * 1.8); x1, y1 = int(cx + rx * 1.6), int(cy + ry * 1.8)
+        sub = out[y0:y1, x0:x1]
+        h, w = sub.shape[:2]
+        yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        wgt = np.exp(-(((xx - (cx - x0)) / (rx * 0.6)) ** 2 + ((yy - (cy - y0)) / (ry * 0.7)) ** 2) * 1.6)
+        dx = -gx * rx * 0.30 * wgt; dy = -gy * ry * 0.22 * wgt
+        if out is rgba: out = rgba.copy()
+        out[y0:y1, x0:x1] = cv2.remap(sub, xx - dx, yy - dy, cv2.INTER_LINEAR, borderMode=cv2.BORDER_REFLECT)
     return out
 
 def her_layer(t, gx, gy, blink, head, key, amb, rim):
-    """Her, flat, breathing, eyes and head where the story needs them; lit by her lamp (from the left)."""
-    F = flat_her(); rig = F['rig']
-    im = F['open'] if blink < 0.02 else F['open'] * (1 - blink) + F['closed'] * blink
-    im = gaze_warp(im, gx, gy)
-    p = dict(breath=math.sin(t * 2 * math.pi / 4.6), hair=0.45, hair_phase=0.6,
-             head_rot=head[0], head_nod=head[1], head_dx=head[2], sway=0.04 * math.sin(t * 0.37))
-    lay = rig.deform('think', t, p, src=im)
+    """Her, breathing, eyes and head where the story needs them; lit by her lamp (front-left)."""
+    A = her_assets(); rig = A['rig']
+    im = A['open'] if blink < 0.02 else (A['closed'] if blink > 0.98 else A['open'] * (1 - blink) + A['closed'] * blink)
+    im = gaze_warp(im, gx, gy, A['eyes'])
+    p = dict(breath=math.sin(t * 2 * math.pi / 4.6), hair=0.4, hair_phase=0.6,
+             head_rot=head[0], head_nod=head[1], head_dx=head[2], sway=0.0)
+    lay = rig.deform('think2', t, p, src=im)
     h, w = lay.shape[:2]
     yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    # key: the lamp at her right (screen left), at about chin height; a cool fill from the windows; a warm rim from the room
-    k = (0.10 + 1.15 * (1 - xx / w) ** 1.6) * np.exp(-((yy - 230) / 480) ** 2)
+    lamp_row = A['mid'][1] + (HER_EYE_Y - 0.35) / HER_S
+    k = (0.30 + 0.85 * (1 - xx / w) ** 1.3) * np.exp(-((yy - lamp_row) / 700) ** 2)
     a = lay[..., 3]
-    edge = np.clip(a - cv2.GaussianBlur(a, (0, 0), 6), 0, 1) * (xx / w)
-    light = (k[..., None] * key * np.array([1.08, 0.86, 0.64], np.float32)
+    edge = np.clip(a - cv2.GaussianBlur(a, (0, 0), 8), 0, 1)
+    light = (k[..., None] * key * np.array([1.06, 0.88, 0.68], np.float32)
              + amb * np.array([0.55, 0.62, 0.80], np.float32)
              + (edge * rim)[..., None] * np.array([1.6, 1.1, 0.6], np.float32))
     lay = lay.copy()
     lay[..., :3] *= light
-    cut = sstep(HER_CUT + 4, HER_CUT - 4, yy)                 # the table hides her below the edge
-    lay *= cut[..., None]
-    return lay[:HER_CUT + 8]
+    cut = int(her_cut_row()) + 30                 # a little below the table top; the table edge covers the rest
+    return lay[:min(cut, h)]
 
-def place_her(img, lay, cz):
-    u, v = lproj(HER_X, 0.62, HER_Z, cz)
-    sc = LIB_CAM['f'] * HER_S / (HER_Z - cz)
+def place_her(img, lay, cz, S):
+    A = her_assets()
+    u, v = lproj(HER_X, HER_EYE_Y, HER_Z(), cz)
+    sc = LIB_CAM['f'] * HER_S / (HER_Z() - cz) * S
     h, w = lay.shape[:2]
     nw, nh = max(2, int(w * sc)), max(2, int(h * sc))
     spr = cv2.resize(lay, (nw, nh), interpolation=cv2.INTER_AREA if sc < 1 else cv2.INTER_CUBIC)
     spr = np.clip(spr, 0, None); spr[..., :3] = np.minimum(spr[..., :3], spr[..., 3:4] * 4)
-    blit(img, spr, u - HER_CX * sc, v - HER_TOP * sc, anchor='tl')
+    blit(img, spr, u * S - A['mid'][0] * sc, v * S - A['mid'][1] * sc, anchor='tl')
 
-def her_lamp(img, cz, lvl, glow):
-    """Her lamp, drawn over her: brass stem, green shade, the bulb beneath it."""
-    x, z = HER_LAMP
-    d = z - cz
-    if d < 0.2: return None
-    P = lambda X, Y: lproj(X, Y, z, cz)
-    sh_y0, sh_y1, sw = 0.36, 0.48, 0.17
-    stem_w = max(1, int(LIB_CAM['f'] * 0.018 / d))
-    cv2.line(img, tuple(np.int32(P(x, 0.0))), tuple(np.int32(P(x, sh_y0))), (0.09 * lvl + 0.02, 0.07 * lvl + 0.015, 0.04 * lvl + 0.01), stem_w, cv2.LINE_AA)
-    base = np.int32([P(x - 0.07, 0.0), P(x + 0.07, 0.0), P(x + 0.05, 0.02), P(x - 0.05, 0.02)])
-    cv2.fillPoly(img, [base], (0.05 * lvl + 0.01, 0.04 * lvl + 0.01, 0.02 * lvl + 0.01), cv2.LINE_AA)
-    shade = np.int32([P(x - sw, sh_y0), P(x + sw, sh_y0), P(x + sw * 0.55, sh_y1), P(x - sw * 0.55, sh_y1)])
-    cv2.fillPoly(img, [shade], (0.02 + 0.05 * lvl, 0.06 + 0.17 * lvl, 0.04 + 0.08 * lvl), cv2.LINE_AA)
-    # the top of the shade catches its own light along the rim
-    cv2.line(img, tuple(np.int32(P(x - sw, sh_y0))), tuple(np.int32(P(x + sw, sh_y0))), (0.25 * lvl, 0.32 * lvl, 0.16 * lvl), max(1, stem_w // 2), cv2.LINE_AA)
-    bx, by = P(x, sh_y0 - 0.012)
-    r = LIB_CAM['f'] * 0.11 / d
-    if lvl > 0.01:
-        cv2.ellipse(img, (int(bx), int(by)), (int(r), max(1, int(r * 0.15))), 0, 0, 360,
-                    (0.62 * lvl, 0.36 * lvl, 0.15 * lvl), -1, cv2.LINE_AA)        # the warm mouth of the shade
-        cv2.ellipse(img, (int(bx), int(by)), (int(r * 0.42), max(1, int(r * 0.07))), 0, 0, 360,
-                    tuple(float(v) for v in AMBER_HOT * 1.25 * lvl), -1, cv2.LINE_AA)  # the bulb itself
-        glow_spot(img, bx, by + r * 0.2, r * 0.7, AMBER_HOT, 0.22 * lvl)
-        glow_spot(img, bx, by + r * 0.8, r * 2.6, AMBER_HOT, 0.06 * lvl)
-    if glow > 0.003:                                 # the filament, still warm after the switch
-        glow_spot(img, bx, by, max(2.0, r * 0.08), AMBER_HOT, 1.2 * glow)
-        glow_spot(img, bx, by, max(5.0, r * 0.3), AMBER_HOT, 0.25 * glow)
-    return bx, by
+def HER_Z():
+    D = lib_data(); return float(D['lamps'][D['her']][1]) + TABLE_HALF + 0.12
+
+def her_bulb(cz):
+    D = lib_data(); x, z = D['lamps'][D['her']]
+    return lproj(float(x), 0.35, float(z), cz)
 
 # the closing front: lamps beyond it are out. It sweeps from the far wall to the doors, past her.
 LIB_SWEEP = (4.8, 21.2)
@@ -812,7 +808,7 @@ def lamp_off_time(z):
     return lo
 
 LIB_CUT = 21.6            # the cut to her, close
-LIB_LOOK = (22.5, 23.6)   # she turns her eyes from the last lamps to us
+LIB_LOOK = (21.8, 22.4)   # the cut to her: she is already looking at us
 LIB_OFF = 25.9            # her lamp goes out
 LIB_BLINKS = (3.4, 7.9, 12.6, 16.8, 20.1, 24.3)
 def lib_blink(lt):
@@ -835,43 +831,87 @@ def her_gaze(lt):
     gx = 0.42 * (1 - u); gy = 0.05 * (1 - u)
     return gx, gy, (0.02 * (1 - u), -0.02 * u, 0.2 * (1 - u))
 
+# her, cut out of the producer's frames (only her: the room is ours)
+_spr = {}
+def her_sprites():
+    if _spr: return _spr
+    from PIL import Image as _I
+    def cut(path, mask, box, feather):
+        im = np.asarray(_I.open(path).convert('RGB')).astype(np.float32) / 255
+        x0, y0, x1, y1 = box
+        m = np.load(mask).astype(np.float32)
+        if m.shape[0] < im.shape[0]: im = im[:m.shape[0]]
+        m = cv2.GaussianBlur(m, (0, 0), 1.2)
+        m = feather(m)
+        rgb, a = im[y0:y1, x0:x1], m[y0:y1, x0:x1, None]
+        return np.ascontiguousarray(np.concatenate([rgb * a, a], 2))
+    def f_lit(m):
+        h, w = m.shape; yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
+        return m * np.clip((1936 - xx) / 40, 0, 1) * np.clip((748 - yy) / 26, 0, 1)
+    def f_close(m):
+        h, w = m.shape; xx = np.arange(w, dtype=np.float32)[None, :]
+        return m * np.clip((1358 - xx) / 60, 0, 1) ** 1.5
+    _spr['lit'] = dict(img=cut('assets/lib_lit.png', 'build/lib_lit_her.npy', (1080, 17, 1939, 748), f_lit),
+                       ax=1400 - 1080, ay=722 - 17, wy=0.0, wpp=0.00088)
+    _spr['close'] = dict(img=cut('assets/lib_close.png', 'build/lib_close_her.npy', (772, 0, 1360, 316), f_close),
+                         ax=1000 - 772, ay=150, wy=0.42, wpp=0.00135)
+    return _spr
+
+def place_sprite(img, S, sp, cz, gain=1.0, breath=0.0, mask=None):
+    hz = HER_Z()
+    u, v = lproj(HER_X, sp['wy'], hz, cz)
+    sc = LIB_CAM['f'] * sp['wpp'] / lib_depth(sp['wy'], hz, cz) * S
+    spr = sp['img']
+    h, w = spr.shape[:2]
+    nw, nh = max(2, int(w * sc)), max(2, int(h * sc * (1 + 0.004 * breath)))
+    out = cv2.resize(spr, (nw, nh), interpolation=cv2.INTER_AREA if sc < 1 else cv2.INTER_CUBIC)
+    out = np.clip(out, 0, None); out[..., :3] = np.minimum(out[..., :3], out[..., 3:4]) * gain
+    x0, y0 = u * S - sp['ax'] * sc, v * S - sp['ay'] * sc * (1 + 0.004 * breath)
+    blit(img, out, x0, y0, anchor='tl')
+    if mask is not None:
+        a = np.repeat(out[..., 3:4], 4, axis=2)
+        m3 = np.zeros(mask.shape + (3,), np.float32)
+        blit(m3, a, x0, y0, anchor='tl'); mask[:] = np.maximum(mask, m3[..., 0])
+
 def s_library(lt, dur):
-    """Closing time. She sits at her table while the lamps go out around her, far end first, then past her to the doors.
-    The camera backs away until she is a single lit table in the dark; then, close: she looks at us, and her lamp goes out."""
-    D = lib_data()
+    """Closing time. She sits at her table, facing us, while the lamps go out behind her, past her, and toward us.
+    The camera backs away until hers is the only lit table; then, close: she looks at us, and her lamp goes out."""
+    hz = HER_Z()
+    SP = her_sprites()
+    br = math.sin(lt * 2 * math.pi / 4.6)
     if lt < LIB_CUT:
         u = ease(clamp((lt - 0.2) / (LIB_CUT - 0.4)))
-        cz = (HER_Z - 1.0) + (0.6 - (HER_Z - 1.0)) * u
-        LIB_CAM.update(x=1.46 + (0.3 - 1.46) * u, y=0.45 + (0.8 - 0.45) * u, f=LIB_F)
+        d = 2.1 + (8.6 - 2.1) * u                       # distance from the camera to her
+        cz = hz - d
+        rise = 1 - (1 - clamp((lt - 0.2) / (LIB_CUT - 0.4))) ** 2.2   # climbs early, before the front rows come between
+        camy = 0.47 + (2.3 - 0.47) * rise
+        LIB_CAM.update(nearfade=True)
+        LIB_CAM.update(x=HER_X + 0.08, y=camy, f=1800.0 + (1300.0 - 1800.0) * u,
+                       pitch=math.atan2(camy - 0.28, d))
         front = lib_front(lt)
-        lit = clamp((front - 1.0) / 30.0)
-        img = render_library(lt, cz, front=front, her_lvl=1.0)
-        gx, gy, head = her_gaze(lt)
-        lay = her_layer(lt, gx, gy, lib_blink(lt), head, key=1.0, amb=0.05 + 0.10 * lit, rim=0.35 * lit)
-        place_her(img, lay, cz)
-        her_lamp(img, cz, 1.0, 0.0)
+        img = render_library(lt, cz, front=front, her_lvl=1.0,
+                             her=lambda im_, S, m_: place_sprite(im_, S, SP['lit'], cz, 0.62, br, m_))
         k = sstep(0.0, 0.9, lt)
         return img * k + VOID * (1 - k)
-    # close: a longer lens, nearer her; only her lamp is left
-    cz = (HER_Z - 1.25) + 0.05 * (lt - LIB_CUT)
-    LIB_CAM.update(x=1.72, y=0.38, f=1800.0)
+    # close: a long lens, straight on, in a narrow slit; only her lamp is left
+    d = 1.6 - 0.025 * (lt - LIB_CUT)
+    cz = hz - d
+    LIB_CAM.update(x=1.267, y=0.409, f=1920.0, pitch=0.0, nearfade=False)
     v = lt - LIB_OFF
     if v < -0.6: lvl = 1.0
-    elif v < 0: lvl = 1.0 if (-0.6 < v < -0.38 or -0.18 < v < -0.05) else 0.12      # it falters once
+    elif v < 0: lvl = 1.0 if (-0.6 < v < -0.38 or -0.18 < v < -0.05) else 0.15      # it falters once
     else: lvl = 0.0
-    glow = 0.0 if v < 0 else math.exp(-v / 1.6)
-    img = render_library(lt, cz, front=-9.0, her_lvl=lvl)
-    fade_face = 1.0 if v < 0 else math.exp(-v / 0.55)                 # her face stays a moment in the afterglow
-    gx, gy, head = her_gaze(lt)
-    key = lvl if v < 0 else 0.45 * fade_face
-    lay = her_layer(lt, gx, gy, lib_blink(lt), head, key=key, amb=0.035 * (1 if v < 0 else math.exp(-v / 1.2)), rim=0.0)
-    place_her(img, lay, cz)
-    pos = her_lamp(img, cz, lvl, 0.0)
+    face = lvl if v < 0 else 0.4 * math.exp(-v / 0.55)               # her face stays a moment in the afterglow
+    img = render_library(lt, cz, front=-9.0, her_lvl=lvl,
+                         her=lambda im_, S, m_: place_sprite(im_, S, SP['close'], cz, 0.72 * max(face, 0.0) + 0.02, br, m_))
+    sh = 504
+    y0 = int(CY - sh / 2)
+    img[TOP:y0] = 0.0; img[y0 + sh:BOT] = 0.0
     if v > 0:
-        # all that is left is the filament: it drifts to the centre, where the next shot's galaxy will light
-        w = ease(clamp((v - 1.0) / 3.0))
-        px = pos[0] + (CX - pos[0]) * w; py = pos[1] + (CY - pos[1]) * w
-        img *= (1 - 0.0 * w)
+        img *= math.exp(-v / 1.4)                                     # the room goes with the light
+        bx, by = her_bulb(cz)
+        w = ease(clamp((v - 1.0) / 3.0))                              # the filament drifts to the centre
+        px = bx + (CX - bx) * w; py = by + (CY - by) * w
         gl = 0.25 + 0.75 * math.exp(-v / 0.8)
         glow_spot(img, px, py, 3.0, AMBER_HOT, 1.1 * gl)
         glow_spot(img, px, py, 12.0, AMBER_HOT, 0.12 * gl)
