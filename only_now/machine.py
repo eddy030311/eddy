@@ -449,6 +449,80 @@ def homography():
     dst = np.float32([[260, 210], [1660, 210], [2350, 1130], [-430, 1130]])
     return cv2.getPerspectiveTransform(src, dst)
 
+# ---------------------------------------------------------------- the hand that types (a faceted, paper-white cursor hand)
+_HAND = None
+def hand_mesh():
+    """A pointing hand in local units (fingertip at (0,-1), wrist toward +y), cut into flat facets like folded paper."""
+    global _HAND
+    if _HAND is not None: return _HAND
+    from scipy.spatial import Delaunay
+    outline = np.array([
+        (-0.11, -1.00), (0.00, -1.06), (0.11, -1.00), (0.13, -0.62), (0.15, -0.36),     # index finger
+        (0.32, -0.40), (0.46, -0.30), (0.50, -0.14), (0.53, 0.04), (0.52, 0.22),       # folded fingers
+        (0.46, 0.40), (0.34, 0.52), (0.30, 0.66), (0.33, 0.92), (-0.18, 0.98),           # wrist / cuff
+        (-0.20, 0.70), (-0.28, 0.52), (-0.38, 0.30), (-0.62, 0.02), (-0.66, -0.12),      # palm edge, thumb
+        (-0.52, -0.16), (-0.30, -0.06), (-0.14, -0.30), (-0.13, -0.62)], np.float64)
+    rng = np.random.default_rng(31)
+    inner = []
+    poly = np.float32(outline * 1000)
+    while len(inner) < 34:
+        p = rng.uniform((-0.6, -1.0), (0.55, 0.95))
+        if cv2.pointPolygonTest(poly, (float(p[0] * 1000), float(p[1] * 1000)), True) > 40: inner.append(p)
+    pts = np.vstack([outline, np.array(inner)])
+    tri = Delaunay(pts).simplices
+    keep = [t for t in tri if cv2.pointPolygonTest(poly, tuple(float(v) for v in pts[t].mean(0) * 1000), False) > 0]
+    hgt = rng.uniform(0, 0.35, len(pts)); hgt[:len(outline)] *= 0.3            # a crumpled-paper relief
+    shade = []
+    L_ = np.array([-0.5, -0.6, 0.62]); L_ /= np.linalg.norm(L_)
+    for t in keep:
+        a, b, c = [np.array([pts[i][0], pts[i][1], hgt[i]]) for i in t]
+        n = np.cross(b - a, c - a); n /= (np.linalg.norm(n) + 1e-9)
+        if n[2] < 0: n = -n
+        shade.append(0.52 + 0.48 * max(0.0, float(n @ L_)))
+    _HAND = dict(pts=pts, tri=np.array(keep), shade=np.array(shade), outline=outline, delay=rng.uniform(0, 1, len(keep)))
+    return _HAND
+
+def draw_hand(img, tip, ang, scale, alpha, dissolve, warm):
+    """Composite the hand at 1x: fingertip at `tip`, rotated by `ang`; facets fall away one by one as it dissolves."""
+    M_ = hand_mesh()
+    c, s_ = math.cos(ang), math.sin(ang)
+    P2 = np.stack([M_['pts'][:, 0] * c - M_['pts'][:, 1] * s_, M_['pts'][:, 0] * s_ + M_['pts'][:, 1] * c], 1)
+    tip_l = np.array([0.0 * c - (-1.06) * s_, 0.0 * s_ + (-1.06) * c])
+    P2 = (P2 - tip_l) * scale + tip
+    x0, y0 = np.floor(P2.min(0)) - 4; x1, y1 = np.ceil(P2.max(0)) + 4
+    x0, y0 = max(int(x0), 0), max(int(y0), 0); x1, y1 = min(int(x1), W), min(int(y1), H)
+    if x1 <= x0 or y1 <= y0 or alpha <= 0.01: return None
+    SS = 3
+    lay = np.zeros(((y1 - y0) * SS, (x1 - x0) * SS, 4), np.float32)
+    q = (P2 - (x0, y0)) * SS
+    base = np.array([0.95, 0.94, 0.92], np.float32) * (1 - 0.25 * warm) + np.array([1.0, 0.82, 0.62], np.float32) * 0.25 * warm
+    for t, sh, dl in zip(M_['tri'], M_['shade'], M_['delay']):
+        a = alpha * (1 - sstep(dl * 0.7, dl * 0.7 + 0.3, dissolve))
+        if a <= 0.01: continue
+        drift = np.array([0.0, -40.0 * SS]) * sstep(dl * 0.7, dl * 0.7 + 0.3, dissolve)
+        tri = np.int32((q[t] + drift) * 4)
+        col = np.concatenate([base * sh * a, [a]]).astype(np.float32)
+        cv2.fillPoly(lay, [tri], tuple(float(v) for v in col), cv2.LINE_AA, shift=4 - 2)
+    lay = cv2.resize(lay, (x1 - x0, y1 - y0), interpolation=cv2.INTER_AREA)
+    d = img[y0:y1, x0:x1]
+    d *= (1 - lay[..., 3:4]); d += lay[..., :3]
+    return (P2, (x0, y0, x1, y1))
+
+def hand_shadow(img, tip, ang, scale, lift, alpha):
+    """Its soft shadow on the keys: further off and softer the higher the hand is."""
+    M_ = hand_mesh()
+    c, s_ = math.cos(ang), math.sin(ang)
+    P2 = np.stack([M_['outline'][:, 0] * c - M_['outline'][:, 1] * s_, M_['outline'][:, 0] * s_ + M_['outline'][:, 1] * c], 1)
+    tip_l = np.array([1.06 * s_, -1.06 * c])
+    P2 = (P2 - tip_l) * scale + tip + np.array([18, 30]) * (0.3 + lift)
+    m = np.zeros((H // 2, W // 2), np.float32)
+    cv2.fillPoly(m, [np.int32(P2 / 2 * 4)], 1.0, cv2.LINE_AA, shift=2)
+    m = cv2.GaussianBlur(m, (0, 0), 3 + 9 * lift)
+    img *= (1 - 0.6 * alpha * cv2.resize(m, (W, H)))[..., None]
+
+KB_TAP = ('G', 2)          # the key the hand presses (under the lamp)
+KB_T = dict(enter=6.2, hover=8.2, press=8.62, contact=8.85, release=9.25, dissolve=(9.15, 10.3), flatten=(10.2, 11.5), dark=(9.8, 11.3))
+
 def s_keyboard(lt, dur):
     T = TL.at('keyboard', lt)
     S = 2
@@ -476,17 +550,33 @@ def s_keyboard(lt, dur):
         for i, ch in enumerate(row):
             keys.append((ch, off + i * (keyw + gap), 0.6 + r * (keyw + gap), keyw, keyw))
     keys.append((' ', 8.6, 0.6 + 4 * (keyw + gap), 11.0, keyw))
+    # the tap: where it lands, and the rings of light that spread from it across the keys
+    tk = [k_ for k_ in keys if k_[0] == KB_TAP[0]][0]
+    tu, tv = tk[1] + tk[3] / 2, tk[2] + tk[4] / 2
+    dtc = lt - KB_T['contact']
+    def ripple(d):
+        b = 0.0
+        for j in range(3):
+            tt = dtc - 0.22 * j
+            if tt > 0:
+                R = 13.0 * tt ** 0.9
+                b += 0.9 * (0.6 ** j) * math.exp(-tt * 0.7) * math.exp(-((d - R) / 1.4) ** 2)
+        return b
+    press = sstep(KB_T['press'], KB_T['contact'], lt) * (1 - sstep(KB_T['contact'] + 0.05, KB_T['release'] + 0.3, lt))
     for ch, u, v, kw, kh in keys:
         depth = (v + kh / 2) / 11.0
         h = (10 + 18 * depth) * S * push
         if ch == pressed[0]: h *= 0.35 + 0.65 * rise
+        rb = ripple(math.hypot(u + kw / 2 - tu, v + kh / 2 - tv)) if dtc > 0 else 0.0
+        h += 7 * S * rb
+        if ch == KB_TAP[0]: h *= 1 - 0.65 * press
         tl, tr, br_, bl = P(u, v), P(u + kw, v), P(u + kw, v + kh), P(u, v + kh)
         top = np.float32([tl, tr, br_, bl]) - [0, h]
         front = np.float32([bl - [0, h], br_ - [0, h], br_, bl])
         cxk, cyk = top.mean(axis=0) / S
         li = float(lamp[int(np.clip(cyk, 0, H - 1)), int(np.clip(cxk, 0, W - 1))])
         da = float(dawn[int(np.clip(cyk, 0, H - 1)), int(np.clip(cxk, 0, W - 1))])
-        topc = np.array([0.054, 0.044, 0.036]) * (0.3 + 6.0 * li ** 1.3) + np.array([0.015, 0.022, 0.04]) * da
+        topc = np.array([0.054, 0.044, 0.036]) * (0.3 + 6.0 * li ** 1.3) + np.array([0.015, 0.022, 0.04]) * da + AMBER * 0.42 * rb
         cv2.fillPoly(img, [np.int32(front)], tuple(float(v) for v in topc * 0.35), cv2.LINE_AA)
         cv2.fillPoly(img, [np.int32(top)], tuple(float(v) for v in topc), cv2.LINE_AA)
         # rim light on the far edge of each key
@@ -508,7 +598,56 @@ def s_keyboard(lt, dur):
         y = (rng.uniform(TOP, BOT) - rng.uniform(2, 9) * lt) % H
         glow_spot(img, x, y, rng.uniform(1.2, 4), AMBER_HOT, 0.10 * float(lamp[int(y) % H, int(x) % W]) + 0.01)
     k = sstep(0, 0.8, lt) * (1 - sstep(dur - 0.6, dur, lt) * 0.0)
-    return img * k + VOID * (1 - k)
+    img = img * k + VOID * (1 - k)
+    # --- the hand: in from the upper right, hovers, presses, and comes apart into light
+    kt = np.float32([tk[1] + tk[3] / 2, tk[2] + tk[4] / 2])
+    key_top = P(*kt) / S - [0, (10 + 18 * (kt[1] / 11.0)) * push]
+    if KB_T['enter'] < lt < KB_T['dissolve'][1]:
+        e = ease(clamp((lt - KB_T['enter']) / (KB_T['hover'] - KB_T['enter'])))
+        start = np.array([W + 260.0, TOP - 160.0]); hover = key_top + [0, -70]
+        tip = start + (hover - start) * e + np.array([0, 6 * math.sin(lt * 2.4)]) * e
+        down = sstep(KB_T['press'], KB_T['contact'], lt) * (1 - sstep(KB_T['contact'] + 0.05, KB_T['release'], lt) * 0.6)
+        tip = tip + (key_top + [0, 6] - hover) * down
+        lift = clamp(1 - down) * e + (1 - e)
+        dis = clamp((lt - KB_T['dissolve'][0]) / (KB_T['dissolve'][1] - KB_T['dissolve'][0]))
+        ang = math.radians(-160) + 0.08 * (1 - e)
+        hand_shadow(img, tip, ang, 165.0, lift, (1 - dis) * e)
+        draw_hand(img, tip, ang, 165.0, e, dis, 0.6)
+    # --- the dark comes in; the ripple's first ring flattens into the line of the next shot
+    dk = sstep(*KB_T['dark'], lt)
+    img = img * (1 - dk) + VOID * dk
+    if dtc > 0:
+        buf = np.zeros((H, W, 3), np.float32)
+        m = ease(clamp((lt - KB_T['flatten'][0]) / (KB_T['flatten'][1] - KB_T['flatten'][0])))
+        HX = head_x(0.8)
+        for j in range(3):
+            tt = dtc - 0.22 * j
+            if tt <= 0: continue
+            if j == 0:                                     # the first ring settles; the others run on and fade
+                R = 7.0 * (1 - math.exp(-tt * 1.6))
+                a = 0.9 * (0.55 + 0.45 * math.exp(-tt * 1.2))
+            else:
+                R = 13.0 * tt ** 0.9
+                a = 0.9 * (0.6 ** j) * math.exp(-tt * 0.9)
+            th = np.linspace(0, 2 * math.pi, 220)
+            ring = np.array([P(tu + R * math.cos(t_), tv + R * math.sin(t_) * 0.85) / S for t_ in th]) - [0, 14]
+            if j == 0:
+                tx = X0 + (HX - X0) * (0.5 + 0.5 * np.cos(th))     # right of the ring -> head of the line: no twist
+                tgt = np.stack([tx, line_y(tx)], 1)
+                ring = ring * (1 - m) + tgt * m
+                a = a * (1 - m) + 0.55 * m
+            else:
+                a *= (1 - m)
+            if a > 0.01:
+                cv2.polylines(buf, [np.int32(ring * 4)], True, tuple(float(v) for v in AMBER * a), 2, cv2.LINE_AA, shift=2)
+        img += glowbuf(buf, 0.7, 3.0, 14, (1.0, 0.5, 0.25))
+        if m > 0.75:                                      # the head of the line: today
+            hy = float(line_y(np.array([HX]))[0])
+            glow_spot(img, HX, hy, 9, AMBER_HOT, sstep(0.75, 1.0, m))
+            glow_spot(img, HX, hy, 40, AMBER, 0.14 * sstep(0.75, 1.0, m))
+        if 0 < dtc < 0.5:                                 # the touch itself
+            glow_spot(img, key_top[0], key_top[1], 14, AMBER_HOT, 1.2 * (1 - dtc / 0.5))
+    return img
 
 # ============================================================================ embers: what is left of the sentence
 def s_embers(lt, dur):

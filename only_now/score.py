@@ -377,6 +377,14 @@ iv.L *= _h; iv.R *= _h
 # V · the keyboard: room tone, the clock, the key coming back up
 amb.add(noise_bed(10.0, 60, 400, 0.010), A('keyboard', 0), new=True)
 sfx.add(key(vel=0.35), A('keyboard', 2.2), new=True)
+# the hand's tap: a key, a glassy ring that spreads with the light, a rising breath as the ring becomes the line
+KBc = TL.at('keyboard', MC.KB_T['contact'])
+sfx.add(key(vel=0.55), KBc - 0.02, new=True)
+music.add(shimmer([m('A5'), m('E6'), m('A6')], 3.2, vel=0.30, att=0.004, rel=2.8), KBc, new=True)
+for k_ in range(3):
+    sfx.add(shimmer([m('E7') - 2 * k_], 1.4, vel=0.26 * (0.6 ** k_), att=0.005, rel=1.2), KBc + 0.22 * k_, pan=0.15 * (k_ - 1), new=True)
+sfx.add(whoosh(1.5, up=True, vel=0.16), TL.at('keyboard', MC.KB_T['flatten'][0]), new=True)
+music.add(piano(m('A4'), 4.0, vel=0.22), TL.at('keyboard', MC.KB_T['flatten'][1]), new=True)
 music.add(strings(F, 10.5, vel=0.14, att=2.0, rel=3.0), A('keyboard', 0), new=True)
 music.add(piano(m('F4'), 3.0, vel=0.25), A('keyboard', 2.4), new=True)
 music.add(piano(m('A4'), 3.0, vel=0.22), A('keyboard', 2.4 + BEAT), new=True)
