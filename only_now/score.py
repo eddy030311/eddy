@@ -237,37 +237,37 @@ def touch(vel):                                                   # skin on skin
 def keyrest(vel):                                                 # fingers settling onto the keys, not pressing them
     t = T(0.05); return bp(rng.standard_normal(len(t)), 1800, 6000) * np.exp(-t * 260) * vel
 # the room: the laptop's fan (no mains hum), the city far below the window, a car passing once
-amb.add(bp(rng.standard_normal(int(SR * OPEN_END)), 160, 1100) * 0.006 * _env(OPEN_END, 1.2, 0.03), DK(0.0), pan=0.15, new=True)
-amb.add(lp(rng.standard_normal(int(SR * OPEN_END)), 260) * 0.020 * _env(OPEN_END, 2.0, 0.03), DK(0.0), pan=-0.4, new=True)
+amb.add(bp(rng.standard_normal(int(SR * OPEN_END)), 160, 1100) * 0.008 * _env(OPEN_END, 1.2, 0.03), DK(0.0), pan=0.15, new=True)
+amb.add(bp(rng.standard_normal(int(SR * OPEN_END)), 90, 320) * 0.010 * _env(OPEN_END, 2.0, 0.03), DK(0.0), pan=-0.4, new=True)
 _car = lp(rng.standard_normal(int(SR * 4.0)), 500) * np.sin(np.pi * T(4.0) / 4.0) ** 2 * 0.030
 amb.add(np.stack([_car * np.linspace(0.9, 0.3, len(_car)), _car * np.linspace(0.3, 0.9, len(_car))], 1), DK(1.2), new=True)
 # I  凝视 · 犹豫 — her fingers rest on the keys; nothing; one breath
 for k_ in (1, 3):
-    sfx.add(keyrest(0.05), DK(_kf(k_) + 0.18), pan=0.15, new=True)
-sfx.add(breath_in(0.9, 0.018), DK(_kf(4) + 0.1), pan=-0.2, new=True)
-sfx.add(breath_out(1.1, 0.014), DK(_kf(5) + 0.15), pan=-0.2, new=True)
+    sfx.add(keyrest(0.05), DK(_kf(k_) + 0.18), pan=0.15, gain=2.3, new=True)
+sfx.add(breath_in(0.9, 0.018), DK(_kf(4) + 0.1), pan=-0.2, gain=2.3, new=True)
+sfx.add(breath_out(1.1, 0.014), DK(_kf(5) + 0.15), pan=-0.2, gain=2.3, new=True)
 # II 思考 · 抬手 — the hand leaves the keys, the sleeve, the chair, the chin on the hand
-sfx.add(keyrest(0.04), DK(_kf(6) + 0.05), pan=0.15, new=True)
-sfx.add(rustle(0.9, 0.030), DK(_kf(6) + 0.25), pan=0.05, new=True)
-sfx.add(creak(0.020), DK(_kf(7) + 0.3), pan=-0.35, new=True)
-sfx.add(touch(0.10), DK(_kf(8) + 0.1), pan=-0.1, new=True)
-sfx.add(rustle(0.5, 0.012, 1800), DK(_kf(9) + 0.2), pan=-0.1, new=True)
+sfx.add(keyrest(0.04), DK(_kf(6) + 0.05), pan=0.15, gain=2.3, new=True)
+sfx.add(rustle(0.9, 0.030), DK(_kf(6) + 0.25), pan=0.05, gain=2.3, new=True)
+sfx.add(creak(0.020), DK(_kf(7) + 0.3), pan=-0.35, gain=2.3, new=True)
+sfx.add(touch(0.10), DK(_kf(8) + 0.1), pan=-0.1, gain=2.3, new=True)
+sfx.add(rustle(0.5, 0.012, 1800), DK(_kf(9) + 0.2), pan=-0.1, gain=2.3, new=True)
 # III 懊恼 · 崩落 — the thought won't come: a short frustrated breath, her head sinks, hair slides, a heavier sigh
-sfx.add(breath_out(0.55, 0.020, voiced=0.25), DK(_kf(11) + 0.2), pan=-0.15, new=True)
-sfx.add(hair(1.4, 0.012), DK(_kf(12) + 0.1), pan=-0.3, new=True)
-sfx.add(rustle(1.0, 0.026), DK(_kf(13) + 0.1), pan=-0.05, new=True)
-sfx.add(touch(0.08), DK(_kf(14) + 0.15), pan=-0.15, new=True)
-sfx.add(breath_out(1.6, 0.024, voiced=0.15), DK(_kf(15) + 0.05), pan=-0.15, new=True)
+sfx.add(breath_out(0.55, 0.020, voiced=0.25), DK(_kf(11) + 0.2), pan=-0.15, gain=2.3, new=True)
+sfx.add(hair(1.4, 0.012), DK(_kf(12) + 0.1), pan=-0.3, gain=2.3, new=True)
+sfx.add(rustle(1.0, 0.026), DK(_kf(13) + 0.1), pan=-0.05, gain=2.3, new=True)
+sfx.add(touch(0.08), DK(_kf(14) + 0.15), pan=-0.15, gain=2.3, new=True)
+sfx.add(breath_out(1.6, 0.024, voiced=0.15), DK(_kf(15) + 0.05), pan=-0.15, gain=2.3, new=True)
 # IV 平复 · 回归 — a deep breath in, held, let out; the hands come down; fingers find the keys again
-sfx.add(breath_in(1.4, 0.026), DK(_kf(16) + 0.05), pan=-0.15, new=True)
-sfx.add(breath_out(1.8, 0.020), DK(_kf(17) + 0.55), pan=-0.15, new=True)
-sfx.add(rustle(0.8, 0.026), DK(_kf(18) + 0.05), pan=0.05, new=True)
-sfx.add(touch(0.07), DK(_kf(18) + 0.55), pan=0.1, new=True)
-sfx.add(creak(0.014), DK(_kf(19) + 0.1), pan=-0.35, new=True)
+sfx.add(breath_in(1.4, 0.026), DK(_kf(16) + 0.05), pan=-0.15, gain=2.3, new=True)
+sfx.add(breath_out(1.8, 0.020), DK(_kf(17) + 0.55), pan=-0.15, gain=2.3, new=True)
+sfx.add(rustle(0.8, 0.026), DK(_kf(18) + 0.05), pan=0.05, gain=2.3, new=True)
+sfx.add(touch(0.07), DK(_kf(18) + 0.55), pan=0.1, gain=2.3, new=True)
+sfx.add(creak(0.014), DK(_kf(19) + 0.1), pan=-0.35, gain=2.3, new=True)
 for j_, dt_ in enumerate((0.0, 0.07, 0.16, 0.21)):
-    sfx.add(keyrest(0.06), DK(_kf(20) + 0.1 + dt_), pan=0.05 + 0.06 * j_, new=True)
+    sfx.add(keyrest(0.06), DK(_kf(20) + 0.1 + dt_), pan=0.05 + 0.06 * j_, gain=2.3, new=True)
 # the music: one low string that only listens; a second that rubs against it when the thought won't come; resolved
-music.add(strings([m('D2')], OPEN_END - 0.5, vel=0.10, att=3.5, rel=0.4, bright=380), DK(0.3), new=True)
+music.add(strings([m('D3')], OPEN_END - 0.5, vel=0.07, att=3.5, rel=0.4, bright=520), DK(0.3), new=True)
 music.add(strings([m('Eb3')], 4.2, vel=0.06, att=1.8, rel=1.6, bright=600), DK(_kf(11)), new=True)
 music.add(strings([m('A2'), m('F3')], 4.0, vel=0.08, att=1.6, rel=0.4, bright=700), DK(_kf(16)), new=True)
 music.add(piano(m('D4'), 4.0, vel=0.12), DK(_kf(18) + 0.55), new=True)
