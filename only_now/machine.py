@@ -585,7 +585,7 @@ def lib_data():
         'turtle': [(0.12, 0.12, 0.13), (0.46, 0.20, 0.18), (0.70, 0.64, 0.52)],
         'vest': [(0.36, 0.30, 0.22), (0.18, 0.26, 0.24)],
     }
-    HAIR = [(0.05, 0.04, 0.04), (0.13, 0.08, 0.05), (0.26, 0.15, 0.08), (0.42, 0.30, 0.18), (0.08, 0.06, 0.06)]
+    HAIR = [(0.05, 0.04, 0.04), (0.13, 0.08, 0.05), (0.26, 0.15, 0.08), (0.30, 0.27, 0.24), (0.08, 0.06, 0.06)]
     HATS = [None, None, None, 'beanie', 'cap', 'beret', 'bucket']
     HATC = [(0.75, 0.55, 0.20), (0.62, 0.18, 0.16), (0.16, 0.18, 0.22), (0.80, 0.78, 0.72), (0.30, 0.38, 0.28)]
     PHONES = [(0.92, 0.90, 0.86), (0.10, 0.10, 0.11), (0.72, 0.80, 0.86), (0.86, 0.70, 0.66)]
@@ -694,15 +694,22 @@ def reader_body(img, P, x, z, R, lit, t, S):
         drop = sh - 0.14 if R['style'] == 'long' else hy - 0.06
         Q([(x - 0.095, hy + 0.02, hz), (x + 0.095, hy + 0.02, hz), (x + 0.11, drop, zt), (x - 0.11, drop, zt)], _col(hc, lit, 1.3))
     E(0, 0, 1.0, 1.0, _col((0.78, 0.60, 0.49), lit, 0.85))                    # face (mostly hidden as they read)
-    E(0, -0.10 - 0.08 * bow, 1.08, 0.92 + 0.12 * bow, _col(hc, lit, 1.4))     # hair
-    # clearer hair: strands sweeping from the crown, a parting, a little shine
-    for j in range(5):
-        a0 = -2.6 + j * 0.55
-        p0 = (int(cx_ - rx * 0.1), int(cy_ - ry * 0.5))
-        p1 = (int(cx_ + rx * 0.95 * math.cos(a0 + 0.5)), int(cy_ - ry * 0.1 + ry * 0.9 * math.sin(a0 + 0.5)))
-        cv2.line(img, p0, p1, _col(hc, lit, 0.75), max(1, int(rx * 0.07)), cv2.LINE_AA)
-    cv2.line(img, (int(cx_ - rx * 0.1), int(cy_ - ry * 0.95)), (int(cx_ - rx * 0.05), int(cy_ - ry * 0.2)), _col(hc, lit, 2.2), max(1, int(rx * 0.06)), cv2.LINE_AA)
-    E(-0.3, -0.55, 0.32, 0.16, _col(hc * 1.4 + 0.05, lit, 1.6), -20)
+    E(0, -0.10 - 0.08 * bow, 1.08, 0.92 + 0.12 * bow, _col(hc, lit, 1.15))    # hair
+    # clearer hair: locks flowing from the parting down to the hairline, the ring of shine, the parting itself
+    lw = max(1, int(rx * 0.045))
+    for sgn in (-1, 1):
+        for j in range(3):
+            u = 0.25 + 0.3 * j
+            pts = []
+            for v in np.linspace(0, 1, 8):
+                ang = math.pi * (1.5 + sgn * (0.12 + u * 0.75) * v)
+                rr = 0.25 + 0.8 * v
+                pts.append((cx_ - rx * 0.05 + rx * rr * math.cos(ang) * (0.6 + 0.4 * u),
+                            cy_ - ry * 0.95 + ry * (0.9 + 0.3 * u) * v * (0.5 + 0.5 * v) + 0 * math.sin(ang)))
+            cv2.polylines(img, [np.int32(np.array(pts) * 4)], False, _col(hc, lit, 0.95), lw, cv2.LINE_AA, shift=2)
+    cv2.ellipse(img, (int(cx_), int(cy_ - ry * 0.18)), (max(1, int(rx * 0.78)), max(1, int(ry * 0.55))), 0, 205, 335,
+                _col(hc * 1.5 + 0.06, lit, 1.3), max(1, int(rx * 0.12)), cv2.LINE_AA)
+    cv2.line(img, (int(cx_ - rx * 0.05), int(cy_ - ry * 1.0)), (int(cx_ - rx * 0.02), int(cy_ - ry * 0.62)), _col((0.78, 0.60, 0.49), lit, 0.6), lw, cv2.LINE_AA)
     if R['style'] == 'bun':
         E(0.0, -1.05, 0.42, 0.36, _col(hc, lit, 1.5))
     # hats
