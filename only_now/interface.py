@@ -51,7 +51,7 @@ def vo_dur(key):
 # --------------------------------------------------------------------------- S1–S3
 def s_void(lt, dur):
     img = void_bg()
-    a = sstep(2.0, 3.5, lt)
+    a = 1.0                         # the caret is already here: the desk shot pushed into it
     draw_caret(img, WIN[0] - WIN[2] / 2 + 44, WIN[1] + 5, 3, 32, cursor_alpha(lt) * a)
     if lt > 4.5: status_line(img, lt - 4.5)
     return img

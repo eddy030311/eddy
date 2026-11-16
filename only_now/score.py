@@ -202,6 +202,12 @@ for k in range(1500):          # the split: thousands of rooms typing at once (t
 sfx.add(whoosh(2.4, up=True, vel=0.25), 93.4)
 # S7 close: one held note under the last typing; then true digital silence
 music.add(strings([m('A2')], 5.2, vel=0.28, att=1.0, rel=0.6, bright=700), 96.0)
+# 序 · the desk at night: the laptop's fan, the city far off, one note as we lean in toward the screen
+DK = lambda r: TL.at('desk', r)
+amb.add(noise_bed(14.6, 120, 900, 0.010) * np.minimum(T(14.6) / 1.5, 1), DK(0.2), new=True)
+amb.add(noise_bed(14.6, 60, 260, 0.008), DK(0.2), pan=0.5, new=True)
+music.add(piano(m('A3'), 5.0, vel=0.16), DK(8.8), new=True)
+music.add(shimmer([m('E5'), m('A5')], 6.0, vel=0.12, att=3.0, rel=2.5), DK(9.4), new=True)
 # the conversation: their keys; a soft note each time her answer arrives; a warm bed under it all
 TK = lambda r: TL.at('talk', r)
 for role_, txt_, t0_, _ in TL.TALK:
@@ -253,6 +259,20 @@ for k, ch in enumerate([Dm, Bb, F, C, Dm, Bb, F]):
 music.add(shimmer([m('F5'), m('C6')], 24.0, vel=0.3, att=4.0, rel=4.0), 190.0)
 
 motif(203.0, vel=0.38)
+# VI -> relight: the light breathes in (A); then each early passing-on sounds a note, rising, before "Now."
+music.add(whoosh(2.8, up=False, vel=0.12), TL.at('her', 33.2), new=True)
+music.add(shimmer([m('C6'), m('F6')], 3.0, vel=0.16, att=2.4, rel=0.6), TL.at('her', 33.4), new=True)
+import galaxy as GX
+_tb = np.sort(GX.newfield().tb)
+PENTA = [m('F4'), m('G4'), m('A4'), m('C5'), m('D5'), m('F5'), m('G5'), m('A5'), m('C6'), m('D6'), m('F6')]
+_last = -9
+for j_, tb_ in enumerate(_tb[:40]):
+    if tb_ > 6.6: break
+    if tb_ - _last < 0.22: continue                              # notes for the passings-on we can still count
+    _last = tb_
+    n_ = PENTA[min(int(j_ ** 0.62), len(PENTA) - 1)]
+    music.add(piano(n_, 2.6, vel=0.10 + 0.012 * min(j_, 10)), TL.at('relight', float(tb_)), pan=float(np.clip((j_ % 5 - 2) * 0.18, -0.4, 0.4)), new=True)
+music.add(strings([m('F3'), m('C4'), m('A4')], 6.0, vel=0.16, att=5.5, rel=1.0, bright=1400), TL.at('relight', 1.4), new=True)
 # S12 relight: "Now." and two wordless pulses, then the music lets go
 chords(214.0, 229.5, [Dm, Bb, F, C], vel=0.4, string_vel=0.3, shimmer_vel=0.3)
 for i, tp in enumerate(TL.NOW_PULSES):

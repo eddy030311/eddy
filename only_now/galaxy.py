@@ -1178,6 +1178,20 @@ def _render_extinction_(lt):
 # ---------------------------------------------------------------- S12 relight
 RL_PULSES = (7.15, 9.6, 12.0)
 _NEW = None
+TRAIL_X, TRAIL_T = 18.0, (0.5, 5.6)      # C · the point travels forward this far, carrying the light
+
+
+def seed_pos(lt):
+    """Where the carried light is (galaxy frame): it moves forward, then rests."""
+    u = clamp((lt - TRAIL_T[0]) / (TRAIL_T[1] - TRAIL_T[0]))
+    return np.array([TRAIL_X * (u * u * (3 - 2 * u)), 0.0, 0.0])
+
+
+def _seed_time(x):
+    """When the moving point passes x (inverse of seed_pos)."""
+    tt = np.linspace(TRAIL_T[0], TRAIL_T[1], 400)
+    xs = np.array([seed_pos(t)[0] for t in tt])
+    return np.interp(x, xs, tt)
 
 
 def newfield():
@@ -1218,26 +1232,53 @@ def newfield():
     s = np.clip(rng.lognormal(math.log(0.75), 0.22, N), 0.42, 1.35)
     var = rng.integers(0, NVAR, N)
     F = Field(P, s, var, col, I)
-    # birth times: a trickle that keeps pace with the widening view, then three rings
-    r = np.hypot(P[:, 0], P[:, 1]) + 0.4 * np.abs(P[:, 2])
+    # birth times: the light is passed from neighbour to neighbour, starting from the stars the point passes
+    from scipy.spatial import cKDTree
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import dijkstra
+    tree = cKDTree(P)
+    dk, ik = tree.query(P, k=7)
+    rows = np.repeat(np.arange(N), 6); cols = ik[:, 1:].ravel(); wts = np.maximum(dk[:, 1:].ravel(), 1e-3)
+    near_trail = (P[:, 0] > -1.0) & (P[:, 0] < TRAIL_X + 1.0) & (np.hypot(P[:, 1], P[:, 2] * 1.5) < 3.2)
+    src = np.where(near_trail)[0]
+    if len(src) < 6:
+        d_tr = np.hypot(np.clip(P[:, 0], 0, TRAIL_X) - P[:, 0], np.hypot(P[:, 1], P[:, 2]))
+        src = np.argsort(d_tr)[:12]
+    tt0 = np.linspace(0, 18, 2000)
+    front0 = 0.62 * np.exp(np.array([relight_logd(t) for t in tt0]))
+    t_src = _seed_time(np.clip(P[src, 0], 0, TRAIL_X))
+    off = np.interp(t_src, tt0, front0) - front0[0] + 1e-3
+    rows = np.concatenate([rows, np.full(len(src), N)]); cols = np.concatenate([cols, src]); wts = np.concatenate([wts, off])
+    Gr = coo_matrix((wts, (rows, cols)), shape=(N + 1, N + 1)).tocsr()
+    Gr = Gr.maximum(Gr.T)
+    D, pred = dijkstra(Gr, directed=False, indices=N, return_predecessors=True)
+    D = D[:N]; pred = pred[:N]
+    far = ~np.isfinite(D)
+    D[far] = np.hypot(P[far, 0], P[far, 1]) * 1.3
+    r = D + front0[0]
     grp = rng.choice(4, N, p=[0.34, 0.2, 0.22, 0.24])
     tt = np.linspace(0, 18, 2000)
     dd = np.exp(np.array([relight_logd(t) for t in tt]))
     front = 0.62 * dd
-    tb = np.interp(r, front, tt) + rng.exponential(1.2, N)
+    tb = np.interp(r, front, tt) + rng.exponential(0.22, N)
     # a rate limit makes the first births sparse: one, then a few, then tens, then hundreds
     o = np.argsort(tb)
     j = np.arange(1, N + 1)
     tb[o] = np.maximum(tb[o], 0.85 + np.log(j) / 1.45)
+    E = seed_pos(99.0)
+    rE = np.hypot(P[:, 0] - E[0], P[:, 1] - E[1]) + 0.4 * np.abs(P[:, 2])
     for k, tp in enumerate(RL_PULSES):
         tau = np.linspace(0, 8, 800)
         dp = np.exp(np.array([relight_logd(tp + q) for q in tau]))
         ring = _ring_r(dp, tau)
         m = grp == k + 1
-        tr = tp + np.interp(r[m], ring, tau) + rng.normal(0, 0.035, m.sum())
+        tr = tp + np.interp(rE[m], ring, tau) + rng.normal(0, 0.035, m.sum())
         tb[m] = np.minimum(tr, np.maximum(tb[m], tp + 2.5))    # pulse rings may only bring births forward
     F.tb = tb.astype(np.float32)
     F.grp = grp
+    F.par = np.where(pred >= N, -1, pred).astype(np.int64)        # who passed the light on (-1: the moving point itself)
+    early = np.where(F.tb < 11.0)[0]
+    F.early = early[np.argsort(F.tb[early])]
     _NEW = F
     return F
 
@@ -1259,7 +1300,7 @@ def _pulse_rings(cv, lt, gpos, gR, cy, out):
         if tau <= 0.0 or tau > 3.2: continue
         d_tp = math.exp(relight_logd(tp + tau))
         rr = float(_ring_r(d_tp, tau))
-        P = np.concatenate([_RINGPTS * rr, np.zeros((len(_RINGPTS), 1))], 1).astype(np.float32)
+        P = (np.concatenate([_RINGPTS * rr, np.zeros((len(_RINGPTS), 1))], 1) + seed_pos(99.0)).astype(np.float32)
         x, y, z, inv = _project(P, gpos, gR, cy)
         ok = z > 1
         a = sstep(0.0, 0.12, tau) * math.exp(-tau / 0.9) * out
@@ -1279,10 +1320,11 @@ def relight_cam(lt):
     inc = math.radians(46) * ease(min(1.0, w * 1.2))
     az = 0.8 + 0.25 * w
     n = np.array([math.sin(inc) * math.cos(az), math.sin(inc) * math.sin(az), math.cos(inc)])
-    pos = d * n
-    pos, R = _look(pos, np.zeros(3), np.array([-math.cos(az), -math.sin(az), 0.0]))
-    cy = 560.0 - 20.0 * ease(clamp((lt - 0.5) / 6.0))
     theta = OMEGA * lt
+    tgt = _rotz(theta) @ seed_pos(lt)                     # the camera keeps the carried light at the centre
+    pos = tgt + d * n
+    pos, R = _look(pos, tgt, np.array([-math.cos(az), -math.sin(az), 0.0]))
+    cy = 560.0 - 20.0 * ease(clamp((lt - 0.5) / 6.0))
     return pos, R, d, w, cy, theta
 
 
@@ -1293,6 +1335,34 @@ def _pulse_env(lt):
         if tau < -0.05: continue
         s += sstep(-0.045, 0.015, tau) * math.exp(-max(tau, 0) / 0.8)
     return s
+
+
+def _threads(cv, F, lt, gpos, gR, cy, out):
+    """At each passing-on, a brief thread of light from the giver to the one it lights."""
+    if lt > 11.5: return
+    tb = F.tb[F.early]
+    j0, j1 = np.searchsorted(tb, lt - 0.7), np.searchsorted(tb, lt)
+    sel = F.early[j0:j1][-500:]
+    if len(sel) == 0: return
+    child = F.P[sel]
+    par = F.par[sel]
+    pp = np.where(par[:, None] >= 0, F.P[np.maximum(par, 0)], seed_pos(lt)[None, :])
+    xc, yc, zc, _ = _project(child.astype(np.float32), gpos, gR, cy)
+    xp, yp, zp, _ = _project(pp.astype(np.float32), gpos, gR, cy)
+    tau = lt - F.tb[sel]
+    a = (1 - tau / 0.7) ** 2 * sstep(0.0, 0.06, tau) * out * (1 - sstep(7.0, 11.0, lt))
+    col = (AMBER_HOT * 0.5 + AMBER * 0.5).astype(np.float32)
+    for i in range(len(sel)):
+        if zc[i] <= 1 or zp[i] <= 1 or a[i] < 0.02: continue
+        L = math.hypot(xc[i] - xp[i], yc[i] - yp[i])
+        if L < 2 or L > 900: continue
+        n = int(min(60, L / 3)) + 2
+        ts = np.linspace(0, 1, n, dtype=np.float32)
+        xs = xp[i] + (xc[i] - xp[i]) * ts; ys = yp[i] + (yc[i] - yp[i]) * ts
+        grow = np.clip(tau[i] / 0.18, 0, 1)                       # the thread runs from giver to receiver
+        keep = ts <= grow
+        e = np.tile(col * 2.4 * a[i], (int(keep.sum()), 1))
+        cv.points(xs[keep], ys[keep], e)
 
 
 def _render_relight(lt):
@@ -1308,11 +1378,12 @@ def _render_relight(lt):
     out = 1 - ease(clamp((lt - 15.0) / 3.0))
     expo = 2.6 * (1 + 0.8 * pe) * out
     kn = 12.0 * (1 - sstep(0.15, 0.55, w)); kf = 1.4 * (1 - sstep(0.15, 0.55, w))
-    wmin = 5.5 + 9 * sstep(0.2, 0.5, w)
-    shutter = _shutter(lambda t: _to_gal(*relight_cam(t)[:2], relight_cam(t)[5]), relight_logd, lt)
+    wmin = 5.5 + 9 * sstep(0.2, 0.5, w) + 60 * (1 - sstep(7.5, 11.0, lt))   # round lights while the network is small; windows later
+    shutter = _shutter(lambda t: _to_gal(*relight_cam(t)[:2], relight_cam(t)[5]), relight_logd, lt) if lt > 9.0 else None
     draw_field(cv, F, gpos, gR, vis=vis, expo=expo, focus=d, kn=kn, kf=kf, wmin=wmin, cy=cy,
                shutter=shutter)
     _pulse_rings(cv, lt, gpos, gR, cy, out)
+    _threads(cv, F, lt, gpos, gR, cy, out)
     # the seed light (her light), always at the centre of the move
     sx, sy = 960.0, cy
     seed = (1.0 - 0.7 * sstep(0.5, 9.0, lt)) * (1 + 0.6 * pe) * out

@@ -8,6 +8,7 @@ import json, os
 
 # (key, module, shot, duration). Existing shots keep their original durations.
 CUT = [
+    ('desk', 'opening', 'desk', 15.0),            # 序: someone at a desk at night; into the caret
     ('void', 'interface', 'void', 10.5, 10.5, 1.5),     # trimmed from the head: starts 1.5 s in          # 序
     ('ask', 'interface', 'ask', 9.0),
     ('answer', 'interface', 'answer', 6.0),

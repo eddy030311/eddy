@@ -149,6 +149,8 @@ def render(shot, lt, dur):
     mask = np.clip(1 - np.hypot((gx - center[0]) / 560, (gy - center[1]) / 330), 0, 1)[..., None] ** 1.4
     a_in = sstep(0.0, 0.18, u) * (1 - sstep(0.55, 0.88, u))
     img = img * (1 - mask * a_in) + hand * mask * a_in
-    CH.palm_light(img, center[0], center[1], lt, scale=(1.0 + 1.2 * push) * (1 - 0.82 * sstep(0.9, 1.0, u)),
-                  strength=sstep(0.0, 0.25, u), roundness=sstep(0.9, 1.0, u))
+    # A · gathering: over the last ~2.7 s the light breathes in, slowly, to exactly the point the next shot begins with
+    g = ease(sstep(0.62, 1.0, u))
+    CH.palm_light(img, center[0], center[1], lt, scale=(1.0 + 1.2 * push) * (1 - 0.80 * g),
+                  strength=sstep(0.0, 0.25, u), roundness=sstep(0.55, 0.95, u))
     return img
