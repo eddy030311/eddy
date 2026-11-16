@@ -202,6 +202,22 @@ for k in range(1500):          # the split: thousands of rooms typing at once (t
 sfx.add(whoosh(2.4, up=True, vel=0.25), 93.4)
 # S7 close: one held note under the last typing; then true digital silence
 music.add(strings([m('A2')], 5.2, vel=0.28, att=1.0, rel=0.6, bright=700), 96.0)
+# the conversation: their keys; a soft note each time her answer arrives; a warm bed under it all
+TK = lambda r: TL.at('talk', r)
+for role_, txt_, t0_, _ in TL.TALK:
+    if t0_ < 0: continue
+    if role_ == 'human':
+        for i_, kt_ in enumerate(ui.key_times(txt_, TK(t0_), cps=10, rhythm='eulogy')):
+            sfx.add(key(vel=0.8, space=txt_[i_] == ' '), kt_ - 0.01, pan=0.2, new=True)
+    else:
+        sfx.add(shimmer([m('E6')], 1.2, vel=0.10, att=0.01, rel=1.0), TK(t0_), pan=-0.2, new=True)
+music.add(strings([m('A2'), m('E3'), m('C#4')], 38.0, vel=0.12, att=5.0, rel=5.0, bright=900), TK(0.5), new=True)
+for j_, n_ in enumerate((m('A4'), m('C#5'), m('E5'))):        # 'leave a door open': the theme, gently
+    music.add(piano(n_, 4.0, vel=0.20), TK(29.6 + j_ * BEAT), new=True)
+# the question: one low note under the heartbeat, and a breath of strings that does not resolve
+QS = lambda r: TL.at('question', r)
+music.add(strings([m('D2'), m('A2'), m('F3')], 9.5, vel=0.14, att=2.0, rel=3.5, bright=500), QS(0.2), new=True)
+music.add(piano(m('D3'), 6.0, vel=0.20), QS(7.6), new=True)
 for i, kt in enumerate(ui.key_times(TL.EULOGY_LAST, 97.0, cps=10, rhythm='eulogy')):
     sfx.add(key(vel=0.9, space=TL.EULOGY_LAST[i] == ' '), kt - 0.01, pan=0.2)
 t_ = T(0.6); sfx.add(np.sin(2 * np.pi * (220 * np.exp(-t_ * 5)) * t_) * np.exp(-t_ * 7) * 0.25, IF.CLOSE_AT + 0.3)

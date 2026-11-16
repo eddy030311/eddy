@@ -181,13 +181,60 @@ def s_montage(lt, dur):
 
 # --------------------------------------------------------------------------- S7 close
 EUL = (960, 520, 980, 330)
-def eulogy_window(img, t, typed_last, alpha=1.0, w_scale=1.0, h_scale=1.0, caret=True):
-    lines = [dict(role='human', text=TL.EULOGY_REQ, shown=len(TL.EULOGY_REQ)),
-             dict(role='ai', text='…', shown=1),
-             dict(role='human', text=TL.EULOGY_LAST, shown=typed_last)]
+def eulogy_window(img, t, typed_last, alpha=1.0, w_scale=1.0, h_scale=1.0, caret=True, head=None):
+    lines = (head if head is not None else
+             [dict(role='human', text=TL.EULOGY_REQ, shown=len(TL.EULOGY_REQ)), dict(role='ai', text='…', shown=1)]) + \
+            [dict(role='human', text=TL.EULOGY_LAST, shown=typed_last)]
     window(img, EUL[0], EUL[1], EUL[2] * w_scale, EUL[3] * h_scale, lines if h_scale > 0.6 else [], t,
            cursor=dict(rate=1.0) if caret else None, accent=hexc(TL.EULOGY_COLOUR), alpha=alpha)
     return img
+
+# --------------------------------------------------------------------------- the conversation itself
+TALK_TAIL = [dict(role='ai', text=TL.TALK[-1][1], shown=len(TL.TALK[-1][1]))]
+TALK_BIG = (960, 505, 1180, 600)
+AI_CPS = 30.0
+def talk_lines(lt):
+    """What the window holds at time lt: their lines typed, hers arriving at reading pace after a short '…'."""
+    out = []
+    for role, txt, t0, _ in TL.TALK:
+        if role == 'human':
+            if t0 < 0: out.append(dict(role='human', text=txt, shown=len(txt))); continue
+            n = typed(txt, lt, t0, cps=10, rhythm='eulogy')
+            if n > 0: out.append(dict(role='human', text=txt, shown=n))
+        else:
+            if lt < t0 - 1.0: continue
+            if lt < t0:                                    # she is reading what they wrote
+                out.append(dict(role='ai', text='…', shown=1 + int((lt - (t0 - 1.0)) * 3) % 3)); continue
+            out.append(dict(role='ai', text=txt, shown=min(len(txt), int((lt - t0) * AI_CPS) + 1)))
+    # consecutive '…' collapse into the newest
+    return out
+
+def s_talk(lt, dur):
+    """Out of a million rooms, one: how to say sorry to an old friend. This is what she gives, in one moment."""
+    t = TL.at('talk', lt)
+    img = void_bg()
+    glow_spot(img, CX, CY + 40, 520, hexc(TL.EULOGY_COLOUR), 0.05 * sstep(0, 3, lt))    # a little warmth around it
+    lines = talk_lines(lt)
+    grow = ease(clamp(lt / 1.3)); shrink = ease(clamp((lt - (dur - 3.2)) / 2.6))
+    if lt < 1.3:
+        lines = [dict(role='human', text=TL.EULOGY_REQ, shown=len(TL.EULOGY_REQ)), dict(role='ai', text='…', shown=1)]
+    k = grow * (1 - shrink)
+    cx = EUL[0] + (TALK_BIG[0] - EUL[0]) * k; cy = EUL[1] + (TALK_BIG[1] - EUL[1]) * k
+    w = EUL[2] + (TALK_BIG[2] - EUL[2]) * k; h = EUL[3] + (TALK_BIG[3] - EUL[3]) * k
+    ts_ = 1 + 0.14 * k                                     # a little larger while we read along
+    nfit = max(2, int((h - 60 * ts_) / (69 * ts_)))
+    if shrink > 0.5:                                       # hand over to the closing window: her last line, and their turn
+        lines = TALK_TAIL + [dict(role='human', text=TL.EULOGY_LAST, shown=0)]
+    else:
+        lines = lines[-nfit:]
+    push = 1 + 0.03 * sstep(1.3, dur - 3.2, lt) * (1 - shrink)
+    window(img, cx, cy, w * push, h * push, lines, t, cursor=dict(rate=1.0), accent=hexc(TL.EULOGY_COLOUR), scale_text=push * ts_)
+    return img
+
+# --------------------------------------------------------------------------- the question
+def s_question(lt, dur):
+    """Nothing on screen but the dark; the heartbeat light (drawn by the compositor) keeps time while she asks."""
+    return void_bg()
 
 CLOSE_AT = 100.5
 def s_close(lt, dur):
@@ -195,11 +242,11 @@ def s_close(lt, dur):
     img = void_bg()
     if t < CLOSE_AT:
         n = typed(TL.EULOGY_LAST, t, 97.0, cps=10, rhythm='eulogy')
-        return eulogy_window(img, t, n)
+        return eulogy_window(img, t, n, head=TALK_TAIL)
     u = t - CLOSE_AT
     if u < 0.35:      # collapse vertically to a line
         k = ease(u / 0.35)
-        eulogy_window(img, t, len(TL.EULOGY_LAST), h_scale=max(1 - k, 0.012), caret=False)
+        eulogy_window(img, t, len(TL.EULOGY_LAST), h_scale=max(1 - k, 0.012), caret=False, head=TALK_TAIL)
         return img
     if u < 0.75:      # then horizontally to a point
         k = ease((u - 0.35) / 0.4)
@@ -340,7 +387,7 @@ def s_epigraph(lt, dur):
     blit(img, text_sprite(EPIGRAPH_BY, 'serif_l', 22, (0.60, 0.56, 0.50)), CX, y, alpha=a * 0.9 * sstep(1.4, 2.6, lt))
     return img
 
-SHOTS = dict(void=s_void, ask=s_ask, answer=s_answer, montage=s_montage, close=s_close, dissolve=s_dissolve, epigraph=s_epigraph,
+SHOTS = dict(talk=s_talk, question=s_question, void=s_void, ask=s_ask, answer=s_answer, montage=s_montage, close=s_close, dissolve=s_dissolve, epigraph=s_epigraph,
              coda=s_coda, credits=s_credits)
 
 def render(shot, lt, dur):
