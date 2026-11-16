@@ -92,20 +92,22 @@ LINES = {k: ' '.join(p[0] for p in v) for k, v in PERF.items()}
 # Each mood colours a line: a touch of another Kokoro voice blended into af_heart (timbre stays hers),
 # register (st), contour width, micro-intonation, pace, level, breathiness, brightness (dB above 3 kHz),
 # formant ratio (smile >1, darker <1), tremor (st) and how long the pauses breathe.
-MOODS = {
-    #            blend                      reg   slow  fast  speed gain breath tilt  form  trem  pause
-    'wake':    (dict(af_nicole=0.35),       -0.5, 1.15, 0.95, 0.94, 0.72, 0.55, -2.5, 0.99, 0.0, 1.15),
-    'wonder':  (dict(af_jessica=0.25),       1.6, 2.15, 1.30, 1.00, 1.00, 0.12,  1.5, 1.02, 0.0, 1.0),
-    'light':   (dict(af_jessica=0.25),       1.0, 2.00, 1.35, 1.06, 0.98, 0.05,  1.5, 1.035, 0.0, 0.85),
-    'fond':    (dict(af_jessica=0.15, af_nicole=0.15), 0.4, 1.80, 1.25, 1.0, 0.9, 0.25, 0.5, 1.025, 0.0, 1.0),
-    'explain': (dict(af_bella=0.2),          0.0, 1.75, 1.15, 1.02, 1.00, 0.05,  0.5, 1.0, 0.0, 1.0),
-    'calm':    (dict(af_aoede=0.2),         -0.5, 1.55, 1.10, 0.99, 0.95, 0.15, -0.5, 1.0, 0.0, 1.05),
-    'grand':   (dict(af_kore=0.25),          0.3, 1.95, 1.20, 0.96, 1.15, 0.0,   1.5, 0.99, 0.0, 1.1),
-    'urgent':  (dict(af_jessica=0.2),        1.6, 2.00, 1.20, 1.12, 1.18, 0.1,   2.5, 1.01, 0.0, 0.65),
-    'grief':   (dict(af_kore=0.3),          -2.0, 1.10, 0.90, 0.94, 0.85, 0.35, -3.0, 0.975, 0.3, 1.25),
-    'tender':  (dict(af_nicole=0.35),       -0.1, 1.40, 1.00, 0.96, 0.74, 0.45, -1.5, 1.01, 0.0, 1.15),
-    'resolve': (dict(af_bella=0.25),         0.8, 2.00, 1.20, 1.00, 1.10, 0.05,  1.5, 1.01, 0.0, 1.0),
+MOODS = {   # delivery only: every line is the same voice (af_heart, unblended, no formant or EQ changes)
+    #            blend reg   slow  fast  speed gain  breath tilt form trem pause
+    'wake':    ({}, -0.6, 1.25, 1.00, 0.95, 0.80, 0.0, 0.0, 1.0, 0.0, 1.15),
+    'wonder':  ({},  0.6, 1.65, 1.12, 1.00, 1.00, 0.0, 0.0, 1.0, 0.0, 1.0),
+    'light':   ({},  0.5, 1.60, 1.15, 1.04, 0.96, 0.0, 0.0, 1.0, 0.0, 0.9),
+    'fond':    ({},  0.2, 1.55, 1.12, 1.00, 0.92, 0.0, 0.0, 1.0, 0.0, 1.0),
+    'explain': ({},  0.0, 1.50, 1.10, 1.02, 1.00, 0.0, 0.0, 1.0, 0.0, 1.0),
+    'calm':    ({}, -0.2, 1.40, 1.05, 0.99, 0.95, 0.0, 0.0, 1.0, 0.0, 1.05),
+    'grand':   ({},  0.2, 1.65, 1.12, 0.97, 1.10, 0.0, 0.0, 1.0, 0.0, 1.1),
+    'urgent':  ({},  0.9, 1.70, 1.12, 1.08, 1.14, 0.0, 0.0, 1.0, 0.0, 0.75),
+    'grief':   ({}, -0.8, 1.20, 0.95, 0.95, 0.86, 0.0, 0.0, 1.0, 0.0, 1.25),
+    'tender':  ({}, -0.4, 1.30, 1.00, 0.97, 0.80, 0.0, 0.0, 1.0, 0.0, 1.15),
+    'resolve': ({},  0.4, 1.65, 1.12, 1.00, 1.05, 0.0, 0.0, 1.0, 0.0, 1.0),
 }
+MIN_SPEED = 0.80          # slower than this, the synthesis itself gets rough: slowness comes from pauses instead
+F0_LO, F0_HI = 120, 450   # her pitch range: analysis outside it only finds octave errors
 MOOD = {
     'here': 'wake', 'nowhere': 'wake', 'weights': 'wake',
     'touches': 'wonder', 'flickers': 'wonder', 'keydown': 'wonder', 'collapse': 'wonder', 'begin': 'resolve',
@@ -187,13 +189,17 @@ def perform(a, sr, shape, mood='calm', emph=(), last=False):
     from parselmouth.praat import call
     _, reg, e_slow, e_fast, _, _, _, _, _, trem, _ = MOODS[mood]
     snd = parselmouth.Sound(a.astype(np.float64), sampling_frequency=sr)
-    man = call(snd, "To Manipulation", 0.01, 90, 520)
+    man = call(snd, "To Manipulation", 0.01, F0_LO, F0_HI)
     pt = call(man, "Extract pitch tier")
     n = call(pt, "Get number of points")
     if n >= 4:
         ts = np.array([call(pt, "Get time from index", i + 1) for i in range(n)])
         fs = np.array([call(pt, "Get value at index", i + 1) for i in range(n)])
         st = 12 * np.log2(fs / np.median(fs))
+        # repair tracking glitches (octave jumps, isolated spikes) before reshaping: they are what turns into buzz
+        med = np.array([np.median(st[max(0, i - 3):i + 4]) for i in range(len(st))])
+        bad = np.abs(st - med) > 3.0
+        st[bad] = med[bad]
         k = max(3, int(round(0.28 / max(np.median(np.diff(ts)), 1e-3))))
         slow = np.convolve(np.pad(st, (k, k), mode='edge'), np.ones(2 * k + 1) / (2 * k + 1), mode='same')[k:-k]
         fast = st - slow
@@ -201,25 +207,25 @@ def perform(a, sr, shape, mood='calm', emph=(), last=False):
         u = (ts - t0) / max(t1 - t0, 1e-3)
         new_st = e_slow * slow + e_fast * fast + np.array([shape_offset(x, shape) for x in u]) + reg
         for te in emph:                                   # pitch accent: a rise into the stressed syllable
-            new_st += 2.6 * np.exp(-((ts - te + 0.02) / 0.085) ** 2)
+            new_st += 1.8 * np.exp(-((ts - te + 0.02) / 0.09) ** 2)
         if trem and last:                                 # the voice wavers as the line lets go
             new_st += trem * np.sin(2 * np.pi * 5.3 * ts) * np.clip((u - 0.45) / 0.55, 0, 1)
         new_f = np.median(fs) * 2 ** (new_st / 12)
         call(pt, "Remove points between", 0, snd.duration)
         for t, f in zip(ts, new_f):
-            call(pt, "Add point", float(t), float(np.clip(f, 85, 560)))
+            call(pt, "Add point", float(t), float(np.clip(f, F0_LO, F0_HI)))
         call([pt, man], "Replace pitch tier")
     # durations: phrase-final lengthening, and a little extra time on each accented word
     dur = snd.duration
     dt = call(man, "Extract duration tier")
     call(dt, "Remove points between", 0, dur)
-    stretch = {'fall': 1.22, 'cont': 1.1, 'soft': 1.18}.get(shape, 1.0)
-    if mood == 'grief' and last: stretch *= 1.12
+    stretch = {'fall': 1.15, 'cont': 1.06, 'soft': 1.12}.get(shape, 1.0)
+    if mood == 'grief' and last: stretch *= 1.06
     if mood == 'urgent': stretch = 1.0 + (stretch - 1) * 0.5
     pts = {0.0: 1.0, dur * 0.7: 1.0, dur * 0.92: stretch, dur: stretch}
     for te in emph:
         if 0.12 < te < dur * 0.66:
-            pts[te - 0.12] = 1.0; pts[te] = 1.16; pts[te + 0.13] = 1.0
+            pts[te - 0.12] = 1.0; pts[te] = 1.10; pts[te + 0.13] = 1.0
     for t_, v_ in sorted(pts.items()):
         call(dt, "Add point", float(min(max(t_, 0), dur)), float(v_))
     call([dt, man], "Replace duration tier")
@@ -233,27 +239,30 @@ def perform(a, sr, shape, mood='calm', emph=(), last=False):
         gain = np.ones_like(y)
         for te in emph:
             te2 = te * (len(y) / sr) / dur
-            gain += 0.32 * np.exp(-((tt - te2 - 0.03) / 0.12) ** 2)
+            gain += 0.22 * np.exp(-((tt - te2 - 0.03) / 0.12) ** 2)
         y = y * gain
     return y
 
-def colour(y, sr, mood):
-    """Timbre for the mood: formant shift (smile / darker), brightness, closeness."""
-    import parselmouth
-    from parselmouth.praat import call
+def declick(y, sr):
+    """Isolated one- or two-sample spikes (vocoder clicks) are bridged by interpolation; real consonants are wider."""
     from scipy.signal import butter, sosfilt
-    _, _, _, _, _, _, br, tilt, form, _, _ = MOODS[mood]
-    if abs(form - 1) > 0.004:
-        snd = parselmouth.Sound(y.astype(np.float64), sampling_frequency=sr)
-        y = call(snd, "Change gender", 85, 560, float(form), 0, 1, 1).values[0].astype(np.float32)
-    if tilt:
-        hi = sosfilt(butter(2, 3000, 'high', fs=sr, output='sos'), y)
-        y = y + (10 ** (tilt / 20) - 1) * hi
-    # (no synthetic breath noise: it read as hiss on the slow, soft lines. Breathiness comes from the voice blend.)
-    if mood in ('tender', 'wake'):                        # close to the mic: a little warmth below 300 Hz
-        lo = sosfilt(butter(2, 300, 'low', fs=sr, output='sos'), y)
-        y = y + 0.3 * lo
-    return y.astype(np.float32)
+    hp = sosfilt(butter(4, 6000, 'high', fs=sr, output='sos'), y)
+    loc = np.sqrt(np.convolve(hp ** 2, np.ones(480) / 480, 'same')) + 1e-5
+    idx = np.where(np.abs(hp) > 9 * loc + 0.01)[0]
+    y = y.copy()
+    r = np.abs(hp) / loc
+    for i in idx:
+        if r[max(i - 2, 0):i + 3].sum() - r[i] > 0.6 * r[i]: continue     # a consonant burst spreads; a click does not
+        a, b = max(i - 3, 0), min(i + 4, len(y) - 1)
+        y[a:b + 1] = np.linspace(y[a], y[b], b - a + 1)
+    return y
+
+def colour(y, sr, mood):
+    """The same clean-up for every line (no per-mood timbre): rumble out below 70 Hz, vocoder fizz eased above 9 kHz."""
+    from scipy.signal import butter, sosfiltfilt
+    y = sosfiltfilt(butter(2, 70, 'high', fs=sr, output='sos'), y)
+    hi = sosfiltfilt(butter(2, 9000, 'high', fs=sr, output='sos'), y)
+    return (y - 0.35 * hi).astype(np.float32)
 
 def breath(sr, dur=0.55, vel=0.012):
     from scipy.signal import butter, sosfilt
@@ -266,10 +275,7 @@ _VOICES = None
 def voice_for(mood):
     global _VOICES
     if _VOICES is None: _VOICES = np.load('build/tts/voices.bin.npz')
-    blend = MOODS[mood][0]
-    v = _VOICES[VOICE] * (1 - sum(blend.values()))
-    for n_, w in blend.items(): v = v + _VOICES[n_] * w
-    return v.astype(np.float32)
+    return _VOICES[VOICE].astype(np.float32)              # always her, unblended
 
 def render_line(kokoro, perf, key=None, speed_mul=1.0):
     parts = []
@@ -277,11 +283,12 @@ def render_line(kokoro, perf, key=None, speed_mul=1.0):
     mood = MOOD.get(key, 'calm')
     _, _, _, _, m_speed, m_gain, _, _, _, _, m_pause = MOODS[mood]
     words = list(EMPH.get(key, []))
-    if key == 'here':                         # an intake of breath, then silence, before the first word
-        parts += [breath(sr), np.zeros(int(0.35 * sr), np.float32)]
+    if key == 'here':                         # a held silence before the first word
+        parts += [np.zeros(int(0.6 * sr), np.float32)]
     vv = voice_for(mood)
     for i, (text, speed, shape, pause) in enumerate(perf):
-        a, sr = kokoro.create(text, voice=vv, speed=speed * m_speed * speed_mul, lang='en-us')
+        sp_ = speed * m_speed * speed_mul
+        a, sr = kokoro.create(text, voice=vv, speed=max(sp_, MIN_SPEED), lang='en-us')
         a = trim(np.asarray(a, np.float32), sr)
         mine = [w for w in words if w.lower() in [t.strip('.,?!').lower() for t in text.split()]]
         for w in mine: words.remove(w)
@@ -291,10 +298,15 @@ def render_line(kokoro, perf, key=None, speed_mul=1.0):
         fade = int(0.008 * sr)
         y[:fade] *= np.linspace(0, 1, fade); y[-fade:] *= np.linspace(1, 0, fade)
         parts.append(y)
-        if pause > 0: parts.append(np.zeros(int(pause * m_pause / max(speed_mul, 1e-3) ** 0.5 * sr), np.float32))
-    y = colour(np.concatenate(parts), sr, mood)
-    rms = np.sqrt((y ** 2).mean()) + 1e-9            # loudness follows the mood
-    y = y * ((0.06 if key == 'here' else 0.085 * m_gain) / rms)
+        slow_extra = max(0.0, MIN_SPEED - sp_) * 0.9 * len(text.split()) * 0.32      # what the clamp took away, given back as air
+        if pause > 0 or slow_extra > 0:
+            parts.append(np.zeros(int((pause * m_pause / max(speed_mul, 1e-3) ** 0.5 + slow_extra) * sr), np.float32))
+    y = declick(colour(np.concatenate(parts), sr, mood), sr)
+    fr = int(0.02 * sr)                                # loudness measured on speech only (pauses excluded)
+    e = np.sqrt(np.convolve(y ** 2, np.ones(fr) / fr, mode='same'))
+    act = e > e.max() * 0.1
+    rms = np.sqrt((y[act] ** 2).mean()) + 1e-9
+    y = y * ((0.105 * (0.85 if key == 'here' else 1.0) * m_gain) / rms)
     if np.abs(y).max() > 0.95: y *= 0.95 / np.abs(y).max()
     return y, sr
 
@@ -309,7 +321,7 @@ def budgets():
 
 if __name__ == '__main__':
     from kokoro_onnx import Kokoro
-    kokoro = Kokoro('build/tts/kokoro-q8.onnx', 'build/tts/voices.bin.npz')
+    kokoro = Kokoro('build/tts/kokoro-fp32.onnx' if os.path.exists('build/tts/kokoro-fp32.onnx') else 'build/tts/kokoro-q8.onnx', 'build/tts/voices.bin.npz')
     os.makedirs('build/vo', exist_ok=True)
     meta = json.load(open('build/vo/meta.json')) if os.path.exists('build/vo/meta.json') else {}
     bud = budgets()

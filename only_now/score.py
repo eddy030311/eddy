@@ -546,7 +546,20 @@ for tc in HARD_CUTS:
 for a, b in SILENT:
     mix[int(a * SR):int(b * SR)] = 0
 # soft-clip and normalize to -1 dBFS
-mix = np.tanh(mix * 1.2) / 1.2
+# a clean peak limiter instead of a soft-clipper: no saturation, so nothing is added to the voice
+from scipy.ndimage import maximum_filter1d
+_pk = maximum_filter1d(np.abs(mix).max(axis=1), size=int(0.004 * SR))
+_thr = 0.78 * np.percentile(_pk[_pk > 1e-4], 99.9)
+_g = np.minimum(1.0, _thr / np.maximum(_pk, 1e-9))
+_rel = np.exp(-1.0 / (0.12 * SR)); _sm = np.empty_like(_g); _acc = 1.0
+for _i in range(0, len(_g), 64):                      # release smoothing in blocks (attack is instant via the look-around max)
+    _blk = _g[_i:_i + 64].min()
+    _acc = min(_blk, _acc * _rel ** 64 + (1 - _rel ** 64) * 1.0) if _blk >= _acc else _blk
+    _sm[_i:_i + 64] = _acc
+mix = mix * _sm[:, None]
+_vp = vo_env > 0.5
+print('limiter: gain reduction > 1 dB on %.3f%% of the film, %.3f%% of narration; deepest %.1f dB' % (
+    100 * (_sm < 0.891).mean(), 100 * ((_sm < 0.891) & _vp).sum() / max(_vp.sum(), 1), 20 * np.log10(_sm.min())))
 mix *= 0.89 / max(np.abs(mix).max(), 1e-9)
 for a, b in SILENT:
     mix[int(a * SR):int(b * SR)] = 0
