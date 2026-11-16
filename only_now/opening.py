@@ -58,24 +58,22 @@ def track_at(f):
     i = int(math.floor(f)) % n; j = (i + 1) % n; u = f - math.floor(f)
     return tr[i] * (1 - u) + tr[j] * u
 
+HOLD_T = (5.6, 7.6)                     # the fingers stop, mid-air: a held breath, then they settle again
+
 def typing_state(lt):
-    """(typing amount, backspace amount, draft characters on screen)."""
-    n = len(DRAFT)
-    ramp = sstep(TYPE_T[0] - 0.25, TYPE_T[0] + 0.1, lt) * (1 - sstep(TYPE_T[1] - 0.1, TYPE_T[1] + 0.3, lt))
-    dele = sstep(DEL_T[0] - 0.15, DEL_T[0] + 0.05, lt) * (1 - sstep(DEL_T[1] - 0.05, DEL_T[1] + 0.25, lt))
-    if lt < TYPE_T[0]: shown = 0
-    elif lt < TYPE_T[1]: shown = int(n * (lt - TYPE_T[0]) / (TYPE_T[1] - TYPE_T[0]))
-    elif lt < DEL_T[0]: shown = n
-    elif lt < DEL_T[1]: shown = int(n * (1 - (lt - DEL_T[0]) / (DEL_T[1] - DEL_T[0])))
-    else: shown = 0
-    return ramp, dele, shown
+    """She is about to type, not typing: her fingers hover over the keys, moving the way the sheet moves them
+    (at a hover's amplitude); once they go still for a moment. Nothing is written yet."""
+    poised = 0.55 * sstep(0.6, 1.8, lt)
+    hold = sstep(HOLD_T[0] - 0.3, HOLD_T[0] + 0.2, lt) * (1 - sstep(HOLD_T[1] - 0.2, HOLD_T[1] + 0.5, lt))
+    a = poised * (1 - 0.9 * hold)
+    return a, 0.0, 0
 
 def animated(lt):
     """The plate with her hands moving along the sheet's track, and her breathing."""
     C = plate()
     P = C['P']
     ramp, dele, _ = typing_state(lt)
-    t4 = track_at(lt * 24.0)
+    t4 = track_at(lt * 12.0)                                  # half speed: hovering, not hitting keys
     dx = np.zeros(P.shape[:2], np.float32); dy = np.zeros(P.shape[:2], np.float32)
     # both hands type while she writes; the right one alone taps backspace
     for k, (hm, amp) in enumerate(zip(C['hands'], (ramp, max(ramp, 0.55 * dele)))):

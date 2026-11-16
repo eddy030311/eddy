@@ -207,13 +207,6 @@ DK = lambda r: TL.at('desk', r)
 amb.add(noise_bed(14.6, 120, 900, 0.010) * np.minimum(T(14.6) / 1.5, 1), DK(0.2), new=True)
 amb.add(noise_bed(14.6, 60, 260, 0.008), DK(0.2), pan=0.5, new=True)
 music.add(piano(m('A3'), 5.0, vel=0.16), DK(8.8), new=True)
-import opening as OP
-_n = len(OP.DRAFT)
-for i_ in range(_n):                                   # she types a first line...
-    sfx.add(key(vel=0.55, space=OP.DRAFT[i_] == ' '), DK(OP.TYPE_T[0] + (OP.TYPE_T[1] - OP.TYPE_T[0]) * (i_ + 1) / _n) - 0.02, pan=0.1, new=True)
-for i_ in range(_n):                                   # ...and holds backspace until it is gone
-    if i_ % 2 == 0:
-        sfx.add(key(vel=0.40), DK(OP.DEL_T[0] + (OP.DEL_T[1] - OP.DEL_T[0]) * i_ / _n), pan=0.25, new=True)
 music.add(shimmer([m('E5'), m('A5')], 6.0, vel=0.12, att=3.0, rel=2.5), DK(9.4), new=True)
 # the conversation: their keys; a soft note each time her answer arrives; a warm bed under it all
 TK = lambda r: TL.at('talk', r)
