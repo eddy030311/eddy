@@ -603,16 +603,38 @@ def s_keyboard(lt, dur):
     kt = np.float32([tk[1] + tk[3] / 2, tk[2] + tk[4] / 2])
     key_top = P(*kt) / S - [0, (10 + 18 * (kt[1] / 11.0)) * push]
     if KB_T['enter'] < lt < KB_T['dissolve'][1]:
+        import cursor_hand
+        spr0, tip0, msk0 = cursor_hand.sprite()
         e = ease(clamp((lt - KB_T['enter']) / (KB_T['hover'] - KB_T['enter'])))
-        start = np.array([W + 260.0, TOP - 160.0]); hover = key_top + [0, -70]
-        tip = start + (hover - start) * e + np.array([0, 6 * math.sin(lt * 2.4)]) * e
+        hover = key_top + [10, -46]
+        start = np.array([W + 120.0, key_top[1] + 220.0])
+        tip = start + (hover - start) * e + np.array([0, 5 * math.sin(lt * 2.4)]) * e
         down = sstep(KB_T['press'], KB_T['contact'], lt) * (1 - sstep(KB_T['contact'] + 0.05, KB_T['release'], lt) * 0.6)
-        tip = tip + (key_top + [0, 6] - hover) * down
+        tip = tip + (key_top + [0, 4] - hover) * down
         lift = clamp(1 - down) * e + (1 - e)
         dis = clamp((lt - KB_T['dissolve'][0]) / (KB_T['dissolve'][1] - KB_T['dissolve'][0]))
-        ang = math.radians(-160) + 0.08 * (1 - e)
-        hand_shadow(img, tip, ang, 165.0, lift, (1 - dis) * e)
-        draw_hand(img, tip, ang, 165.0, e, dis, 0.6)
+        sc = 0.60 * (1 - 0.04 * down)
+        spr = cv2.resize(spr0, None, fx=sc, fy=sc, interpolation=cv2.INTER_AREA)
+        h_, w_ = spr.shape[:2]
+        if dis > 0:                                      # it comes apart in pieces, each lifting away as light
+            rng_ = np.random.default_rng(77)
+            cell = 12
+            thr = rng_.uniform(0, 1, (h_ // cell + 1, w_ // cell + 1)).astype(np.float32)
+            thr = cv2.resize(thr, (w_ + cell, h_ + cell), interpolation=cv2.INTER_NEAREST)[:h_, :w_]
+            keep = 1 - np.clip((dis * 1.3 - thr * 0.9) / 0.25, 0, 1)
+            spr = spr * keep[..., None]
+        x0_, y0_ = tip[0] - tip0[0] * sc, tip[1] - tip0[1] * sc
+        # its soft shadow on the keys, further and softer the higher it is
+        sm = cv2.resize(msk0, (w_, h_), interpolation=cv2.INTER_AREA)
+        sm = cv2.GaussianBlur(sm, (0, 0), 4 + 10 * lift)
+        sh = np.zeros((H, W), np.float32)
+        ox, oy = int(x0_ + 16 * (0.3 + lift)), int(y0_ + 30 * (0.3 + lift))
+        xa, ya = max(ox, 0), max(oy, 0); xb, yb = min(ox + w_, W), min(oy + h_, H)
+        if xb > xa and yb > ya:
+            sh[ya:yb, xa:xb] = sm[ya - oy:yb - oy, xa - ox:xb - ox]
+        img *= (1 - 0.6 * e * (1 - dis) * sh)[..., None]
+        lay = spr.copy(); lay[..., :3] *= np.array([1.0, 0.93, 0.84], np.float32) * (0.75 + 0.25 * e)   # in the warm lamp light
+        blit(img, lay * e, x0_, y0_, anchor='tl')
     # --- the dark comes in; the ripple's first ring flattens into the line of the next shot
     dk = sstep(*KB_T['dark'], lt)
     img = img * (1 - dk) + VOID * dk
