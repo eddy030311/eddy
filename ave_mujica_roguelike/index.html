@@ -43,7 +43,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #bossBar .bar i{background:linear-gradient(#c9a45c,#7a1420)}
 
 /* ---------- touch pad ---------- */
-#stickZone{position:absolute;left:0;bottom:0;width:55%;top:22%}
+#stickZone{position:absolute;left:0;bottom:0;width:50%;top:18%}
 #stickBase{position:absolute;width:104px;height:104px;margin:-52px 0 0 -52px;border-radius:50%;
   border:2px solid rgba(201,164,92,.55);background:radial-gradient(rgba(155,27,48,.18),rgba(11,8,13,.35));opacity:.0;transition:opacity .15s}
 #stickBase.on{opacity:1}
@@ -85,6 +85,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .ghost{border:1px solid var(--line);background:rgba(11,8,13,.6);padding:8px 12px;font-size:14px;color:var(--bone)}
 
 #select{background:rgba(11,8,13,.92);padding-bottom:0;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.selL,.selR{display:flex;flex-direction:column;gap:12px;min-width:0}
 .sel-head{display:flex;align-items:center;gap:12px}
 .sel-head h2{margin:0;font-size:18px;letter-spacing:.3em;font-weight:900}
 .sel-main{display:flex;gap:14px;align-items:flex-start}
@@ -155,7 +156,43 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 96px);transform:translateX(-50%);font-size:14px;letter-spacing:.2em;font-weight:700;color:var(--bone);
   text-shadow:0 2px 0 #000,0 0 12px rgba(155,27,48,.9);pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap}
 #toast.on{opacity:1}
-@media (prefers-reduced-motion:reduce){#actCard,#fade,#toast{transition:none}}
+#rotate{display:none;position:fixed;inset:0;z-index:60;background:var(--ink);flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:24px}
+#rotate svg{width:84px;height:84px;fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;animation:tilt 2.4s ease-in-out infinite}
+#rotate b{font-size:20px;letter-spacing:.3em;font-weight:900;margin-right:-.3em}
+#rotate span{font-size:13px;color:var(--mist)}
+@keyframes tilt{0%,25%{transform:rotate(0)}55%,100%{transform:rotate(-90deg)}}
+@media (orientation:portrait) and (pointer:coarse){#rotate{display:flex}}
+@media (orientation:landscape) and (max-height:560px){
+  #title{align-items:flex-start;justify-content:center;text-align:left;background:linear-gradient(90deg,rgba(11,8,13,.8),rgba(11,8,13,.35) 45%,rgba(11,8,13,0) 62%)}
+  .t-wrap{margin:auto 0;align-items:flex-start;max-width:min(50vw,30rem);gap:6px}
+  .t-eyebrow{font-size:15px}
+  .t-logo{font-size:min(11vw,21vh)}
+  .t-sub{font-size:16px}
+  .t-line{font-size:12px;line-height:1.75;margin:2px 0}
+  .cta{padding:9px 24px;font-size:16px}
+  #select{flex-direction:row;gap:20px;overflow:hidden;padding-bottom:0}
+  .selL,.selR{flex:1 1 0;overflow-y:auto;gap:8px;padding-bottom:12px}
+  .selR{padding-top:4px}
+  .stage{width:96px;height:128px}
+  #selCv{width:96px;height:128px}
+  .pname{font-size:28px}
+  .stats{margin:0}
+  .abil{font-size:12px}
+  .gobar{position:static;margin:auto 0 0;padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 8px);background:none}
+  .panel{width:min(100%,46rem);padding:14px 16px;gap:10px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+  .card{grid-template-columns:34px 1fr}
+  .card .ic{width:34px;height:34px;font-size:17px}
+  .panel h3.big{font-size:36px}
+  #actCard{gap:8px}
+  #actCard svg{width:44px;height:44px}
+  #actCard h2{font-size:26px}
+  #actCard p{line-height:1.8;font-size:13px}
+  #actCard small{margin-top:8px}
+  #bossBar{top:auto;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);width:min(36vw,340px);display:flex;flex-direction:column-reverse;gap:4px}
+  #toast{top:calc(env(safe-area-inset-top,0px) + 64px)}
+}
+@media (prefers-reduced-motion:reduce){#actCard,#fade,#toast,#rotate svg{transition:none;animation:none}}
 </style>
 
 <div id="game">
@@ -196,6 +233,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 </section>
 
 <section id="select" class="screen" hidden>
+  <div class="selL">
   <header class="sel-head"><button class="ghost" id="selBack">‹ 返回</button><h2>选择人偶</h2></header>
   <div class="tabs" id="tabs"></div>
   <div class="sel-main">
@@ -207,14 +245,19 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
       <dl class="stats" id="sStats"></dl>
     </div>
   </div>
+  </div>
+  <div class="selR">
   <ul class="abil" id="sAbil"></ul>
   <div class="kbd" id="kbdHint">手机：左半屏拖动移动，右下按钮攻击</div>
   <div class="gobar"><button class="cta" id="go">登 台</button></div>
+  </div>
 </section>
 
 <div id="modal" class="modal" hidden><div class="panel" id="panel"></div></div>
 <div id="actCard" hidden></div>
 <div id="fade"></div>
+<div id="rotate"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4"/><path d="M29 46h6"/><path d="M10 40a24 24 0 0 0 14 16M54 24A24 24 0 0 0 40 8"/><path d="M40 4l0 6 6 0"/></svg>
+  <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script>
 'use strict';
@@ -556,7 +599,7 @@ const ROOMS_PER_ACT=4;
 /* =================================================================== state */
 const cv=$('cv'),ctx=cv.getContext('2d');
 let SC=3,VW=200,VH=400;
-const RW=304,RH=512,TOP=44,SIDE=12;
+const RW=512,RH=288,TOP=44,SIDE=12;
 const G={state:'title',paused:false,time:0,etime:0,act:1,room:0,type:'',en:[],pb:[],eb:[],parts:[],fx:[],nums:[],picks:[],ghosts:[],amb:[],timers:[],etimers:[],
   obs:[],doors:[],deco:[],waves:[],pending:0,cleared:false,shake:0,hitstop:0,timeStop:0,flash:0,boss:null,kills:0,runT:0,petals:0,mods:null,ups:{},bg:null,cam:{x:0,y:0},charIdx:0,roomsDone:0};
 const P={x:0,y:0,r:5};
@@ -591,7 +634,7 @@ const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart'in window;
 
 /* =================================================================== sizing */
 function resize(){const dpr=Math.min(window.devicePixelRatio||1,2);cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);
-  SC=Math.min(cv.width,cv.height)/(innerWidth<innerHeight?184:236);VW=cv.width/SC;VH=cv.height/SC;ctx.imageSmoothingEnabled=false}
+  SC=innerWidth<innerHeight?cv.width/184:cv.height/190;VW=cv.width/SC;VH=cv.height/SC;ctx.imageSmoothingEnabled=false}
 addEventListener('resize',resize);
 
 /* =================================================================== room */
@@ -615,7 +658,7 @@ function buildBg(){const pal=ACTS[G.act-1].pal,c=mk(RW,RH),x=c.getContext('2d');
 function enterRoom(type){
   G.type=type;G.room++;G.roomsDone++;G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
   G.cleared=false;G.boss=null;G.bossSpawned=0;G.waveWait=0;G.timeStop=0;G.bg=buildBg();
-  P.x=RW/2;P.y=RH-40;P.vx=P.vy=0;P.dashT=0;P.inv=.8;P.shield=Math.max(P.shield||0,0)+G.mods.shieldPerRoom;P.shield=Math.min(P.shield,G.mods.shieldPerRoom+1);
+  P.x=RW/2;P.y=RH-34;P.vx=P.vy=0;P.dashT=0;P.inv=.8;P.shield=Math.max(P.shield||0,0)+G.mods.shieldPerRoom;P.shield=Math.min(P.shield,G.mods.shieldPerRoom+1);
   if(type==='combat'||type==='elite'){
     const n=rint(2,5);for(let i=0;i<n*6&&G.obs.length<n;i++){const ox=rint(3,RW/16-4)*16,oy=rint(5,RH/16-6)*16;
       if(Math.abs(ox+8-RW/2)<30)continue;if(G.obs.some(o=>Math.abs(o.x-ox)<40&&Math.abs(o.y-oy)<40))continue;G.obs.push({x:ox+1,y:oy+2,w:14,h:10})}
@@ -624,7 +667,7 @@ function enterRoom(type){
     else{G.waves=[genWave(budget*.6,true),genWave(budget*.8)]}
     setTrack('battle');later(.7,()=>nextWave());
   }else if(type==='boss'){
-    [[60,150],[RW-76,150],[60,RH-150],[RW-76,RH-150]].forEach(([ox,oy])=>G.obs.push({x:ox+1,y:oy+2,w:14,h:10}));
+    [[90,TOP+46],[RW-106,TOP+46],[90,RH-72],[RW-106,RH-72]].forEach(([ox,oy])=>G.obs.push({x:ox+1,y:oy+2,w:14,h:10}));
     setTrack(null);later(.9,()=>spawnBoss());
   }else{
     setTrack('calm');
@@ -644,7 +687,7 @@ function makeEnemy(t,x,y,elite){const d=EN[t],hm=(1+(G.act-1)*.7+G.room*.07)*(el
     st:'idle',stT:rnd(.3,1.2),fire:(d.fire||2)*rnd(.5,1),fl:0,kx:0,ky:0,stun:0,an:rnd(TAU),face:1,hitCd:new Map(),sc:elite?1.4:1};
   G.en.push(e);return e}
 function spawnBoss(){const b=BOSSES[G.act-1],hm=1.2;
-  const e={t:'boss',boss:b,x:RW/2,y:TOP+90,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
+  const e={t:'boss',boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name)}
 function burst(x,y,n,cols,spd=60,life=.5,sz=1,g=0){for(let i=0;i<n;i++){const a=rnd(TAU),v=rnd(spd*.3,spd);G.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(life*.5,life),max:life,col:pick(cols),sz,g})}}
 function shake(v){G.shake=Math.max(G.shake,v)}
@@ -786,7 +829,7 @@ function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;
   if(e.dashT>0){e.dashT-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(b.spr==='queen'&&Math.random()<dt*20)eshoot(e.x,e.y-10,rnd(TAU),30,{k:'feather'});bound(e)}
   else if(e.busy>0){e.busy-=dt}
   else{const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1;
-    if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.55)}
+    if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62)}
     e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2);e.stT=ph2?.5:1}}
   bound(e);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
@@ -927,21 +970,25 @@ function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.u
   $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
   G.bg=null;showActCard(1,()=>enterRoom('combat'))}
-$('start').onclick=()=>{auInit();S.p('door');toSelect()};
+$('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
 $('selBack').onclick=()=>toTitle();
-$('go').onclick=()=>{auInit();startRun(G.charIdx)};
+function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
+  const pr=rf.call(el);pr&&pr.then&&pr.then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}}
+$('go').onclick=()=>{auInit();goLandscape();startRun(G.charIdx)};
 
 /* =================================================================== render */
 let last=performance.now();
+const portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse)');
+portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInputs());
 function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last)/1000);last=now;
-  if(G.state==='play'&&!G.paused){if(G.hitstop>0)G.hitstop-=dt;else update(dt)}
+  if(G.state==='play'&&!G.paused&&!portraitMQ.matches){if(G.hitstop>0)G.hitstop-=dt;else update(dt)}
   else if(G.state==='dead'){for(const p of G.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=(p.g||0)*dt;p.life-=dt}G.parts=G.parts.filter(p=>p.life>0)}
   else if(G.state==='title'||G.state==='select'){G.time+=dt;updAmb(dt);G.selT=(G.selT||0)+dt;if(G.state==='select')drawSel()}
   render()}
 function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
   if(G.state==='title'||G.state==='select'){drawTitleScene();return}
   if(!G.bg)return;
-  const cam=G.cam;const tx=P.x-VW/2,ty=P.y-VH*.5;cam.x=RW>VW?clamp(tx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty,-20,RH-VH+20):(RH-VH)/2;
+  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-P.y)*.5:0);cam.x=RW>VW?clamp(tx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty,-20,RH-VH+20):(RH-VH)/2;
   const sx=G.shake?rnd(-G.shake,G.shake)*.3:0,sy=G.shake?rnd(-G.shake,G.shake)*.3:0;
   ctx.setTransform(SC,0,0,SC,Math.round((-cam.x+sx)*SC),Math.round((-cam.y+sy)*SC));
   ctx.drawImage(G.bg,0,0);
@@ -1037,8 +1084,8 @@ function drawTitleScene(){const t=G.time;ctx.setTransform(SC,0,0,SC,0,0);
   for(let i=0;i<VW;i+=8){ctx.fillStyle=i%16?'#4a0c18':'#3a0912';ctx.fillRect(i,0,8,VH*.18+Math.sin(i*.3)*3)}ctx.fillStyle=GOLD;for(let i=0;i<VW;i+=4)ctx.fillRect(i,Math.round(VH*.18+Math.sin(i*.3)*3),2,1);
   for(let x=-10;x<24;x+=6){ctx.fillStyle=x%12?'#5a0e1c':'#420a14';ctx.fillRect(x,0,6,VH*.9);ctx.fillRect(VW-x-6,0,6,VH*.9)}
   const fy=Math.round(VH*.86);ctx.fillStyle='#1c1014';ctx.fillRect(0,fy,VW,VH-fy);ctx.fillStyle='#2a1a1e';for(let x=0;x<VW;x+=12)ctx.fillRect(x,fy,11,1);ctx.fillStyle=GOLD;ctx.fillRect(0,fy,VW,1);
-  const n=CHARS.length,gap=Math.min(36,(VW-30)/n);
-  CHARS.forEach((c,i)=>{const x=VW/2+(i-(n-1)/2)*gap;ctx.globalAlpha=.10+.04*Math.sin(t*1.4+i);ctx.fillStyle='#fff3dc';ctx.beginPath();ctx.moveTo(x-3,0);ctx.lineTo(x+3,0);ctx.lineTo(x+14,fy);ctx.lineTo(x-14,fy);ctx.fill();
+  const n=CHARS.length,land=VW>VH,cx0=land?VW*.73:VW/2,gap=Math.min(36,((land?VW*.5:VW)-30)/n);
+  CHARS.forEach((c,i)=>{const x=cx0+(i-(n-1)/2)*gap;ctx.globalAlpha=.10+.04*Math.sin(t*1.4+i);ctx.fillStyle='#fff3dc';ctx.beginPath();ctx.moveTo(x-3,0);ctx.lineTo(x+3,0);ctx.lineTo(x+14,fy);ctx.lineTo(x-14,fy);ctx.fill();
     ctx.globalAlpha=.25;ctx.beginPath();ctx.ellipse(x,fy+1,12,3,0,0,TAU);ctx.fill();ctx.globalAlpha=1;shadow(x,fy,6);
     const s=SPR['ch_'+c.id];const fi=G.state==='select'&&i===G.charIdx?[1,0,2,0][Math.floor(t*6)%4]:0;drawSpr(s.f[fi],x,fy+1-(Math.sin(t*2+i)>.95?1:0),i<2?1:-1)});
   drawAmb(t)}
