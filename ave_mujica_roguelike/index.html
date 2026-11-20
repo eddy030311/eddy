@@ -19,6 +19,7 @@ html,body{height:100%;margin:0;background:var(--ink);color:var(--bone);overflow:
 #vig,#tint{position:absolute;inset:0;pointer-events:none}
 #vig{background:radial-gradient(ellipse 72% 80% at 50% 50%,rgba(5,2,8,0) 42%,rgba(5,2,8,.72) 100%)}
 #game:not(.playing) #vig{display:none}
+#game.dark #vig{background:radial-gradient(ellipse 34% 46% at 50% 50%,rgba(5,2,8,0) 30%,rgba(5,2,8,.96) 100%)}
 #tint{opacity:0}
 button{font-family:var(--f-body);color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
@@ -27,8 +28,12 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* ---------- HUD ---------- */
 #hud{position:absolute;left:0;right:0;top:0;pointer-events:none;
   padding:calc(env(safe-area-inset-top,0px) + 10px) max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));
-  display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  display:flex;align-items:flex-start;gap:10px}
+#hud .rbox{margin-left:auto}
 .hpbox{min-width:0;flex:1;max-width:220px}
+.port{flex:0 0 auto;width:40px;height:60px;margin-right:-4px;background:url(assets/portraits.png) no-repeat;background-size:500% 100%;filter:drop-shadow(0 2px 0 #000)}
+.card .ic.sp{background:url(assets/ups.png) no-repeat;background-size:2100% 100%;border-color:transparent}
+.chips .ci{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:3px;background:url(assets/ups.png) no-repeat;background-size:2100% 100%}
 .who{font-family:var(--f-display);font-size:20px;line-height:1;color:var(--bone);text-shadow:0 2px 0 #000}
 .bar{position:relative;height:12px;margin-top:5px;background:#1a1016;border:1px solid var(--gold);box-shadow:0 0 0 2px #000}
 .bar i{position:absolute;inset:0;width:100%;background:linear-gradient(#e0485e,#8c1428);transform-origin:left;transition:transform .15s}
@@ -145,6 +150,13 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .chips span{font-size:11px;padding:3px 7px;border:1px solid var(--line);color:#c9bfc9}
 .tog{display:flex;justify-content:space-between;align-items:center;font-size:14px;border-top:1px solid var(--line);padding-top:10px}
 .tog button{min-width:64px}
+.talk{display:grid;grid-template-columns:72px 1fr;gap:12px;text-align:left;align-items:start}
+.talk .port.big{width:72px;height:108px;margin:0}
+.talk canvas{width:72px;height:72px;image-rendering:pixelated;border:1px solid var(--line);background:radial-gradient(circle at 50% 30%,#3a1622,#0d080b)}
+.tk{min-width:0}.tk b{font-size:16px;color:var(--gold)}.tk small{display:block;color:var(--mist);font-size:12px;margin-top:2px}.tk p{margin:6px 0 0;font-size:14px;line-height:1.75}
+.bond{font-size:12.5px;color:#c9bfc9;border:1px dashed #5a2232;padding:7px 10px}
+.bond.got{font-size:15px;color:var(--gold);border-color:var(--gold)}.bond.got span{font-size:12.5px;color:#c9bfc9}
+.chips span.bd{border-color:#5a3a7a;color:#d8c0ff}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
 .summary div{border:1px solid var(--line);padding:8px 4px}
 .summary b{display:block;font:14px var(--f-pixel);color:var(--gold)}
@@ -206,6 +218,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   <canvas id="cv"></canvas>
   <div id="vig"></div><div id="tint"></div>
   <div id="hud" hidden>
+    <i id="hPort" class="port" hidden></i>
     <div class="hpbox">
       <div class="who" id="hWho">Doloris</div>
       <div class="bar"><i id="hpFill"></i><span id="hpTxt">100/100</span></div>
@@ -513,6 +526,7 @@ function buildSprites(){
     ['#e9c46a','#cdd3c3','#4ccac2','#c08aff','#8d93dd'].forEach((c,i)=>r(5+i*6,17,2,2,c));r(4,6,1,9,'#d8cebe');r(31,6,1,9,'#d8cebe');
     r(9,13,1,4,'#9b1b30');r(26,13,1,4,'#9b1b30')})]);
   reg('hand',[spr(10,10,r=>{r(2,3,6,6,'#f0e8dc');r(1,0,2,5,'#f0e8dc');r(3,0,1,3,'#f0e8dc');r(5,0,1,3,'#f0e8dc');r(7,1,1,3,'#f0e8dc');r(2,8,6,1,GOLD)})]);
+  reg('usher',[spr(12,30,r=>{r(3,0,6,6,'#d8cebe');r(4,6,4,1,'#b8ae9e');r(1,7,10,10,'#2a0e18');r(1,7,10,1,GOLD);r(5,9,2,1,GOLD);r(2,17,8,3,'#2a0e18');r(5,20,2,8,GOLD);r(2,28,8,2,GOLD);r(0,8,1,6,'#2a0e18');r(11,8,1,6,'#2a0e18')})]);
   reg('pillar',[spr(16,30,r=>{r(1,0,14,4,'#3a3240');r(2,1,12,1,'#5a4e62');r(3,4,10,20,'#2c2632');r(4,4,2,20,'#463c50');r(9,4,1,20,'#221c28');r(11,4,1,20,'#221c28');r(1,24,14,6,'#3a3240');r(2,25,12,1,'#5a4e62')})]);
   reg('chest',[spr(16,12,r=>{r(0,3,16,9,'#4a1a24');r(0,0,16,4,'#6a2232');r(0,3,16,1,GOLD);r(7,4,2,3,GOLD);r(1,1,14,1,'#8a3044');r(0,11,16,1,'#2a0e14')})]);
   reg('chestOpen',[spr(16,12,r=>{r(0,4,16,8,'#4a1a24');r(0,0,16,3,'#2a0e14');r(1,4,14,2,'#f6dc8a');r(0,4,16,1,GOLD);r(0,11,16,1,'#2a0e14')})]);
@@ -530,12 +544,16 @@ function buildSprites(){
 
 /* =================================================================== drawn art (sprite sheets from assets/) */
 const ANIMS=['idle','run','dash','hurt','melee','ranged','skill','death'],FW=108,FH=72;
-const ART={meta:{"doloris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 5, "ranged": 4, "skill": 6, "death": 6}, "mortis": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}, "timoris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}},fr:{},wh:{},icons:{}};
+const ART={meta:{"doloris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 5, "ranged": 4, "skill": 6, "death": 6}, "mortis": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}, "timoris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}, "amoris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 6, "skill": 6, "death": 6}, "oblivionis": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 6, "skill": 6, "death": 6}},fr:{},wh:{},icons:{}};
 function loadArt(){for(const id in ART.meta){const im=new Image();
     im.onload=()=>{const m=ART.meta[id],fr={},wh={};ANIMS.forEach((a,r)=>{fr[a]=[];for(let i=0;i<m[a];i++){const c=mk(FW,FH);c.getContext('2d').drawImage(im,i*FW,r*FH,FW,FH,0,0,FW,FH);fr[a].push(c)}wh[a]=fr[a].map(whiteOf)});
       ART.fr[id]=fr;ART.wh[id]=wh;buildTabs();selChar(G.charIdx)};im.src='assets/'+id+'.png';
     const ic=new Image();ic.onload=()=>{ART.icons[id]=1;if(G.state==='play')applyIcons()};ic.src='assets/'+id+'_icons.png'}}
-function applyIcons(){const id=ch().id,ok=ART.icons[id];[['bMelee',0],['bRanged',1],['bDash',2],['bSkill',3]].forEach(([b,k])=>{const el=$(b);el.classList.toggle('art',!!ok);
+const UI={ups:0,port:0};{const a=new Image();a.onload=()=>UI.ups=1;a.src='assets/ups.png';const b=new Image();b.onload=()=>{UI.port=1;if(G.state==='play')setPort()};b.src='assets/portraits.png'}
+const UPIDX=id=>UPS.findIndex(u=>u.id===id);
+function upIc(u){return UI.ups?`<span class="ic sp" style="background-position:${UPIDX(u.id)*5}% 0"></span>`:`<span class="ic">${u.ic}</span>`}
+function setPort(){const el=$('hPort');el.hidden=!UI.port;if(UI.port)el.style.backgroundPosition=`${G.charIdx*25}% 0`}
+function applyIcons(){setPort();const id=ch().id,ok=ART.icons[id];[['bMelee',0],['bRanged',1],['bDash',2],['bSkill',3]].forEach(([b,k])=>{const el=$(b);el.classList.toggle('art',!!ok);
   if(ok){const i=el.querySelector('.ico');i.style.backgroundImage=`url(assets/${id}_icons.png)`;i.style.backgroundPosition=`${k*100/3}% 0`}})}
 function setAct(n,d){P.act={n,t:0,d}}
 function artFrame(white){const id=ch().id,fr=ART.fr[id];if(!fr)return null;const W=white?ART.wh[id]:fr;let a,i;
@@ -621,8 +639,31 @@ const UPS=[
   {id:'masq',n:'千面',d:'释放技能后 3 秒内无敌',r:2,ic:'☗',a:m=>m.skillInv=3,max:1}
 ];
 const DOOR={combat:{n:'演出',ic:'⚔',c:'#d0405a'},elite:{n:'精英',ic:'☠',c:'#c9a45c'},rest:{n:'化妆间',ic:'✚',c:'#7ad0a0'},shop:{n:'后台商店',ic:'✿',c:'#f6b2c0'},
-  treasure:{n:'衣柜',ic:'?',c:'#9ad8ff'},boss:{n:'终幕之门',ic:'♛',c:'#e0283c'},next:{n:'下一幕',ic:'▲',c:'#ece2d2'}};
+  treasure:{n:'衣柜',ic:'?',c:'#9ad8ff'},event:{n:'邂逅',ic:'❖',c:'#c08aff'},boss:{n:'终幕之门',ic:'♛',c:'#e0283c'},next:{n:'下一幕',ic:'▲',c:'#ece2d2'}};
 const ROOMS_PER_ACT=4;
+const BONDS={
+  doloris:{n:'星之歌',from:'Doloris',d:'每 6 秒，一颗星自动坠向敌人',ic:'✦'},
+  mortis:{n:'另一个我',from:'Mortis',d:'闪避穿过敌人时造成伤害',ic:'⚔'},
+  timoris:{n:'沉着的低音',from:'Timoris',d:'受到伤害 -15%，每个房间额外 1 层护盾',ic:'◈'},
+  amoris:{n:'爱的应援',from:'Amoris',d:'暴击率 +15%，暴击时回复生命',ic:'♥'},
+  oblivionis:{n:'指挥棒',from:'Oblivionis',d:'技能冷却 -30%，释放技能时清除敌弹',ic:'♛'}};
+const MEET={
+  doloris:{state:'荆棘缠住了她的脚踝，越挣扎缠得越紧。',line:'「……你也是人偶吗？能帮我一下吗。这些荆棘，好像在听我唱歌，一唱就收紧。」',
+    pay:{t:'徒手扯开荆棘',d:'失去 20% 最大生命',hp:.2},fight:{t:'斩断荆棘的根',d:'击退涌来的荆棘与人偶',pool:['rose','rose','mari']},thanks:'「谢谢你。下一首歌，我会唱给你听。星星也会听见的。」'},
+  mortis:{state:'她抱着膝盖坐在角落，丝线乱成一团。',line:'她抬头看了你一眼，又低下头。「……吵。外面，好吵。」',
+    pay:{t:'递给她一朵玫瑰',d:'花费 ✿30',petals:30},fight:{t:'赶走吵闹的东西',d:'击退围过来的假面与乌鸦',pool:['mask','crow','mari']},thanks:'「……谢谢。」她站起身，影子却比她先一步动了。'},
+  timoris:{state:'她蹲在地上，手里捏着一根断掉的贝斯弦。',line:'「弦断了，备用的被乌鸦叼走了。你如果顺路，帮个忙？报酬好说。」',
+    pay:{t:'把你的备用弦给她',d:'花费 ✿35',petals:35},fight:{t:'从乌鸦那里抢回来',d:'击退乌鸦群',pool:['crow','crow','mask']},thanks:'「帮大忙了。之后的低音，交给我。」'},
+  amoris:{state:'一群乌鸦围着她打转，她正挥着鼓槌驱赶。',line:'「喂喂，别光看着啊！这些家伙超烦的，帮一把，之后请你吃好吃的！」',
+    pay:{t:'替她挡下一击',d:'失去 20% 最大生命',hp:.2},fight:{t:'一起把它们打散',d:'击退乌鸦与提线人偶',pool:['crow','crow','mari']},thanks:'「帅哦！这份爱就送给你了♪」'},
+  oblivionis:{state:'她站在破碎的镜子前，一动不动。',line:'「我似乎忘记了什么重要的东西。镜子里的影子在嘲笑我。能替我赶走它们吗？」',
+    pay:{t:'为她弹一段旧日的旋律',d:'花费 ✿40',petals:40},fight:{t:'击碎镜中的残影',d:'击退假面与骑士',pool:['mask','mask','knight']},thanks:'「……我想起来了。这份恩情，我会记住。」'}};
+const STRANGERS=[
+  {id:'usher',name:'无面引座员',spr:'usher',line:'「欢迎光临。本场还剩一个特别席位……只是，坐上去的客人很少能完整地离开。要试试吗？」',acc:'接受「连战试炼」',ad:'连续 4 波带精英的强化敌人。奖励：传说旋律 + ✿40',trial:'gauntlet'},
+  {id:'knight',name:'沉睡的骑士',spr:'knight',line:'盔甲里传来低沉的声音：「……又一个人偶。拔剑吧。若你能击倒我，我的誓言归你。」',acc:'接受决斗',ad:'与巨大的无头骑士单挑。奖励：传说旋律 + 回满生命',trial:'duel'},
+  {id:'collector',name:'面具收藏家',spr:'mask',line:'「多么漂亮的假面……在黑暗里撑过 30 秒吧。撑住了，我就把最好的藏品送你。」',acc:'步入暗幕',ad:'在黑暗中存活 30 秒，敌人不断涌出。奖励：传说旋律 + ✿40',trial:'survive'},
+  {id:'crow',name:'乌鸦信使',spr:'crow',line:'「嘎——带来一份契约。签下它，立刻得到力量。代价嘛……这一幕剩下的敌人，会更顽强。」',acc:'签下契约',ad:'立即获得一段传说旋律，但本幕剩余敌人生命 +40%',curse:1}];
+const TRIALS={gauntlet:'连战试炼',duel:'骑士决斗',survive:'暗幕'};
 
 /* =================================================================== state */
 const cv=$('cv'),ctx=cv.getContext('2d',{alpha:false});
@@ -684,17 +725,22 @@ function buildBg(){const pal=ACTS[G.act-1].pal,c=mk(RW,RH),x=c.getContext('2d');
   f(0,RH-SIDE,RW,SIDE,pal.wall);for(let xx=0;xx<RW;xx+=12)f(xx,RH-SIDE+2,11,8,pal.brick);
   const gr=x.createLinearGradient(0,TOP,0,TOP+30);gr.addColorStop(0,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=gr;x.fillRect(SIDE,TOP,RW-SIDE*2,30);
   return c}
-function enterRoom(type){
-  G.type=type;G.room++;G.roomsDone++;G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
+function enterRoom(type,noCount){
+  G.type=type;if(!noCount)G.room++;G.roomsDone++;G.npc=null;G.evFight=0;G.hard=1;G.surviveT=0;$('game').classList.remove('dark');G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
   G.cleared=false;G.boss=null;G.bossSpawned=0;G.waveWait=0;G.timeStop=0;G.bg=buildBg();
-  P.x=RW/2;P.y=RH-34;P.vx=P.vy=0;P.dashT=0;P.inv=.8;P.shield=Math.max(P.shield||0,0)+G.mods.shieldPerRoom;P.shield=Math.min(P.shield,G.mods.shieldPerRoom+1);
-  if(type==='combat'||type==='elite'){
+  P.x=RW/2;P.y=RH-34;P.vx=P.vy=0;P.dashT=0;P.inv=.8;P.shield=Math.max(P.shield||0,0)+G.mods.shieldPerRoom;P.shield=Math.min(P.shield,G.mods.shieldPerRoom+1);if(G.bonds.timoris)P.shield+=1;
+  if(type==='combat'||type==='elite'||type==='trial'){
     const n=rint(2,5);for(let i=0;i<n*6&&G.obs.length<n;i++){const ox=rint(3,RW/16-4)*16,oy=rint(5,RH/16-6)*16;
       if(Math.abs(ox+8-RW/2)<30)continue;if(G.obs.some(o=>Math.abs(o.x-ox)<40&&Math.abs(o.y-oy)<40))continue;G.obs.push({x:ox+1,y:oy+2,w:14,h:10})}
     const budget=3.5+G.act*1.6+G.room*.7;
     if(type==='combat'){G.waves=[genWave(budget),genWave(budget*1.15)];if(G.act>=3)G.waves.push(genWave(budget*.9))}
-    else{G.waves=[genWave(budget*.6,true),genWave(budget*.8)]}
-    setTrack('battle');later(.7,()=>nextWave());
+    else if(type==='elite'){G.waves=[genWave(budget*.6,true),genWave(budget*.8)]}
+    else{const k=G.trialKind;toast('试炼 · '+TRIALS[k]);
+      if(k==='gauntlet'){G.hard=1.3;G.waves=[0,1,2,3].map(i=>genWave(budget*(.7+i*.15),true))}
+      else if(k==='duel'){G.obs=[];G.waves=[];G.pending++;later(1,()=>{G.pending--;const e=makeEnemy('knight',RW/2,TOP+60,true);e.hp*=3.2;e.mhp=e.hp;e.sc=2;e.r*=1.5;e.duel=1;e.dmg*=1.2;S.p('boss');shake(5)})}
+      else{G.surviveT=30;G.spawnT=0;$('game').classList.add('dark')}
+      setTrack('boss');if(k!=='gauntlet')return updStage()}
+    if(type!=='trial')setTrack('battle');
   }else if(type==='boss'){
     [[90,TOP+46],[RW-106,TOP+46],[90,RH-72],[RW-106,RH-72]].forEach(([ox,oy])=>G.obs.push({x:ox+1,y:oy+2,w:14,h:10}));
     setTrack(null);later(.9,()=>spawnBoss());
@@ -703,6 +749,7 @@ function enterRoom(type){
     if(type==='rest'){G.deco.push({k:'piano',x:RW/2,y:RH/2-30});later(.5,showRest)}
     else if(type==='shop'){G.deco.push({k:'mannequin',x:RW/2,y:RH/2-30});later(.5,showShop)}
     else if(type==='treasure'){G.picks.push({k:'chest',x:RW/2,y:RH/2-20,t:0})}
+    else if(type==='event'){G.npc={x:RW/2,y:RH/2-6,ev:pickEvent(),talked:0};later(.6,()=>toast('有人在等你 · 靠近她对话'))}
   }
   updStage();
 }
@@ -711,7 +758,7 @@ function genWave(budget,elite){const pool=ACTS[G.act-1].pool,w=[];if(elite){w.pu
 function nextWave(){const w=G.waves.shift();if(!w)return;w.forEach((s,i)=>{const p=spawnPos();later(i*.12,()=>summon(s.t,p.x,p.y,s.elite))})}
 function spawnPos(){for(let i=0;i<40;i++){const x=rnd(30,RW-30),y=rnd(TOP+30,RH-40);if((x-P.x)**2+(y-P.y)**2<95*95)continue;if(G.obs.some(o=>x>o.x-10&&x<o.x+o.w+10&&y>o.y-10&&y<o.y+o.h+10))continue;return{x,y}}return{x:RW/2,y:TOP+40}}
 function summon(t,x,y,elite){G.pending++;G.fx.push({k:'sum',x,y,t:0,d:.7,en:1});S.p('summon');laterE(.7,()=>{G.pending--;if(G.state!=='play')return;makeEnemy(t,x,y,elite)})}
-function makeEnemy(t,x,y,elite){const d=EN[t],hm=(1+(G.act-1)*.7+G.room*.07)*(elite?3.4:1);
+function makeEnemy(t,x,y,elite){const d=EN[t],hm=(1+(G.act-1)*.7+G.room*.07)*(elite?3.4:1)*(G.hard||1)*(G.curseAct===G.act?1.4:1);
   const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*(1+(G.act-1)*.3)*(elite?1.3:1),elite:!!elite,d,
     st:'idle',stT:rnd(.3,1.2),fire:(d.fire||2)*rnd(.5,1),fl:0,kx:0,ky:0,stun:0,an:rnd(TAU),face:1,hitCd:new Map(),sc:elite?1.4:1};
   G.en.push(e);return e}
@@ -755,9 +802,9 @@ function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*c
     else shoot({...base,a:aa,spd:rg.spd,dmg,k:'key',pierce:m.pierce,col:'#fff',life:1.6,r:3,homing:1})}
   S.p('shot',id)}
 function shoot(o){o.vx=Math.cos(o.a)*o.spd;o.vy=Math.sin(o.a)*o.spd;o.t=0;o.hit=new Set();G.pb.push(o);return o}
-function doDash(){P.dashCd=.85*G.mods.dashCd;P.dashT=.16;P.inv=Math.max(P.inv,.3);let dx=IN.mvx,dy=IN.mvy;if(Math.hypot(dx,dy)<.1){dx=P.dx;dy=P.dy}const l=Math.hypot(dx,dy)||1;
+function doDash(){P.dashCd=.85*G.mods.dashCd;P.dashT=.16;P.dashHit=new Set();P.inv=Math.max(P.inv,.3);let dx=IN.mvx,dy=IN.mvy;if(Math.hypot(dx,dy)<.1){dx=P.dx;dy=P.dy}const l=Math.hypot(dx,dy)||1;
   P.vx=dx/l*240;P.vy=dy/l*240;S.p('dash')}
-function doSkill(){const c=ch(),id=c.id,m=G.mods;P.skillCd=c.skillCd*m.skillCd*(id==='oblivionis'?.9:1);P.skillMax=P.skillCd;setAct('skill',.85);S.p('skill',id);shake(4);G.flash=.25;
+function doSkill(){const c=ch(),id=c.id,m=G.mods;P.skillCd=c.skillCd*m.skillCd*(id==='oblivionis'?.9:1);P.skillMax=P.skillCd;setAct('skill',.85);if(G.bonds.oblivionis)G.eb.forEach(b=>{b.dead=1;burst(b.x,b.y,2,['#babef6'],20,.3)});S.p('skill',id);shake(4);G.flash=.25;
   if(m.skillInv)P.inv=Math.max(P.inv,m.skillInv);toast({doloris:'悲叹之星',mortis:'死之舞',timoris:'恐惧低频',amoris:'爱之节拍',oblivionis:'忘却之时'}[id]);
   const pow=(m.melee+m.ranged)/2;
   if(id==='doloris'){const tg=G.en.filter(e=>!e.dead).sort((a,b)=>d2(a,P)-d2(b,P)).slice(0,8);const pts=tg.map(e=>({x:e.x,y:e.y}));while(pts.length<10)pts.push({x:P.x+rnd(-80,80),y:P.y+rnd(-90,60)});
@@ -770,7 +817,7 @@ function doSkill(){const c=ch(),id=c.id,m=G.mods;P.skillCd=c.skillCd*m.skillCd*(
   else{G.timeStop=3.5;G.eb.forEach(b=>{b.dead=1;G.parts.push({x:b.x,y:b.y,vx:0,vy:-20,life:.6,max:.6,col:'#babef6',sz:1.5})});G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:220,t:0,d:.6,col:'#babef6',w:2})}
 }
 function aoe(x,y,r,dmg,col){for(const e of G.en){if(e.dead)continue;if((e.x-x)**2+(e.y-y)**2<(r+e.r)**2)hurtEnemy(e,dmg,{kb:80,ang:Math.atan2(e.y-y,e.x-x)})}G.fx.push({k:'ring',x,y,r0:2,r1:r,t:0,d:.2,col})}
-function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0))return;let crit=o.crit||Math.random()<G.mods.crit;if(crit)dmg*=2;if(G.timeStop>0)dmg*=1.5;
+function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0))return;let crit=o.crit||Math.random()<G.mods.crit;if(crit){dmg*=2;if(G.bonds.amoris)P.hp=Math.min(P.maxHp,P.hp+.6)}if(G.timeStop>0)dmg*=1.5;
   e.hp-=dmg;e.fl=.1;if(!e.boss&&o.kb){const k=o.kb*(e.elite?.4:1);e.kx+=Math.cos(o.ang)*k;e.ky+=Math.sin(o.ang)*k}
   G.nums.push({x:e.x+rnd(-4,4),y:e.y-(e.d.h||16),v:Math.round(dmg),t:0,crit});if(G.nums.length>40)G.nums.shift();
   burst(e.x,e.y-6,crit?6:3,crit?['#fff','#ffe9a0']:['#fff','#e0d0c0'],50,.3);S.p(crit?'crit':'hit');
@@ -785,7 +832,7 @@ function killEnemy(e){e.dead=1;G.kills++;S.p('kill');const cols=e.boss?['#fff','
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.inv>0||P.dashT>0||G.state!=='play')return;
   if(P.shield>0){P.shield--;P.inv=.7;S.p('shield');burst(P.x,P.y-10,12,[GOLD,'#fff'],70,.4);return}
-  dmg*=ch().id==='timoris'?.85:1;P.hp-=dmg;P.inv=.9;P.hurtT=.3;P.blink=.9;if(!P.act||P.act.n!=='skill')setAct('hurt',.3);S.p('hurt');shake(5);G.flash=Math.max(G.flash,.001);G.hurtFlash=.35;
+  dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1);P.hp-=dmg;P.inv=.9;P.hurtT=.3;P.blink=.9;if(!P.act||P.act.n!=='skill')setAct('hurt',.3);S.p('hurt');shake(5);G.flash=Math.max(G.flash,.001);G.hurtFlash=.35;
   burst(P.x,P.y-10,10,['#e0283c','#ff8a9a'],70,.4);
   if(G.mods.thorns)for(const e of G.en)if(!e.dead&&d2(e,P)<50*50)hurtEnemy(e,30*G.mods.thorns,{kb:120,ang:Math.atan2(e.y-P.y,e.x-P.x)});
   if(P.hp<=0){if(G.mods.revive>0){G.mods.revive--;P.hp=P.maxHp*.5;P.inv=2;G.eb.forEach(b=>b.dead=1);G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:120,t:0,d:.6,col:GOLD,w:3});toast('Ave —— 再度起舞');S.p('pick')}
@@ -808,7 +855,10 @@ function update(dt){G.time+=dt;G.runT+=dt;
   for(const g of G.ghosts)g.t+=dt;G.ghosts=G.ghosts.filter(g=>g.t<.25);
   updAmb(dt);
   G.shake=Math.max(0,G.shake-dt*30);G.flash=Math.max(0,G.flash-dt);G.hurtFlash=Math.max(0,(G.hurtFlash||0)-dt);
-  if(!G.cleared&&['combat','elite','boss'].includes(G.type)&&G.en.length===0&&G.pending===0&&(G.type!=='boss'||G.bossSpawned)){
+  if(G.surviveT>0&&!G.cleared){G.surviveT-=dt;G.spawnT-=dt;if(G.spawnT<=0&&G.en.length<14){G.spawnT=Math.max(.9,1.7-(30-G.surviveT)*.025);const p=spawnPos();summon(pick(ACTS[G.act-1].pool),p.x,p.y,Math.random()<.12)}
+    const sec=Math.ceil(G.surviveT);if(sec!==G.lastSec){G.lastSec=sec;setH('stage',`暗幕 · 剩余 ${sec} 秒`)}
+    if(G.surviveT<=0){G.surviveT=0;$('game').classList.remove('dark');G.etimers=[];G.pending=0;G.en.forEach(e=>{if(!e.boss){e.dead=1;burst(e.x,e.y-8,10,['#fff','#c08aff'],70,.5)}});G.en=[];G.eb=[];roomCleared()}}
+  else if(!G.cleared&&(['combat','elite','boss','trial'].includes(G.type)||G.evFight)&&G.en.length===0&&G.pending===0&&(G.type!=='boss'||G.bossSpawned)){
     if(G.waves.length){if(!G.waveWait){G.waveWait=1;later(.6,()=>{G.waveWait=0;nextWave()})}}else if(!G.waveWait)roomCleared()}
   if(G.type==='boss'&&G.boss)G.bossSpawned=1;
   if((G.hudT=(G.hudT||0)+dt)>.1){G.hudT=0;updHud()}}
@@ -828,6 +878,9 @@ function updPlayer(dt){const c=ch(),m=G.mods;
   if(m.orbit){P.orA=(P.orA||0)+dt*3.2;for(let i=0;i<m.orbit;i++){const a=P.orA+i/m.orbit*TAU,ox=P.x+Math.cos(a)*24,oy=P.y-6+Math.sin(a)*24;
     for(const e of G.en){if(e.dead)continue;if((e.x-ox)**2+(e.y-oy)**2<(e.r+4)**2){const lt=e.hitCd.get('o'+i)||0;if(G.time-lt>.35){e.hitCd.set('o'+i,G.time);hurtEnemy(e,7*m.melee,{kb:40,ang:a})}}}
     for(const b of G.eb)if((b.x-ox)**2+(b.y-oy)**2<36)b.dead=1}}
+  if(G.npc&&!G.npc.talked&&d2(G.npc,P)<24*24){G.npc.talked=1;openTalk()}
+  if(G.bonds.doloris&&G.en.length){G.bondT=(G.bondT||0)+dt;if(G.bondT>6){G.bondT=0;const e=pick(G.en.filter(o=>!o.dead));if(e){const x=e.x,y=e.y;G.fx.push({k:'starfall',x,y,t:0,d:.35});later(.3,()=>{aoe(x,y,20,26*(G.mods.melee+G.mods.ranged)/2,'#ffe9a0');burst(x,y,10,['#ffe9a0','#fff'],60,.4)})}}}
+  if(G.bonds.mortis&&P.dashT>0)for(const e of G.en){if(e.dead||P.dashHit.has(e))continue;if(d2(e,P)<(e.r+10)**2){P.dashHit.add(e);hurtEnemy(e,22*G.mods.melee,{kb:90,ang:Math.atan2(e.y-P.y,e.x-P.x),melee:1})}}
   if(G.doors.length&&G.cleared&&P.y<TOP+P.r+8){for(const d of G.doors)if(Math.abs(P.x-d.x)<11){takeDoor(d);break}}}
 function bound(o){o.x=clamp(o.x,SIDE+o.r,RW-SIDE-o.r);o.y=clamp(o.y,TOP+o.r,RH-SIDE-o.r);
   for(const rc of G.obs){const cx=clamp(o.x,rc.x,rc.x+rc.w),cy=clamp(o.y,rc.y,rc.y+rc.h),dx=o.x-cx,dy=o.y-cy,dd=dx*dx+dy*dy;
@@ -846,7 +899,7 @@ function updEnemy(e,dt){if(e.boss)return updBoss(e,dt);
     else if(e.st==='wind'){e.x+=rnd(-1,1)*.6;if(e.stT<=0){e.st='dash';e.stT=.42}}
     else if(e.st==='dash'){e.x+=Math.cos(e.da)*175*dt;e.y+=Math.sin(e.da)*175*dt;if(e.stT<=0){e.st='idle';e.stT=rnd(1,1.8)*(e.elite?.6:1)}}}
   else if(ai==='slammer'){e.stT-=dt;
-    if(e.st==='idle'){e.x+=ux*e.spd*dt;e.y+=uy*e.spd*dt;if(dist<38&&e.stT<=0){e.st='wind';e.stT=.65;G.fx.push({k:'warnC',x:e.x,y:e.y,r:32*e.sc,t:0,d:.65,en:1});S.p('warn')}}
+    if(e.st==='idle'){e.x+=ux*e.spd*dt;e.y+=uy*e.spd*dt;if(e.duel){e.fire-=dt;if(e.fire<=0){e.fire=1.8;const a=Math.atan2(dy,dx);for(let i=-3;i<=3;i++)eshoot(e.x,e.y-14,a+i*.16,85)}}if(dist<38*e.sc/1.4&&e.stT<=0){e.st='wind';e.stT=.65;G.fx.push({k:'warnC',x:e.x,y:e.y,r:32*e.sc,t:0,d:.65,en:1});S.p('warn')}}
     else if(e.st==='wind'){if(e.stT<=0){e.st='idle';e.stT=1.3;S.p('slam');shake(3);G.fx.push({k:'ring',x:e.x,y:e.y,r0:4,r1:32*e.sc,t:0,d:.25,col:'#c8ccd8'});
       if(d2(e,P)<(32*e.sc+P.r)**2)hurtPlayer(e.dmg);if(G.act>=4||e.elite)for(let i=0;i<8;i++)eshoot(e.x,e.y-6,i/8*TAU+e.an,60)}}}
   for(const o of G.en){if(o===e||o.dead||o.boss)continue;const ddx=e.x-o.x,ddy=e.y-o.y,dd=ddx*ddx+ddy*ddy,rr=e.r+o.r;if(dd<rr*rr&&dd>.01){const d=Math.sqrt(dd),p=(rr-d)*.5;e.x+=ddx/d*p;e.y+=ddy/d*p}}
@@ -908,6 +961,8 @@ function updAmb(dt){const k=G.state==='play'?ACTS[G.act-1].amb:'petal';if(G.amb.
 /* =================================================================== room flow */
 function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');
   const type=G.type;
+  if(type==='event'){later(.6,()=>memberThanks());return}
+  if(type==='trial'){G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
     if(G.act>=5){later(1.6,winGame);return}
     later(1.4,()=>showReward('boss'))}
@@ -915,7 +970,7 @@ function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');
 function openDoors(){G.doors=[];G.cleared=true;
   if(G.type==='boss'){G.doors=[{x:RW/2,t:'next'}]}
   else if(G.room>=ROOMS_PER_ACT){G.doors=[{x:RW/2,t:'boss'}]}
-  else{const opts=['combat','combat','elite','rest','shop','treasure'];const w={combat:40,elite:G.act===1&&G.room<2?0:18,rest:G.room>=2?14:6,shop:G.petals>=30?16:8,treasure:12};
+  else{const opts=['combat','combat','elite','rest','shop','treasure'];const w={combat:40,elite:G.act===1&&G.room<2?0:18,rest:G.room>=2?14:6,shop:G.petals>=30?16:8,treasure:12,event:G.roomsDone>1?18:0};
     const ch=[];const n=Math.random()<.5?3:2;while(ch.length<n){let tot=0;for(const k in w)if(!ch.includes(k))tot+=w[k];let r=rnd(tot);for(const k in w){if(ch.includes(k))continue;r-=w[k];if(r<=0){ch.push(k);break}}if(tot<=0)break}
     const xs=n===3?[RW/2-80,RW/2,RW/2+80]:[RW/2-56,RW/2+56];G.doors=ch.map((t,i)=>({x:xs[i],t}))}
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
@@ -931,13 +986,50 @@ function closeModal(){modal.hidden=true;G.paused=false;G.modalKind=null;panel.in
 function rollUps(n,minR,bias=0){const res=[];const avail=UPS.filter(u=>u.rep||(G.ups[u.id]||0)<(u.max||9));
   for(let k=0;k<n*10&&res.length<n;k++){let r=Math.random();let rar=r<.08+bias*.5?2:r<.4+bias?1:0;rar=Math.max(rar,minR);const pool=avail.filter(u=>u.r===rar&&!res.includes(u));if(pool.length)res.push(pick(pool))}
   while(res.length<n){const pool=avail.filter(u=>!res.includes(u));if(!pool.length)break;res.push(pick(pool))}return res}
-function upCard(u,i,extra=''){return `<button class="card r${u.r}" data-i="${i}"><span class="ic">${u.ic}</span><b>${u.n}<span class="rt">${RAR[u.r]}</span></b><span class="d">${u.d}${extra}</span></button>`}
+function upCard(u,i,extra=''){return `<button class="card r${u.r}" data-i="${i}">${upIc(u)}<b>${u.n}<span class="rt">${RAR[u.r]}</span></b><span class="d">${u.d}${extra}</span></button>`}
 function applyUp(u){G.ups[u.id]=(G.ups[u.id]||0)+1;u.a(G.mods,P);stats();P.hp=Math.min(P.hp,P.maxHp);S.p('pick')}
-function showReward(kind){const minR=kind==='boss'?1:kind==='elite'?1:0,bias=kind==='boss'?.4:kind==='treasure'?.15:0;const cs=rollUps(3,minR,bias);
-  const title=kind==='boss'?'幕间 · 喝彩':kind==='treasure'?'衣柜深处':'选择一段旋律';
+function showReward(kind){const minR=kind==='trial'||kind==='curse'?2:kind==='boss'?1:kind==='elite'?1:0,bias=kind==='boss'?.4:kind==='treasure'?.15:0;const cs=rollUps(3,minR,bias);
+  const title=kind==='trial'?'试炼 · 献礼':kind==='curse'?'契约':kind==='boss'?'幕间 · 喝彩':kind==='treasure'?'衣柜深处':'选择一段旋律';
+  if(kind==='trial'||kind==='curse'){const sub=kind==='trial'?'你从试炼中活着走了出来。挑选一段传说旋律。':'墨迹还未干透。力量已经流进你的丝线。';
+    openModal('reward',`<h3>${title}</h3><p class="sub">${sub}</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
+    panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{applyUp(cs[+b.dataset.i]);closeModal();openDoors()});return}
   const sub=kind==='boss'?`${BOSSES[G.act-1].name} 倒下了。回复 40% 生命，挑选一份献礼。`:kind==='elite'?'精英退场。它留下了更珍贵的旋律。':kind==='treasure'?'旧戏服里藏着被遗忘的东西。':'演出暂歇。将这一段旋律缝进你的假面。';
   openModal('reward',`<h3>${title}</h3><p class="sub">${sub}</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{applyUp(cs[+b.dataset.i]);closeModal();openDoors()})}
+function pickEvent(){const left=CHARS.map(c=>c.id).filter(id=>id!==ch().id&&!G.met[id]);
+  if(left.length&&Math.random()<.55){const id=pick(left);G.met[id]=1;return{member:id}}return{stranger:pick(STRANGERS)}}
+function npcImg(ev){if(ev.member){const f=ART.fr[ev.member];if(f)return{c:f.idle[0],sx:18,sy:0,sw:72,sh:72,sc:.5,dy:2};const s=SPR['ch_'+ev.member].f[0];return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc:1,dy:1}}
+  const s=SPR[ev.stranger.spr].f[0],sc={mask:1.6,crow:1.5,knight:1.25}[ev.stranger.spr]||1;return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc,dy:1}}
+function npcName(ev){return ev.member?CHARS.find(c=>c.id===ev.member).name:ev.stranger.name}
+function talkHtml(ev,text,state){const pt=ev.member&&UI.port;return `<div class="talk">${pt?`<i class="port big" style="background-position:${CHARS.findIndex(c=>c.id===ev.member)*25}% 0"></i>`:`<canvas id="tkCv" width="72" height="72"></canvas>`}<div class="tk"><b>${npcName(ev)}</b>${state?`<small>${state}</small>`:''}<p>${text}</p></div></div>`}
+function drawPortrait(ev){const c=$('tkCv');if(!c)return;const x=c.getContext('2d'),im=npcImg(ev),k=Math.min(64/im.sw,64/im.sh);x.imageSmoothingEnabled=false;
+  x.drawImage(im.c,im.sx,im.sy,im.sw,im.sh,Math.round(36-im.sw*k/2),Math.round(70-im.sh*k),Math.round(im.sw*k),Math.round(im.sh*k))}
+function openTalk(){const ev=G.npc.ev;S.p('summon');
+  if(ev.member){const m=MEET[ev.member],b=BONDS[ev.member],cost=m.pay.petals,can=!cost||G.petals>=cost;
+    openModal('talk',talkHtml(ev,m.line,m.state)+`<div class="bond">帮助她可获得羁绊「${b.ic} ${b.n}」：${b.d}</div><div class="cards">
+      <button class="card r1" data-a="pay" ${can?'':'disabled'}><span class="ic">${cost?'✿':'❤'}</span><b>${m.pay.t}</b><span class="d">${m.pay.d}${can?'':'（花瓣不足）'}</span></button>
+      <button class="card r2" data-a="fight"><span class="ic">⚔</span><b>${m.fight.t}</b><span class="d">${m.fight.d}，护送她脱困</span></button>
+      <button class="card r0" data-a="leave"><span class="ic">…</span><b>离开</b><span class="d">装作没看见</span></button></div>`);
+    drawPortrait(ev);
+    panel.querySelectorAll('.card').forEach(btn=>btn.onclick=()=>{const a=btn.dataset.a;closeModal();
+      if(a==='pay'){if(cost)G.petals-=cost;else{P.hp=Math.max(1,P.hp-P.maxHp*m.pay.hp);S.p('hurt');G.hurtFlash=.3}memberThanks()}
+      else if(a==='fight'){G.evFight=1;G.cleared=false;setTrack('battle');const budget=4+G.act*1.8;G.waves=[0,1].map(()=>{const w=[];let bu=budget;while(bu>0){const t=pick(m.fight.pool);w.push({t});bu-=EN[t].cost}return w});toast('护送 '+npcName(ev))}
+      else{G.npc.done=1;openDoors()}})}
+  else{const s=ev.stranger;
+    openModal('talk',talkHtml(ev,s.line,'它没有敌意，只是静静地看着你。')+`<div class="cards">
+      <button class="card r2" data-a="yes"><span class="ic">${s.curse?'✒':'☠'}</span><b>${s.acc}</b><span class="d">${s.ad}</span></button>
+      <button class="card r0" data-a="no"><span class="ic">…</span><b>婉拒</b><span class="d">点头致意，继续前行</span></button></div>`);
+    drawPortrait(ev);
+    panel.querySelectorAll('.card').forEach(btn=>btn.onclick=()=>{closeModal();G.npc.done=1;
+      if(btn.dataset.a==='no'){openDoors();return}
+      if(s.curse){G.curseAct=G.act;S.p('boss');toast('契约成立');later(.3,()=>showReward('curse'));return}
+      G.trialKind=s.trial;if(G.trans)return;G.trans=1;$('fade').classList.add('on');releaseInputs();
+      setTimeout(()=>{G.trans=0;enterRoom('trial',true);$('fade').classList.remove('on')},350)})}}
+function memberThanks(){const ev=G.npc.ev,id=ev.member,b=BONDS[id];G.npc.done=1;G.npc.freed=1;G.bonds[id]=1;
+  if(id==='amoris')G.mods.crit+=.15;if(id==='oblivionis')G.mods.skillCd*=.7;if(id==='timoris')P.shield=(P.shield||0)+1;
+  G.petals+=15;S.p('pick');burst(G.npc.x,G.npc.y-14,24,[GOLD,'#fff',CHARS.find(c=>c.id===id).col],80,.8);
+  openModal('talk',talkHtml(ev,MEET[id].thanks)+`<div class="bond got">获得羁绊「${b.ic} ${b.n}」<br><span>${b.d}</span><br><span>以及 ✿15</span></div><div class="row"><button class="cta" id="tkOk">收下</button></div>`);
+  drawPortrait(ev);$('tkOk').onclick=()=>{closeModal();openDoors()}}
 function showRest(){openModal('rest',`<h3>化妆间</h3><p class="sub">镜前的烛光很暖。卸下片刻假面，然后再戴上。</p><div class="cards">
   <button class="card r0" data-a="heal"><span class="ic">✚</span><b>小憩</b><span class="d">回复 45% 生命</span></button>
   <button class="card r1" data-a="up"><span class="ic">♪</span><b>排练</b><span class="d">从稀有旋律中选择一段</span></button></div>`);
@@ -946,12 +1038,12 @@ function showRest(){openModal('rest',`<h3>化妆间</h3><p class="sub">镜前的
       panel.querySelectorAll('.card').forEach(c=>c.onclick=()=>{applyUp(cs[+c.dataset.i]);closeModal();G.cleared=true;openDoors()})}})}
 function showShop(){const ups=rollUps(3,0,.2);const price=u=>Math.round([28,48,80][u.r]*(1+(G.act-1)*.15));
   const items=[{k:'heal',n:'温热的红茶',d:'回复 35% 生命',ic:'☕',p:Math.round(22*(1+(G.act-1)*.15)),r:0},{k:'shield',n:'备用假面',d:'获得 1 层护盾（本房间外保留 1 层）',ic:'◈',p:30,r:0},...ups.map(u=>({k:'up',u,n:u.n,d:u.d,ic:u.ic,p:price(u),r:u.r}))];
-  const render=()=>{panel.innerHTML=`<h3>后台商店</h3><p class="sub">无面的人台低声报价。花瓣：<b style="color:#f6b2c0">✿ ${Math.floor(G.petals)}</b></p><div class="cards">${items.map((it,i)=>`<button class="card r${it.r}" data-i="${i}" ${it.sold||G.petals<it.p?'disabled':''}><span class="ic">${it.ic}</span><b>${it.n} <span class="price">${it.sold?'已售':'✿'+it.p}</span></b><span class="d">${it.d}</span></button>`).join('')}</div><div class="row"><button class="ghost" id="leave">离开后台</button></div>`;
+  const render=()=>{panel.innerHTML=`<h3>后台商店</h3><p class="sub">无面的人台低声报价。花瓣：<b style="color:#f6b2c0">✿ ${Math.floor(G.petals)}</b></p><div class="cards">${items.map((it,i)=>`<button class="card r${it.r}" data-i="${i}" ${it.sold||G.petals<it.p?'disabled':''}>${it.u?upIc(it.u):`<span class="ic">${it.ic}</span>`}<b>${it.n} <span class="price">${it.sold?'已售':'✿'+it.p}</span></b><span class="d">${it.d}</span></button>`).join('')}</div><div class="row"><button class="ghost" id="leave">离开后台</button></div>`;
     panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.i];if(it.sold||G.petals<it.p)return;G.petals-=it.p;it.sold=1;
       if(it.k==='heal'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.35);S.p('heal')}else if(it.k==='shield'){P.shield=(P.shield||0)+1;S.p('shield')}else applyUp(it.u);render()});
     $('leave').onclick=()=>{closeModal();G.cleared=true;openDoors()}};
   openModal('shop','');render()}
-function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).map(id=>{const u=UPS.find(x=>x.id===id);return `<span>${u.ic} ${u.n}${G.ups[id]>1?' ×'+G.ups[id]:''}</span>`}).join('')||'<span>尚无旋律</span>';
+function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).map(id=>{const u=UPS.find(x=>x.id===id);return `<span>${UI.ups?`<i class="ci" style="background-position:${UPIDX(id)*5}% 0"></i>`:u.ic+' '}${u.n}${G.ups[id]>1?' ×'+G.ups[id]:''}</span>`}).join('')+Object.keys(G.bonds).map(id=>`<span class="bd">${BONDS[id].ic} ${BONDS[id].n} · ${BONDS[id].from}</span>`).join('')+(G.curseAct===G.act?'<span class="bd">✒ 乌鸦的契约</span>':'')||'<span>尚无旋律</span>';
   openModal('pause',`<h3>暂停</h3><p class="sub">${ch().name} · 第 ${ACTS[G.act-1].n} 幕 ${ACTS[G.act-1].name} · 房间 ${G.room}/${ROOMS_PER_ACT+1}</p><div class="chips">${owned}</div>
    <div class="tog"><span>音乐</span><button class="ghost" id="tMus">${settings.music?'开':'关'}</button></div><div class="tog"><span>音效</span><button class="ghost" id="tSfx">${settings.sfx?'开':'关'}</button></div>
    <div class="row"><button class="cta" id="resume">继续</button></div><div class="row"><button class="ghost" id="quit">放弃本次演出</button></div>`);
@@ -981,7 +1073,7 @@ function updHud(){setH('hpTxt',`${Math.ceil(P.hp)}/${P.maxHp}`);const f=$('hpFil
   const sc=P.skillCd>0?(P.skillCd/(P.skillMax||1)).toFixed(2):'0';if(hudCache.sk!==sc){hudCache.sk=sc;$('bSkill').style.setProperty('--cd',sc);$('bSkill').classList.toggle('ready',sc==='0')}
   const dc=P.dashCd>0?(P.dashCd/(.85*G.mods.dashCd)).toFixed(2):'0';if(hudCache.dc!==dc){hudCache.dc=dc;$('bDash').style.setProperty('--cd',dc)}
   if(G.boss&&!G.boss.dead){const bf=(Math.max(0,G.boss.hp)/G.boss.mhp).toFixed(3);if(hudCache.bf!==bf){hudCache.bf=bf;$('bossFill').style.transform=`scaleX(${bf})`}}}
-function updStage(){const a=ACTS[G.act-1];setH('stage',`第 ${a.n} 幕 · ${a.name} · ${G.type==='boss'?'终':G.room+'/'+ROOMS_PER_ACT}`)}
+function updStage(){const a=ACTS[G.act-1];setH('stage',`第 ${a.n} 幕 · ${a.name} · ${G.type==='boss'?'终':G.type==='trial'?'试炼':G.room+'/'+ROOMS_PER_ACT}`)}
 
 /* =================================================================== screens */
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
@@ -994,7 +1086,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   $('sStats').innerHTML=Object.entries(c.st).map(([k,v])=>`<dt>${k}</dt><dd>${[1,2,3,4,5].map(j=>`<i class="${j<=v?'on':''}"></i>`).join('')}</dd>`).join('');
   $('sAbil').innerHTML=c.ab.map(([k,v])=>`<li><b>${k}</b><span>${v}</span></li>`).join('');
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
-function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.ups={};G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   Object.assign(P,{hp:c.hp,maxHp:c.hp,shield:0,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});stats();
   G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
@@ -1034,10 +1126,10 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   for(const f of G.fx)if(f.k==='warnC'||f.k==='warnR'||f.k==='line'||f.k==='sum')drawFx(f);
   for(const p of G.picks)drawPick(p,t);
   const list=[];for(const e of G.en)list.push({y:e.y,e});list.push({y:P.y,p:1});for(const o of G.obs)list.push({y:o.y+o.h,o});
-  for(const d of G.deco)if(d.k==='piano'||d.k==='mannequin')list.push({y:d.y,d});
+  for(const d of G.deco)if(d.k==='piano'||d.k==='mannequin')list.push({y:d.y,d});if(G.npc)list.push({y:G.npc.y,n:1});
   list.sort((a,b)=>a.y-b.y);
   for(const g of G.ghosts){ctx.globalAlpha=.35*(1-g.t/.25);drawSpr(g.c,g.x,g.y+g.dy,g.face,null,g.sc);ctx.globalAlpha=1}
-  for(const it of list){if(it.p)drawPlayer(t);else if(it.e)drawEnemy(it.e,t);else if(it.o)drawSpr(SPR.pillar.f[0],it.o.x+7,it.o.y+11,1);else drawDeco(it.d,t)}
+  for(const it of list){if(it.p)drawPlayer(t);else if(it.e)drawEnemy(it.e,t);else if(it.o)drawSpr(SPR.pillar.f[0],it.o.x+7,it.o.y+11,1);else if(it.n)drawNpc(t);else drawDeco(it.d,t)}
   for(const b of G.pb)drawPB(b,t);
   for(const b of G.eb)drawEB(b,t);
   for(const f of G.fx)if(!(f.k==='warnC'||f.k==='warnR'||f.k==='line'||f.k==='sum'))drawFx(f);
@@ -1077,6 +1169,14 @@ function drawEnemy(e,t){const d=e.d,sp=SPR[d.spr];if(!sp)return;let fi=0;if(sp.f
   if(e.boss&&e.boss.spr==='mujica'){for(const s of[-1,1]){const hx=e.x+s*(28+Math.sin(t*2)*4),hy=e.y-6+Math.cos(t*2.3+s)*5;drawSpr(SPR.hand.f[0],hx,hy,s)}}
   if(e.stun>0){ctx.fillStyle='#ffe9a0';for(let i=0;i<3;i++){const a=t*5+i*2.1;ctx.fillRect(Math.round(e.x+Math.cos(a)*6),Math.round(e.y-(d.h||16)-3+Math.sin(a)*2),1,1)}}
   if(!e.boss&&e.hp<e.mhp){const w=Math.max(10,e.r*2);ctx.fillStyle='#000';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(e.y-(d.h||16)*e.sc-5)-1,w+2,3);ctx.fillStyle=e.elite?GOLD:'#e0283c';ctx.fillRect(Math.round(e.x-w/2),Math.round(e.y-(d.h||16)*e.sc-5),Math.max(0,Math.round(w*e.hp/e.mhp)),1)}}
+function drawNpc(t){const n=G.npc,ev=n.ev,im=npcImg(ev),fl=ev.stranger&&ev.stranger.spr!=='knight'&&ev.stranger.spr!=='usher'?Math.round(Math.sin(t*3)*2)-6:0;
+  if(ev.member&&!n.freed){ctx.globalAlpha=.25+.1*Math.sin(t*2);ctx.fillStyle=CHARS.find(c=>c.id===ev.member).col;ctx.beginPath();ctx.ellipse(n.x,n.y,16,6,0,0,TAU);ctx.fill();ctx.globalAlpha=1}
+  shadow(n.x,n.y,7);const face=P.x<n.x?-1:1;
+  if(ev.member){const f=ART.fr[ev.member];if(f)drawSpr(f.idle[Math.floor(t*4)%f.idle.length],n.x,n.y+2,face,null,.5);else drawSpr(im.c,n.x,n.y+1,face)}
+  else{if(ev.stranger.spr==='knight')ctx.globalAlpha=.75;drawSpr(im.c,n.x,n.y+fl,face,null,im.sc);ctx.globalAlpha=1}
+  if(ev.member&&!n.freed){ctx.strokeStyle=ev.member==='doloris'?'#2f6a34':'rgba(230,220,210,.5)';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<5;i++){const a=t*.7+i*1.26;ctx.moveTo(n.x+Math.cos(a)*9,n.y-4+Math.sin(a)*3);ctx.lineTo(n.x+Math.cos(a+2)*7,n.y-26+Math.sin(a*1.3)*4)}ctx.stroke()}
+  if(!n.done){const by=n.y-(ev.member?40:34)+Math.sin(t*4)*1.5;ctx.fillStyle='rgba(11,8,13,.85)';ctx.fillRect(n.x-6,by-6,12,9);ctx.fillStyle=GOLD;ctx.font='bold 8px Silkscreen,monospace';ctx.textAlign='center';ctx.fillText(n.talked?'!':'…',n.x,by+1)}
+  ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm=npcName(ev),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(n.x-tw/2-2,n.y+4,tw+4,8);ctx.fillStyle=ev.member?'#ece2d2':'#c08aff';ctx.fillText(nm,n.x,n.y+10)}
 function drawDeco(d,t){if(d.k==='piano'){ctx.fillStyle='#120c10';ctx.fillRect(d.x-18,d.y-14,36,14);ctx.fillStyle='#e8e4dc';ctx.fillRect(d.x-16,d.y-6,32,3);ctx.fillStyle='#120c10';for(let i=0;i<32;i+=3)ctx.fillRect(d.x-16+i,d.y-6,1,2);
     ctx.fillStyle=GOLD;ctx.fillRect(d.x-18,d.y-14,36,1);ctx.fillStyle='#ece4d4';ctx.fillRect(d.x+12,d.y-20,2,5);ctx.fillStyle='#ffd27a';ctx.fillRect(d.x+12,d.y-23-(Math.sin(t*12)>0?1:0),2,2)}
   else{ctx.fillStyle='#d8cebe';ctx.fillRect(d.x-5,d.y-26,10,6);ctx.fillRect(d.x-4,d.y-30,8,4);ctx.fillStyle='#2a0e18';ctx.fillRect(d.x-6,d.y-20,12,12);ctx.fillStyle=GOLD;ctx.fillRect(d.x-1,d.y-8,2,8);ctx.fillRect(d.x-5,d.y,10,1)}}
