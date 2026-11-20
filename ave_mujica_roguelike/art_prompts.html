@@ -1,0 +1,208 @@
+<title>假面回廊 美术提示词</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Noto+Serif+SC:wght@500;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; each asset is a "ticket" (ID stub + spec chips + copyable prompt). Single dark gothic look, matching the game. */
+:root{
+  --bg:#0e0a0d; --panel:#170f14; --sunk:#0a0709; --line:#33242d; --fg:#ece2d2; --mut:#a3979f; --gold:#c9a45c; --rose:#d0405a; --ok:#7ad0a0;
+  --f-black:"UnifrakturMaguntia","Noto Serif SC",serif;
+  --f-head:"Noto Serif SC","Songti SC",serif;
+  --f-body:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font:15px/1.7 var(--f-body)}
+.wrap{max-width:46rem;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header .eb{font-family:var(--f-black);color:var(--gold);font-size:20px}
+h1{font-family:var(--f-head);font-weight:900;font-size:30px;letter-spacing:.12em;margin:2px 0 8px;text-wrap:balance}
+h2{font-family:var(--f-head);font-weight:900;font-size:21px;letter-spacing:.1em;margin:44px 0 6px;text-wrap:balance}
+h2 small{display:block;font:500 13px var(--f-body);letter-spacing:0;color:var(--mut);margin-top:4px}
+p{margin:0 0 10px;max-width:65ch}
+.lead{color:#cfc4cd}
+ol.steps{margin:14px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+ol.steps b{color:var(--gold)}
+.box{border:1px solid var(--line);background:var(--panel);padding:14px 16px;margin-top:16px}
+.box h3{margin:0 0 6px;font:900 15px var(--f-head);letter-spacing:.08em;color:var(--gold)}
+.box ul{margin:0;padding-left:1.2em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font:12px var(--f-mono);border:1px solid var(--line);padding:2px 7px;color:#d8ccd5;background:var(--sunk);white-space:nowrap}
+.chip.must{border-color:var(--rose);color:#ffb3c0}
+.chip.opt{color:var(--mut)}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.toc a{color:var(--fg);text-decoration:none;border:1px solid var(--line);padding:4px 10px;font-size:13px}
+.toc a:hover{border-color:var(--gold)}
+.ticket{display:grid;grid-template-columns:64px 1fr;border:1px solid var(--line);margin-top:14px;background:var(--panel)}
+.stub{border-right:1px dashed var(--line);display:flex;flex-direction:column;align-items:center;padding:12px 4px;gap:4px;background:var(--sunk)}
+.stub b{font:600 14px var(--f-mono);color:var(--gold)}
+.stub span{font-size:10px;color:var(--mut);writing-mode:vertical-rl;letter-spacing:.2em}
+.tbody{min-width:0;padding:12px 14px}
+.tbody h4{margin:0;font:900 16px var(--f-head);letter-spacing:.04em}
+.tbody .what{color:#cfc4cd;font-size:13.5px;margin:4px 0 0}
+table.rows{border-collapse:collapse;font-size:12.5px;margin:8px 0;width:100%}
+table.rows td{border-top:1px solid var(--line);padding:4px 6px;vertical-align:top}
+table.rows td:first-child{white-space:nowrap;color:var(--gold);font-family:var(--f-mono);width:1%}
+.pwrap{position:relative;margin-top:8px}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line);padding:12px 12px 12px;font:12.5px/1.6 var(--f-mono);color:#e6dbe3;white-space:pre-wrap;word-break:break-word;max-height:16em;overflow:auto}
+.cp{margin-top:6px;display:flex;gap:8px;align-items:center}
+button{font:600 13px var(--f-body);color:var(--fg);background:#3e0a16;border:1px solid var(--gold);padding:7px 14px;cursor:pointer}
+button:hover{background:#5a1222}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.done{font-size:12px;color:var(--ok)}
+.neg{border-left:2px solid var(--rose);padding-left:10px}
+footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:480px){.ticket{grid-template-columns:44px 1fr}.stub b{font-size:12px}h1{font-size:25px}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eb">Ave Mujica · 假面回廊</div>
+  <h1>美术提示词</h1>
+  <p class="lead">把下面的提示词拿去生图，生成后发回给我，我会抠掉背景、切图，替换进游戏：人物动作改成逐帧动画，按钮换成每个角色专属的技能图标，HUD 换成哥特金框。</p>
+  <ol class="steps">
+    <li><b>生图时附上参考图</b>：生成角色时，把你发我的那张设定资料图一起上传（垫图、参考图或角色参考都行），服装会准确很多。</li>
+    <li><b>背景统一用纯品红 #FF00FF</b>：我靠这个颜色抠图。如果你用的工具能直接导出透明 PNG，那样也可以。</li>
+    <li><b>发回来时注明编号</b>：比如「C1-A」「I3」。上传后文件名会变，我靠编号对应。一张图对应一个编号。</li>
+  </ol>
+  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#rules">规格与负面词</a></nav>
+</header>
+
+<section id="rules">
+  <div class="box">
+    <h3>交付规格（每张都适用）</h3>
+    <ul>
+      <li>像素风格：硬边、无抗锯齿、无模糊，1 像素深色描边。</li>
+      <li>尺寸：画面是小像素尺寸放大后的大图，比如 384×256 放大 4 倍成 1536×1024。我会自动识别像素格再缩回去，只要每个像素格大小一致就行。</li>
+      <li>网格：帧与帧之间格子等大，不要画格线、不要文字、不要水印。</li>
+      <li>帧数不必完全照写。生成器多给或少给几帧都没关系，发回时告诉我哪一行是什么动作就行。</li>
+      <li>Midjourney 用户：在提示词末尾加上卡片里写的 <code>--ar</code> 比例和 <code>--style raw</code>。</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>负面提示词（Stable Diffusion / NovelAI 等支持时使用）</h3>
+    <div class="pwrap"><pre id="neg" class="neg"></pre></div>
+    <div class="cp"><button data-copy="neg">复制</button><span class="done" hidden>已复制</span></div>
+  </div>
+</section>
+
+<section id="chars">
+  <h2>一、人物动作 <small>每人两张精灵图。A 张：待机、跑步、闪避、受击；B 张：近战、远程、技能、倒下。角色一律面朝右，我会在游戏里镜像。</small></h2>
+  <div id="charList"></div>
+</section>
+
+<section id="icons">
+  <h2>二、技能与操作图标 <small>每人一张，一行 4 个：近战、远程、闪避、技能。会放进右下角的圆形按钮里，所以图标本身不要带圆框。</small></h2>
+  <div id="iconList"></div>
+</section>
+
+<section id="hud">
+  <h2>三、HUD <small>按钮外框、血条、头像、小图标等。标「必需」的优先做，「可选」的有空再做。</small></h2>
+  <div id="hudList"></div>
+</section>
+
+<section id="ups">
+  <h2>四、强化图标 <small>替换选旋律卡片上现在的符号。7 列 × 3 行，按顺序排列。</small></h2>
+  <div id="upList"></div>
+</section>
+
+<footer>一共 24 张图：人物 10、技能图标 5、HUD 8、强化 1。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
+</div>
+
+<script>
+const STYLE="Pixel art game asset in crisp 16-bit SNES/GBA style: hard pixel edges, no anti-aliasing, no blur, no smooth gradients, limited palette of about 32 colors, clean 1-pixel dark outline (#120c10), soft cel shading with 2 to 3 tones per material. Theme: gothic Victorian masquerade, an elegant dark rock band of living dolls; palette anchored on deep wine red #9b1b30, black #0b080d, antique gold #c9a45c and bone white #ece2d2. Background: flat solid pure magenta #FF00FF everywhere outside the subject, no floor, no cast shadow on the background, no gradient. No text, no letters, no numbers, no watermark, no signature, no border around the image.";
+const NEG="blurry, anti-aliasing, smooth shading, painterly, 3d render, photo, realistic, gradient background, white background, transparent checkerboard pattern, floor, scenery, text, letters, watermark, signature, grid lines, labels, frame numbers, cropped, cut off, extra limbs, deformed hands, inconsistent character, outfit changes between frames, different scale between frames, isometric, top-down view, front view";
+const SHEET="Strict sprite sheet: an exact grid of 6 columns by 4 rows of equal square cells (64x64 game pixels per cell, whole sheet 384x256 pixels, or an exact integer upscale such as 1536x1024). Side view; the character faces RIGHT in every frame. Chibi proportions, about 2.5 heads tall, character about 44 pixels tall, centered horizontally in each cell with the feet on the same baseline 4 pixels above the bottom edge of the cell. The same character, outfit, scale and lighting in every frame. Nothing crosses a cell edge. No grid lines, no labels, no visual effects, no projectiles and no motion lines: only the body and the instrument. Each row is one animation read left to right; unused cells stay empty background.";
+const DEATH="DEATH, 5 frames: as if the strings of a marionette were cut, she staggers, drops to her knees, slumps forward and lies still on her side, the mask slipping off her face in the last frame";
+const HURT="HURT, 2 frames: flinches backward from a hit with eyes shut and hair flung forward, then catches her balance";
+const DASH="DASH, 3 frames: a fast low forward dash, body leaning hard forward, hair, ribbons and skirt streaming backward";
+
+const C=[
+ {id:'C1',name:'Doloris（三角初华）',
+  desc:"Doloris, a girl with shoulder-length straight platinum-blonde hair fading to soft pink at the tips, violet eyes, a black lace masquerade eye-mask and a black choker. Costume: black dress with off-shoulder neckline and long detached black sleeves, sheer beige lace bodice panel, brown leather lace-up corset belt with gold buckles and straps, black puffy knee-length shorts, a high-low black overskirt with crimson lining and a sheer grey tulle train, grey knee socks with black garter bands, black heeled pumps. Instrument: a black offset-body electric guitar with gold hardware and a maple neck, worn on a strap.",
+  idle:"holds the black guitar at her hip, gentle breathing, hair and tulle train swaying",
+  run:"guitar slung on her back",
+  melee:"MELEE, 5 frames: grips the guitar neck with both hands and swings the guitar body horizontally like a battle axe in a wide arc: wind-up behind her, mid-swing, impact pose with the guitar fully extended in front, follow-through, recover",
+  ranged:"RANGED, 4 frames: sings: one hand pressed to her chest, the other reaching forward with open palm, head slightly raised, mouth open",
+  skill:"SKILL, 6 frames: raises one arm straight toward the sky with the head tilted up and eyes closed, singing; the overskirt and hair lift as if caught in an updraft, then she lowers her arm",
+  icon:"accent colors gold #f6dc8a and lavender #a57ee6. 1) melee: a black offset guitar mid-swing with a golden curved slash; 2) ranged: a glowing golden eighth note with a tiny star sparkle; 3) dash: a streak of blonde-to-pink hair with lace ribbon; 4) skill (Starfall of Sorrow): three golden stars falling diagonally past a thin crescent moon"},
+ {id:'C2',name:'Mortis（若叶睦）',
+  desc:"Mortis, a girl with long straight pale sage-silver hair, amber eyes, a dark crimson velvet beret tilted to one side, and a black lace mask covering her nose and mouth (lower face). Costume: short black capelet with crimson trim and gold embroidery, cream cravat with a green gem brooch, crimson vest with gold buttons, a long black skirt open at the front with silver studs along the edges and a crimson underlayer, sheer beige puffy sleeves with black cuffs, grey tights, ruffled ankle socks, dark red Mary-Jane shoes. Instrument: a hot-pink superstrat electric guitar with a maple neck.",
+  idle:"stands very still like a doll, guitar held loosely at her side, only the hair moving, blinks once",
+  run:"guitar held in one hand, slightly stiff doll-like gait",
+  melee:"MELEE, 5 frames: a quick three-hit combo using the pink guitar like a sword: upward slash, downward slash, then a heavy spinning strike with the guitar fully extended, then recover",
+  ranged:"RANGED, 4 frames: leans forward and strums the pink guitar with aggressive fast downstrokes, hair whipping",
+  skill:"SKILL, 6 frames: Dance of Death: her body jerks like a marionette, head snaps back, arms flung out, beret almost falling off, then she lands in a low predatory crouch holding the guitar",
+  icon:"accent colors hot pink #ff4fa8 and sage silver #cdd3c3. 1) melee: a hot-pink electric guitar crossed with a sharp white slash; 2) ranged: three short pink lightning-shaped sound bolts in a row; 3) dash: a cut marionette string curling in the air; 4) skill (Dance of Death): a cracked porcelain doll face wearing a crimson beret, wrapped in pink flames"},
+ {id:'C3',name:'Timoris（八幡海铃）',
+  desc:"Timoris, a girl with long wavy dark purple-black hair, teal-cyan eyes, and a black lace mask covering her nose and mouth (lower face). Costume: short dark crimson capelet with a gold embroidered hem, black vest with a beige front panel and black buttons, sheer beige ruffled sleeves, black nylon half gloves, black riding shorts with beige front panels, black thigh-high heeled boots. Instrument: a pale lavender-white 5-string electric bass with a rosewood neck.",
+  idle:"arms crossed with the bass on her back, calm and composed, weight shifting slightly",
+  run:"bass on her back, long confident strides",
+  melee:"MELEE, 5 frames: lifts the heavy bass overhead with both hands and slams it down into the ground in front of her: raise, peak, slam, impact crouch, recover",
+  ranged:"RANGED, 4 frames: bass held low in playing position, she plucks the strings with firm fingers, body leaning back slightly",
+  skill:"SKILL, 6 frames: Low Frequency of Fear: plants her boots wide, raises the bass vertically and stamps, striking a huge chord, capelet and hair blown outward by the force, then lowers the bass",
+  icon:"accent colors teal #4ccac2 and crimson #7a1e28. 1) melee: a bass headstock smashing down onto cracked ground; 2) ranged: three concentric teal sound-wave arcs; 3) dash: a swirling dark crimson capelet; 4) skill (Low Frequency of Fear): a black lace half-mask surrounded by expanding teal shockwave rings"},
+ {id:'C4',name:'Amoris（祐天寺若麦）',
+  desc:"Amoris, a girl with a short lavender-purple bob, pink-magenta eyes, and a black cat-eye lace masquerade mask with pointed tips. Costume: high-collar black pinstriped blouse with sheer grey chiffon sleeves, silver chain necklace, long black swallow-tail coat tails behind her, a short crimson skirt, a garter belt, sheer wine-red stockings with back seams, dark red ankle-strap heels. Weapon: a pair of wooden drumsticks with dark red tips.",
+  idle:"twirls one drumstick between her fingers, hip cocked, playful",
+  run:"a drumstick in each hand, light bouncy run, coat tails flapping",
+  melee:"MELEE, 5 frames: two fast alternating drumstick strikes like a drum fill: left hand strike, right hand strike, a cross-arm finishing hit, follow-through, recover with a wink",
+  ranged:"RANGED, 4 frames: throws a drumstick forward overhand like a dart: wind-up, throw, release with the arm extended, recover holding a new stick",
+  skill:"SKILL, 6 frames: Beat of Love: spins on one heel twirling both drumsticks, then strikes the air rhythmically in four directions and ends blowing a kiss",
+  icon:"accent colors pink-magenta #ff6a9a and lavender #8e6bd2. 1) melee: two crossed drumsticks with a starburst impact; 2) ranged: a spinning drumstick with a short curved trail; 3) dash: a trail of small pink hearts; 4) skill (Beat of Love): a ring of pink hearts around a golden cymbal"},
+ {id:'C5',name:'Oblivionis（丰川祥子）',
+  desc:"Oblivionis, a girl with very long wavy periwinkle-blue hair in two twin tails tied with black ribbons, amber eyes, and a black lace masquerade eye-mask. Costume: crimson blouse with puffed short sleeves and a black lace jabot, black lace-up corset, a layered black and charcoal high-low ruffled skirt with a beige underlayer and gold embroidery, black lace gloves, dark grey tights, black lace-up heeled boots. She fights by conducting with her gloved hand, summoning floating piano keys and crimson rose petals.",
+  idle:"stands upright with refined posture, one gloved hand resting at her waist, twin tails swaying",
+  run:"elegant quick steps, skirt layers bouncing, twin tails streaming",
+  melee:"MELEE, 5 frames: a sweeping backhand conductor's gesture like a fortissimo cue: arm drawn back, fast sweep across the body, arm fully extended, wrist flourish, recover",
+  ranged:"RANGED, 4 frames: points one gloved finger forward commandingly, the other hand on her chest, chin raised",
+  skill:"SKILL, 6 frames: Hour of Oblivion: spreads both arms wide, skirt flaring, head bowed with eyes closed, then raises her head slowly and opens her eyes",
+  icon:"accent colors periwinkle #8d93dd and crimson #8c1f2d. 1) melee: a crimson rose on a thorny stem sweeping in a curve; 2) ranged: a single glowing white piano key; 3) dash: a black ribbon swirl; 4) skill (Hour of Oblivion): a cracked golden pocket watch with stopped hands and a periwinkle glow"}
+];
+
+const HUD=[
+ {id:'H1',t:'按钮外框（普通 / 按下）',must:1,ar:'2:1',size:'128×64',what:'右下角四个圆形按钮的外框，中间放技能图标。',
+  p:"Two round game UI button frames side by side in equal square cells (each 64x64 pixels, whole image 128x64, or an exact integer upscale). Left: normal state; right: pressed state that is darker with a faint crimson inner glow. Each frame is an ornate antique-gold ring with gothic filigree, a tiny rose at the top and a tiny lace mask at the bottom; the inside of the ring is a dark wine-red velvet disc with a soft radial highlight and no symbol in the center, because an icon will be placed there."},
+ {id:'H2',t:'玩家血条框',must:1,ar:'10:1',size:'160×16',what:'左上角血条的外框，内部留空给红色填充。',
+  p:"A horizontal health bar frame, 160x16 pixels (or an exact integer upscale such as 1280x128). Ornate antique-gold gothic frame with a small crimson rose cap on the left end and a small black lace mask cap on the right end. The inner rectangle where the health fill goes must be EMPTY flat magenta #FF00FF, a clean rectangle about 136x6 pixels in the center."},
+ {id:'H3',t:'Boss 血条框',must:1,ar:'12:1',size:'240×20',what:'Boss 战时屏幕底部的血条框。',
+  p:"A wide boss health bar frame, 240x20 pixels (or an exact integer upscale). Black iron and antique-gold gothic frame with thorny vine filigree along the edges and a small ornate theater mask with a crown in the top center. The inner rectangle where the fill goes must be EMPTY flat magenta #FF00FF, a clean rectangle about 220x8 pixels in the center."},
+ {id:'H4',t:'角色头像 ×5',must:1,ar:'5:1',size:'160×32',what:'左上角名字旁的小头像，5 人一排。生成时请附上 5 张设定图。',
+  p:"Five small character bust portraits in one row of equal square cells (each 32x32 pixels, whole image 160x32, or an exact integer upscale), each inside a small dark oval frame with an antique-gold rim, facing slightly right. In order: 1) platinum-blonde girl with pink hair tips, violet eyes, black lace eye-mask; 2) girl with long sage-silver hair, crimson beret, amber eyes, black lace mask over the mouth; 3) girl with long dark purple-black hair, teal eyes, black lace mask over the mouth, crimson capelet; 4) girl with short lavender bob, pink eyes, black cat-eye mask; 5) girl with periwinkle-blue twin tails and black ribbons, amber eyes, black lace eye-mask."},
+ {id:'H5',t:'小图标 ×6',must:0,ar:'6:1',size:'96×16',what:'花瓣（货币）、护盾、回血心、暂停、音乐、音效。',
+  p:"Six tiny game UI icons in one row of equal square cells (each 16x16 pixels, whole image 96x16, or an exact integer upscale), bold and readable at tiny size. In order: 1) a pink rose petal (currency); 2) a small gold heater shield with a rose emblem (shield); 3) a red heart with a white highlight (healing pickup); 4) two vertical gold bars (pause); 5) a gold eighth note (music); 6) a gold speaker with sound waves (sound effects)."},
+ {id:'H6',t:'房间门图标 ×7',must:0,ar:'7:1',size:'168×24',what:'门上方显示的房间类型：演出、精英、化妆间、商店、衣柜、终幕之门、下一幕。',
+  p:"Seven small game map icons in one row of equal square cells (each 24x24 pixels, whole image 168x24, or an exact integer upscale). In order: 1) battle: two crossed rapiers; 2) elite: a skull wearing a small gold crown; 3) dressing room / rest: a vanity mirror with a lit candle; 4) backstage shop: a faceless dress-form mannequin with a rose petal; 5) wardrobe / treasure: a closed crimson chest with gold trim; 6) boss gate: an ornate crowned theater mask with red eyes; 7) next act: red stage curtains parting upward."},
+ {id:'H7',t:'虚拟摇杆',must:0,ar:'3:2',size:'96×64',what:'左手移动用的摇杆底座和摇杆头。',
+  p:"Virtual joystick parts side by side: left a 64x64 base, right a 32x32 knob vertically centered (whole image 96x64, or an exact integer upscale). Base: a thin ring shaped like a gothic rose window, dark wine red with antique-gold tracery, mostly hollow with a dark translucent-looking center. Knob: a round white porcelain knob with a gold rim and a tiny lace pattern."},
+ {id:'H8',t:'弹窗边框（九宫格）',must:0,ar:'1:1',size:'96×96',what:'选旋律、商店、暂停弹窗的外框。四边必须均匀，方便拉伸。',
+  p:"A square ornate UI panel frame for 9-slice scaling, 96x96 pixels (or an exact integer upscale). A 12-pixel-wide border of black iron and antique gold with gothic filigree; each corner has a small crimson rose ornament; the four straight edges between the corners use a simple repeating pattern that tiles cleanly. The interior is a flat very dark plum fill #140a10 with no pattern."}
+];
+
+const UPS=["断弦之刃: a snapped guitar string curling into a blade shape","回响: an eighth note with echoing ripple rings","急板: a metronome with its arm swinging fast","坚硬假面: a sturdy white porcelain mask with a gold rim","华尔兹步: a black heeled shoe with a swirl of motion","玫瑰花瓣: a cluster of pink rose petals","红茶时间: a porcelain teacup with rising steam","延音: a golden fermata symbol","复调: three musical notes fanning out","贯穿之声: a note-headed arrow piercing through three bars","致命之吻: a red lipstick kiss mark with a tiny dagger","荆棘礼服: a corset bodice wrapped in thorny vines","卡农: two overlapping crescent sound waves","血之契约: a drop of blood on a scroll with a wax seal","安可: a circular arrow around a bouquet of roses","黑色生日: a black birthday cake with one lit candle","Ave: a silver cross with a halo and small wings","银十字: two small silver crosses orbiting a point","月之碎片: a shattered crescent moon with fragments","Symbol: four alchemical element triangles combined in a circle","千面: a cluster of many overlapping masks"];
+
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let n=0;
+function ticket({id,stub,title,what,chips,rows,prompt}){const k='p'+(n++);
+  return `<article class="ticket"><div class="stub"><b>${id}</b><span>${stub}</span></div><div class="tbody"><h4>${title}</h4>${what?`<p class="what">${what}</p>`:''}
+  <div class="chips">${chips.map(c=>`<span class="chip ${c[1]||''}">${c[0]}</span>`).join('')}</div>
+  ${rows?`<table class="rows">${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`:''}
+  <div class="pwrap"><pre id="${k}">${esc(prompt)}</pre></div><div class="cp"><button data-copy="${k}">复制提示词</button><span class="done" hidden>已复制</span></div></div></article>`}
+document.getElementById('neg').textContent=NEG;
+document.getElementById('charList').innerHTML=C.map(c=>
+  ticket({id:c.id+'-A',stub:'人物',title:c.name+' · A 张',what:'待机、跑步、闪避、受击。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','待机 4 帧'],['第2行','跑步 6 帧'],['第3行','闪避 3 帧'],['第4行','受击 2 帧']],
+    prompt:`${STYLE}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — IDLE, 4 frames: ${c.idle}.\nRow 2 — RUN, 6 frames: a full running cycle, ${c.run}.\nRow 3 — ${DASH}.\nRow 4 — ${HURT}.`})+
+  ticket({id:c.id+'-B',stub:'人物',title:c.name+' · B 张',what:'近战、远程、技能、倒下。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','近战 5 帧'],['第2行','远程 4 帧'],['第3行','技能 6 帧'],['第4行','倒下 5 帧']],
+    prompt:`${STYLE}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — ${c.melee}.\nRow 2 — ${c.ranged}.\nRow 3 — ${c.skill}.\nRow 4 — ${DEATH}.`})).join('');
+document.getElementById('iconList').innerHTML=C.map((c,i)=>ticket({id:'I'+(i+1),stub:'图标',title:c.name+' · 操作图标',chips:[['必需','must'],['4×1 格'],['128×32'],['--ar 4:1']],
+  rows:[['1','近战'],['2','远程'],['3','闪避'],['4','技能']],
+  prompt:`${STYLE}\n\nGame UI icon set for ${c.name.split('（')[0]}: 4 icons in a single row of equal square cells (each 32x32 pixels, whole image 128x32, or an exact integer upscale such as 1024x256). Each icon is one bold centered symbol that reads clearly at small size and fills about 80% of its cell; no circular frame, no button and no plate behind the symbol. Icons in order, ${c.icon}.`})).join('');
+document.getElementById('hudList').innerHTML=HUD.map(h=>ticket({id:h.id,stub:'HUD',title:h.t,what:h.what,chips:[h.must?['必需','must']:['可选','opt'],[h.size],['--ar '+h.ar]],prompt:`${STYLE}\n\n${h.p}`})).join('');
+document.getElementById('upList').innerHTML=ticket({id:'U1',stub:'强化',title:'强化旋律图标 ×21',what:'顺序从左到右、从上到下，对应下表。',chips:[['可选','opt'],['7×3 格'],['224×96'],['--ar 7:3']],
+  rows:UPS.map((u,i)=>[String(i+1),u.split(':')[0]]),
+  prompt:`${STYLE}\n\nGame UI icon sheet: 21 icons in an exact grid of 7 columns by 3 rows of equal square cells (each 32x32 pixels, whole image 224x96, or an exact integer upscale such as 1792x768). Each icon is one bold centered symbol filling about 80% of its cell, with no frame behind it. Order left to right, top to bottom:\n${UPS.map((u,i)=>`${i+1}) ${u.split(': ')[1]}`).join('\n')}.`});
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent='已选中，请长按复制';ok.hidden=false};
+  const done=()=>{ok.textContent='已复制';ok.hidden=false;setTimeout(()=>ok.hidden=true,1600)};
+  try{navigator.clipboard.writeText(pre.textContent).then(done,sel)}catch(_){sel()}});
+</script>
