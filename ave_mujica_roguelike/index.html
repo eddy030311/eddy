@@ -39,11 +39,16 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .bar i{position:absolute;inset:0;width:100%;background:linear-gradient(#e0485e,#8c1428);transform-origin:left;transition:transform .15s}
 .bar span{position:absolute;inset:0;font:9px/12px var(--f-pixel);text-align:center;color:#fff;text-shadow:0 1px 0 #000}
 #shields{display:flex;gap:3px;margin-top:4px;min-height:8px}
-#shields b{width:9px;height:8px;background:var(--gold);clip-path:polygon(50% 0,100% 25%,85% 100%,15% 100%,0 25%)}
+#shields b{width:13px;height:13px;background:url(assets/ui6.png) 20% 0/600% 100% no-repeat}
+.u6{display:inline-block;width:13px;height:13px;vertical-align:-2px;background:url(assets/ui6.png) 0 0/600% 100% no-repeat}
+#petals b{font-weight:400;margin-left:3px}
+#bPause{display:flex;align-items:center;justify-content:center}
 .rbox{display:flex;flex-direction:column;align-items:flex-end;gap:4px;pointer-events:auto}
 .rrow{display:flex;gap:8px;align-items:center}
 #petals{font:11px var(--f-pixel);color:#f6b2c0;text-shadow:0 1px 0 #000}
 #stage{font-size:11px;color:var(--mist);letter-spacing:.08em;text-shadow:0 1px 0 #000}
+#quests{font-size:10.5px;line-height:1.55;text-align:right;color:#d8ccd5;text-shadow:0 1px 0 #000,0 0 4px #000;max-width:38vw}
+#quests .main{color:var(--gold)}
 #bPause{width:34px;height:34px;border:1px solid var(--gold);background:rgba(11,8,13,.7);font:12px var(--f-pixel);color:var(--gold)}
 #bossBar{position:absolute;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 62px);width:min(78vw,420px);pointer-events:none;text-align:center}
 #bossName{font-size:13px;font-weight:700;letter-spacing:.2em;color:var(--bone);text-shadow:0 2px 0 #000}
@@ -157,6 +162,19 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .bond{font-size:12.5px;color:#c9bfc9;border:1px dashed #5a2232;padding:7px 10px}
 .bond.got{font-size:15px;color:var(--gold);border-color:var(--gold)}.bond.got span{font-size:12.5px;color:#c9bfc9}
 .chips span.bd{border-color:#5a3a7a;color:#d8c0ff}
+.story{margin:0;font-size:14px;line-height:2;white-space:pre-line;color:#ddd2da;text-align:left}
+.frags{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.frags span{font-size:11px;border:1px solid var(--line);padding:3px 8px;color:#6d6475}
+.frags span b{color:inherit;margin-right:4px;font-weight:900}
+.frags span.on{border-color:var(--gold);color:var(--gold);background:#1e1508}
+.qlog{text-align:left;border-top:1px solid var(--line);padding-top:8px;display:flex;flex-direction:column;gap:8px}
+.qh{font-size:12px;letter-spacing:.3em;color:var(--mist)}
+.qlog ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.qlog li{display:grid;grid-template-columns:1fr auto;column-gap:8px;font-size:13px}
+.qlog li small{grid-column:1/3;color:var(--mist);font-size:11.5px}
+.qlog li span{font:11px var(--f-pixel);color:var(--gold)}
+.qlog li.main b{color:var(--gold)}
+.qlog li.done{opacity:.55}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
 .summary div{border:1px solid var(--line);padding:8px 4px}
 .summary b{display:block;font:14px var(--f-pixel);color:var(--gold)}
@@ -225,8 +243,9 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
       <div id="shields"></div>
     </div>
     <div class="rbox">
-      <div class="rrow"><span id="petals">✿ 0</span><button id="bPause" aria-label="暂停">II</button></div>
+      <div class="rrow"><span id="petals"><i class="u6"></i><b id="petN">0</b></span><button id="bPause" aria-label="暂停"><i class="u6" style="background-position:60% 0;width:16px;height:16px"></i></button></div>
       <div id="stage">第一幕</div>
+      <div id="quests"></div>
     </div>
   </div>
   <div id="bossBar" hidden><div id="bossName"></div><div class="bar"><i id="bossFill"></i></div></div>
@@ -305,14 +324,15 @@ function auInit(){
   if(A.ctx){if(A.ctx.state!=='running')A.ctx.resume();return}
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   const c=A.ctx=new AC();
-  A.comp=c.createDynamicsCompressor();A.comp.threshold.value=-16;A.comp.ratio.value=4;A.comp.connect(c.destination);
-  A.master=c.createGain();A.master.gain.value=.9;A.master.connect(A.comp);
+  A.comp=c.createDynamicsCompressor();A.comp.threshold.value=-20;A.comp.knee.value=8;A.comp.ratio.value=6;A.comp.attack.value=.003;A.comp.release.value=.25;
+  A.lim=c.createDynamicsCompressor();A.lim.threshold.value=-4;A.lim.knee.value=0;A.lim.ratio.value=20;A.lim.attack.value=.001;A.lim.release.value=.1;A.comp.connect(A.lim);A.lim.connect(c.destination);
+  A.master=c.createGain();A.master.gain.value=.7;A.master.connect(A.comp);
   A.rev=c.createGain();{const lp=c.createBiquadFilter(),d1=c.createDelay(1),d2=c.createDelay(1),f1=c.createGain(),f2=c.createGain(),rg=c.createGain();lp.type='lowpass';lp.frequency.value=2400;
     d1.delayTime.value=.137;d2.delayTime.value=.211;f1.gain.value=.5;f2.gain.value=.45;rg.gain.value=.3;A.rev.connect(lp);lp.connect(d1);lp.connect(d2);d1.connect(f1);f1.connect(d2);d2.connect(f2);f2.connect(d1);d1.connect(rg);d2.connect(rg);rg.connect(A.master)}
-  A.mus=c.createGain();A.mus.gain.value=settings.music?.42:0;A.mus.connect(A.master);
+  A.mus=c.createGain();A.mus.gain.value=settings.music?.34:0;A.mus.connect(A.master);
   A.musWet=c.createGain();A.musWet.connect(A.mus);const ms=c.createGain();ms.gain.value=.55;A.musWet.connect(ms);ms.connect(A.rev);
   A.harpBus=c.createBiquadFilter();A.harpBus.type='lowpass';A.harpBus.frequency.value=3800;A.harpBus.connect(A.musWet);
-  A.sfx=c.createGain();A.sfx.gain.value=settings.sfx?.75:0;A.sfx.connect(A.master);
+  A.sfx=c.createGain();A.sfx.gain.value=settings.sfx?.6:0;A.sfx.connect(A.master);
   A.sfxWet=c.createGain();A.sfxWet.connect(A.sfx);const ss=c.createGain();ss.gain.value=.4;A.sfxWet.connect(ss);ss.connect(A.rev);
   const nb=c.createBuffer(1,c.sampleRate,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;A.noise=nb;
   const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+70)*x/(1+70*Math.abs(x))}A.curve=cv;
@@ -329,7 +349,7 @@ function noise(t,dur,dest,v,ft,freq,q=1,f2){
   if(f2)f.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   s.connect(f);f.connect(g);g.connect(dest);s.start(t,Math.random()*.5);s.stop(t+dur+.05)}
 const I={
-  kick(t,v=.85,d){d=d||A.mus;tone('sine',150,t,.002,0,.2,d,v,0,40);noise(t,.02,d,v*.3,'highpass',2500)},
+  kick(t,v=.7,d){d=d||A.mus;tone('sine',150,t,.002,0,.2,d,v,0,40);noise(t,.02,d,v*.3,'highpass',2500)},
   snare(t,v=.42,d){noise(t,.17,d||A.musWet,v,'bandpass',1800,.7);tone('triangle',200,t,.002,0,.08,d||A.mus,v*.7,0,150)},
   hat(t,v=.08,open){noise(t,open?.2:.035,A.mus,v,'highpass',7800)},
   crash(t,v=.2){noise(t,1.3,A.musWet,v,'highpass',4800)},
@@ -388,7 +408,9 @@ function schedule(){if(!A.ctx||!MUS.track||!settings.music||A.ctx.state!=='runni
   while(MUS.next<A.ctx.currentTime+.14){try{MUS.track.play(MUS.step,MUS.next,sd)}catch(e){}MUS.step++;MUS.next+=sd}}
 const RIFF={doloris:[7,9,11,14,11,9,8,9],mortis:[14,13,11,14,16,14,13,11],timoris:[0,0,4,0,3,0,4,6],amoris:[0,0,0,0],oblivionis:[7,11,14,18,16,14,11,13]};
 const S={_l:{},_min:{eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
-  p(name,...a){if(!A.ctx||!settings.sfx||A.ctx.state!=='running')return;const now=A.ctx.currentTime;if(now-(S._l[name]||0)<(S._min[name]||.02))return;S._l[name]=now;try{S[name](now,...a)}catch(e){}},
+  _q:[],_imp:{boss:1,bossdie:1,die:1,win:1,skill:1,pick:1,door:1,hurt:1},
+  p(name,...a){if(!A.ctx||!settings.sfx||A.ctx.state!=='running')return;const now=A.ctx.currentTime;if(now-(S._l[name]||0)<(S._min[name]||.02))return;
+    if(!S._imp[name]){S._q=S._q.filter(x=>now-x<.1);if(S._q.length>=6)return;S._q.push(now)}S._l[name]=now;try{S[name](now,...a)}catch(e){}},
   swing(t,id){noise(t,.13,A.sfx,.22,'bandpass',700,1.2,3600);
     if(id==='doloris')I.gtr([50,57,62],t,.18,.1,false,A.sfx);
     else if(id==='mortis')I.gtr([62,69],t,.1,.08,true,A.sfx);
@@ -549,7 +571,8 @@ function loadArt(){for(const id in ART.meta){const im=new Image();
     im.onload=()=>{const m=ART.meta[id],fr={},wh={};ANIMS.forEach((a,r)=>{fr[a]=[];for(let i=0;i<m[a];i++){const c=mk(FW,FH);c.getContext('2d').drawImage(im,i*FW,r*FH,FW,FH,0,0,FW,FH);fr[a].push(c)}wh[a]=fr[a].map(whiteOf)});
       ART.fr[id]=fr;ART.wh[id]=wh;buildTabs();selChar(G.charIdx)};im.src='assets/'+id+'.png';
     const ic=new Image();ic.onload=()=>{ART.icons[id]=1;if(G.state==='play')applyIcons()};ic.src='assets/'+id+'_icons.png'}}
-const UI={ups:0,port:0};{const a=new Image();a.onload=()=>UI.ups=1;a.src='assets/ups.png';const b=new Image();b.onload=()=>{UI.port=1;if(G.state==='play')setPort()};b.src='assets/portraits.png'}
+const UI={ups:0,port:0,ui6:0,doors:0};const UI6IMG=new Image();UI6IMG.onload=()=>UI.ui6=1;UI6IMG.src='assets/ui6.png';const DOORIMG=new Image();DOORIMG.onload=()=>UI.doors=1;DOORIMG.src='assets/doors.png';
+const DIDX={combat:0,elite:1,rest:2,shop:3,treasure:4,boss:5,next:6};{const a=new Image();a.onload=()=>UI.ups=1;a.src='assets/ups.png';const b=new Image();b.onload=()=>{UI.port=1;if(G.state==='play')setPort()};b.src='assets/portraits.png'}
 const UPIDX=id=>UPS.findIndex(u=>u.id===id);
 function upIc(u){return UI.ups?`<span class="ic sp" style="background-position:${UPIDX(u.id)*5}% 0"></span>`:`<span class="ic">${u.ic}</span>`}
 function setPort(){const el=$('hPort');el.hidden=!UI.port;if(UI.port)el.style.backgroundPosition=`${G.charIdx*25}% 0`}
@@ -663,6 +686,21 @@ const STRANGERS=[
   {id:'knight',name:'沉睡的骑士',spr:'knight',line:'盔甲里传来低沉的声音：「……又一个人偶。拔剑吧。若你能击倒我，我的誓言归你。」',acc:'接受决斗',ad:'与巨大的无头骑士单挑。奖励：传说旋律 + 回满生命',trial:'duel'},
   {id:'collector',name:'面具收藏家',spr:'mask',line:'「多么漂亮的假面……在黑暗里撑过 30 秒吧。撑住了，我就把最好的藏品送你。」',acc:'步入暗幕',ad:'在黑暗中存活 30 秒，敌人不断涌出。奖励：传说旋律 + ✿40',trial:'survive'},
   {id:'crow',name:'乌鸦信使',spr:'crow',line:'「嘎——带来一份契约。签下它，立刻得到力量。代价嘛……这一幕剩下的敌人，会更顽强。」',acc:'签下契约',ad:'立即获得一段传说旋律，但本幕剩余敌人生命 +40%',curse:1}];
+const MAINQ=[
+  {frag:'灰烬',after:'「烛火……熄了……」\n伯爵的烛台滚落在地。熄灭的火芯里，浮起一段带着余温的旋律。'},
+  {frag:'风信',after:'「飞吧……飞去你想去的地方……」\n黑羽散尽，羽翼下藏着一页被风吹皱的乐谱。'},
+  {frag:'泪海',after:'「我不哭了……我不哭了……」\n瓷娃娃的泪水在地上汇成一行音符，慢慢凝固。'},
+  {frag:'荆冠',after:'荆棘松开了王座，一张染红的谱页从王冠里飘落。\n黑暗里传来掌声：「四个乐章都齐了？那么，终幕开演。」'}];
+const PROLOGUE='黑暗里，有个声音在轻笑。\n「欢迎来到假面回廊，我的人偶。你们的乐章被我拆成了四份，藏在火、风、水、地的尽头。」\n「想再一次站上舞台，就去取回来吧。如果你们还记得怎么唱的话。」';
+const CN='一二三四五';
+const SQ={
+  pages:{n:'失落的乐谱',goal:5,d:'在战斗房间清场后，找回散落的乐谱',rew:'传说旋律 + ✿60',
+    giver:{name:'拾谱的小人偶',spr:'mari',line:'「我的乐谱被风吹散了……一共五页，落在之后的演出厅里。帮我捡回来好不好？我把藏起来的宝贝送给你。」'}},
+  elites:{n:'精英猎手',goal:5,d:'击败带金色光环的精英敌人',rew:'传说旋律 + ✿50',
+    giver:{name:'低语的玫瑰',spr:'rose',line:'「那些披着金光的家伙，总在我的花园里践踏。替我摘下五个吧，人偶。」'}},
+  trials:{n:'试炼之证',goal:2,d:'在邂逅中完成试炼',rew:'复活 1 次 + 回满生命',
+    giver:{name:'迷路的瓷娃娃',spr:'doll',line:'「听说完成两场试炼的人偶，倒下以后还能再站起来一次……你想试试看吗？」'}},
+  band:{n:'重组乐队',goal:2,d:'帮助其他人偶，获得 2 份羁绊',rew:'「五重奏」：全伤害 +25%，最大生命 +30',auto:1}};
 const TRIALS={gauntlet:'连战试炼',duel:'骑士决斗',survive:'暗幕'};
 
 /* =================================================================== state */
@@ -732,7 +770,7 @@ function enterRoom(type,noCount){
   if(type==='combat'||type==='elite'||type==='trial'){
     const n=rint(2,5);for(let i=0;i<n*6&&G.obs.length<n;i++){const ox=rint(3,RW/16-4)*16,oy=rint(5,RH/16-6)*16;
       if(Math.abs(ox+8-RW/2)<30)continue;if(G.obs.some(o=>Math.abs(o.x-ox)<40&&Math.abs(o.y-oy)<40))continue;G.obs.push({x:ox+1,y:oy+2,w:14,h:10})}
-    const budget=3.5+G.act*1.6+G.room*.7;
+    const budget=3.5+G.act*1.9+G.room*.8;
     if(type==='combat'){G.waves=[genWave(budget),genWave(budget*1.15)];if(G.act>=3)G.waves.push(genWave(budget*.9))}
     else if(type==='elite'){G.waves=[genWave(budget*.6,true),genWave(budget*.8)]}
     else{const k=G.trialKind;toast('试炼 · '+TRIALS[k]);
@@ -755,14 +793,14 @@ function enterRoom(type,noCount){
 }
 function genWave(budget,elite){const pool=ACTS[G.act-1].pool,w=[];if(elite){w.push({t:pick(G.act>=3?['knight','mask','rose']:['mari','mask','rose']),elite:true});budget-=4}
   while(budget>0){const t=pick(pool);w.push({t});budget-=EN[t].cost}return w}
-function nextWave(){const w=G.waves.shift();if(!w)return;w.forEach((s,i)=>{const p=spawnPos();later(i*.12,()=>summon(s.t,p.x,p.y,s.elite))})}
+function nextWave(){const w=G.waves.shift();if(!w)return;G.pending+=w.length;w.forEach((s,i)=>{const p=spawnPos();later(i*.12,()=>{G.pending--;summon(s.t,p.x,p.y,s.elite)})})}
 function spawnPos(){for(let i=0;i<40;i++){const x=rnd(30,RW-30),y=rnd(TOP+30,RH-40);if((x-P.x)**2+(y-P.y)**2<95*95)continue;if(G.obs.some(o=>x>o.x-10&&x<o.x+o.w+10&&y>o.y-10&&y<o.y+o.h+10))continue;return{x,y}}return{x:RW/2,y:TOP+40}}
 function summon(t,x,y,elite){G.pending++;G.fx.push({k:'sum',x,y,t:0,d:.7,en:1});S.p('summon');laterE(.7,()=>{G.pending--;if(G.state!=='play')return;makeEnemy(t,x,y,elite)})}
-function makeEnemy(t,x,y,elite){const d=EN[t],hm=(1+(G.act-1)*.7+G.room*.07)*(elite?3.4:1)*(G.hard||1)*(G.curseAct===G.act?1.4:1);
-  const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*(1+(G.act-1)*.3)*(elite?1.3:1),elite:!!elite,d,
+function makeEnemy(t,x,y,elite){const d=EN[t],hm=[1,1.7,2.6,3.7,5][G.act-1]*(1+G.room*.06)*(elite?3.4:1)*(G.hard||1)*(G.curseAct===G.act?1.4:1);
+  const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*[1,1.3,1.65,2.05,2.5][G.act-1]*(elite?1.3:1),elite:!!elite,d,
     st:'idle',stT:rnd(.3,1.2),fire:(d.fire||2)*rnd(.5,1),fl:0,kx:0,ky:0,stun:0,an:rnd(TAU),face:1,hitCd:new Map(),sc:elite?1.4:1};
   G.en.push(e);return e}
-function spawnBoss(){const b=BOSSES[G.act-1],hm=1.2;
+function spawnBoss(){const b=BOSSES[G.act-1],hm=1.2*[1,1,1.1,1.2,1.3][G.act-1];
   const e={t:'boss',boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name)}
 function burst(x,y,n,cols,spd=60,life=.5,sz=1,g=0){for(let i=0;i<n;i++){const a=rnd(TAU),v=rnd(spd*.3,spd);G.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(life*.5,life),max:life,col:pick(cols),sz,g})}}
@@ -829,6 +867,7 @@ function killEnemy(e){e.dead=1;G.kills++;S.p('kill');const cols=e.boss?['#fff','
   if(Math.random()<(e.elite?.6:.05)||e.boss)G.picks.push({k:'hp',x:e.x,y:e.y,vx:rnd(-20,20),vy:-30,t:0});
   if(G.mods.lifesteal)P.hp=Math.min(P.maxHp,P.hp+G.mods.lifesteal);
   if(G.mods.star)for(let i=0;i<3*G.mods.star;i++)shoot({x:e.x,y:e.y-6,a:rnd(TAU),spd:120,dmg:8*G.mods.ranged,k:'star',pierce:0,col:'#ffe9a0',life:1.4,r:3,homing:1});
+  if(e.elite)qProg('elites');
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.inv>0||P.dashT>0||G.state!=='play')return;
   if(P.shield>0){P.shield--;P.inv=.7;S.p('shield');burst(P.x,P.y-10,12,[GOLD,'#fff'],70,.4);return}
@@ -891,7 +930,7 @@ function updEnemy(e,dt){if(e.boss)return updBoss(e,dt);
   const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1,ux=dx/dist,uy=dy/dist;e.face=dx<0?-1:1;const ai=e.d.ai;
   if(ai==='chase'){e.x+=ux*e.spd*dt+Math.cos(e.an*2)*6*dt;e.y+=uy*e.spd*dt}
   else if(ai==='ranged'){const want=e.elite?80:95,s=dist>want+15?1:dist<want-15?-1:0;e.x+=(ux*s+(-uy)*.6*Math.sin(e.an*.7))*e.spd*dt;e.y+=(uy*s+ux*.6*Math.sin(e.an*.7))*e.spd*dt;
-    e.fire-=dt;if(e.fire<=0){e.fire=e.d.fire*rnd(.85,1.15)*(e.elite?.8:1);const a=Math.atan2(dy,dx);if(e.elite){for(let i=-2;i<=2;i++)eshoot(e.x,e.y-8,a+i*.22,80)}else eshoot(e.x,e.y-8,a,78)}}
+    e.fire-=dt;if(e.fire<=0){e.fire=e.d.fire*rnd(.85,1.15)*(e.elite?.8:1)*(1-.07*(G.act-1));const a=Math.atan2(dy,dx);if(e.elite){for(let i=-2;i<=2;i++)eshoot(e.x,e.y-8,a+i*.22,80)}else eshoot(e.x,e.y-8,a,78)}}
   else if(ai==='turret'){e.fire-=dt;if(e.fire<=0){e.fire=e.d.fire*rnd(.9,1.1);const n=e.elite?14:8,o=e.an;for(let i=0;i<n;i++)eshoot(e.x,e.y-8,o+i/n*TAU,55);burst(e.x,e.y-10,5,['#e05a70'],30,.3)}}
   else if(ai==='dasher'){e.stT-=dt;
     if(e.st==='idle'){const a=Math.atan2(e.y-P.y,e.x-P.x)+dt*1.2;const tx=P.x+Math.cos(a)*65,ty=P.y+Math.sin(a)*65;e.x+=(tx-e.x)*dt*2;e.y+=(ty-e.y)*dt*2;
@@ -905,7 +944,7 @@ function updEnemy(e,dt){if(e.boss)return updBoss(e,dt);
   for(const o of G.en){if(o===e||o.dead||o.boss)continue;const ddx=e.x-o.x,ddy=e.y-o.y,dd=ddx*ddx+ddy*ddy,rr=e.r+o.r;if(dd<rr*rr&&dd>.01){const d=Math.sqrt(dd),p=(rr-d)*.5;e.x+=ddx/d*p;e.y+=ddy/d*p}}
   bound(e);
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
-function eshoot(x,y,a,spd,o={}){G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||(6+G.act*2),t:0,k:o.k||'orb',life:o.life||6});S.p('eshot')}
+function eshoot(x,y,a,spd,o={}){G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||(6+G.act*2.6),t:0,k:o.k||'orb',life:o.life||6});S.p('eshot')}
 function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;
   if(e.intro>0){e.intro-=dt;return}
   const ph2=e.hp<e.mhp*.5;if(ph2&&!e.ph2){e.ph2=1;toast('—— 第二乐章 ——');shake(6);G.eb.forEach(x=>x.dead=1)}
@@ -916,7 +955,7 @@ function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;
     e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2);e.stT=ph2?.5:1}}
   bound(e);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
-function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.4,ox=()=>e.x,oy=()=>e.y-12;
+function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-12;
   const fan=(n,spr,spd,k)=>{const a=aim();for(let i=0;i<n;i++)eshoot(ox(),oy(),a+(i-(n-1)/2)*spr/(n-1||1),spd,{dmg:bs,k})};
   const ring=(n,spd,off=0,k)=>{for(let i=0;i<n;i++)eshoot(ox(),oy(),off+i/n*TAU,spd,{dmg:bs,k})};
   if(p==='fan'){const rep=ph2?3:2;for(let i=0;i<rep;i++)laterE(i*.38,()=>fan(ph2?9:7,1.1,95));return rep*.38+.3}
@@ -950,6 +989,7 @@ function updPick(p,dt){p.t+=dt;
       for(let i=0;i<rint(10,18);i++)G.picks.push({k:'petal',x:p.x,y:p.y-6,vx:rnd(-60,60),vy:rnd(-80,-10),t:0,v:1});later(.6,()=>showReward('treasure'))}return}
   p.x+=(p.vx||0)*dt;p.y+=(p.vy||0)*dt;p.vx*=.9;p.vy*=.9;
   const dd=d2(p,P);if(p.t>.35&&dd<48*48){const d=Math.sqrt(dd)||1,s=170;p.x+=(P.x-p.x)/d*s*dt;p.y+=(P.y-6-p.y)/d*s*dt}
+  if(p.k==='page'){if(dd<12*12){p.dead=1;S.p('pick');burst(p.x,p.y-6,14,[GOLD,'#f6e8c8'],60,.5);qProg('pages')}return}
   if(p.t>.35&&dd<9*9){p.dead=1;if(p.k==='petal'){G.petals+=G.mods.petal;S.p('petal')}else if(p.k==='hp'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.12);S.p('heal');G.nums.push({x:P.x,y:P.y-30,v:'+HP',t:0,heal:1})}}
   if(p.t>25)p.dead=1}
 function updAmb(dt){const k=G.state==='play'?ACTS[G.act-1].amb:'petal';if(G.amb.length<34&&Math.random()<dt*14){
@@ -962,15 +1002,16 @@ function updAmb(dt){const k=G.state==='play'?ACTS[G.act-1].amb:'petal';if(G.amb.
 function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');
   const type=G.type;
   if(type==='event'){later(.6,()=>memberThanks());return}
-  if(type==='trial'){G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
+  if(type==='trial'){qProg('trials');G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
     if(G.act>=5){later(1.6,winGame);return}
-    later(1.4,()=>showReward('boss'))}
-  else later(.5,()=>showReward(type))}
-function openDoors(){G.doors=[];G.cleared=true;
+    later(1.4,()=>{G.frags=G.act;showStory(`第${CN[G.act-1]}乐章 · ${MAINQ[G.act-1].frag}`,MAINQ[G.act-1].after,()=>showReward('boss'),fragsHtml())})}
+  else{if(G.quests.pages&&!G.quests.pages.done&&Math.random()<.6){const q=spawnPos();G.picks.push({k:'page',x:q.x,y:q.y,t:0});later(1,()=>toast('附近有一页散落的乐谱'))}
+    later(.5,()=>showReward(type))}}
+function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qReward(k,openDoors);return}G.doors=[];G.cleared=true;
   if(G.type==='boss'){G.doors=[{x:RW/2,t:'next'}]}
   else if(G.room>=ROOMS_PER_ACT){G.doors=[{x:RW/2,t:'boss'}]}
-  else{const opts=['combat','combat','elite','rest','shop','treasure'];const w={combat:40,elite:G.act===1&&G.room<2?0:18,rest:G.room>=2?14:6,shop:G.petals>=30?16:8,treasure:12,event:G.roomsDone>1?18:0};
+  else{const opts=['combat','combat','elite','rest','shop','treasure'];const w={combat:40,elite:G.act===1&&G.room<2?0:18,rest:G.room>=2?14:6,shop:G.petals>=30?16:8,treasure:12,event:G.roomsDone>1?22:0};
     const ch=[];const n=Math.random()<.5?3:2;while(ch.length<n){let tot=0;for(const k in w)if(!ch.includes(k))tot+=w[k];let r=rnd(tot);for(const k in w){if(ch.includes(k))continue;r-=w[k];if(r<=0){ch.push(k);break}}if(tot<=0)break}
     const xs=n===3?[RW/2-80,RW/2,RW/2+80]:[RW/2-56,RW/2+56];G.doors=ch.map((t,i)=>({x:xs[i],t}))}
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
@@ -996,10 +1037,25 @@ function showReward(kind){const minR=kind==='trial'||kind==='curse'?2:kind==='bo
   const sub=kind==='boss'?`${BOSSES[G.act-1].name} 倒下了。回复 40% 生命，挑选一份献礼。`:kind==='elite'?'精英退场。它留下了更珍贵的旋律。':kind==='treasure'?'旧戏服里藏着被遗忘的东西。':'演出暂歇。将这一段旋律缝进你的假面。';
   openModal('reward',`<h3>${title}</h3><p class="sub">${sub}</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{applyUp(cs[+b.dataset.i]);closeModal();openDoors()})}
+function qStart(k){if(G.quests[k])return;G.quests[k]={p:0,done:0};toast('支线开始 · '+SQ[k].n);S.p('pick')}
+function qProg(k,n=1){const q=G.quests[k];if(!q||q.done)return;q.p=Math.min(SQ[k].goal,q.p+n);
+  if(q.p>=SQ[k].goal){q.done=1;G.qQueue.push(k);toast('支线完成 · '+SQ[k].n);S.p('pick')}else toast(`${SQ[k].n} ${q.p}/${SQ[k].goal}`)}
+function qReward(k,cb){const sd=SQ[k];
+  if(k==='trials'){G.mods.revive+=1;P.hp=P.maxHp}
+  if(k==='band'){G.mods.melee+=.25;G.mods.ranged+=.25;G.mods.maxHp+=30;stats();P.hp=Math.min(P.maxHp,P.hp+30)}
+  if(k==='pages')G.petals+=60;if(k==='elites')G.petals+=50;
+  const leg=k==='pages'||k==='elites',cs=leg?rollUps(3,2):[];
+  openModal('quest',`<h3>支线完成</h3><p class="sub">「${sd.n}」</p><div class="bond got">${sd.rew}</div>`+(leg?`<div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`:`<div class="row"><button class="cta" id="qOk">收下</button></div>`));
+  if(leg)panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{applyUp(cs[+b.dataset.i]);closeModal();cb()});else $('qOk').onclick=()=>{S.p('pick');closeModal();cb()}}
+function showStory(title,text,cb,extra=''){openModal('story',`<h3>${title}</h3><p class="story">${text}</p>${extra}<div class="row"><button class="cta" id="stOk">继续</button></div>`);$('stOk').onclick=()=>{closeModal();cb&&cb()}}
+function fragsHtml(){return `<div class="frags">${MAINQ.map((m,i)=>`<span class="${i<G.frags?'on':''}"><b>${CN[i]}</b>${m.frag}</span>`).join('')}</div>`}
+function mainLine(){return G.act<5?`击败「${BOSSES[G.act-1].name}」，取回第${CN[G.act-1]}乐章`:'终幕：击碎 Mujica 的假面'}
 function pickEvent(){const left=CHARS.map(c=>c.id).filter(id=>id!==ch().id&&!G.met[id]);
-  if(left.length&&Math.random()<.55){const id=pick(left);G.met[id]=1;return{member:id}}return{stranger:pick(STRANGERS)}}
+  if(left.length&&Math.random()<.5){const id=pick(left);G.met[id]=1;return{member:id}}
+  const givers=Object.keys(SQ).filter(k=>!SQ[k].auto&&!G.quests[k]&&!G.offered[k]).map(k=>({id:'q_'+k,...SQ[k].giver,acc:'接下委托',ad:`${SQ[k].d}（共 ${SQ[k].goal} 次）。奖励：${SQ[k].rew}`,quest:k}));
+  const st=pick(STRANGERS.concat(givers,givers));if(st.quest)G.offered[st.quest]=1;return{stranger:st}}
 function npcImg(ev){if(ev.member){const f=ART.fr[ev.member];if(f)return{c:f.idle[0],sx:18,sy:0,sw:72,sh:72,sc:.5,dy:2};const s=SPR['ch_'+ev.member].f[0];return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc:1,dy:1}}
-  const s=SPR[ev.stranger.spr].f[0],sc={mask:1.6,crow:1.5,knight:1.25}[ev.stranger.spr]||1;return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc,dy:1}}
+  const s=SPR[ev.stranger.spr].f[0],sc={mask:1.6,crow:1.5,knight:1.25,doll:.7,rose:1.3,mari:1.2}[ev.stranger.spr]||1;return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc,dy:1}}
 function npcName(ev){return ev.member?CHARS.find(c=>c.id===ev.member).name:ev.stranger.name}
 function talkHtml(ev,text,state){const pt=ev.member&&UI.port;return `<div class="talk">${pt?`<i class="port big" style="background-position:${CHARS.findIndex(c=>c.id===ev.member)*25}% 0"></i>`:`<canvas id="tkCv" width="72" height="72"></canvas>`}<div class="tk"><b>${npcName(ev)}</b>${state?`<small>${state}</small>`:''}<p>${text}</p></div></div>`}
 function drawPortrait(ev){const c=$('tkCv');if(!c)return;const x=c.getContext('2d'),im=npcImg(ev),k=Math.min(64/im.sw,64/im.sh);x.imageSmoothingEnabled=false;
@@ -1016,16 +1072,17 @@ function openTalk(){const ev=G.npc.ev;S.p('summon');
       else if(a==='fight'){G.evFight=1;G.cleared=false;setTrack('battle');const budget=4+G.act*1.8;G.waves=[0,1].map(()=>{const w=[];let bu=budget;while(bu>0){const t=pick(m.fight.pool);w.push({t});bu-=EN[t].cost}return w});toast('护送 '+npcName(ev))}
       else{G.npc.done=1;openDoors()}})}
   else{const s=ev.stranger;
-    openModal('talk',talkHtml(ev,s.line,'它没有敌意，只是静静地看着你。')+`<div class="cards">
-      <button class="card r2" data-a="yes"><span class="ic">${s.curse?'✒':'☠'}</span><b>${s.acc}</b><span class="d">${s.ad}</span></button>
+    openModal('talk',talkHtml(ev,s.line,s.quest?'它想拜托你一件事。':'它没有敌意，只是静静地看着你。')+`<div class="cards">
+      <button class="card r2" data-a="yes"><span class="ic">${s.quest?'✉':s.curse?'✒':'☠'}</span><b>${s.acc}</b><span class="d">${s.ad}</span></button>
       <button class="card r0" data-a="no"><span class="ic">…</span><b>婉拒</b><span class="d">点头致意，继续前行</span></button></div>`);
     drawPortrait(ev);
     panel.querySelectorAll('.card').forEach(btn=>btn.onclick=()=>{closeModal();G.npc.done=1;
       if(btn.dataset.a==='no'){openDoors();return}
+      if(s.quest){qStart(s.quest);openDoors();return}
       if(s.curse){G.curseAct=G.act;S.p('boss');toast('契约成立');later(.3,()=>showReward('curse'));return}
       G.trialKind=s.trial;if(G.trans)return;G.trans=1;$('fade').classList.add('on');releaseInputs();
       setTimeout(()=>{G.trans=0;enterRoom('trial',true);$('fade').classList.remove('on')},350)})}}
-function memberThanks(){const ev=G.npc.ev,id=ev.member,b=BONDS[id];G.npc.done=1;G.npc.freed=1;G.bonds[id]=1;
+function memberThanks(){const ev=G.npc.ev,id=ev.member,b=BONDS[id];G.npc.done=1;G.npc.freed=1;G.bonds[id]=1;if(!G.quests.band)qStart('band');qProg('band');
   if(id==='amoris')G.mods.crit+=.15;if(id==='oblivionis')G.mods.skillCd*=.7;if(id==='timoris')P.shield=(P.shield||0)+1;
   G.petals+=15;S.p('pick');burst(G.npc.x,G.npc.y-14,24,[GOLD,'#fff',CHARS.find(c=>c.id===id).col],80,.8);
   openModal('talk',talkHtml(ev,MEET[id].thanks)+`<div class="bond got">获得羁绊「${b.ic} ${b.n}」<br><span>${b.d}</span><br><span>以及 ✿15</span></div><div class="row"><button class="cta" id="tkOk">收下</button></div>`);
@@ -1043,12 +1100,14 @@ function showShop(){const ups=rollUps(3,0,.2);const price=u=>Math.round([28,48,8
       if(it.k==='heal'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.35);S.p('heal')}else if(it.k==='shield'){P.shield=(P.shield||0)+1;S.p('shield')}else applyUp(it.u);render()});
     $('leave').onclick=()=>{closeModal();G.cleared=true;openDoors()}};
   openModal('shop','');render()}
+function questLog(){const side=Object.keys(G.quests).map(k=>{const q=G.quests[k],sd=SQ[k];return `<li class="${q.done?'done':''}"><b>◇ ${sd.n}</b><span>${q.done?'已完成':`${q.p}/${sd.goal}`}</span><small>${sd.d} · 奖励：${sd.rew}</small></li>`}).join('');
+  return `<div class="qlog"><div class="qh">任务</div><ul><li class="main"><b>◆ 主线 · 假面之下</b><span>${G.frags}/4</span><small>${mainLine()}</small></li>${side||'<li><small>还没有支线。在「邂逅」里可能遇到委托人。</small></li>'}</ul>${fragsHtml()}</div>`}
 function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).map(id=>{const u=UPS.find(x=>x.id===id);return `<span>${UI.ups?`<i class="ci" style="background-position:${UPIDX(id)*5}% 0"></i>`:u.ic+' '}${u.n}${G.ups[id]>1?' ×'+G.ups[id]:''}</span>`}).join('')+Object.keys(G.bonds).map(id=>`<span class="bd">${BONDS[id].ic} ${BONDS[id].n} · ${BONDS[id].from}</span>`).join('')+(G.curseAct===G.act?'<span class="bd">✒ 乌鸦的契约</span>':'')||'<span>尚无旋律</span>';
-  openModal('pause',`<h3>暂停</h3><p class="sub">${ch().name} · 第 ${ACTS[G.act-1].n} 幕 ${ACTS[G.act-1].name} · 房间 ${G.room}/${ROOMS_PER_ACT+1}</p><div class="chips">${owned}</div>
-   <div class="tog"><span>音乐</span><button class="ghost" id="tMus">${settings.music?'开':'关'}</button></div><div class="tog"><span>音效</span><button class="ghost" id="tSfx">${settings.sfx?'开':'关'}</button></div>
+  openModal('pause',`<h3>暂停</h3><p class="sub">${ch().name} · 第 ${ACTS[G.act-1].n} 幕 ${ACTS[G.act-1].name} · 房间 ${G.room}/${ROOMS_PER_ACT+1}</p><div class="chips">${owned}</div>${questLog()}
+   <div class="tog"><span><i class="u6" style="background-position:80% 0"></i> 音乐</span><button class="ghost" id="tMus">${settings.music?'开':'关'}</button></div><div class="tog"><span><i class="u6" style="background-position:100% 0"></i> 音效</span><button class="ghost" id="tSfx">${settings.sfx?'开':'关'}</button></div>
    <div class="row"><button class="cta" id="resume">继续</button></div><div class="row"><button class="ghost" id="quit">放弃本次演出</button></div>`);
-  $('resume').onclick=closeModal;$('tMus').onclick=()=>{settings.music=!settings.music;store.set('amj_settings',settings);if(A.mus)A.mus.gain.value=settings.music?.42:0;$('tMus').textContent=settings.music?'开':'关'};
-  $('tSfx').onclick=()=>{settings.sfx=!settings.sfx;store.set('amj_settings',settings);if(A.sfx)A.sfx.gain.value=settings.sfx?.75:0;$('tSfx').textContent=settings.sfx?'开':'关'};
+  $('resume').onclick=closeModal;$('tMus').onclick=()=>{settings.music=!settings.music;store.set('amj_settings',settings);if(A.mus)A.mus.gain.value=settings.music?.34:0;$('tMus').textContent=settings.music?'开':'关'};
+  $('tSfx').onclick=()=>{settings.sfx=!settings.sfx;store.set('amj_settings',settings);if(A.sfx)A.sfx.gain.value=settings.sfx?.6:0;$('tSfx').textContent=settings.sfx?'开':'关'};
   $('quit').onclick=()=>{closeModal();toTitle()}}
 function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `<div class="summary"><div><b>${ACTS[G.act-1].n}</b>到达幕次</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
 function gameOver(){G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
@@ -1056,7 +1115,7 @@ function gameOver(){G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
     $('again').onclick=()=>{closeModal();startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
 function winGame(){G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;store.set('amj_best',best);
-  openModal('win',`<h3 class="big">Ave Mujica</h3><p class="sub">假面之主碎成五片，落在你掌心。<br>掌声如潮水涌来，帷幕缓缓落下。<br>演出终了。但人偶们知道，下一场早已排定。</p>${summaryHtml()}
+  openModal('win',`<h3 class="big">Ave Mujica</h3><p class="sub">四个乐章在你掌心合而为一，假面之主碎成五片。<br>你终于听见了完整的旋律：那是你们五个人的声音。<br>掌声如潮水涌来，帷幕缓缓落下。下一场，早已排定。</p>${summaryHtml()}
    <div class="row"><button class="cta" id="again">再演一场</button></div><div class="row"><button class="ghost" id="toT">回到标题</button></div>`);
   $('again').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}}
 let toastT=0;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1400)}
@@ -1069,7 +1128,7 @@ function showActCard(n,cb){const a=ACTS[n-1],el=$('actCard');G.paused=true;relea
   el.onclick=fin;setTimeout(fin,4200)}
 let hudCache={};function setH(id,v,prop='textContent'){if(hudCache[id+prop]===v)return;hudCache[id+prop]=v;$(id)[prop]=v}
 function updHud(){setH('hpTxt',`${Math.ceil(P.hp)}/${P.maxHp}`);const f=$('hpFill'),fr=(P.hp/P.maxHp).toFixed(3);if(hudCache.hpf!==fr){hudCache.hpf=fr;f.style.transform=`scaleX(${fr})`}
-  setH('petals','✿ '+Math.floor(G.petals));setH('shields','<b></b>'.repeat(P.shield||0),'innerHTML');
+  setH('petN',String(Math.floor(G.petals)));{const ql=`<div class="q main">◆ ${mainLine()}</div>`+Object.keys(G.quests).filter(k=>!G.quests[k].done).map(k=>`<div class="q">◇ ${SQ[k].n} ${G.quests[k].p}/${SQ[k].goal}</div>`).join('');setH('quests',ql,'innerHTML')}setH('shields','<b></b>'.repeat(P.shield||0),'innerHTML');
   const sc=P.skillCd>0?(P.skillCd/(P.skillMax||1)).toFixed(2):'0';if(hudCache.sk!==sc){hudCache.sk=sc;$('bSkill').style.setProperty('--cd',sc);$('bSkill').classList.toggle('ready',sc==='0')}
   const dc=P.dashCd>0?(P.dashCd/(.85*G.mods.dashCd)).toFixed(2):'0';if(hudCache.dc!==dc){hudCache.dc=dc;$('bDash').style.setProperty('--cd',dc)}
   if(G.boss&&!G.boss.dead){const bf=(Math.max(0,G.boss.hp)/G.boss.mhp).toFixed(3);if(hudCache.bf!==bf){hudCache.bf=bf;$('bossFill').style.transform=`scaleX(${bf})`}}}
@@ -1086,12 +1145,12 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   $('sStats').innerHTML=Object.entries(c.st).map(([k,v])=>`<dt>${k}</dt><dd>${[1,2,3,4,5].map(j=>`<i class="${j<=v?'on':''}"></i>`).join('')}</dd>`).join('');
   $('sAbil').innerHTML=c.ab.map(([k,v])=>`<li><b>${k}</b><span>${v}</span></li>`).join('');
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
-function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.frags=0;G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   Object.assign(P,{hp:c.hp,maxHp:c.hp,shield:0,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});stats();
   G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
-  G.bg=null;showActCard(1,()=>enterRoom('combat'))}
+  G.bg=null;showActCard(1,()=>{enterRoom('combat');showStory('序幕',PROLOGUE)})}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
@@ -1169,7 +1228,7 @@ function drawEnemy(e,t){const d=e.d,sp=SPR[d.spr];if(!sp)return;let fi=0;if(sp.f
   if(e.boss&&e.boss.spr==='mujica'){for(const s of[-1,1]){const hx=e.x+s*(28+Math.sin(t*2)*4),hy=e.y-6+Math.cos(t*2.3+s)*5;drawSpr(SPR.hand.f[0],hx,hy,s)}}
   if(e.stun>0){ctx.fillStyle='#ffe9a0';for(let i=0;i<3;i++){const a=t*5+i*2.1;ctx.fillRect(Math.round(e.x+Math.cos(a)*6),Math.round(e.y-(d.h||16)-3+Math.sin(a)*2),1,1)}}
   if(!e.boss&&e.hp<e.mhp){const w=Math.max(10,e.r*2);ctx.fillStyle='#000';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(e.y-(d.h||16)*e.sc-5)-1,w+2,3);ctx.fillStyle=e.elite?GOLD:'#e0283c';ctx.fillRect(Math.round(e.x-w/2),Math.round(e.y-(d.h||16)*e.sc-5),Math.max(0,Math.round(w*e.hp/e.mhp)),1)}}
-function drawNpc(t){const n=G.npc,ev=n.ev,im=npcImg(ev),fl=ev.stranger&&ev.stranger.spr!=='knight'&&ev.stranger.spr!=='usher'?Math.round(Math.sin(t*3)*2)-6:0;
+function drawNpc(t){const n=G.npc,ev=n.ev,im=npcImg(ev),fl=ev.stranger&&['mask','crow'].includes(ev.stranger.spr)?Math.round(Math.sin(t*3)*2)-6:0;
   if(ev.member&&!n.freed){ctx.globalAlpha=.25+.1*Math.sin(t*2);ctx.fillStyle=CHARS.find(c=>c.id===ev.member).col;ctx.beginPath();ctx.ellipse(n.x,n.y,16,6,0,0,TAU);ctx.fill();ctx.globalAlpha=1}
   shadow(n.x,n.y,7);const face=P.x<n.x?-1:1;
   if(ev.member){const f=ART.fr[ev.member];if(f)drawSpr(f.idle[Math.floor(t*4)%f.idle.length],n.x,n.y+2,face,null,.5);else drawSpr(im.c,n.x,n.y+1,face)}
@@ -1184,9 +1243,12 @@ function drawDoors(t){const wall=ACTS[G.act-1].pal.wall;for(const d of G.doors){
     ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(x,TOP-20,12,Math.PI,0);ctx.lineTo(x+12,TOP);ctx.lineTo(x-12,TOP);ctx.fill();
     ctx.fillStyle='#050305';ctx.beginPath();ctx.arc(x,TOP-20,10,Math.PI,0);ctx.lineTo(x+10,TOP);ctx.lineTo(x-10,TOP);ctx.fill();
     ctx.globalAlpha=.3+.25*Math.sin(t*3);ctx.fillStyle=info.c;ctx.beginPath();ctx.arc(x,TOP-18,7,Math.PI,0);ctx.lineTo(x+7,TOP);ctx.lineTo(x-7,TOP);ctx.fill();ctx.globalAlpha=1;
-    ctx.textAlign='center';ctx.font='10px "Noto Serif SC",serif';ctx.fillStyle='#000';ctx.fillText(info.ic,x+.5,TOP-8.5);ctx.fillStyle='#fff';ctx.fillText(info.ic,x,TOP-9);
+    ctx.textAlign='center';if(UI.doors&&DIDX[d.t]!==undefined)ctx.drawImage(DOORIMG,DIDX[d.t]*64,0,64,64,x-9,TOP-27,18,18);else{ctx.font='10px "Noto Serif SC",serif';ctx.fillStyle='#000';ctx.fillText(info.ic,x+.5,TOP-8.5);ctx.fillStyle='#fff';ctx.fillText(info.ic,x,TOP-9)}
     ctx.font='bold 7px "Noto Serif SC",serif';const ly=TOP+11+Math.sin(t*3);ctx.fillStyle='rgba(0,0,0,.75)';const tw=ctx.measureText(info.n).width;ctx.fillRect(x-tw/2-3,ly-7,tw+6,10);ctx.fillStyle=info.c;ctx.fillText(info.n,x,ly)}}
 function drawPick(p,t){if(p.k==='chest'){drawSpr((p.open?SPR.chestOpen:SPR.chest).f[0],p.x,p.y+5,1);if(!p.open){ctx.globalAlpha=.3+.2*Math.sin(t*4);ctx.fillStyle=GOLD;ctx.fillRect(p.x-1,p.y-22+Math.sin(t*3)*2,2,4);ctx.globalAlpha=1}return}
+  if(p.k==='page'){const y=Math.round(p.y-8+Math.sin(t*3)*2);ctx.globalAlpha=.25+.15*Math.sin(t*4);ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(p.x,y+4,9,0,TAU);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle='#120c10';ctx.fillRect(p.x-5,y-1,10,11);ctx.fillStyle='#f3e6c8';ctx.fillRect(p.x-4,y,8,9);ctx.fillStyle='#5a3a2a';for(let k=0;k<3;k++)ctx.fillRect(p.x-3,y+2+k*2,6,1);ctx.fillStyle='#9b1b30';ctx.fillRect(p.x+1,y+1,2,2);return}
+  if(p.k==='hp'&&UI.ui6){ctx.drawImage(UI6IMG,128,0,64,64,Math.round(p.x-5),Math.round(p.y-5+Math.sin(t*5+p.x)),10,10);return}
   const c=p.k==='petal'?SPR.petal:SPR.hp;const bob=Math.sin(t*5+p.x)*1;ctx.drawImage(c,Math.round(p.x-c.width/2),Math.round(p.y-c.height/2+bob))}
 function drawPB(b,t){const x=Math.round(b.x),y=Math.round(b.y);
   if(b.k==='note'||b.k==='star'||b.k==='heart'||b.k==='riff'){const c=SPR[b.k];ctx.drawImage(c,x-(c.width>>1),y-(c.height>>1));if(b.k==='note'){ctx.globalAlpha=.3;ctx.fillStyle='#f6dc8a';ctx.fillRect(Math.round(b.x-b.vx*.03),Math.round(b.y-b.vy*.03),2,2);ctx.globalAlpha=1}}

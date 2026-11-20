@@ -10,3 +10,8 @@
 
 操作（横屏）：手机左半屏拖动移动，右下按钮 近战 / 远程 / 闪避 / 技能。
 键盘：WASD 移动 · J 近战 · K 远程 · L 闪避 · 空格 技能 · Esc 暂停。
+
+## 安卓安装包
+
+`dist/AveMujica.apk`：横屏全屏、离线运行（字体与图片都打包在内）。在 `android/` 目录运行 `./build.sh` 可重新构建（需要 Ubuntu 包 android-sdk-platform-23、aapt、apksigner、dalvik-exchange、zipalign 与 JDK）。
+签名密钥默认生成在 `~/.ave_mujica_release.keystore`，不在仓库里；换了密钥的新版本需要先卸载旧版再安装。
