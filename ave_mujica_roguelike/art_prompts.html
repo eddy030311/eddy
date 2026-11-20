@@ -104,7 +104,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
   <div id="upList"></div>
 </section>
 
-<footer>一共 24 张图：人物 10、技能图标 5、HUD 8、强化 1。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
+<footer>一共 25 张图：人物 10、技能图标 5、HUD 8、强化 2。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
 </div>
 
 <script>
@@ -179,6 +179,7 @@ const HUD=[
 
 const UPS=["断弦之刃: a snapped guitar string curling into a blade shape","回响: an eighth note with echoing ripple rings","急板: a metronome with its arm swinging fast","坚硬假面: a sturdy white porcelain mask with a gold rim","华尔兹步: a black heeled shoe with a swirl of motion","玫瑰花瓣: a cluster of pink rose petals","红茶时间: a porcelain teacup with rising steam","延音: a golden fermata symbol","复调: three musical notes fanning out","贯穿之声: a note-headed arrow piercing through three bars","致命之吻: a red lipstick kiss mark with a tiny dagger","荆棘礼服: a corset bodice wrapped in thorny vines","卡农: two overlapping crescent sound waves","血之契约: a drop of blood on a scroll with a wax seal","安可: a circular arrow around a bouquet of roses","黑色生日: a black birthday cake with one lit candle","Ave: a silver cross with a halo and small wings","银十字: two small silver crosses orbiting a point","月之碎片: a shattered crescent moon with fragments","Symbol: four alchemical element triangles combined in a circle","千面: a cluster of many overlapping masks"];
 
+const UPS2=["连弹: two bullets in a fast row with speed lines", "重音: a heavy hammer-shaped musical accent mark", "广域和弦: a wide golden arc slash", "疾奏: a winged arrow", "强音: a large glowing orb note", "强拍: a fist pushing a shock ring", "银镜: a silver hand mirror", "调律: a tuning fork with circular arrows", "铁处女: a small iron maiden coffin", "花之引力: a horseshoe magnet pulling rose petals", "安眠曲: a crescent moon over a sleeping heart", "谢幕礼: a theater bow with a falling rose", "贪婪的假面: a gold coin wearing a tiny mask", "花瓣浴: a bathtub of rose petals with a heart bubble", "序曲: a curtain opening with a golden numeral I", "心跳: a beating heart with a pulse line", "终止式: a double bar line that cracks like glass", "休止符: a rest symbol with a skull", "回旋曲: a note bouncing off a wall", "分奏: one note splitting into three", "连锁音: a chain of lightning between notes", "余烬: a flaming note", "寒霜: a frozen note with ice crystals", "渐强: a crescendo hairpin sign glowing red", "终幕之刃: a sword through a crown", "华彩: an ornate cadenza flourish burst", "返场: a curtain call bow with a circular arrow", "疾风步: a footstep with a burst shockwave", "回身射: a spinning dancer shooting notes around", "双人舞: two dancing silhouettes", "共鸣爆发: a ring of notes exploding outward", "碎镜: a shattering mirror", "掌声: two clapping hands", "过载: a glowing hexagon shield fully charged", "呼吸: a breath of wind around a mirror", "幻影: a ghostly afterimage silhouette", "最后的独唱: a lone microphone under a spotlight", "延音踏步: an hourglass with a dancing foot", "幸运的玫瑰: a four-leaf clover made of rose petals", "留声机: a small gramophone", "双重奏: two mirrored arrows back to back", "回声: an infinity sign of sound waves", "不死鸟: a phoenix rising from a mask", "终焉之音: a purple vortex swallowing notes", "圣盾: a holy gold-and-silver shield with wings", "雷鸣: a lightning bolt from a dark cloud", "镜面: a mirror reflecting a bullet", "慢板: a slow hourglass with a snail-like note"];
 const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 let n=0;
 function ticket({id,stub,title,what,chips,rows,prompt}){const k='p'+(n++);
@@ -201,6 +202,9 @@ document.getElementById('hudList').innerHTML=HUD.map(h=>ticket({id:h.id,stub:'HU
 document.getElementById('upList').innerHTML=ticket({id:'U1',stub:'强化',title:'强化旋律图标 ×21',what:'顺序从左到右、从上到下，对应下表。',chips:[['可选','opt'],['7×3 格'],['224×96'],['--ar 7:3']],
   rows:UPS.map((u,i)=>[String(i+1),u.split(':')[0]]),
   prompt:`${STYLE}\n\nGame UI icon sheet: 21 icons in an exact grid of 7 columns by 3 rows of equal square cells (each 32x32 pixels, whole image 224x96, or an exact integer upscale such as 1792x768). Each icon is one bold centered symbol filling about 80% of its cell, with no frame behind it. Order left to right, top to bottom:\n${UPS.map((u,i)=>`${i+1}) ${u.split(': ')[1]}`).join('\n')}.`});
+document.getElementById('upList').innerHTML+=ticket({id:'U2',stub:'强化',title:'强化旋律图标 · 第二组 ×'+UPS2.length,what:'新增的强化效果。8 列 × 6 行，正好 48 个。',chips:[['可选','opt'],['8×6 格'],['256×192'],['--ar 4:3']],
+  rows:UPS2.map((u,i)=>[String(i+1),u.split(':')[0]]),
+  prompt:`${STYLE}\n\nGame UI icon sheet: ${UPS2.length} icons in an exact grid of 8 columns by 6 rows of equal square cells (each 32x32 pixels, whole image 256x192, or an exact integer upscale such as 2048x1536). Each icon is one bold centered symbol filling about 80% of its cell, with no frame behind it. Order left to right, top to bottom:\n${UPS2.map((u,i)=>`${i+1}) ${u.split(': ')[1]}`).join('\n')}.`});
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
   const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent='已选中，请长按复制';ok.hidden=false};
   const done=()=>{ok.textContent='已复制';ok.hidden=false;setTimeout(()=>ok.hidden=true,1600)};
