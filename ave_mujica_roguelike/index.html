@@ -1013,6 +1013,7 @@ function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qRew
   else if(G.room>=ROOMS_PER_ACT){G.doors=[{x:RW/2,t:'boss'}]}
   else{const opts=['combat','combat','elite','rest','shop','treasure'];const w={combat:40,elite:G.act===1&&G.room<2?0:18,rest:G.room>=2?14:6,shop:G.petals>=30?16:8,treasure:12,event:G.roomsDone>1?22:0};
     const ch=[];const n=Math.random()<.5?3:2;while(ch.length<n){let tot=0;for(const k in w)if(!ch.includes(k))tot+=w[k];let r=rnd(tot);for(const k in w){if(ch.includes(k))continue;r-=w[k];if(r<=0){ch.push(k);break}}if(tot<=0)break}
+    if(!Object.keys(G.met).length&&G.roomsDone>=2&&!ch.includes('event'))ch[ch.length-1]='event';
     const xs=n===3?[RW/2-80,RW/2,RW/2+80]:[RW/2-56,RW/2+56];G.doors=ch.map((t,i)=>({x:xs[i],t}))}
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
 function takeDoor(d){if(G.trans)return;G.trans=1;S.p('door');$('fade').classList.add('on');releaseInputs();
@@ -1051,7 +1052,7 @@ function showStory(title,text,cb,extra=''){openModal('story',`<h3>${title}</h3><
 function fragsHtml(){return `<div class="frags">${MAINQ.map((m,i)=>`<span class="${i<G.frags?'on':''}"><b>${CN[i]}</b>${m.frag}</span>`).join('')}</div>`}
 function mainLine(){return G.act<5?`击败「${BOSSES[G.act-1].name}」，取回第${CN[G.act-1]}乐章`:'终幕：击碎 Mujica 的假面'}
 function pickEvent(){const left=CHARS.map(c=>c.id).filter(id=>id!==ch().id&&!G.met[id]);
-  if(left.length&&Math.random()<.5){const id=pick(left);G.met[id]=1;return{member:id}}
+  if(left.length&&(!Object.keys(G.met).length||Math.random()<.5)){const id=pick(left);G.met[id]=1;return{member:id}}
   const givers=Object.keys(SQ).filter(k=>!SQ[k].auto&&!G.quests[k]&&!G.offered[k]).map(k=>({id:'q_'+k,...SQ[k].giver,acc:'接下委托',ad:`${SQ[k].d}（共 ${SQ[k].goal} 次）。奖励：${SQ[k].rew}`,quest:k}));
   const st=pick(STRANGERS.concat(givers,givers));if(st.quest)G.offered[st.quest]=1;return{stranger:st}}
 function npcImg(ev){if(ev.member){const f=ART.fr[ev.member];if(f)return{c:f.idle[0],sx:18,sy:0,sw:72,sh:72,sc:.5,dy:2};const s=SPR['ch_'+ev.member].f[0];return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc:1,dy:1}}
