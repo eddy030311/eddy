@@ -415,6 +415,10 @@ body.gp #combo{top:30%}
 #gsSkill.ensOn{box-shadow:0 0 18px rgba(201,164,92,.9)}
 .gs.on{transform:scale(.92);box-shadow:0 0 0 1px #ffd9a0,0 0 14px rgba(224,40,60,.7)}
 .gs.ready{box-shadow:0 0 0 1px #ffd27a,0 0 12px rgba(201,164,92,.5)}
+
+/* beat window echoed on the attack buttons */
+body.onbeat #bMelee,body.onbeat #bRanged,body.onbeat #gsMelee,body.onbeat #gsRanged{border-color:#ffe07a;box-shadow:0 0 0 1px rgba(255,224,122,.5),0 0 14px rgba(255,214,120,.65)}
+#bMelee,#bRanged,#gsMelee,#gsRanged{transition:border-color .06s,box-shadow .06s}
 </style>
 
 <div id="game">
@@ -565,7 +569,7 @@ function auInit(){
   A.sfx=c.createGain();A.sfx.gain.value=settings.sfx?.6:0;A.sfx.connect(A.master);
   A.sfxWet=c.createGain();A.sfxWet.connect(A.sfx);const ss=c.createGain();ss.gain.value=.4;A.sfxWet.connect(ss);ss.connect(A.rev);
   const nb=c.createBuffer(1,c.sampleRate,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;A.noise=nb;
-  const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+24)*x/(1+24*Math.abs(x))}A.curve=cv;
+  const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+24)*x/(1+24*Math.abs(x))}A.curve=cv;{const ws=c.createWaveShaper();ws.curve=cv;ws.oversample='none';const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=2400;const gg=c.createGain();gg.gain.value=.085;ws.connect(f);f.connect(gg);gg.connect(A.sfx);A.gbus=ws}
   const n0=MUS.name;MUS.name=null;setTrack(n0);setTimeout(()=>preloadTracks(['battle','fever','calm','boss']),600);
 }
 function impulse(sec,decay){const c=A.ctx,len=Math.floor(c.sampleRate*sec),b=c.createBuffer(2,len,c.sampleRate);
@@ -585,7 +589,7 @@ const I={
   crash(t,v=.2){noise(t,1.3,A.musWet,v,'highpass',4800)},
   bass(m,t,d,v=.26,dest){const c=A.ctx,f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(300,t+d);f.connect(dest||A.mus);
     tone('sawtooth',mtof(m),t,.004,d*.3,d*.7,f,v);tone('sine',mtof(m-12),t,.004,d*.3,d*.7,f,v*.9)},
-  gtr(ms,t,d,v=.13,mute,dest){const c=A.ctx,ws=c.createWaveShaper();ws.curve=A.curve;ws.oversample='4x';const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=mute?1000:2800;
+  gtr(ms,t,d,v=.13,mute,dest){const c=A.ctx;if(dest&&dest===A.sfx&&A.gbus&&A.gbus.context===c){(mute?ms.slice(0,1):ms.slice(0,2)).forEach((m,i)=>tone('sawtooth',mtof(m),t,.003,mute?0:d*.4,mute?d:d*.6,A.gbus,.4,i*7));return}const ws=c.createWaveShaper();ws.curve=A.curve;ws.oversample='4x';const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=mute?1000:2800;
     const g=c.createGain();g.gain.value=v;ws.connect(f);f.connect(g);g.connect(dest||A.mus);
     (mute?ms.slice(0,1):ms.slice(0,2)).forEach((m,i)=>tone('sawtooth',mtof(m),t,.003,mute?0:d*.4,mute?d:d*.6,ws,.4,i*7))},
   harp(m,t,d=.4,v=.09,dest){dest=dest||A.harpBus;tone('sawtooth',mtof(m),t,.002,0,d,dest,v*.6);tone('triangle',mtof(m),t,.002,0,d*1.4,dest,v*.55)},
@@ -709,7 +713,7 @@ function stopMus(){MUS.playing=null;if(!MUS.src||!A.ctx)return;const g=MUS.g,src
 function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.playing=n;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
 function setTrack(n,force){if(G.world===2&&(n==='battle'||n==='calm'))n+='2';if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
 const RIFF={doloris:[7,9,11,14,11,9,8,9],mortis:[14,13,11,14,16,14,13,11],timoris:[0,0,4,0,3,0,4,6],amoris:[0,0,0,0],oblivionis:[7,11,14,18,16,14,11,13]};
-const S={_l:{},_min:{ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
+const S={_l:{},_min:{shot:.07,swing:.08,ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
   _q:[],_imp:{boss:1,bossdie:1,die:1,win:1,skill:1,pick:1,door:1,hurt:1},
   p(name,...a){if(!A.ctx||!settings.sfx||A.ctx.state!=='running')return;const now=A.ctx.currentTime;if(now-(S._l[name]||0)<(S._min[name]||.02))return;
     if(!S._imp[name]){S._q=S._q.filter(x=>now-x<.1);if(S._q.length>=5)return;S._q.push(now)}S._l[name]=now;try{S[name](now,...a)}catch(e){}},
@@ -1741,13 +1745,23 @@ function beatPos(){if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.curre
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 /* rhythm judgement (light): every attack press is judged against the beat */
 const JUD={P:{t:'PERFECT',c:'#ffe07a',mul:1.3,fv:16},G:{t:'GOOD',c:'#ff9ad0',mul:1.1,fv:8},B:{t:'BAD',c:'#9ab0d0',mul:.9,fv:0},M:{t:'MISS',c:'#ff4a5a',mul:.75,fv:0}};
-function judgeHit(){const bps=(A.ctx&&MUS.src&&settings.music&&MUS.bpm)?MUS.bpm/60:2,b=beatPos()-(settings.lat||0)/1000*bps,f=b-Math.floor(b),o=Math.min(f,1-f),w=NL()>=6?[.09,.17,.27]:[.12,.22,.34];
+function judgeHit(){const b=beatNow(),f=b-Math.floor(b),o=Math.min(f,1-f),w=NL()>=6?[.09,.17,.27]:[.12,.22,.34];
   const k=o<=w[0]?'P':o<=w[1]?'G':o<=w[2]?'B':'M',J=JUD[k];G.jc=G.jc||{P:0,G:0,B:0,M:0};G.jc[k]++;
   if(k==='P'||k==='G'){G.rc=(G.rc||0)+1;G.rcMax=Math.max(G.rcMax||0,G.rc);if([10,30,50,100].includes(G.rc)){S.p('pick');G.beatGlow=1;G.nums.push({x:P.x,y:P.y-42,v:G.rc+' COMBO',t:0,say:1,jc:'#ffe07a'})}}
   else if(k==='M'){G.rc=0;if(NL()>=6)G.fever=Math.max(0,(G.fever||0)-5)}
   if(J.fv)feverAdd(J.fv);if(k==='P'){G.beatGlow=1;bsGain(.3)}if(G.time-(G.jT||0)>.12){G.jT=G.time;G.nums.push({x:P.x+rnd(-5,5),y:P.y-30,v:J.t,t:0,say:1,jc:J.c})}
   const cm=G.rc>=50?1.15:G.rc>=30?1.1:G.rc>=10?1.05:1,r={k,mul:J.mul*cm,t:G.time};G.lastJ=r;return r}
-function drawBeatRing(){if(P.down||G.state!=='play')return;const b=beatPos()-(settings.lat||0)/1000*2,f=b-Math.floor(b),r=7+12*(1-f);ctx.globalAlpha=.14+.42*f*f;ctx.strokeStyle=f>.86?'#ffe07a':'#c9a45c';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(P.x,P.y,r,r*.45,0,0,TAU);ctx.stroke();ctx.globalAlpha=1}
+function beatNow(){const bps=(A.ctx&&MUS.src&&settings.music&&MUS.bpm)?MUS.bpm/60:2;return beatPos()-(settings.lat||0)/1000*bps}
+/* beat cue: a fixed target ring at the feet, an approach ring that lands on it exactly on the beat,
+   and the target lights up for the PERFECT window */
+function drawBeatRing(){if(P.down||G.state!=='play')return;const b=beatNow(),bi=Math.floor(b),f=b-bi,o=Math.min(f,1-f),win=o<=(NL()>=6?.09:.12),R=12,ry=.45,x=P.x,y=P.y+1;
+  if(bi!==G.bLast){G.bLast=bi;G.bPulse=G.time}
+  const pk=(G.time-(G.bPulse||0))/.18;if(pk<1){ctx.globalAlpha=(1-pk)*.7;ctx.strokeStyle='#ffe07a';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(x,y,R+pk*9,(R+pk*9)*ry,0,0,TAU);ctx.stroke()}
+  if(win){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.45;ctx.drawImage(glow('#ffd27a'),x-R*1.6,y-R*.9,R*3.2,R*1.8);ctx.restore()}
+  ctx.globalAlpha=win?.95:.5;ctx.strokeStyle=win?'#ffe07a':'#c9a45c';ctx.lineWidth=win?1.4:.8;ctx.beginPath();ctx.ellipse(x,y,R,R*ry,0,0,TAU);ctx.stroke();
+  ctx.fillStyle=win?'#fff4d0':'#c9a45c';for(const [dx,dy] of[[R,0],[-R,0],[0,R*ry],[0,-R*ry]]){ctx.save();ctx.translate(x+dx,y+dy);ctx.rotate(Math.PI/4);ctx.fillRect(-1,-1,2,2);ctx.restore()}
+  const ar=R+18*(1-f);if(f<.97){ctx.globalAlpha=.12+.7*f*f;ctx.strokeStyle='#fff4d8';ctx.lineWidth=.6+.8*f;ctx.beginPath();ctx.ellipse(x,y,ar,ar*ry,0,0,TAU);ctx.stroke()}
+  ctx.globalAlpha=1;if(win!==G.bWin){G.bWin=win;document.body.classList.toggle('onbeat',win)}}
 function perfectFx(){if(G.time-(G.pfT||0)<.35)return;G.pfT=G.time;bsGain(.3);G.nums.push({x:P.x+rnd(-6,6),y:P.y-30,v:'PERFECT',t:0,say:1});G.beatGlow=1}
 function feverAdd(n){if(G.feverT>0||G.state!=='play')return;G.fever=Math.min(100,(G.fever||0)+n*.25*(G.bsL>=4?1.15:1));if(G.fever>=100)feverStart()}
 function feverStart(){bsGain(10);G.fever=0;G.feverT=FEVER_T;G.feverPrev=MUS.name;setTrack('fever',1);P.sh=P.shMax;P.skillCd*=.4;G.flash=.45;shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
@@ -3342,12 +3356,12 @@ M5.K={pnl,rr,V,PI,mt,MP,pl,grp,sph,hemi,cyl,cone,tor,lat,rbox,ubox,ex,circ,skirt
 M5.old={};M5.render=render;M5.B={};
 /* install lazy getters: SPR[name] builds its 3D version the first time it is read */
 M5.install=function(){if(M5.on||!r3ok())return;M5.on=1;const names=Object.keys(M5.B).filter(n=>SPR[n]&&SPR[n].f);
-  const fix=(n,v)=>Object.defineProperty(SPR,n,{value:v,writable:true,configurable:true,enumerable:true});
+  const fix=(n,v)=>Object.defineProperty(SPR,n,{value:v,writable:true,configurable:true,enumerable:true}),skey=n=>/^door_/.test(n)?'spr:'+n+':'+M5.old[n].f[0].width+'x'+M5.old[n].f[0].height:'spr:'+n;
   for(const n of names){M5.old[n]=SPR[n];Object.defineProperty(SPR,n,{configurable:true,enumerable:true,get(){const v=render(n,M5.B[n])||M5.old[n];fix(n,v);
-      if(v&&v.m3)Promise.all([cvBlob(v.f[0]),cvBlob(v.f[1])]).then(([a,b])=>{if(a&&b)idbSet('spr:'+n,{a,b})});return v},set(v){fix(n,v)}})}
+      if(v&&v.m3)Promise.all([cvBlob(v.f[0]),cvBlob(v.f[1])]).then(([a,b])=>{if(a&&b)idbSet(skey(n),{a,b})});return v},set(v){fix(n,v)}})}
   M5.pending=()=>names.filter(n=>{const d=Object.getOwnPropertyDescriptor(SPR,n);return d&&d.get});
   /* restore cached sprites, then pre-warm the rest only while nobody is fighting */
-  M5.restored=Promise.all(names.map(n=>idbGet('spr:'+n).then(async v=>{if(!v)return;const a=await blobCv(v.a),b=await blobCv(v.b);const d=Object.getOwnPropertyDescriptor(SPR,n);if(!a||!b||!d||!d.get)return;const o=M5.old[n];fix(n,{f:[a,b],w:[whiteOf(a),whiteOf(b)],hd:2,lh:o.lh,w1:o.w1,m3:1})}).catch(()=>{})));
+  M5.restored=Promise.all(names.map(n=>idbGet(skey(n)).then(async v=>{if(!v)return;const a=await blobCv(v.a),b=await blobCv(v.b);const d=Object.getOwnPropertyDescriptor(SPR,n);if(!a||!b||!d||!d.get)return;const o=M5.old[n];fix(n,{f:[a,b],w:[whiteOf(a),whiteOf(b)],hd:2,lh:o.lh,w1:o.w1,m3:1})}).catch(()=>{})));
   const rk=n=>/^door_/.test(n)?0:(WORLD===2)===/^w2/.test(n)?0:/^(w2b_|nb_|count|queen|doll|throne|audience|blank|w2m_|nm_|w1m_)/.test(n)?2:1;
   const step=()=>{if(busyPlay())return setTimeout(step,600);const q=M5.pending().filter(n=>/^door_/.test(n)||(WORLD===2)===/^w2/.test(n)).sort((a,b)=>rk(a)-rk(b));const n=q[0];if(!n)return setTimeout(step,2000);void SPR[n];setTimeout(step,90)};M5.restored.then(()=>setTimeout(step,1500))};
 /* before a run: finish any sprites the chosen world still needs, behind a short "tuning" veil */
@@ -3786,7 +3800,7 @@ UIX.build=function(){if(!r3ok()||UIX.done)return;UIX.done=1;try{const DP=36,dc=m
 })();
 
 /* ---- doors: each one is a different piece of the theatre (k=0 closed, k=1 open) ---- */
-const DOORSZ={combat:[32,44],elite:[32,44],rest:[32,44],shop:[30,44],treasure:[32,42],event:[32,44],boss:[48,56],next:[38,46],q:[32,44]};
+const DOORSZ={combat:[25,35],elite:[25,35],rest:[25,35],shop:[23,35],treasure:[25,33],event:[25,35],boss:[48,56],next:[29,36],q:[25,35]};
 function regDoorPh(){for(const k in DOORSZ){const[w,h]=DOORSZ[k];const c=mk(w,h);SPR['door_'+k]={f:[c,c],w:[c,c],hd:1,lh:h}}}
 (function(){const {pnl,rr,PI,mt,MP,pl,grp,sph,hemi,cyl,cone,tor,lat,ubox,ex,tube,sheet,txt,gem,starSh,heartSh}=M5.K,B=M5.B;
 const gold=()=>MP.gold(),dark=c=>mt(c||'#120c12',{r:.9});
@@ -4327,7 +4341,9 @@ let last=performance.now();
 const portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse)');
 portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInputs());
 let lastDraw=0,slow=0;
-function frame(now){requestAnimationFrame(frame);if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
+function audioWatch(now){if(!A.ctx||A.ctx.state!=='running'||document.hidden)return;if(now-(A.wT||0)<1000)return;const ct=A.ctx.currentTime;
+  if(A.wC!=null&&Math.abs(ct-A.wC)<1e-4){A.stall=(A.stall||0)+1;if(A.stall===1){A.ctx.suspend().then(()=>A.ctx.resume()).catch(()=>{})}else if(A.stall>=3){A.stall=0;try{A.ctx.close()}catch(e){}A.ctx=null;MUS.src=null;A.wC=null;auInit()}}else A.stall=0;A.wC=ct;A.wT=now}
+function frame(now){requestAnimationFrame(frame);try{audioWatch(now)}catch(e){}if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
