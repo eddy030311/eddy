@@ -1564,7 +1564,7 @@ let last=performance.now();
 const portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse)');
 portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInputs());
 let lastDraw=0,slow=0;
-function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastDraw=now;const dt=Math.min(.05,(now-last)/1000);last=now;
+function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastDraw=now;const dt=clamp((now-last)/1000,0,.05);last=now;
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
