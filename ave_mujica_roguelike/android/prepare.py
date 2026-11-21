@@ -10,6 +10,7 @@ assert 'googleapis' not in html
 open(os.path.join(www, 'index.html'), 'w', encoding='utf-8').write('<!doctype html>\n<html lang="zh-CN"><meta charset="utf-8">\n' + html)
 shutil.copytree(os.path.join(GAME, 'assets'), os.path.join(www, 'assets'), dirs_exist_ok=True)
 shutil.copytree(os.path.join(HERE, 'fonts'), os.path.join(www, 'fonts'), dirs_exist_ok=True)
+shutil.copytree(os.path.join(GAME, 'vendor'), os.path.join(www, 'vendor'), dirs_exist_ok=True)
 # launcher icon: the drawn app icon (android/icon/icon512.png)
 icon = Image.open(os.path.join(HERE, 'icon', 'icon512.png')).convert('RGBA')
 for d, px in {'mdpi': 48, 'hdpi': 72, 'xhdpi': 96, 'xxhdpi': 144, 'xxxhdpi': 192}.items():
