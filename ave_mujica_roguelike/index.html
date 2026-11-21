@@ -73,8 +73,8 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .pb.art em{position:absolute;bottom:5px;font-size:9px;text-shadow:0 1px 0 #000,0 0 4px #000}
 .pb.down{transform:scale(.93);background:radial-gradient(circle at 50% 35%,rgba(155,27,48,.95),rgba(30,10,16,.95))}
 #bRanged{width:84px;height:84px;right:0;bottom:6px}
-#bMelee{width:64px;height:64px;right:96px;bottom:0}
-#bDash{width:56px;height:56px;right:104px;bottom:80px}
+#bDash{width:64px;height:64px;right:96px;bottom:0}
+#bMelee{width:56px;height:56px;right:104px;bottom:80px}
 #bSkill{width:64px;height:64px;right:12px;bottom:102px;--cd:0}
 #bSkill::after{content:"";position:absolute;inset:-2px;border-radius:50%;pointer-events:none;
   background:conic-gradient(rgba(0,0,0,.72) calc(var(--cd)*360deg),transparent 0)}
@@ -270,7 +270,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
   </div>
   <div id="bossBar" hidden><div id="bossName"></div><div class="bar"><i id="bossFill"></i></div></div>
   <div id="toast"></div>
-  <div id="fever" hidden><b>Fever!</b><span>狂热演出 · 全属性大幅强化</span></div>
+  <div id="fever" hidden><b>Fever!</b><span>狂热演出 · 攻速、移速、减伤强化</span></div>
   <div id="secBanner"></div>
   <div id="stickZone" hidden><div id="stickBase"><div id="stickKnob"></div></div></div>
   <div id="pad" hidden>
@@ -633,12 +633,32 @@ const MJA={};['body','handL','handR','full'].forEach(k=>{const im=new Image();im
 /* mask positions in the original Mujica artwork (1606x979), order = MJF */
 const MJMK=[{c:[565,300],r:[225,95],e:[[452,308],[662,300]]},{c:[840,180],r:[215,125],e:[[812,182]]},{c:[610,500],r:[185,95],e:[[545,470],[690,465]]},{c:[1040,360],r:[170,85],e:[[990,372],[1100,368]]},{c:[1010,530],r:[170,90],e:[[940,536],[1070,524]]}];
 function hexA(h,a){const n=parseInt(h.slice(1),16);return`rgba(${n>>16},${(n>>8)&255},${n&255},${a})`}
+const MJSH={},MJV={},MJSS={},MJO={full:{x:23,y:29,s:.33},body:{x:215,y:29,s:.22}};
+function mjGeo(i){if(MJSH[i])return MJSH[i];const m=MJMK[i],cx=m.c[0],cy=m.c[1],rx=m.r[0]*.9,ry=m.r[1]*.9,K=16,outer=[],inner=[],tris=[];
+  for(let k=0;k<K;k++){const a=k/K*TAU+rnd(-.1,.1),f=rnd(.8,1);outer.push([cx+Math.cos(a)*rx*f,cy+Math.sin(a)*ry*f]);const f2=rnd(.35,.6);inner.push([cx+Math.cos(a+.2)*rx*f2,cy+Math.sin(a+.2)*ry*f2])}
+  for(let k=0;k<K;k++){const n=(k+1)%K;tris.push([[cx+rnd(-6,6),cy+rnd(-4,4)],inner[k],inner[n]]);tris.push([inner[k],outer[k],outer[n]]);tris.push([inner[k],outer[n],inner[n]])}
+  return MJSH[i]={outer,tris,c:[cx,cy]}}
+/* a copy of the artwork with masks 0..upto-1 broken out of it (jagged hole with a pale broken rim) */
+function mjVar(which,upto){const src=MJA[which];if(!src)return null;if(upto<=0)return src;const key=which+upto;if(MJV[key])return MJV[key];const o=MJO[which],c=mk(src.width,src.height),x=c.getContext('2d');x.drawImage(src,0,0);
+  for(let i=0;i<upto;i++){const g=mjGeo(i);x.beginPath();g.outer.forEach(([X,Y],k)=>{const px=(X-o.x)*o.s,py=(Y-o.y)*o.s;k?x.lineTo(px,py):x.moveTo(px,py)});x.closePath();
+    x.globalCompositeOperation='destination-out';x.fill();x.globalCompositeOperation='source-atop';x.strokeStyle='rgba(20,8,14,.8)';x.lineWidth=Math.max(1,o.s*6);x.stroke();x.strokeStyle='rgba(240,228,214,.75)';x.lineWidth=Math.max(.6,o.s*2.5);x.stroke()}
+  x.globalCompositeOperation='source-over';return MJV[key]=c}
+/* triangular shards cut from the full artwork for mask i */
+function mjShards(i){if(MJSS[i])return MJSS[i];const src=MJA.full;if(!src)return[];const o=MJO.full,g=mjGeo(i),gc=[(g.c[0]-o.x)*o.s,(g.c[1]-o.y)*o.s];
+  return MJSS[i]=g.tris.map(tr=>{const pts=tr.map(([X,Y])=>[(X-o.x)*o.s,(Y-o.y)*o.s]),xs=pts.map(q=>q[0]),ys=pts.map(q=>q[1]),x0=Math.floor(Math.min(...xs))-1,y0=Math.floor(Math.min(...ys))-1,
+      w=Math.ceil(Math.max(...xs))-x0+2,h=Math.ceil(Math.max(...ys))-y0+2,c=mk(w,h),x=c.getContext('2d');x.beginPath();pts.forEach((q,k)=>k?x.lineTo(q[0]-x0,q[1]-y0):x.moveTo(q[0]-x0,q[1]-y0));x.closePath();
+    x.save();x.clip();x.drawImage(src,-x0,-y0);x.restore();x.strokeStyle='rgba(255,246,232,.7)';x.lineWidth=.8;x.stroke();
+    const cx=(xs[0]+xs[1]+xs[2])/3,cy=(ys[0]+ys[1]+ys[2])/3;let dx=cx-gc[0],dy=cy-gc[1];const L=Math.hypot(dx,dy)||1;
+    return{c,x0,y0,cx,cy,dx:dx/L,dy:dy/L,sp:rnd(.6,1.5),w:rnd(-7,7),dl:rnd(0,.1)}})}
+function mjShardDraw(i,left,top,sc,t,al){const S=mjShards(i);for(const q of S){const tt=Math.max(0,t-q.dl),v=q.sp*80,X=left+q.cx*sc+q.dx*v*tt,Y=top+q.cy*sc+q.dy*v*tt*.8-40*tt+90*tt*tt,r=q.w*tt,a=al*clamp(1-(tt-1.1)/.9,0,1);if(a<=.01)continue;
+    ctx.save();ctx.translate(X,Y);ctx.rotate(r);ctx.globalAlpha=a;ctx.drawImage(q.c,(q.x0-q.cx)*sc,(q.y0-q.cy)*sc,q.c.width*sc,q.c.height*sc);
+    if(Math.sin(r*2.3+q.cx)>.86){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=a*.6;ctx.drawImage(q.c,(q.x0-q.cx)*sc,(q.y0-q.cy)*sc,q.c.width*sc,q.c.height*sc)}ctx.restore()}}
+function mjScreen(i,cx,y,sc){const F=MJA.full;if(!F)return[cx,y-60];const left=cx-F.width*sc/2,top=y-F.height*sc;return[left+(MJMK[i].c[0]-23)*.33*sc,top+(MJMK[i].c[1]-29)*.33*sc]}
 function mjCrack(cx,cy,rx,ry,L,seed){ctx.strokeStyle='rgba(240,230,220,.85)';ctx.lineWidth=1;for(let k=0;k<5;k++){const an=k*1.26+seed;ctx.beginPath();ctx.moveTo(cx,cy);for(let j=1;j<=3;j++){const w=an+Math.sin(j*3+k+seed)*.4;ctx.lineTo(cx+Math.cos(w)*rx*.3*j*L,cy+Math.sin(w)*ry*.3*j*L)}ctx.stroke()}}
 /* glow + red eyes on the active mask, darkened cracks on defeated ones; screen = (ox + X*k, oy + Y*k) */
 function mjFX(ox,oy,k,form,t,o={}){for(let i=0;i<5;i++){const m=MJMK[i],cx=ox+m.c[0]*k,cy=oy+m.c[1]*k,rx=m.r[0]*k,ry=m.r[1]*k;
   if(o.all){mjCrack(cx,cy,rx,ry,Math.min(1,o.crack||1),i);continue}
-  if(i<form-1){ctx.globalAlpha=.5;ctx.fillStyle='#0b080d';ctx.beginPath();ctx.ellipse(cx,cy,rx*.85,ry*.8,0,0,TAU);ctx.fill();ctx.globalAlpha=1;mjCrack(cx,cy,rx,ry,1,i)}
-  else if(i===form-1){const pu=.5+.5*Math.sin(t*4);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(cx,cy,1,cx,cy,rx*1.2);g.addColorStop(0,hexA(MJF[i].col,.3*pu+.12));g.addColorStop(1,hexA(MJF[i].col,0));ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx*1.2,ry*1.4,0,0,TAU);ctx.fill();
+  if(i===form-1){const pu=.5+.5*Math.sin(t*4);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(cx,cy,1,cx,cy,rx*1.2);g.addColorStop(0,hexA(MJF[i].col,.3*pu+.12));g.addColorStop(1,hexA(MJF[i].col,0));ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx*1.2,ry*1.4,0,0,TAU);ctx.fill();
     for(const [ex,ey] of m.e){const x=ox+ex*k,y=oy+ey*k,r=Math.max(1.6,22*k),g2=ctx.createRadialGradient(x,y,0,x,y,r*2.6);g2.addColorStop(0,'rgba(255,90,100,.9)');g2.addColorStop(1,'rgba(255,40,60,0)');ctx.fillStyle=g2;ctx.beginPath();ctx.arc(x,y,r*2.6,0,TAU);ctx.fill()}ctx.restore();
     for(const [ex,ey] of m.e){const x=ox+ex*k,y=oy+ey*k,r=Math.max(1.2,16*k);ctx.fillStyle='#ff2a40';ctx.beginPath();ctx.ellipse(x,y,r,r*.7,0,0,TAU);ctx.fill();ctx.fillStyle='#fff0e0';ctx.fillRect(Math.round(x-.5),Math.round(y-.5),1,1)}
     if(o.crack)mjCrack(cx,cy,rx,ry,Math.min(1,o.crack),i)}}}
@@ -906,8 +926,33 @@ bindBtn('bSkill',()=>IN.skillQ=true);
 $('bPause').addEventListener('click',()=>{if($('modal').hidden)showPause()});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 document.addEventListener('dblclick',e=>e.preventDefault());
-function releaseInputs(){IN.melee=IN.ranged=IN.dashQ=IN.skillQ=IN.kMelee=IN.kRanged=false;IN.sx=IN.sy=0;stick.id=null;sb.classList.remove('on');document.querySelectorAll('.pb.down').forEach(b=>b.classList.remove('down'))}
+function releaseInputs(){IN.melee=IN.ranged=IN.dashQ=IN.skillQ=IN.kMelee=IN.kRanged=IN.gpMelee=IN.gpRanged=false;IN.gpx=IN.gpy=0;IN.sx=IN.sy=0;stick.id=null;sb.classList.remove('on');document.querySelectorAll('.pb.down').forEach(b=>b.classList.remove('down'))}
 const isTouch=matchMedia('(pointer:coarse)').matches||'ontouchstart'in window;
+
+/* =================================================================== gamepad (Web Gamepad API + native Android bridge) */
+const GP={prev:[],axes:false,nt:0},NP={on:false,b:[],ax:0,ay:0,hx:0,hy:0};
+const PADHINT='手柄：左摇杆/十字键移动 · A 远程 · X 近战 · B 闪避 · Y 技能 · Start 暂停';
+const AKEY={96:0,97:1,99:2,100:3,102:4,103:5,104:6,105:7,109:8,108:9,19:12,20:13,21:14,22:15,23:0};
+function padSeen(name){if(GP.seen)return;GP.seen=1;toast('已连接手柄'+(name?'：'+name:''));$('kbdHint').textContent=PADHINT;if(G.state==='play'){$('pad').hidden=true;$('stickZone').hidden=true}}
+window.padKey=(code,down)=>{const i=AKEY[code];if(i===undefined)return;NP.on=true;NP.b[i]=down;padSeen()};
+window.padAxes=(x,y,hx,hy)=>{NP.on=true;NP.ax=x;NP.ay=y;NP.hx=hx;NP.hy=hy;padSeen()};
+addEventListener('gamepadconnected',e=>padSeen((e.gamepad.id||'').split('(')[0].trim().slice(0,22)));
+function readPad(){if(NP.on){const b=NP.b.slice();if(NP.hx<-.5)b[14]=true;if(NP.hx>.5)b[15]=true;if(NP.hy<-.5)b[12]=true;if(NP.hy>.5)b[13]=true;return{buttons:b,axes:[NP.ax,NP.ay]}}
+  const gps=navigator.getGamepads?navigator.getGamepads():[];for(const g of gps||[])if(g&&g.connected)return{buttons:g.buttons.map(x=>x.pressed),axes:[g.axes[0]||0,g.axes[1]||0]};return null}
+function navMenu(gp,pr){const root=!$('modal').hidden?$('panel'):G.state==='select'?$('select'):G.state==='title'?$('title'):null;if(!root)return;
+  const els=[...root.querySelectorAll('button:not([disabled])')].filter(e=>e.offsetParent!==null);if(!els.length)return;let i=els.indexOf(document.activeElement);const ax=gp.axes[0],ay=gp.axes[1],now=performance.now();
+  let d=0;if(pr(13)||pr(15))d=1;if(pr(12)||pr(14))d=-1;if(!d&&(Math.abs(ax)>.6||Math.abs(ay)>.6)&&now-GP.nt>230){d=(ax>.6||ay>.6)?1:-1;GP.nt=now}
+  if(d){i=i<0?0:(i+d+els.length)%els.length;els[i].focus()}
+  if(pr(0)){auInit();(i>=0?els[i]:els[0]).click()}
+  if(pr(1)||pr(9)){if(G.modalKind==='pause')closeModal();else if(G.state==='select'&&$('modal').hidden)toTitle()}}
+function pollPad(){const gp=readPad();if(!gp)return;const b=i=>!!gp.buttons[i],pr=i=>b(i)&&!GP.prev[i];if(gp.buttons.some(Boolean))padSeen();
+  if(CUT.on){if(pr(0)||pr(1))cutNext();if(pr(9))endCut();IN.gpMelee=IN.gpRanged=false}
+  else if(!$('actCard').hidden){if(pr(0)||pr(9))$('actCard').click()}
+  else if(!$('modal').hidden||G.state!=='play'){navMenu(gp,pr);IN.gpMelee=IN.gpRanged=false;IN.gpx=IN.gpy=0}
+  else{let ax=gp.axes[0],ay=gp.axes[1];if(b(14))ax=-1;if(b(15))ax=1;if(b(12))ay=-1;if(b(13))ay=1;const l=Math.hypot(ax,ay);
+    if(l>.22){IN.gpx=ax;IN.gpy=ay;GP.axes=true}else if(GP.axes){IN.gpx=IN.gpy=0;GP.axes=false}
+    IN.gpRanged=b(0)||b(5)||b(7);IN.gpMelee=b(2)||b(6);if(pr(1)||pr(4))IN.dashQ=true;if(pr(3))IN.skillQ=true;if(pr(9))showPause()}
+  GP.prev=gp.buttons.slice()}
 
 /* =================================================================== sizing */
 let QUAL=(matchMedia('(pointer:coarse)').matches||'ontouchstart'in window)?1.25:2;
@@ -1091,7 +1136,7 @@ function handSweep(e,h){const y=clamp(P.y,TOP+20,RH-24),from=h.s<0?SIDE+6:RW-SID
   laterE(.9,()=>{h.sw=-h.s*330;h.sp=0;h.fr=1;S.p('dash')});laterE(2.3,()=>{h.sw=0;h.act=0;h.fr=0;h.sp=4})}
 function updHands(e,dt){for(const h of e.hands){if(h.sw){h.x+=h.sw*dt;if(h.x<SIDE||h.x>RW-SIDE){h.sw=0}if((P.x-h.x)**2+(P.y-(h.y-18))**2<(24+P.r)**2)hurtPlayer(10+G.act*3);continue}
     if(!h.act){h.tx=e.x+(h.s<0?-59:53);h.ty=e.y+Math.sin(G.time*2+h.s)*3}h.x+=(h.tx-h.x)*Math.min(1,dt*h.sp);h.y+=(h.ty-h.y)*Math.min(1,dt*h.sp)}}
-function drawMj(e,t){const B=MJA.body;if(!B)return;const fl=Math.round(Math.sin(t*2)*2),by=e.y+fl,bw=B.width*.5,bh=B.height*.5,left=e.x-bw/2,top=by-bh,sx=e.trans?rnd(-1.5,1.5):0;
+function drawMj(e,t){const B=mjVar('body',e.form-1)||MJA.body;if(!B)return;const fl=Math.round(Math.sin(t*2)*2),by=e.y+fl,bw=B.width*.5,bh=B.height*.5,left=e.x-bw/2,top=by-bh,sx=e.trans?rnd(-1.5,1.5):0;
   ctx.strokeStyle='rgba(230,220,210,.28)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-40,0,40]){ctx.moveTo(e.x+dx,top+12);ctx.lineTo(e.x+dx*.6,TOP-40)}for(const h of e.hands){ctx.moveTo(h.x,h.y-40);ctx.lineTo(h.x,TOP-40)}ctx.stroke();
   shadow(e.x,e.y+4,50);ctx.drawImage(B,Math.round(left+sx),Math.round(top),bw,bh);
   if(e.fl>.06&&MJA.bodyW){ctx.globalAlpha=.14;ctx.drawImage(MJA.bodyW,Math.round(left+sx),Math.round(top),bw,bh);ctx.globalAlpha=1}
@@ -1175,7 +1220,7 @@ const FEVER_T=9;
 function beatPos(){if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 function perfectFx(){if(G.time-(G.pfT||0)<.35)return;G.pfT=G.time;G.nums.push({x:P.x+rnd(-6,6),y:P.y-30,v:'PERFECT',t:0,say:1});G.beatGlow=1}
-function feverAdd(n){if(G.feverT>0||G.state!=='play')return;G.fever=Math.min(100,(G.fever||0)+n);if(G.fever>=100)feverStart()}
+function feverAdd(n){if(G.feverT>0||G.state!=='play')return;G.fever=Math.min(100,(G.fever||0)+n*.25);if(G.fever>=100)feverStart()}
 function feverStart(){G.fever=0;G.feverT=FEVER_T;G.feverPrev=MUS.name;setTrack('fever',1);P.sh=P.shMax;P.skillCd*=.4;G.flash=.45;shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
   const el=$('fever');el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');clearTimeout(feverStart.t);feverStart.t=setTimeout(()=>el.hidden=true,1700);$('game').classList.add('fv')}
 function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.feverT=0;$('game').classList.remove('fv');const p=G.feverPrev;G.feverPrev=null;
@@ -1192,11 +1237,10 @@ function updRhythm(dt){const bi=Math.floor(beatPos());
 const P2LINE=['「烛火不够亮？那就把整座大厅都点燃吧！」','「孩子们，一起来，把她撕成碎片！」','「为什么……为什么你们都要离开我——！」','「大地啊，把她拖进根里去。」'],P2COL=['#ff7a2a','#b080ff','#4fb0ff','#7ae05a'];
 function bossP2(e){e.trans=1;e.phase=2;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
   e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;
-  later(.8,()=>playCut(cutBossP2(G.act,e),()=>{e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.6;$('bossName').innerHTML=`${e.boss.name}<small>第二乐章 · 狂暴</small>`;hudCache.bf=null;toast('—— 第二乐章 ——')}))}
+  later(.8,()=>playCut(cutBossP2(G.act,e),()=>{e.mhp*=2;e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.4;$('bossName').innerHTML=`${e.boss.name}<small>第二乐章</small>`;hudCache.bf=null}))}
 function cutBossP2(act,e){const b=e.boss,cx=VW/2,fy=VH*.8,col=P2COL[(act-1)%4];return[
   {d:2.6,bg:'room',shake:1.6,actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.4,shake:1.5}],sub:{who:b.name,text:'「……还没完。」'}},
-  {d:3.4,bg:'room',flash:.6,z0:1.12,z1:1.3,init:()=>cutBurst(cx,fy-50,70,[col,'#fff',GOLD],130),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.6,aura:col}],sub:{who:b.name,text:P2LINE[(act-1)%4]}},
-  {d:2.2,bg:'room',fadeOut:1,actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.6,aura:col}],sub:{text:`—— 第二乐章 ——　${b.name} 进入狂暴`}}]}
+  {d:3.6,bg:'room',flash:.6,z0:1.12,z1:1.3,fadeOut:1,init:()=>cutBurst(cx,fy-50,70,[col,'#fff',GOLD],130),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.6,aura:col}],sub:{who:b.name,text:P2LINE[(act-1)%4]}}]}
 
 /* =================================================================== player actions */
 function ch(){return CHARS[G.charIdx]}
@@ -1207,7 +1251,7 @@ function cdMul(){return 1/(G.mods.aspd*(P.frenzy>0?1.7:1)*(G.feverT>0?1.6:1))}
 function novaTick(){P.atkN=(P.atkN||0)+1;const m=G.mods;if(m.nova&&P.atkN%10===0){for(let i=0;i<14;i++)shoot({x:P.x,y:P.y-8,a:i/14*TAU,spd:160,dmg:9*m.nova*m.ranged,k:'note',pierce:2,col:'#f6dc8a',life:.9,r:3});G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:60,t:0,d:.3,col:'#f6dc8a'})}}
 function doMelee(){const c=ch(),m=c.melee,id=c.id,M=G.mods;P.meleeCd=m.cd*cdMul();setAct('melee',Math.max(.24,Math.min(.42,P.meleeCd)));
   P.mc=(P.mcT>0?P.mc:0)+1;P.mcT=1.1;const fin=P.mc>=3;if(fin)P.mc=0;
-  let range=m.range*M.mrange,arc=Math.min(6,m.arc*M.marc),dmg=m.dmg*M.melee*1.7,kb=(id==='timoris'?150:85)*M.knock;
+  let range=m.range*M.mrange,arc=Math.min(6,m.arc*M.marc),dmg=m.dmg*M.melee,kb=(id==='timoris'?150:85)*M.knock;
   const tgt=nearest(range+60),a=tgt?Math.atan2(tgt.y-P.y,tgt.x-P.x):Math.atan2(P.dy||0,P.dx||1);if(tgt)P.face=tgt.x<P.x?-1:1;P.atkAng=a;P.atkT=.18;novaTick();
   if(fin){dmg*=id==='mortis'?2.6:2;range*=1.35;arc=Math.min(6.2,arc+.6);kb*=2}
   const pf=onBeat();if(pf)dmg*=1.25;const crit=beat();
@@ -1260,7 +1304,7 @@ function aoe(x,y,r,dmg,col,o={}){for(const e of G.en){if(e.dead)continue;if((e.x
 const SCL=[1,1.6,2.4,3.4,4.6];
 function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0)||e.trans)return;const m=G.mods,mod=!o.noMod;
   let crit=o.crit||(mod&&!o.dot&&Math.random()<m.crit);
-  if(mod){if(G.feverT>0)dmg*=1.8;if(m.first&&e.hp>=e.mhp-.01)dmg*=1+.4*m.first;if(m.exec&&e.hp<e.mhp*.3)dmg*=1+.5*m.exec;if(m.boss&&(e.boss||e.elite))dmg*=1+.3*m.boss;if(m.low&&P.hp<P.maxHp*.3)dmg*=1+.35*m.low;
+  if(mod){if(m.first&&e.hp>=e.mhp-.01)dmg*=1+.4*m.first;if(m.exec&&e.hp<e.mhp*.3)dmg*=1+.5*m.exec;if(m.boss&&(e.boss||e.elite))dmg*=1+.3*m.boss;if(m.low&&P.hp<P.maxHp*.3)dmg*=1+.35*m.low;
     if(m.shFull&&P.shMax>0&&P.sh>=P.shMax-.5)dmg*=1+.2*m.shFull;if(m.cresc)dmg*=1+Math.min(.3,.03*(G.roomKills||0)*m.cresc);if(P.inLight)dmg*=1.3}
   if(crit){dmg*=mod?m.critMul:2;if(mod&&G.bonds.amoris)P.hp=Math.min(P.maxHp,P.hp+.6)}if(G.timeStop>0)dmg*=1.5;
   e.hp-=dmg;e.fl=o.dot?Math.max(e.fl,.04):.1;if(!e.boss&&o.kb){const k=o.kb*(e.elite?.4:1);e.kx+=Math.cos(o.ang)*k;e.ky+=Math.sin(o.ang)*k}
@@ -1328,7 +1372,7 @@ function update(dt){G.time+=dt;G.runT+=dt;
   if(G.type==='boss'&&G.boss)G.bossSpawned=1;
   if((G.hudT=(G.hudT||0)+dt)>.1){G.hudT=0;updHud()}}
 function updPlayer(dt){const c=ch(),m=G.mods;
-  let mx=IN.sx,my=IN.sy;const k=IN.keys;if(k.a||k.arrowleft)mx-=1;if(k.d||k.arrowright)mx+=1;if(k.w||k.arrowup)my-=1;if(k.s||k.arrowdown)my+=1;
+  let mx=IN.sx+(IN.gpx||0),my=IN.sy+(IN.gpy||0);const k=IN.keys;if(k.a||k.arrowleft)mx-=1;if(k.d||k.arrowright)mx+=1;if(k.w||k.arrowup)my-=1;if(k.s||k.arrowdown)my+=1;
   let l=Math.hypot(mx,my);if(l>1){mx/=l;my/=l;l=1}IN.mvx=mx;IN.mvy=my;
   const wasDash=P.dashT>0;
   for(const n of['meleeCd','rangedCd','dashCd','skillCd','inv','dashT','frenzy','comboT','atkT','hurtT','blink','mcT'])P[n]=Math.max(0,(P[n]||0)-dt);
@@ -1343,8 +1387,8 @@ function updPlayer(dt){const c=ch(),m=G.mods;
   if(l>.15){P.dx=mx/l;P.dy=my/l;if(Math.abs(mx)>.15&&P.atkT<=0)P.face=mx<0?-1:1;P.walk=(P.walk||0)+dt*l;P.frame=[1,0,2,0][Math.floor(P.walk*9)%4]}else P.frame=0;
   P.moving=l>.15;P.animT=(P.animT||0)+dt;if(P.act){P.act.t+=dt;if(P.act.t>=P.act.d)P.act=null}
   bound(P);
-  if((IN.melee||IN.kMelee)&&P.meleeCd<=0)doMelee();
-  if((IN.ranged||IN.kRanged)&&P.rangedCd<=0)doRanged();
+  if((IN.melee||IN.kMelee||IN.gpMelee)&&P.meleeCd<=0)doMelee();
+  if((IN.ranged||IN.kRanged||IN.gpRanged)&&P.rangedCd<=0)doRanged();
   if(IN.dashQ){IN.dashQ=false;if(P.dch>=1)doDash()}
   if(IN.skillQ){IN.skillQ=false;if(P.skillCd<=0&&G.mjDeb!==5)doSkill();else{S.p('tick');if(G.mjDeb===5)toast('技能被封印')}}
   if(m.orbit){P.orA=(P.orA||0)+dt*3.2;for(let i=0;i<m.orbit;i++){const a=P.orA+i/m.orbit*TAU,ox=P.x+Math.cos(a)*24,oy=P.y-6+Math.sin(a)*24;
@@ -1386,7 +1430,7 @@ function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;if(e.mj)
   else if(e.busy>0){e.busy-=dt}
   else{const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1;
     if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62);if(e.mj)e.y=Math.max(e.y,TOP+118)}
-    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2)*(e.mj?.55:1);e.stT=e.mj?.12:ph2?.5:1}}
+    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2)*(e.mj?.55:ph2?.55:1);e.stT=e.mj?.12:ph2?.15:1}}
   bound(e);if(e.mj)e.y=Math.max(e.y,TOP+118);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
 function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-(e.mj?55:12);
@@ -1632,7 +1676,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
 function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   Object.assign(P,{hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});stats();P.sh=P.shMax;P.dch=G.mods.dashCh;
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
-  $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
+  $('pad').hidden=$('stickZone').hidden=!isTouch||!!GP.seen;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
   G.zones=[];G.bg=buildBg();playCut(cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>enterRoom('combat')))}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
@@ -1678,9 +1722,11 @@ function cutActor(a,t,sh){const dl=a.delay||0,dur=Math.max(.01,(a.dur||sh.d)-dl)
     if(!broken){const w=14*sc,h=34*sc,sh2=t>a.breakAt-.6?rnd(-1,1):0;ctx.strokeStyle=GOLD;ctx.lineWidth=1.2;for(let i=-w;i<=w+.1;i+=4*sc){ctx.beginPath();ctx.moveTo(x+i+sh2,y-h);ctx.lineTo(x+i+sh2,y+2);ctx.stroke()}
       ctx.beginPath();ctx.ellipse(x+sh2,y-h,w,8*sc,0,Math.PI,0);ctx.stroke();ctx.fillStyle=GOLD;ctx.fillRect(x-w-2,y+1,w*2+4,3)}}
   else if(a.k==='mj'){const F=MJA.full;if(!F){ctx.globalAlpha=1;return}const w=F.width*sc,h=F.height*sc,bob=a.shatter?0:Math.sin(t*2)*3,left=x-w/2,top=y-h+bob,k=.33*sc;
-    if(a.shatter){const sw=F.width/5;for(let i=0;i<5;i++){const dir=i-2;ctx.save();ctx.translate(left+(i+.5)*sw*sc+dir*t*40,top+h/2+t*t*40+Math.abs(dir)*t*8);ctx.rotate(dir*t*.8);ctx.globalAlpha=al*Math.max(0,1-t/2);ctx.drawImage(F,i*sw,0,sw,F.height,-sw*sc/2,-h/2,sw*sc,h);ctx.restore()}}
-    else{const sx=a.crack?rnd(-1,1)*1.5:0;if(a.f){ctx.globalAlpha=al*.22;ctx.fillStyle=MJF[a.f-1].col;ctx.beginPath();ctx.ellipse(x,top+h*.45,w*.5,h*.55,0,0,TAU);ctx.fill();ctx.globalAlpha=al}
-      ctx.drawImage(F,Math.round(left+sx),Math.round(top),w,h);mjFX(left+sx-23*k,top-29*k,k,a.f||0,t,{crack:a.crack?t/1.6:0,all:a.crackAll})}}
+    if(a.shatter){const fi=a.f-1,base=mjVar('full',a.f)||F,fade=a.fadeBody?clamp(1-(t-.6)/1.8,0,1):1;ctx.globalAlpha=al*fade;ctx.drawImage(base,Math.round(left),Math.round(top),w,h);
+      if(t<.35){const [mx,my]=mjScreen(fi,x,y,sc),r=MJMK[fi].r[0]*k*1.6;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=al*(1-t/.35);ctx.drawImage(glow('#ffffff'),mx-r,my-r,r*2,r*2);ctx.drawImage(glow(MJF[fi].col),mx-r*1.5,my-r*1.5,r*3,r*3);ctx.restore()}
+      mjShardDraw(fi,left,top,sc,t,al)}
+    else{const sx=a.crack?rnd(-1,1)*1.5:0,base=mjVar('full',a.f?a.f-1:0)||F;if(a.f){ctx.globalAlpha=al*.22;ctx.fillStyle=MJF[a.f-1].col;ctx.beginPath();ctx.ellipse(x,top+h*.45,w*.5,h*.55,0,0,TAU);ctx.fill();ctx.globalAlpha=al}
+      ctx.drawImage(base,Math.round(left+sx),Math.round(top),w,h);mjFX(left+sx-23*k,top-29*k,k,a.f||0,t,{crack:a.crack?t/1.6:0})}}
   else if(a.k==='frag'){const yy=y-Math.min(22,t*9),g=ctx.createRadialGradient(x,yy,1,x,yy,24);g.addColorStop(0,'rgba(255,233,160,.85)');g.addColorStop(1,'rgba(255,233,160,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,yy,24,0,TAU);ctx.fill();
     const n=SPR.note;ctx.drawImage(n,Math.round(x-n.width*1.5),Math.round(yy-n.height*1.5),n.width*3,n.height*3)}
   else if(a.k==='curtain'){const hh=VH*clamp((t-.8)/2.6,0,1);for(let i=-VW;i<VW*2;i+=8){ctx.fillStyle=(i+VW)%16?'#5a0e1c':'#420a14';ctx.fillRect(i,-VH,8,hh+VH)}ctx.fillStyle=GOLD;ctx.fillRect(-VW,hh-2,VW*3,2)}
@@ -1715,7 +1761,7 @@ function cutMjIntro(){const cx=VW/2,y=VH*.84;return[
   {d:2.6,bg:'void',fadeOut:1,music:'mj1',actors:[{k:'mj',f:1,x:cx,y,sc:.45}],sub:{who:'Mujica · 悲伤之面',text:MJF[0].line}}]}
 function cutMjForm(f){const cx=VW/2,y=VH*.84,n=MJF[f];return[
   {d:2.6,bg:'void',shake:1.4,actors:[{k:'mj',f,x:cx,y,sc:.45,crack:1}],sub:{who:'Mujica',text:MJF[f-1].crack}},
-  {d:2.2,bg:'void',flash:.5,init:()=>cutBurst(VW/2,y-70,50,['#fff',MJF[f-1].col,GOLD],110),actors:[{k:'mj',f,x:cx,y,sc:.45,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎裂了。丝线把下一张面具拉了下来。`}},
+  {d:2.6,bg:'void',shake:1,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(f-1,cx,y,.45);cutBurst(mx,my,40,['#fff',MJF[f-1].col,GOLD,'#f0e4d6'],120)},actors:[{k:'mj',f,x:cx,y,sc:.45,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎裂了。丝线把下一张面具拉了下来。`}},
   {d:3.4,bg:'void',music:'mj'+(f+1),z0:1.25,z1:1,actors:[{k:'mj',f:f+1,x:cx,y:VH*.3,y1:y,sc:.45,alpha:0,a1:1,dur:1.4,spread:1}],sub:{who:`Mujica · ${n.name}（形态 ${f+1} / 5）`,text:n.line}}]}
 function cutChapter(n){const me=ch().id,cx=VW/2,fy=VH*.76,a=ACTS[n-1],party=[me,...G.allies.map(x=>x.id)],cap=n<5&&G.caps?G.caps[n-1]:null,pl=a.poem.split('\n');
   const at=(i)=>({x:cx+40-i*34,y:fy+(i%2)*8});return[
@@ -1724,8 +1770,8 @@ function cutChapter(n){const me=ch().id,cx=VW/2,fy=VH*.76,a=ACTS[n-1],party=[me,
   cap?{d:3.6,bg:'room',fadeOut:1,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.7,breakAt:999}],sub:{text:`${pl[1]||''}传闻 ${cname(cap)} 被囚禁在这一章的尽头。`}}
      :{d:3.8,bg:'room',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.8}],sub:{who:'Mujica',text:'「所有的面具都在等你。来吧，终幕开演。」'}}]}
 function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
-  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1,crackAll:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
-  {d:3.8,bg:'stage',flash:.7,init:()=>cutBurst(cx,VH*.4,60,['#fff','#f0e8dc',GOLD],120),actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,shatter:1},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:2}],sub:{text:'面具碎成了五片。后面站着的，是一个小小的、被丝线牵着的人偶。'}},
+  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
+  {d:3.8,bg:'stage',flash:.7,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(4,cx,VH*.84,.45);cutBurst(mx,my,60,['#fff','#f0e8dc',GOLD],130)},actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1,fadeBody:1},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:2}],sub:{text:'面具碎成了五片。后面站着的，是一个小小的、被丝线牵着的人偶。'}},
   {d:3.6,bg:'stage',z0:1.15,z1:1.3,actors:[{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,strings:1,cutStrings:1.3}],sub:{text:'你们剪断了她的线。'}},
   {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'四个乐章合而为一。五个人的声音，终于完整。'}},
   {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'掌声如潮水涌来，帷幕缓缓落下。'}}]}
@@ -1735,7 +1781,7 @@ let last=performance.now();
 const portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse)');
 portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInputs());
 let lastDraw=0,slow=0;
-function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastDraw=now;const dt=clamp((now-last)/1000,0,.05);last=now;
+function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;

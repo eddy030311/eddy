@@ -3,6 +3,9 @@ package com.avemujica.masque;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -77,6 +80,41 @@ public class MainActivity extends Activity {
                     if (v != null && v.contains("exit")) finish();
                 }
             });
+    }
+
+    private static boolean isPadKey(int code) {
+        return KeyEvent.isGamepadButton(code) || code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
+            || code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT || code == KeyEvent.KEYCODE_DPAD_CENTER;
+    }
+
+    /** Forward gamepad buttons to the game (window.padKey); everything else keeps its normal path. */
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        int src = e.getSource();
+        boolean fromPad = (src & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD || (src & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK;
+        if (isPadKey(e.getKeyCode()) && (fromPad || KeyEvent.isGamepadButton(e.getKeyCode()))) {
+            if (e.getRepeatCount() == 0 && (e.getAction() == KeyEvent.ACTION_DOWN || e.getAction() == KeyEvent.ACTION_UP))
+                web.evaluateJavascript("window.padKey&&padKey(" + e.getKeyCode() + "," + (e.getAction() == KeyEvent.ACTION_DOWN) + ")", null);
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
+    private float lx, ly, lhx, lhy;
+
+    /** Forward the left stick and hat (d-pad) axes to the game (window.padAxes). */
+    @Override
+    public boolean onGenericMotionEvent(MotionEvent e) {
+        if ((e.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && e.getAction() == MotionEvent.ACTION_MOVE) {
+            float x = e.getAxisValue(MotionEvent.AXIS_X), y = e.getAxisValue(MotionEvent.AXIS_Y);
+            float hx = e.getAxisValue(MotionEvent.AXIS_HAT_X), hy = e.getAxisValue(MotionEvent.AXIS_HAT_Y);
+            if (Math.abs(x - lx) > 0.02f || Math.abs(y - ly) > 0.02f || hx != lhx || hy != lhy) {
+                lx = x; ly = y; lhx = hx; lhy = hy;
+                web.evaluateJavascript("window.padAxes&&padAxes(" + x + "," + y + "," + hx + "," + hy + ")", null);
+            }
+            return true;
+        }
+        return super.onGenericMotionEvent(e);
     }
 
     @Override
