@@ -1933,7 +1933,7 @@ function updStage(){const a=ACTS[G.act-1];setH('stage',`${hard()?'【'+DF().n+'�
 /* =================================================================== screens */
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
 function toTitle(){feverReset();$('gpBar').hidden=true;G.state='title';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('title');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');G.amb=[];
-  $('w2btn').hidden=!(best.endings&&best.endings.d);const ne=Object.keys(best.endings||{}).length;$('best').textContent=(best.wins?`通关 ${best.wins} 次 · 结局 ${ne}/4`:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章`:'')}
+  $('w2btn').hidden=!Object.keys(best.endings||{}).length;const ne=Object.keys(best.endings||{}).length;$('best').textContent=(best.wins?`通关 ${best.wins} 次 · 结局 ${ne}/4`:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章`:'')}
 function toSelect(){$('selH').textContent=WORLD===2?'第二世界 · 选择你自己':'选择人偶';feverReset();$('gpBar').hidden=true;if(!isUnl(CHARS[G.charIdx].id))G.charIdx=0;G.state='select';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('select');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');selChar(G.charIdx)}
 function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{const b=document.createElement('button');const lk=!isUnl(c.id);b.className='tab'+(lk?' lock':'');b.innerHTML=`<canvas width="40" height="58"></canvas><span>${lk?'？？？':c.name}</span>${lk?'<em class="lk">未解锁</em>':''}`;
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
@@ -1958,7 +1958,7 @@ function setDiff(d){if(!DIFFS[d])d='norm';DIFF=d;store.set('amj_diff',d);$('dN')
 $('dN').onclick=()=>{S.p('tick');setDiff('norm')};$('dH').onclick=()=>{S.p('tick');setDiff('hard')};$('dV').onclick=()=>{S.p('tick');setDiff('vhard')};setDiff(DIFF);
 function showMeta(){const end=best.endings||{};
   const eg=Object.keys(ENDS).map(k=>`<li class="${end[k]?'done':''}"><b>${end[k]?ENDS[k].t:'？？？'}</b><small>${end[k]?'已达成':'提示：'+ENDS[k].h}</small></li>`).join('');
-  const w2=end.d?`<li class="${best.w2?'done':''}"><b>第二世界 · 假面之下</b><small>${best.w2?`已通关 ${best.w2} 次`:'已开放，可从标题页进入。'}</small></li>`:'<li><b>？？？</b><small>达成第四结局之后，会有另一扇门打开。</small></li>';
+  const w2=Object.keys(end).length?`<li class="${best.w2?'done':''}"><b>第二世界 · 假面之下</b><small>${best.w2?`已通关 ${best.w2} 次`:'已开放，可从标题页进入。'}</small></li>`:'<li><b>？？？</b><small>完成任意一个结局之后，会有另一扇门打开。</small></li>';
   openModal('meta',`<h3>幕后档案</h3><p class="sub">每一次落幕，都会在这里留下一行字。</p><div class="qlog"><div class="qh">结局 · ${Object.keys(ENDS).filter(k=>end[k]).length}/4</div><ul class="ends">${eg}${w2}</ul></div><div class="row"><button class="cta" id="metaOk">返回</button></div>`);
   $('metaOk').onclick=()=>{closeModal();toTitle()}}
 $('selBack').onclick=()=>toTitle();
