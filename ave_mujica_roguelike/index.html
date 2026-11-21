@@ -818,23 +818,23 @@ function pFrame(white){const a=artFrame(white);if(a)return{c:a,sc:.5,dy:2,h:16};
 const CHARS=[
   {id:'doloris',name:'Doloris',real:'三角初华',role:'Guitar & Vocal',motto:'吾、勿畏悲伤',hp:100,spd:1,col:'#e9c46a',
    st:{生命:3,速度:3,近战:3,远程:4},
-   ab:[['近战','吉他横扫：大范围弧形斩击，可斩落敌弹'],['远程','歌声音符：穿透一名敌人'],['技能','悲叹之星：群星坠落，轰击敌人'],['被动','歌姬：远程额外穿透']],
+   ab:[['近战','吉他横扫：大范围弧形斩击，可斩落敌弹'],['远程','歌声音符：穿透一名敌人'],['技能','悲叹之星：群星坠落，轰击敌人'],['被动','悲叹之歌：远程额外穿透；悲伤会化作歌声——受伤后 5 秒内，远程伤害 +35%、远程攻速 +15%']],
    melee:{dmg:12,range:27,arc:2.5,cd:.42,col:'#f6dc8a'},ranged:{dmg:8,spd:180,cd:.38,pierce:1},skillCd:11},
   {id:'mortis',name:'Mortis',real:'若叶睦',role:'Guitar',motto:'吾、勿畏死亡',hp:90,spd:1.1,col:'#cdd3c3',
    st:{生命:2,速度:4,近战:4,远程:3},
-   ab:[['近战','连斩：快速挥击，第三段伤害翻倍'],['远程','粉色速弹：三连发失真音弹'],['技能','死之舞：5 秒狂乱，攻速与移速大增并吸血'],['被动','人偶的轻盈：移速 +10%']],
+   ab:[['近战','连斩：快速挥击，第三段伤害翻倍'],['远程','粉色速弹：三连发失真音弹'],['技能','死之舞：5 秒狂乱，攻速与移速大增并吸血'],['被动','死之舞：移速 +12%；近战命中生命低于 20% 的普通敌人时，直接将其送葬']],
    melee:{dmg:9,range:24,arc:2.1,cd:.27,col:'#ff6fae'},ranged:{dmg:4.5,spd:230,cd:.5,pierce:0},skillCd:14},
   {id:'timoris',name:'Timoris',real:'八幡海铃',role:'Bass',motto:'吾、勿畏恐惧本身',hp:135,spd:.92,col:'#4ccac2',
    st:{生命:5,速度:2,近战:4,远程:3},
-   ab:[['近战','低音重击：大范围击退'],['远程','低频脉冲：缓慢但穿透三名敌人'],['技能','恐惧低频：震荡全场，眩晕并消除敌弹'],['被动','冷静：受到伤害 -15%']],
+   ab:[['近战','低音重击：大范围击退'],['远程','低频脉冲：缓慢但穿透三名敌人'],['技能','恐惧低频：震荡全场，眩晕并消除敌弹'],['被动','恐惧低频：受到伤害 -20%；身边的普通敌人会陷入恐惧，移动速度 -35%']],
    melee:{dmg:18,range:30,arc:2.8,cd:.6,col:'#9ad8ff'},ranged:{dmg:11,spd:125,cd:.7,pierce:3},skillCd:12},
   {id:'amoris',name:'Amoris',real:'祐天寺若麦',role:'Drums',motto:'吾、勿畏爱',hp:100,spd:1.05,col:'#c08aff',
    st:{生命:3,速度:3,近战:3,远程:4},
-   ab:[['近战','双击：鼓槌两连打'],['远程','飞鼓槌：撞墙反弹一次'],['技能','爱之节拍：三轮爱心环形弹幕'],['被动','节拍：每第 4 次攻击必定暴击']],
+   ab:[['近战','双击：鼓槌两连打'],['远程','飞鼓槌：撞墙反弹一次'],['技能','爱之节拍：三轮爱心环形弹幕'],['被动','爱的节拍：每第 4 次攻击必定暴击，暴击时回复生命；身边每有一名能行动的同伴，伤害 +6%']],
    melee:{dmg:7,range:24,arc:2.2,cd:.32,col:'#ff8ac0'},ranged:{dmg:7,spd:195,cd:.36,pierce:0},skillCd:12},
   {id:'oblivionis',name:'Oblivionis',real:'丰川祥子',role:'Keyboard',motto:'吾、勿畏忘却',hp:85,spd:1,col:'#8d93dd',
    st:{生命:2,速度:3,近战:4,远程:5},
-   ab:[['近战','荆棘指挥：玫瑰花瓣横扫'],['远程','琴键：自动追踪敌人'],['技能','忘却之时：时间停止 3.5 秒，清除敌弹，敌人受伤 +50%'],['被动','指挥者：技能冷却 -10%']],
+   ab:[['近战','荆棘指挥：玫瑰花瓣横扫'],['远程','琴键：自动追踪敌人'],['技能','忘却之时：时间停止 3.5 秒，清除敌弹，敌人受伤 +50%'],['被动','忘却：技能冷却 -20%；15% 几率忘却受到的伤害；释放技能时忘却伤痛，回复 10% 生命']],
    melee:{dmg:14,range:27,arc:2.4,cd:.46,col:'#ff5a78'},ranged:{dmg:9,spd:150,cd:.44,pierce:0},skillCd:15}
 ];
 const EN={
@@ -1507,9 +1507,9 @@ function doMelee(){const c=ch(),m=c.melee,id=c.id,M=G.mods;P.meleeCd=m.cd*cdMul(
   if(tgt){const gap=Math.sqrt(d2(tgt,P))-(tgt.r+range*.55);if(gap>4){const L=Math.min(gap,60);P.lvx=Math.cos(a)*L/.09;P.lvy=Math.sin(a)*L/.09;P.lungeT=.09;P.inv=Math.max(P.inv,.15);later(.09,go);return}}
   go()}
 function beat(){if(ch().id!=='amoris')return false;P.beat=(P.beat||0)+1;if(P.beat%4===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
-function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*cdMul()/m.raspd;if(!P.act||P.act.n!=='melee')setAct('ranged',.3);const a=aimAng(220);P.atkAng=a;P.atkT=.12;const crit=beat(),pf=onBeat();if(pf)perfectFx();
+function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*cdMul()/m.raspd*(id==='doloris'&&P.sorrowT>0?.87:1);if(!P.act||P.act.n!=='melee')setAct('ranged',.3);const a=aimAng(220);P.atkAng=a;P.atkT=.12;const crit=beat(),pf=onBeat();if(pf)perfectFx();
   const n=1+m.proj,sp=id==='mortis'?.1:.14;const sh=o=>{o.spd*=m.pspd;o.r*=m.psize;o.bounce=(o.bounce||0)+m.bounce;o.pierce=(o.pierce||0)+(G.feverT>0?1:0);o.pf=pf;return shoot(o)};
-  const volley=(base,mult)=>{const dmg=rg.dmg*m.ranged*mult*(pf?1.15:1),pos={x:P.x+Math.cos(base)*6,y:P.y-8+Math.sin(base)*6,crit};
+  const volley=(base,mult)=>{const dmg=rg.dmg*m.ranged*mult*(pf?1.15:1)*(id==='doloris'&&P.sorrowT>0?1.35:1),pos={x:P.x+Math.cos(base)*6,y:P.y-8+Math.sin(base)*6,crit};
     for(let i=0;i<n;i++){const aa=base+(i-(n-1)/2)*sp;
       if(id==='doloris')sh({...pos,a:aa,spd:rg.spd,dmg,k:'note',pierce:rg.pierce+m.pierce,col:'#f6dc8a',life:1.2,r:3});
       else if(id==='mortis'){for(let j=0;j<3;j++)later(j*.06,()=>sh({x:P.x,y:P.y-8,crit,a:aa+rnd(-.06,.06),spd:rg.spd,dmg,k:'riff',pierce:m.pierce,col:'#ff4fa8',life:.9,r:2.5}))}
@@ -1521,7 +1521,7 @@ function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*c
 function shoot(o){o.vx=Math.cos(o.a)*o.spd;o.vy=Math.sin(o.a)*o.spd;o.t=0;o.hit=new Set();G.pb.push(o);return o}
 function doDash(){const m=G.mods;P.dch-=1;P.dashCd=.85*m.dashCd;P.dashT=.16;if(m.dashShot)for(let i=0;i<6;i++)shoot({x:P.x,y:P.y-8,a:i/6*TAU,spd:170,dmg:7*m.dashShot*m.ranged,k:'note',pierce:1,col:'#f6dc8a',life:.7,r:3});P.dashHit=new Set();P.inv=Math.max(P.inv,.3);let dx=IN.mvx,dy=IN.mvy;if(Math.hypot(dx,dy)<.1){dx=P.dx;dy=P.dy}const l=Math.hypot(dx,dy)||1;
   P.vx=dx/l*240;P.vy=dy/l*240;S.p('dash')}
-function doSkill(){const c=ch(),id=c.id,m=G.mods;P.skillCd=c.skillCd*m.skillCd*(id==='oblivionis'?.9:1);P.skillMax=P.skillCd;setAct('skill',.85);if(G.bonds.oblivionis)G.eb.forEach(b=>{b.dead=1;burst(b.x,b.y,2,['#babef6'],20,.3)});S.p('skill',id);shake(4);G.flash=.25;
+function doSkill(){const c=ch(),id=c.id,m=G.mods;P.skillCd=c.skillCd*m.skillCd*(id==='oblivionis'?.8:1);if(id==='oblivionis'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.1);G.nums.push({x:P.x,y:P.y-30,v:'+'+Math.round(P.maxHp*.1),t:0,heal:1})}P.skillMax=P.skillCd;setAct('skill',.85);if(G.bonds.oblivionis)G.eb.forEach(b=>{b.dead=1;burst(b.x,b.y,2,['#babef6'],20,.3)});S.p('skill',id);shake(4);G.flash=.25;
   if(m.skillInv)P.inv=Math.max(P.inv,m.skillInv);toast({doloris:'悲叹之星',mortis:'死之舞',timoris:'恐惧低频',amoris:'爱之节拍',oblivionis:'忘却之时'}[id]);
   const pow=(m.melee+m.ranged)/2*m.skillDmg;
   if(m.vortex){const t=nearest(200);G.vortex={x:t?t.x:P.x+P.dx*50,y:t?t.y:P.y+P.dy*50,t:3,tk:0,pow}}
@@ -1540,7 +1540,8 @@ function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0)||e.trans)return;const m=G.
   let crit=o.crit||(mod&&!o.dot&&Math.random()<m.crit);
   if(mod){if(m.first&&e.hp>=e.mhp-.01)dmg*=1+.4*m.first;if(m.exec&&e.hp<e.mhp*.3)dmg*=1+.5*m.exec;if(m.boss&&(e.boss||e.elite))dmg*=1+.3*m.boss;if(m.low&&P.hp<P.maxHp*.3)dmg*=1+.35*m.low;
     if(m.shFull&&P.shMax>0&&P.sh>=P.shMax-.5)dmg*=1+.2*m.shFull;if(m.cresc)dmg*=1+Math.min(.3,.03*(G.roomKills||0)*m.cresc);if(P.inLight)dmg*=1.3}
-  if(crit){dmg*=mod?m.critMul:2;if(mod&&G.bonds.amoris)P.hp=Math.min(P.maxHp,P.hp+.6)}if(G.timeStop>0)dmg*=1.5;
+  if(mod&&o.melee&&ch().id==='mortis'&&!e.boss&&e.hp-dmg<e.mhp*.2&&e.hp-dmg>0){dmg=e.hp+1;G.nums.push({x:e.x,y:e.y-(e.d.h||16)-6,v:'送葬',t:0,say:1});burst(e.x,e.y-8,12,['#ff6fae','#cdd3c3','#1a0a10'],70,.5)}
+  if(crit){dmg*=mod?m.critMul:2;if(mod&&(G.bonds.amoris||ch().id==='amoris'))P.hp=Math.min(P.maxHp,P.hp+(ch().id==='amoris'?1:.6))}if(mod&&ch().id==='amoris')dmg*=1+.06*G.allies.filter(a=>!a.down).length;if(G.timeStop>0)dmg*=1.5;
   e.hp-=dmg;e.fl=o.dot?Math.max(e.fl,.04):.1;if(!e.boss&&o.kb){const k=o.kb*(e.elite?.4:1);e.kx+=Math.cos(o.ang)*k;e.ky+=Math.sin(o.ang)*k}
   G.nums.push({x:e.x+rnd(-4,4),y:e.y-(e.d.h||16),v:Math.round(dmg),t:0,crit,burn:o.dot,ally:o.noMod&&!o.dot});if(G.nums.length>40)G.nums.shift();
   if(!o.dot){burst(e.x,e.y-6,crit?6:3,crit?['#fff','#ffe9a0']:['#fff','#e0d0c0'],50,.3);S.p(crit?'crit':'hit')}
@@ -1565,12 +1566,13 @@ function killEnemy(e){e.dead=1;G.kills++;if(e.boss)G.bossK=(G.bossK||0)+1;if(!e.
   if(e.boss&&G.cage){G.cage.broken=1;burst(G.cage.x,G.cage.y-14,30,[GOLD,'#fff'],110,.8)}
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.down||P.inv>0||P.dashT>0||G.state!=='play')return;const m=G.mods;
+  if(ch().id==='oblivionis'&&Math.random()<.15){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'忘却',t:0,say:1});return}
   if(m.evade&&Math.random()<.15*m.evade){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'MISS',t:0,heal:1});return}
-  dmg*=DF().dmg;if(G.feverT>0)dmg*=.5;dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
+  dmg*=DF().dmg;if(G.feverT>0)dmg*=.5;dmg*=(ch().id==='timoris'?.8:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
   if(P.sh>0){const ab=Math.min(P.sh,dmg);P.sh-=ab;dmg-=ab;burst(P.x,P.y-14,8,['#9fd4ff','#fff'],60,.35);
     if(P.sh<=.01){P.sh=0;S.p('shbreak');G.nums.push({x:P.x,y:P.y-34,v:'BREAK',t:0,shb:1});if(m.shBreak){aoe(P.x,P.y-6,52,32*m.shBreak*(m.melee+m.ranged)/2,'#9fd4ff');for(const e of G.en)if(!e.dead&&!e.boss&&d2(e,P)<52*52){const a=Math.atan2(e.y-P.y,e.x-P.x);e.kx+=Math.cos(a)*160;e.ky+=Math.sin(a)*160}}}
     if(dmg<=.01){P.inv=.45*m.inv;P.hurtT=.1;S.p('shield');return}}
-  P.hp-=dmg;P.inv=.9*m.inv;P.hurtT=.3;P.blink=.9*m.inv;if(!P.act||P.act.n!=='skill')setAct('hurt',.3);S.p('hurt');shake(5);G.hurtFlash=.35;
+  P.hp-=dmg;if(ch().id==='doloris'){if(!(P.sorrowT>0))G.nums.push({x:P.x,y:P.y-38,v:'悲叹之歌',t:0,say:1});P.sorrowT=5}P.inv=.9*m.inv;P.hurtT=.3;P.blink=.9*m.inv;if(!P.act||P.act.n!=='skill')setAct('hurt',.3);S.p('hurt');shake(5);G.hurtFlash=.35;
   burst(P.x,P.y-10,10,['#e0283c','#ff8a9a'],70,.4);
   if(m.thorns)for(const e of G.en)if(!e.dead&&d2(e,P)<50*50)hurtEnemy(e,24*m.thorns*(m.melee+m.ranged)/2,{kb:120,ang:Math.atan2(e.y-P.y,e.x-P.x)});
   if(P.hp<=0){
@@ -1609,8 +1611,9 @@ function update(dt){G.time+=dt;G.runT+=dt;
 function updPlayer(dt){const c=ch(),m=G.mods;if(P.down){P.downT=(P.downT||0)+dt;P.vx=P.vy=0;P.moving=false;IN.dashQ=IN.skillQ=false;return}
   let mx=IN.sx+(IN.gpx||0),my=IN.sy+(IN.gpy||0);const k=IN.keys;if(k.a||k.arrowleft)mx-=1;if(k.d||k.arrowright)mx+=1;if(k.w||k.arrowup)my-=1;if(k.s||k.arrowdown)my+=1;
   let l=Math.hypot(mx,my);if(l>1){mx/=l;my/=l;l=1}IN.mvx=mx;IN.mvy=my;
+  if(c.id==='timoris')for(const e of G.en)if(!e.dead&&!e.boss&&(e.x-P.x)**2+(e.y-P.y)**2<55*55)e.slowT=Math.max(e.slowT||0,.25);
   const wasDash=P.dashT>0;
-  for(const n of['meleeCd','rangedCd','dashCd','skillCd','inv','dashT','frenzy','comboT','atkT','hurtT','blink','mcT'])P[n]=Math.max(0,(P[n]||0)-dt);
+  for(const n of['meleeCd','rangedCd','dashCd','skillCd','inv','dashT','frenzy','comboT','atkT','hurtT','blink','mcT','sorrowT'])P[n]=Math.max(0,(P[n]||0)-dt);
   if(wasDash&&P.dashT<=0&&m.dashBlast){aoe(P.x,P.y-4,30,20*m.dashBlast*m.melee,'#ffe9a0');burst(P.x,P.y-4,12,['#ffe9a0','#fff'],70,.4)}
   if(P.dch<m.dashCh)P.dch=Math.min(m.dashCh,P.dch+dt/(.85*m.dashCd)*(G.mjDeb===5?.5:1));
   P.shT=(P.shT||0)+dt;if(P.sh<P.shMax&&G.mjDeb!==1&&(m.aegis||P.shT>3*m.shDelay))P.sh=Math.min(P.shMax,P.sh+10*m.shRegen*dt);
@@ -1618,7 +1621,7 @@ function updPlayer(dt){const c=ch(),m=G.mods;if(P.down){P.downT=(P.downT||0)+dt;
   if(G.mjDeb===2)P.hp=Math.max(1,P.hp-P.maxHp*.02*dt);
   if(P.lungeT>0){P.lungeT-=dt;P.x+=P.lvx*dt;P.y+=P.lvy*dt;if(!P.gt||G.time-P.gt>.025){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
   else if(P.dashT>0){P.x+=P.vx*dt;P.y+=P.vy*dt;if(!P.gt||G.time-P.gt>.03){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
-  else{const sp=70*c.spd*m.move*(c.id==='mortis'?1.1:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(G.mjDeb===4?.75:1)*(G.feverT>0?1.25:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
+  else{const sp=70*c.spd*m.move*(c.id==='mortis'?1.12:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(G.mjDeb===4?.75:1)*(G.feverT>0?1.25:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
   if(l>.15){P.dx=mx/l;P.dy=my/l;if(Math.abs(mx)>.15&&P.atkT<=0)P.face=mx<0?-1:1;P.walk=(P.walk||0)+dt*l;P.frame=[1,0,2,0][Math.floor(P.walk*9)%4]}else P.frame=0;
   P.moving=l>.15;P.animT=(P.animT||0)+dt;if(P.act){P.act.t+=dt;if(P.act.t>=P.act.d)P.act=null}
   bound(P);
