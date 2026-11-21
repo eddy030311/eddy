@@ -180,6 +180,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .qlog li.done{opacity:.55}
 .t-wrap #meta{margin-top:2px}
 .qlog ul.ends li.done b{color:var(--gold)}
+.diff{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px}.diff>span{color:var(--mist);letter-spacing:.2em}.diff button{padding:5px 14px;font-size:13px}.diff button.on{border-color:var(--gold);color:var(--gold);background:#2a0e18}#dH.on{border-color:var(--rose);color:#ffb3c0}.diff small{color:var(--mist);font-size:11px;flex-basis:100%}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
 .summary div{border:1px solid var(--line);padding:8px 4px}
 .summary b{display:block;font:14px var(--f-pixel);color:var(--gold)}
@@ -323,6 +324,7 @@ body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow
   </div>
   <div class="selR">
   <ul class="abil" id="sAbil"></ul>
+  <div class="diff"><span>难度</span><button type="button" class="ghost" id="dN">默认</button><button type="button" class="ghost" id="dH">困难</button><small id="dTxt"></small></div>
   <div class="kbd" id="kbdHint">手机：左半屏拖动移动，右下按钮攻击</div>
   <div class="gobar"><button class="cta" id="go">登 台</button></div>
   </div>
@@ -819,6 +821,13 @@ const SECS5B=[['镜中的走廊','镜子里的你没有戴面具，却在对你�
 const BOSSB={name:'空白假面',sub:'Sans Visage · 剧本的作者',spr:'blank',hp:1700,r:16,spd:18,pats:['spiral','rain','shades','fanRing','stream','spikes','ring','summon'],sum:['mask','mari'],h:56,float:1};
 function darkStep(){G.dark=(G.dark||0)+1;later(.8,()=>toast(G.dark>=2?'碎片里的低语越来越清晰了……':'你听见假面在低语……'))}
 let SECS5A=null;
+const BOSSC={name:'镜中的你',sub:'Le Reflet · 摘下假面的你',spr:'refl',hp:1600,r:14,spd:34,pats:['dash','stream','fan','spiral','ring','rain','shades','spikes'],sum:['mask'],h:40};
+const PHM=[1,2,2.3,2.6,3],FINAL={blank:1,audience:1,refl:1};
+const PHL={blank:['「这一页，不在剧本里。」','「那就重写。把你们写成从未相遇。」','「第四页：你们一个接一个地离开。」','「最后一页是空白的。由我来填满。」'],
+  audience:['「安可！安可！安可！」','「不够。还不够。再唱得更痛一些。」','「我们为你们鼓掌了那么多次。你们欠我们一场永远。」','「不许落幕。不许落幕。不许——」'],
+  refl:['「摘下来。那不是你的脸。」','「你还记得她们本来的声音吗？」','「戴着它，你就再也哭不出来了。」','「……那就让我来记住吧。记住真正的你。」']};
+const PHC={blank:['#e8e4f0','#c8304a','#6a70be','#ffffff'],audience:['#ffd27a','#ff7a2a','#e0283c','#ffffff'],refl:['#d8c0ff','#4ccac2','#ff6a9a','#f6dc8a']};
+const PHN=['','第二乐章','第三乐章','第四乐章','终章'];
 const BOSSD={name:'无尽的观众',sub:'Le Public · 永不落幕',spr:'audience',hp:1900,r:22,spd:0,pats:['ring','rain','stream','summon','spiral','fanRing','shades','spikes'],sum:['mari','mask','crow'],h:44};
 const ENDS={a:{t:'第一结局 · 剪断的丝线',h:'击败 Mujica。'},b:{t:'第二结局 · 自己选择的演出',h:'旅途中集齐三件神秘物品，在邂逅里跟随老人偶师。'},
   c:{t:'第三结局 · 新的假面之主',h:'在旅途中做出至少两次「黑暗的选择」（契约、献祭、饮下泪泉……），再击败 Mujica。'},d:{t:'第四结局 · 帷幕之外（真结局）',h:'在后台取得「失落的第五乐章」，再一次走向舞台背面。'}};
@@ -832,7 +841,8 @@ const META=[
 let MT=Object.assign({ap:0,lv:{}},store.get('amj_meta',{}));
 const ml=id=>MT.lv[id]||0,mcost=m=>m.c*(ml(m.id)+1);
 function saveMeta(){store.set('amj_meta',MT)}
-function award(ending){const n=Math.round(10*(G.act-1)+2*G.room+Math.floor(G.kills/8)+15*(G.bossK||0)+(ending?60:0));MT.ap+=n;saveMeta();return n}
+let DIFF=store.get('amj_diff','norm');const hard=()=>G.diff==='hard';
+function award(ending){const n=Math.round((10*(G.act-1)+2*G.room+Math.floor(G.kills/8)+15*(G.bossK||0)+(ending?60:0))*(hard()?2:1));MT.ap+=n;saveMeta();return n}
 function apHtml(n){return `<div class="bond got">获得掌声 ✦${n}<br><span>共 ✦${MT.ap}，可在标题页「后台」使用</span></div>`}
 function applyMeta(){const m=G.mods;m.maxHp+=10*ml('hp');m.shMax+=8*ml('sh');m.melee+=.05*ml('dmg');m.ranged+=.05*ml('dmg');m.shop*=1-.08*ml('shop');m.dashCd*=1-.1*ml('dash');m.revive+=ml('ave')}
 function nCh(){return 3+ml('pick')}
@@ -1210,7 +1220,9 @@ function spawnBoss(ov){const b=ov||(G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-
   const e={t:'boss',phase:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   if(b.spr==='blank'){e.sc=1.3;e.y=TOP+92;e.r=20}
   if(b.spr==='audience'){e.sc=1.5;e.y=TOP+86;e.r=26}
-  G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name);later(1.6,()=>toast(b.spr==='audience'?'「再来一首。再来一首。永远，再来一首。」':b.spr==='blank'?'「欢迎来到后台。这里没有观众，所以也没有结局。」':BTAUNT[G.act-1]))}
+  if(b.spr==='refl'){e.y=TOP+120;e.r=12}
+  e.maxPh=FINAL[b.spr]?5:2;e.baseHp=e.mhp;e.amb=2;
+  G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name);later(1.6,()=>toast(b.spr==='refl'?'「把面具交给我。我替你，做回原来的自己。」':b.spr==='audience'?'「再来一首。再来一首。永远，再来一首。」':b.spr==='blank'?'「欢迎来到后台。这里没有观众，所以也没有结局。」':BTAUNT[G.act-1]))}
 function mjHp(f,hm){return BOSSES[4].hp*.45*hm*(1+.15*(f-1))*5}
 function mjBar(e){const f=MJF[e.form-1],d=G.mjDeb?MJDEB[G.mjDeb-1]:null;$('bossName').innerHTML=`Mujica · ${f.name}<small>形态 ${e.form} / 5${d?` · ${d.n}：${d.d}`:''}</small>`;hudCache.bf=null}
 function spawnMujica(hm){const b=BOSSES[4],hp=mjHp(1,hm);G.espd=1;
@@ -1325,10 +1337,17 @@ function updRhythm(dt){const bi=Math.floor(beatPos());
   G.beatGlow=Math.max(0,(G.beatGlow||0)-dt*3)}
 /* boss second phase */
 const P2LINE=['「烛火不够亮？那就把整座大厅都点燃吧！」','「孩子们，一起来，把她撕成碎片！」','「为什么……为什么你们都要离开我——！」','「大地啊，把她拖进根里去。」'],P2COL=['#ff7a2a','#b080ff','#4fb0ff','#7ae05a'];
-function bossP2(e){e.trans=1;e.phase=2;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
-  e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;
-  later(.8,()=>playCut(cutBossP2(G.act,e),()=>{e.mhp*=2;e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.4;$('bossName').innerHTML=`${e.boss.name}<small>第二乐章</small>`;hudCache.bf=null}))}
-function p2col(e){return e.boss.spr==='audience'?'#ffd27a':e.boss.spr==='blank'?'#e8e4f0':P2COL[(G.act-1)%4]}
+function bossP2(e){e.trans=1;const np=e.phase+1;e.phase=np;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
+  e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;const fin=FINAL[e.boss.spr];
+  later(.8,()=>playCut(fin?cutBossPhase(e,np):cutBossP2(G.act,e),()=>{e.mhp=e.baseHp*PHM[np-1];e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.4;if(fin){G.espd=1+.08*(np-1);if(np===5)e.sc*=1.12;if(np>=4)setTrack('mj5')}
+    $('bossName').innerHTML=`${e.boss.name}<small>${PHN[np-1]}${fin?` · 阶段 ${np} / 5`:''}</small>`;hudCache.bf=null}))}
+function bossActor(b,o){return b.spr==='refl'?{k:'ch',id:ch().id,face:-1,filt:'refl',...o,sc:(o.sc||2)*.75}:{k:'spr',name:b.spr,...o,sc:b.spr==='blank'?(o.sc||2)*.7:b.spr==='audience'?(o.sc||2):(o.sc||2)}}
+function cutBossPhase(e,p){const b=e.boss,cx=VW/2,fy=VH*.82,col=PHC[b.spr][p-2],line=PHL[b.spr][p-2],sh=[
+  {d:2.6,bg:'void',shake:1.2+.3*p,actors:[bossActor(b,{x:cx,y:fy,sc:2.4,shake:1.5})],sub:{who:b.name,text:['','','「……」','「还……没有……」','「不——」'][p-1]||'「……」'}},
+  {d:3.6,bg:'void',flash:.6,z0:1.1,z1:1.3,init:()=>cutBurst(cx,fy-50,60+p*15,[col,'#fff',GOLD],120+p*10),actors:[bossActor(b,{x:cx,y:fy,sc:2.6,aura:col})],sub:{who:b.name,text:line}}];
+  if(p>=3)sh.push({d:2.6,bg:'void',fadeOut:1,actors:[bossActor(b,{x:cx,y:fy,sc:2.6+.15*(p-3),aura:col,shake:p===5?2:0})],sub:{text:`—— ${PHN[p-1]} ——`}});
+  else sh[1].fadeOut=1;return sh}
+function p2col(e){const c=PHC[e.boss.spr];return c?c[Math.max(0,(e.phase||2)-2)]:P2COL[(G.act-1)%4]}
 function cutBossP2(act,e){const b=e.boss,cx=VW/2,fy=VH*.8,col=p2col(e);return[
   {d:2.6,bg:'room',shake:1.6,actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.spr==='blank'?1.7:2.4,shake:1.5}],sub:{who:b.name,text:'「……还没完。」'}},
   {d:3.6,bg:'room',flash:.6,z0:1.12,z1:1.3,fadeOut:1,init:()=>cutBurst(cx,fy-50,70,[col,'#fff',GOLD],130),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.spr==='blank'?1.8:2.6,aura:col}],sub:{who:b.name,text:b.spr==='audience'?'「安可！安可！安可！」':b.spr==='blank'?'「这一页，不在剧本里。」':P2LINE[(act-1)%4]}}]}
@@ -1405,7 +1424,7 @@ function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0)||e.trans)return;const m=G.
   if(mod&&!o.dot){if(m.burn){e.burnT=3;e.burnD=3*m.burn*SCL[G.act-1]}if(m.slow)e.slowT=2}
   if(P.frenzy>0&&o.melee&&mod)P.hp=Math.min(P.maxHp,P.hp+.6);
   if(e.hp<=0&&e.mj&&e.form<5){e.hp=1;mjNext(e);return}
-  if(e.hp<=0&&e.boss&&!e.mj&&e.phase===1){e.hp=1;bossP2(e);return}
+  if(e.hp<=0&&e.boss&&!e.mj&&e.phase<(e.maxPh||2)){e.hp=1;bossP2(e);return}
   if(e.hp<=0)killEnemy(e)}
 function tickStatus(e,dt){if(e.slowT>0)e.slowT-=dt;if(e.burnT>0){e.burnT-=dt;e.btk=(e.btk||0)-dt;if(e.btk<=0){e.btk=.5;if(Math.random()<.7)G.parts.push({x:e.x+rnd(-4,4),y:e.y-10,vx:0,vy:-25,life:.4,max:.4,col:'#ff9a3a',sz:1});hurtEnemy(e,e.burnD*.5,{noMod:1,dot:1})}}}
 function onProjHit(b,e){const m=G.mods,cur=Math.atan2(b.vy,b.vx);if(!b.child)feverAdd(b.pf?1.6:1);
@@ -1424,7 +1443,7 @@ function killEnemy(e){e.dead=1;G.kills++;if(e.boss)G.bossK=(G.bossK||0)+1;if(!e.
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.inv>0||P.dashT>0||G.state!=='play')return;const m=G.mods;
   if(m.evade&&Math.random()<.15*m.evade){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'MISS',t:0,heal:1});return}
-  if(G.feverT>0)dmg*=.5;dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
+  if(hard())dmg*=1.5;if(G.feverT>0)dmg*=.5;dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
   if(P.sh>0){const ab=Math.min(P.sh,dmg);P.sh-=ab;dmg-=ab;burst(P.x,P.y-14,8,['#9fd4ff','#fff'],60,.35);
     if(P.sh<=.01){P.sh=0;S.p('shbreak');G.nums.push({x:P.x,y:P.y-34,v:'BREAK',t:0,shb:1});if(m.shBreak){aoe(P.x,P.y-6,52,40*m.shBreak,'#9fd4ff');for(const e of G.en)if(!e.dead&&!e.boss&&d2(e,P)<52*52){const a=Math.atan2(e.y-P.y,e.x-P.x);e.kx+=Math.cos(a)*160;e.ky+=Math.sin(a)*160}}}
     if(dmg<=.01){P.inv=.45*m.inv;P.hurtT=.1;S.p('shield');return}}
@@ -1516,13 +1535,14 @@ function updEnemy(e,dt){if(e.boss)return updBoss(e,dt);
 function eshoot(x,y,a,spd,o={}){spd*=((G.mods&&G.mods.ebSlow)||1)*(G.espd||1);G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||(6+G.act*2.6),t:0,k:o.k||'orb',life:o.life||6,col:o.col,split:o.split});S.p('eshot')}
 function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;if(e.mj){updHands(e,dt);e.castT=Math.max(0,(e.castT||0)-dt)}
   if(e.intro>0){e.intro-=dt;return}if(e.trans)return;
+  if(!e.mj&&FINAL[b.spr]&&e.phase>=3&&!CUT.on){e.amb-=dt;if(e.amb<=0){e.amb=Math.max(.3,1.2-.2*e.phase);const a=Math.atan2(P.y-8-(e.y-30),P.x-e.x),n=1+e.phase;for(let i=0;i<n;i++)eshoot(e.x,e.y-30,a+(i-(n-1)/2)*.14,95,{dmg:6+G.act*2.9,col:p2col(e)})}}
   if(e.mj&&!CUT.on){e.amb-=dt;if(e.amb<=0){e.amb=Math.max(.3,1.05-.15*e.form);const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:6+G.act*2.9,col:MJF[e.form-1].col})}}
   const ph2=e.mj?(e.form>=3||e.hp<e.mhp*.5):e.phase===2;if(ph2&&!e.ph2){e.ph2=1;shake(6);G.eb.forEach(x=>x.dead=1)}
   if(e.dashT>0){e.dashT-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(b.spr==='queen'&&Math.random()<dt*20)eshoot(e.x,e.y-10,rnd(TAU),30,{k:'feather'});bound(e)}
   else if(e.busy>0){e.busy-=dt}
   else{const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1;
     if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62);if(e.mj)e.y=Math.max(e.y,TOP+118)}
-    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];if(e.mj)e.castT=.5;e.busy=pattern(e,p,ph2)*(e.mj?.55:ph2?.55:1);e.stT=e.mj?.12:ph2?.15:1}}
+    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];if(e.mj)e.castT=.5;e.busy=pattern(e,p,ph2)*(e.mj?.55:e.phase>=3?.45:ph2?.55:1);e.stT=e.mj?.12:e.phase>=3?.08:ph2?.15:1}}
   bound(e);if(e.mj)e.y=Math.max(e.y,TOP+118);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
 function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-(e.mj?55:12);
@@ -1576,7 +1596,7 @@ function updPick(p,dt){p.t+=dt;
   p.x+=(p.vx||0)*dt;p.y+=(p.vy||0)*dt;p.vx*=.9;p.vy*=.9;
   const dd=d2(p,P),mr=48*G.mods.magnet;if(p.t>.35&&dd<mr*mr){const d=Math.sqrt(dd)||1,s=170;p.x+=(P.x-p.x)/d*s*dt;p.y+=(P.y-6-p.y)/d*s*dt}
   if(p.k==='page'){if(dd<12*12){p.dead=1;S.p('pick');burst(p.x,p.y-6,14,[GOLD,'#f6e8c8'],60,.5);qProg('pages')}return}
-  if(p.t>.35&&dd<9*9){p.dead=1;if(p.k==='petal'){G.petals+=G.mods.petal;S.p('petal');if(G.mods.petalHeal&&Math.random()<.1*G.mods.petalHeal)P.hp=Math.min(P.maxHp,P.hp+2)}else if(p.k==='hp'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.12);S.p('heal');G.nums.push({x:P.x,y:P.y-30,v:'+HP',t:0,heal:1})}}
+  if(p.t>.35&&dd<9*9){p.dead=1;if(p.k==='petal'){G.petals+=G.mods.petal*(hard()?.5:1);S.p('petal');if(G.mods.petalHeal&&Math.random()<.1*G.mods.petalHeal)P.hp=Math.min(P.maxHp,P.hp+2)}else if(p.k==='hp'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.12);S.p('heal');G.nums.push({x:P.x,y:P.y-30,v:'+HP',t:0,heal:1})}}
   if(p.t>25)p.dead=1}
 function updAmb(dt){const k=G.state==='play'?ACTS[G.act-1].amb:'petal';if(G.amb.length<34&&Math.random()<dt*14){
     const vw=G.state==='play'?RW:VW,vh=G.state==='play'?RH:VH;
@@ -1594,6 +1614,7 @@ function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');if(G.mods.roo
   if(type==='elite')dropRelic(RW/2,RH/2+20,.35);
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
     if(G.act>=5){
+      if(G.reflOn){later(1.6,()=>playCut(cutEndingC(),()=>winGame('c')));return}
       if(G.route==='b'&&ml('score')&&!G.audDone){G.audDone=1;later(1.6,()=>playCut(cutAudienceIn(),()=>{G.cleared=false;G.bossSpawned=0;setTrack('mj5');spawnBoss(BOSSD)}));return}
       if(G.audDone){later(1.6,()=>playCut(cutEndingD(),()=>winGame('d')));return}
       if(G.route==='b'){later(1.6,()=>playCut(cutEndingB(),()=>winGame('b')));return}
@@ -1726,8 +1747,8 @@ function showRest(){openModal('rest',`<h3>化妆间</h3><p class="sub">镜前的
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{if(b.dataset.a==='heal'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.45);S.p('heal');closeModal();G.cleared=true;openDoors()}
     else{closeModal();const cs=rollUps(nCh(),1);openModal('reward',`<h3>排练</h3><p class="sub">重复，直到身体记住。</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
       panel.querySelectorAll('.card').forEach(c=>c.onclick=()=>{applyUp(cs[+c.dataset.i]);closeModal();G.cleared=true;openDoors()})}})}
-function showShop(){const ups=rollUps(3,0,.2);const price=u=>Math.round([28,48,80][u.r]*(1+(G.act-1)*.15)*G.mods.shop);
-  const items=[{k:'heal',n:'温热的红茶',d:'回复 35% 生命',ic:'☕',p:Math.round(22*(1+(G.act-1)*.15)*G.mods.shop),r:0},{k:'shield',n:'备用假面',d:'立即回满护盾，最大护盾永久 +10',ic:'◈',p:30,r:0},...ups.map(u=>({k:'up',u,n:u.n,d:u.d,ic:u.ic,p:price(u),r:u.r}))];
+function showShop(){const ups=rollUps(3,0,.2);const hm2=hard()?1.25:1,price=u=>Math.round([28,48,80][u.r]*(1+(G.act-1)*.15)*G.mods.shop*hm2);
+  const items=[{k:'heal',n:'温热的红茶',d:'回复 35% 生命',ic:'☕',p:Math.round(22*(1+(G.act-1)*.15)*G.mods.shop*hm2),r:0},{k:'shield',n:'备用假面',d:'立即回满护盾，最大护盾永久 +10',ic:'◈',p:Math.round(30*hm2),r:0},...ups.map(u=>({k:'up',u,n:u.n,d:u.d,ic:u.ic,p:price(u),r:u.r}))];
   const render=()=>{panel.innerHTML=`<h3>后台商店</h3><p class="sub">无面的人台低声报价。花瓣：<b style="color:#f6b2c0">✿ ${Math.floor(G.petals)}</b></p><div class="cards">${items.map((it,i)=>`<button class="card r${it.r}" data-i="${i}" ${it.sold||G.petals<it.p?'disabled':''}>${it.u?upIc(it.u):`<span class="ic">${it.ic}</span>`}<b>${it.n} <span class="price">${it.sold?'已售':'✿'+it.p}</span></b><span class="d">${it.d}</span></button>`).join('')}</div><div class="row"><button class="ghost" id="leave">离开后台</button></div>`;
     panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const it=items[+b.dataset.i];if(it.sold||G.petals<it.p)return;G.petals-=it.p;it.sold=1;
       if(it.k==='heal'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.35);S.p('heal')}else if(it.k==='shield'){G.mods.shMax+=10;stats();P.sh=P.shMax;S.p('shield')}else applyUp(it.u);render()});
@@ -1747,8 +1768,8 @@ function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).m
 function mjChoice(){openModal('choice',`<h3>碎片的低语</h3><p class="sub">Mujica 碎了。碎片却没有落地，而是悬在你面前，拼成了一张完整的假面。<br>「戴上它吧。这样，就再也不会失去任何人了。」</p><div class="cards">
   <button class="card r2" data-a="c"><span class="ic">◈</span><b>戴上假面</b><span class="d">成为新的假面之主</span></button>
   <button class="card r0" data-a="a"><span class="ic">✂</span><b>剪断丝线</b><span class="d">让演出就此落幕</span></button></div>`);
-  panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{closeModal();b.dataset.a==='c'?playCut(cutEndingC(),()=>winGame('c')):playCut(cutEnding(),()=>winGame('a'))})}
-function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `<div class="summary"><div><b>${G.act}</b>到达章节</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
+  panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{closeModal();b.dataset.a==='c'?playCut(cutReflIn(),()=>{G.reflOn=1;G.cleared=false;G.bossSpawned=0;setTrack('mj4');spawnBoss(BOSSC)}):playCut(cutEnding(),()=>winGame('a'))})}
+function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `${hard()?'<div class="bond" style="color:#ffb3c0;border-color:#9b1b30">困难模式 · 掌声 ×2</div>':''}<div class="summary"><div><b>${G.act}</b>到达章节</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
 function gameOver(){feverReset();G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
   const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线断了。<br>「${ch().motto}」</p>${apHtml(apn)}${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
@@ -1779,7 +1800,7 @@ function updHud(){setH('hpTxt',`${Math.ceil(P.hp)}/${P.maxHp}`);const f=$('hpFil
   const sc=P.skillCd>0?(P.skillCd/(P.skillMax||1)).toFixed(2):'0';if(hudCache.sk!==sc){hudCache.sk=sc;$('bSkill').style.setProperty('--cd',sc);$('bSkill').classList.toggle('ready',sc==='0')}
   const dc=P.dch>=1?'0':(1-P.dch).toFixed(2);if(hudCache.dc!==dc){hudCache.dc=dc;$('bDash').style.setProperty('--cd',dc)}
   if(G.boss&&!G.boss.dead){const bf=(Math.max(0,G.boss.hp)/G.boss.mhp).toFixed(3);if(hudCache.bf!==bf){hudCache.bf=bf;$('bossFill').style.transform=`scaleX(${bf})`}}}
-function updStage(){const a=ACTS[G.act-1];setH('stage',`第${CN[G.act-1]}章 · ${a.name} · ${G.type==='trial'?'试炼':'第'+CN[(G.type==='boss'?5:G.room)-1]+'节'}`)}
+function updStage(){const a=ACTS[G.act-1];setH('stage',`${hard()?'【困难】':''}第${CN[G.act-1]}章 · ${a.name} · ${G.type==='trial'?'试炼':'第'+CN[(G.type==='boss'?5:G.room)-1]+'节'}`)}
 
 /* =================================================================== screens */
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
@@ -1794,7 +1815,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   const lk=!isUnl(c.id);if(lk){$('sAbil').innerHTML=`<li class="lockrow"><b>未解锁</b><span>解锁条件：${UNLOCKREQ[c.id]}</span></li>`;$('sMotto').textContent='「……」'}
   $('go').disabled=lk;$('go').textContent=lk?'未 解 锁':'登 台';
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
-function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i){auInit();G.charIdx=i;G.diff=DIFF;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   Object.assign(P,{hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});applyMeta();stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.petals+=25*ml('pet');G.rareGot=null;if(ml('rare')){const u=pick(UPS.filter(x=>x.r===1&&!x.rep));applyUp(u);G.rareGot=u.n}
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=!isTouch&&!GP.seen;$('stickZone').hidden=!isTouch||!!GP.seen;$('gpLegend').hidden=!GP.seen;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
@@ -1802,6 +1823,9 @@ function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.route=null;applyRou
   G.zones=[];G.bg=buildBg();playCut(cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>{enterRoom('combat');if(G.rareGot)later(1.2,()=>toast('试音 · 获得「'+G.rareGot+'」'))}))}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
 $('meta').onclick=()=>{auInit();showMeta()};
+function setDiff(d){DIFF=d;store.set('amj_diff',d);$('dN').classList.toggle('on',d==='norm');$('dH').classList.toggle('on',d==='hard');
+  $('dTxt').textContent=d==='hard'?'花瓣掉落 -50% · 商店价格 +25% · 敌人伤害 +50% · 掌声 ×2':'标准体验'}
+$('dN').onclick=()=>{S.p('tick');setDiff('norm')};$('dH').onclick=()=>{S.p('tick');setDiff('hard')};setDiff(DIFF);
 function showMeta(){const end=best.endings||{};const ups=META.map(m=>{const l=ml(m.id),mx=l>=m.max,lk=m.req&&!m.req(),cost=mcost(m),can=!mx&&!lk&&MT.ap>=cost;
     return `<button class="card ${mx?'r2':'r1'}" data-id="${m.id}" ${can?'':'disabled'}><span class="ic">${m.ic}</span><b>${m.n} <span class="price">${mx?'已满':lk?'未开放':'✦'+cost}</span></b><span class="d">${m.d}　${'●'.repeat(l)}${'○'.repeat(m.max-l)}${lk?'<br>'+m.rq:''}</span></button>`}).join('');
   const eg=Object.keys(ENDS).map(k=>`<li class="${end[k]?'done':''}"><b>${end[k]?ENDS[k].t:'？？？'}</b><small>${end[k]?'已达成':'提示：'+ENDS[k].h}</small></li>`).join('');
@@ -1840,7 +1864,8 @@ function cutActor(a,t,sh){const dl=a.delay||0,dur=Math.max(.01,(a.dur||sh.d)-dl)
   if(a.k==='ch'){const fr=ART.fr[a.id];let an=a.anim||'idle';if(a.animEnd&&p>=1)an=a.animEnd;let c;
     if(fr){const arr=fr[an]||fr.idle,once=['death','skill','hurt','melee'].includes(an);c=arr[once?Math.min(arr.length-1,Math.floor(t*7)):Math.floor(t*(an==='run'?10:5))%arr.length]}else c=SPR['ch_'+a.id].f[0];
     if(a.strings){ctx.strokeStyle='rgba(230,220,210,.6)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-7,0,7]){ctx.moveTo(x+dx*sc*.7,y-26*sc);ctx.lineTo(x+dx*.5,-20)}ctx.stroke()}
-    shadow(x,y+1,7*sc);drawSpr(c,x,y+2*sc,a.face||1,null,(fr?.5:1)*sc)}
+    if(a.aura){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=al*(.7+.2*Math.sin(t*8));const r=30*sc;ctx.drawImage(glow(a.aura),x-r,y-18*sc-r,r*2,r*2);ctx.restore();ctx.globalAlpha=al}
+    shadow(x,y+1,7*sc);if(a.filt==='refl')ctx.filter='grayscale(1) brightness(1.35) contrast(1.1)';drawSpr(c,x+(a.shake?rnd(-1,1)*a.shake:0),y+2*sc,a.face||1,null,(fr?.5:1)*sc);ctx.filter='none'}
   else if(a.k==='spr'){const sp=SPR[a.name],c=sp.f[Math.floor(t*4)%sp.f.length],sx=a.shake?rnd(-1,1)*a.shake:0,h=c.height*sc;
     if(a.aura){ctx.save();ctx.globalCompositeOperation='lighter';const pu=.85+.15*Math.sin(t*8),g=glow(a.aura);ctx.globalAlpha=al*pu;let r=h*1.35;ctx.drawImage(g,x-r,y-h*.5-r,r*2,r*2);ctx.drawImage(g,x-r,y-h*.5-r,r*2,r*2);r=h*.7;ctx.drawImage(glow('#ffffff'),x-r,y-h*.5-r,r*2,r*2);ctx.globalAlpha=al*.7*pu;ctx.strokeStyle=a.aura;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y,h*.6+Math.sin(t*6)*3,h*.18,0,0,TAU);ctx.stroke();ctx.restore()}
     if(a.strings&&!(a.cutStrings&&t>a.cutStrings)){ctx.strokeStyle='rgba(230,220,210,.6)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-8,0,8]){ctx.moveTo(x+dx,y-h*.6);ctx.lineTo(x+dx*.4,-20)}ctx.stroke()}
@@ -1909,9 +1934,14 @@ function cutEndingB(){const me=ch().id,cx=VW/2,fy=VH*.74,all=[me,...G.allies.map
   {d:4,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.66,w:200,alpha:.9,a1:0,dur:3.6},...row({})],sub:{text:'Mujica 身上的丝线一根根断开。她最后看了你们一眼，像是第一次看见了观众。'}},
   {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'没有剧本，也没有观众。五个人摘下了面具，又一次，亲手把它戴上。'}},
   {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'Ave Mujica。这一次，是我们自己选择的演出。'}}]}
-function cutEndingC(){const me=ch().id,cx=VW/2,fy=VH*.76,al=G.allies.map(a=>a.id),row=al.map((id,i)=>({k:'ch',id,x:cx+(i<2?-1:1)*(50+(i%2)*36),y:fy+6,face:i<2?1:-1,sc:1.2,strings:1,anim:'idle'}));return[
+function cutReflIn(){const me=ch().id,cx=VW/2,fy=VH*.76;return[
   {d:3.2,bg:'stage',fadeIn:1,sfx:'shbreak',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'面具碎了。碎片却没有落地。'}},
-  {d:3.8,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx,y:VH*.25,y1:fy-34,sc:3,dur:3.2}],sub:{who:'？？？',text:'「戴上它吧。这样，就再也不会失去任何人了。」'}},
+  {d:3.8,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx-40,y:VH*.25,y1:fy-50,sc:3,dur:3.2}],sub:{who:'？？？',text:'「戴上它吧。这样，就再也不会失去任何人了。」'}},
+  {d:3.8,bg:'void',flash:.4,actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx-40,y:fy-50,sc:3},{k:'ch',id:me,x:cx+90,x1:cx+50,y:fy,face:-1,sc:1.6,filt:'refl',alpha:0,a1:1,dur:1.6,aura:'#d8c0ff'}],sub:{who:'镜中的你',text:'「等一下。」碎片里走出了没有戴面具的你。「我不要成为她。」'}},
+  {d:2.6,bg:'void',fadeOut:1,actors:[{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.9,filt:'refl',aura:'#d8c0ff',anim:'skill'}],sub:{text:'—— 最后的对手，是你自己 ——'}}]}
+function cutEndingC(){const me=ch().id,cx=VW/2,fy=VH*.76,al=G.allies.map(a=>a.id),row=al.map((id,i)=>({k:'ch',id,x:cx+(i<2?-1:1)*(50+(i%2)*36),y:fy+6,face:i<2?1:-1,sc:1.2,strings:1,anim:'idle'}));return[
+  {d:3.4,bg:'void',fadeIn:1,sfx:'bossdie',actors:[{k:'ch',id:me,x:cx,y:fy,face:-1,sc:1.9,filt:'refl',alpha:1,a1:0,dur:2.6,anim:'death'}],sub:{who:'镜中的你',text:'「……你会后悔的。可我，已经没办法替你哭了。」'}},
+  {d:3.4,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx,y:VH*.25,y1:fy-34,sc:3,dur:2.8}],sub:{text:'再也没有人阻止你了。'}},
   {d:4,bg:'stage',flash:.5,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row],sub:{text:'你戴上了假面。丝线从你的指尖垂下，系在了她们的手腕上。'}},
   {d:4.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row,{k:'curtain'}],sub:{text:'掌声响起。新的 Ave Mujica 开演了。这一次，没有人会离开。也没有人能离开。'}}]}
 function cutAudienceIn(){const cx=VW/2;return[
@@ -1948,7 +1978,7 @@ function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastD
 function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
   if(G.state==='title'||G.state==='select'){drawTitleScene();return}
   if(!G.bg)return;
-  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-(fb.mj?72:fb.boss.spr==='blank'?44:0)-P.y)*(fb.mj?.75:fb.boss.spr==='blank'?.68:.5):0);G.lkx=(G.lkx||0)+((IN.aimA!=null?Math.cos(IN.aimA)*46:0)-(G.lkx||0))*.12;G.lky=(G.lky||0)+((IN.aimA!=null?Math.sin(IN.aimA)*30:0)-(G.lky||0))*.12;cam.x=RW>VW?clamp(tx+G.lkx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty+G.lky,-20,RH-VH+20):(RH-VH)/2;
+  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-(fb.mj?72:fb.boss.spr==='blank'||fb.boss.spr==='audience'?44:fb.boss.spr==='refl'?30:0)-P.y)*(fb.mj?.75:fb.boss.spr==='blank'||fb.boss.spr==='audience'?.68:.5):0);G.lkx=(G.lkx||0)+((IN.aimA!=null?Math.cos(IN.aimA)*46:0)-(G.lkx||0))*.12;G.lky=(G.lky||0)+((IN.aimA!=null?Math.sin(IN.aimA)*30:0)-(G.lky||0))*.12;cam.x=RW>VW?clamp(tx+G.lkx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty+G.lky,-20,RH-VH+20):(RH-VH)/2;
   const sx=G.shake?rnd(-G.shake,G.shake)*.3:0,sy=G.shake?rnd(-G.shake,G.shake)*.3:0;
   ctx.setTransform(SC,0,0,SC,Math.round((-cam.x+sx)*SC),Math.round((-cam.y+sy)*SC));
   ctx.drawImage(G.bg,0,0,RW,RH);
@@ -1994,7 +2024,11 @@ function drawPlayer(t){const art=!!ART.fr[ch().id];if(G.state==='dead'&&!art)ret
   drawSpr(pf.c,P.x,P.y+pf.dy,P.face,null,pf.sc);
   if(art&&P.hurtT>.15&&G.state!=='dead'){ctx.globalAlpha=.5;drawSpr(pFrame(true).c,P.x,P.y+pf.dy,P.face,null,pf.sc);ctx.globalAlpha=1}
   if(G.mods&&G.mods.orbit&&G.state!=='dead')for(let i=0;i<G.mods.orbit;i++){const a=P.orA+i/G.mods.orbit*TAU;ctx.drawImage(SPR.cross,Math.round(P.x+Math.cos(a)*24-2),Math.round(P.y-6+Math.sin(a)*24-3))}}
-function drawEnemy(e,t){if(e.mj){drawMj(e,t);return}if(e.shade){const fr=ART.fr[ch().id];shadow(e.x,e.y,8);ctx.globalAlpha=.3+.1*Math.sin(t*4);ctx.fillStyle='#6a3a9a';ctx.beginPath();ctx.arc(e.x,e.y-16,16,0,TAU);ctx.fill();ctx.globalAlpha=1;
+function drawEnemy(e,t){if(e.mj){drawMj(e,t);return}
+  if(e.boss&&e.boss.spr==='refl'){const fr=ART.fr[ch().id],S2=1.5*(e.phase===5?1.12:1);shadow(e.x,e.y,10*S2);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4+.2*Math.sin(t*5);const gr=26*S2;ctx.drawImage(glow(p2col(e)),e.x-gr,e.y-20*S2-gr,gr*2,gr*2);ctx.restore();
+    ctx.filter='grayscale(1) brightness(1.35) contrast(1.1)';const an=e.dashT>0?fr&&fr.dash:e.busy>0?fr&&fr.ranged:fr&&fr.idle;if(fr)drawSpr(an[Math.floor(t*7)%an.length],e.x,e.y+2,P.x<e.x?-1:1,null,.5*S2);ctx.filter='none';
+    if(e.fl>0&&fr){ctx.globalAlpha=.45;drawSpr(ART.wh[ch().id].idle[0],e.x,e.y+2,P.x<e.x?-1:1,null,.5*S2);ctx.globalAlpha=1}
+    for(const s2 of[-1,1]){ctx.fillStyle='#e0283c';ctx.fillRect(Math.round(e.x+s2*3*S2),Math.round(e.y-27*S2),1.5,1.5)}return}if(e.shade){const fr=ART.fr[ch().id];shadow(e.x,e.y,8);ctx.globalAlpha=.3+.1*Math.sin(t*4);ctx.fillStyle='#6a3a9a';ctx.beginPath();ctx.arc(e.x,e.y-16,16,0,TAU);ctx.fill();ctx.globalAlpha=1;
     ctx.filter='brightness(.3) saturate(.4)';if(fr){const a=Math.hypot(e.kx,e.ky)>5?fr.hurt:fr.ranged;drawSpr(a[Math.floor(t*6)%a.length],e.x,e.y+2,e.face,null,.5)}else drawSpr(SPR['ch_'+ch().id].f[0],e.x,e.y+1,e.face);ctx.filter='none';
     if(e.fl>0){ctx.globalAlpha=.5;drawSpr(fr?ART.wh[ch().id].idle[0]:SPR['ch_'+ch().id].w[0],e.x,e.y+(fr?2:1),e.face,null,fr?.5:1);ctx.globalAlpha=1}
     const w=24;ctx.fillStyle='#000';ctx.fillRect(Math.round(e.x-w/2)-1,Math.round(e.y-40)-1,w+2,3);ctx.fillStyle='#a070e0';ctx.fillRect(Math.round(e.x-w/2),Math.round(e.y-40),Math.max(0,Math.round(w*e.hp/e.mhp)),1);return}
