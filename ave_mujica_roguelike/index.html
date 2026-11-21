@@ -16,6 +16,7 @@ html,body{height:100%;margin:0;background:var(--ink);color:var(--bone);overflow:
   touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent;font-family:var(--f-body)}
 #game{position:fixed;inset:0;touch-action:none}
 #cv{width:100%;height:100%;display:block;image-rendering:pixelated}
+#game.ots #pad,#game.ots #stickZone,#game.ots #secBanner,#game.ots #quests,#game.ots #hint,#game.ots #toast{display:none!important}
 #vig,#tint{position:absolute;inset:0;pointer-events:none}
 #vig{background:radial-gradient(ellipse 80% 90% at 50% 50%,rgba(5,2,8,0) 50%,rgba(5,2,8,.55) 100%)}
 #game:not(.playing) #vig{display:none}
@@ -300,7 +301,7 @@ body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow
     <div class="t-eyebrow">Welcome to the world of</div>
     <h1 class="t-logo">Ave Mujica</h1>
     <div class="t-sub">假面回廊</div>
-    <p class="t-line">五具人偶，五张假面。悲伤、死亡、恐惧、爱、忘却。<br>穿过五章回廊，救出被囚禁的同伴，直到终幕落下。</p>
+    <p class="t-line">五具人偶，五张假面。悲伤、死亡、恐惧、爱、忘却。<br>在帷幕落下之前，去把彼此找回来。</p>
     <button class="cta" id="start">开 演</button>
     <button class="ghost" id="meta">后台 · 局外成长</button>
     <div class="t-best" id="best"></div>
@@ -773,15 +774,15 @@ const EN={
   knight:{hp:72,spd:22,r:8,dmg:15,petals:[3,5],ai:'slammer',spr:'knight',cost:3,h:25}
 };
 const ACTS=[
-  {n:'I',name:'烛火之厅',el:'火',sym:'fire',poem:'烛火摇曳，灰烬里的人偶仍在起舞。\n悲伤是燃料，那就燃烧吧。',pool:['mari','mari','mask','rose'],amb:'ember',
+  {n:'I',name:'烛火之厅',el:'火',sym:'fire',poem:'烛火是悲伤唯一会说的语言。\n它们燃烧，不为照亮谁，只为证明自己还没有熄灭。',pool:['mari','mari','mask','rose'],amb:'ember',
    pal:{fa:'#2a1416',fb:'#341b1c',wall:'#1a0e10',brick:'#24131a',glass:['#c8402a','#e8a040','#7a1a20'],carpet:'#5e1220',eb:'#ff8a3a'}},
-  {n:'II',name:'鸦羽回廊',el:'风',sym:'air',poem:'风穿过破碎的彩窗，带来黑色的羽毛。\n不要回头，回头便会被遗忘。',pool:['mari','crow','crow','mask'],amb:'feather',
+  {n:'II',name:'鸦羽回廊',el:'风',sym:'air',poem:'羽毛落下的声音，比告别还轻。\n回廊尽头的风，一直在念同一个名字。',pool:['mari','crow','crow','mask'],amb:'feather',
    pal:{fa:'#1c1e26',fb:'#242833',wall:'#12141a',brick:'#1a1d26',glass:['#7a8ab0','#c8d0e0','#4a3a6a'],carpet:'#33263f',eb:'#c6a8ff'}},
-  {n:'III',name:'泪之水底',el:'水',sym:'water',poem:'沉入泪水的深处，连呼吸都成了旋律。\n恐惧也好，就让它成为低音。',pool:['mask','rose','crow','mari'],amb:'bubble',
+  {n:'III',name:'泪之水底',el:'水',sym:'water',poem:'泪水沉到最深处，就成了海。\n在这里，连恐惧也会慢慢变得温柔。',pool:['mask','rose','crow','mari'],amb:'bubble',
    pal:{fa:'#0e1a2a',fb:'#132337',wall:'#0a1220',brick:'#0f1b2c',glass:['#3a7ac8','#80c0e8','#1a3a6a'],carpet:'#183050',eb:'#6ac8ff'}},
-  {n:'IV',name:'荆棘庭园',el:'地',sym:'earth',poem:'荆棘缠绕王座，玫瑰以爱为名刺穿掌心。\n大地记得每一个跌倒的人偶。',pool:['rose','knight','mari','crow'],amb:'leaf',
+  {n:'IV',name:'荆棘庭园',el:'地',sym:'earth',poem:'玫瑰把爱写在刺上。\n每一道伤口，都是一封寄不出去的信。',pool:['rose','knight','mari','crow'],amb:'leaf',
    pal:{fa:'#141e16',fb:'#1b281d',wall:'#0c140e',brick:'#122016',glass:['#4a8a3a','#c8b040','#7a1a20'],carpet:'#3a1a1a',eb:'#9aec6a'}},
-  {n:'V',name:'假面舞台',el:'终幕',sym:'mask',poem:'帷幕升起，观众屏息。\n欢迎来到 Ave Mujica 的世界，直至终焉。',pool:['mari','mask','rose','crow','knight'],amb:'petal',
+  {n:'V',name:'假面舞台',el:'终幕',sym:'mask',poem:'幕布的褶皱里，藏着所有没说出口的话。\nWelcome to the world of Ave Mujica.',pool:['mari','mask','rose','crow','knight'],amb:'petal',
    pal:{fa:'#140c10',fb:'#1e1318',wall:'#0a0608',brick:'#160c10',glass:['#c8a040','#9b1b30','#e8e0d0'],carpet:'#6e0f1e',eb:'#ff4060'}}
 ];
 const BOSSES=[
@@ -794,30 +795,30 @@ const BOSSES=[
 const RAR=['普通','稀有','传说'];
 const CHAP=[
   {feat:{k:'fire',n:'烛焰',d:'战斗中地面会不时喷出火柱，红圈即将爆发'},
-   secs:[['灰烬的入口','门后是一片还在冒烟的灰。有人在这里唱过歌。'],['烛泪长廊','蜡泪顺着墙壁流下，凝成了人偶的形状。'],['燃烧的宴会厅','长桌上的蜡烛从未熄灭，宾客的椅子却全空着。'],['伯爵的书房','书页里夹着一张乐谱的残角，墨迹被火烤焦了。'],['烛台之间','巨大的烛台下，一只铁鸟笼在火光里摇晃。']]},
+   secs:[['灰烬的入口','灰还是温的。有人在这里唱完最后一个音，然后把自己烧成了光。'],['烛泪长廊','蜡泪顺着墙流下，凝成一排低着头的人偶。它们都在等一句原谅。'],['燃烧的宴会厅','长桌上的烛火从未熄灭。空椅子们彬彬有礼地，等着不会再来的客人。'],['伯爵的书房','书页间夹着半张焦黄的乐谱。墨迹被火吻过，只剩一个温热的休止符。'],['烛台之间','巨大的烛台之下，一只铁鸟笼在火光里轻轻摇晃，像一颗不肯停下的心。']]},
   {feat:{k:'wind',n:'强风',d:'强风会周期性吹过，把你和敌人的子弹推向同一个方向'},
-   secs:[['破碎的彩窗','风从彩窗的裂缝里灌进来，吹散了地上的羽毛。'],['羽毛的回旋梯','台阶一圈圈向上，每一级都落着黑色的羽毛。'],['风铃塔','上千个风铃同时响起，听起来像是在哭。'],['无声的鸟笼','鸟笼都空了，只有一只还锁着，钥匙不见了。'],['女王的栖木','黑羽之后在等你。她的翅膀下，藏着一个歌声。']]},
+   secs:[['破碎的彩窗','风从彩窗的裂缝里灌进来，把玻璃上的圣人吹成了一地碎光。'],['羽毛的回旋梯','每一级台阶都落着一根黑羽。数到第一百级时，你忘了自己为什么要上来。'],['风铃塔','上千只风铃同时作响。听久了才发现，它们是在叫人的名字。'],['无声的鸟笼','所有笼门都开着，鸟却一只也没有飞走。只有一只笼子上了锁。'],['女王的栖木','黑羽之后合拢翅膀，像合上一本读完的书。书页里，夹着一个歌声。']]},
   {feat:{k:'water',n:'积水',d:'地上的积水会让你和敌人一起减速'},
-   secs:[['沉没的走廊','水漫过脚踝，冰冷得像一句没说出口的话。'],['泪滴钟乳','钟乳石的尖端挂着泪滴，一滴，又一滴。'],['水镜之厅','水面倒映出的不是你，而是你戴上假面之前的样子。'],['人偶的摇篮','摇篮在水里轻轻晃动，里面躺着一把断了弦的琴。'],['泣泪之间','哭声从水底传来。那里有一个被泪水浸透的笼子。']]},
+   secs:[['沉没的走廊','水漫过脚踝，冷得像一句迟到的道歉。'],['泪滴钟乳','钟乳石尖端悬着泪滴。每落下一滴，水底就多一个回声。'],['水镜之厅','水面映出的不是你，是你第一次戴上假面之前，那张还会哭的脸。'],['人偶的摇篮','摇篮在水中轻晃，里面躺着一把断了弦的琴，像在做一个没有声音的梦。'],['泣泪之间','哭声从更深的地方浮上来。那里有一只被泪水泡软的笼子。']]},
   {feat:{k:'thorn',n:'荆棘丛',d:'站在荆棘丛里会持续受伤，闪避可以安全穿过'},
-   secs:[['枯萎的花门','花门上的玫瑰全枯了，只有刺还活着。'],['荆棘迷径','小路在你身后合拢，回头已经没有路了。'],['玫瑰温室','玻璃房里的玫瑰开得太红，像是喝过血。'],['根之祭坛','树根缠着一具空的人偶躯壳，胸口插着一朵花。'],['荆棘王座','王座上的人没有脸。它的脚边，是被荆棘缠绕的她。']]},
+   secs:[['枯萎的花门','花门上的玫瑰都枯了，只有刺还记得怎样去爱。'],['荆棘迷径','小路在你身后悄悄合拢。原来有些路，只允许往前走。'],['玫瑰温室','玻璃房里的玫瑰红得过分，像是替谁把心事开完了。'],['根之祭坛','树根拥抱着一具空的人偶躯壳，胸口插着一朵还在呼吸的花。'],['荆棘王座','王座上的人没有脸。荆棘替它说话，也替它，把她缠得很紧很紧。']]},
   {feat:{k:'stage',n:'聚光灯',d:'站在聚光灯下伤害 +30%；小心头顶坠落的沙袋'},
-   secs:[['后台通道','走廊尽头传来调音的声音，熟悉的影子们站在你身后。'],['换装间','镜子前摆着五张假面。第六张，是空白的。'],['观众席','座位上坐满了人偶，它们没有脸，却都在鼓掌。'],['舞台侧幕','幕布的缝隙里，能看见舞台中央那张巨大的假面。'],['终幕 · 假面之主','「欢迎，我的人偶们。最后一首歌，就由你们来唱吧。」']]}];
-const BTAUNT=['「迷路的人偶？正好，我的烛台还缺一根蜡烛。」','「嘎……想带走我的歌姬？先问问我的羽翼。」','「不要过来……她是我的，她会陪我一直哭……」','「玫瑰需要养分。你，和笼子里的那个，都一样。」','「来吧。让这场演出，永远不要结束。」'];
-const RESCUE={doloris:'「你来了……我一直在笼子里唱歌，想着总有人会听见。」',mortis:'「……好安静。」她抓住你的衣角，「……一起走。」',timoris:'「来得比预想的晚，不过算你合格。剩下的路，低音交给我。」',
-  amoris:'「得救啦！欠你一次哦。接下来让你见识一下我的鼓点♪」',oblivionis:'「……我以为不会有人来了。」她整理好手套，「走吧，舞台还在等我们。」'};
+   secs:[['后台通道','走廊尽头传来调音声。熟悉的影子们站在你身后，谁也没有开口。'],['换装间','镜前摆着五张假面。第六张是空白的，像一个还没被写出来的名字。'],['观众席','座位上坐满没有脸的人偶。它们鼓掌，鼓得那么认真，像在祈祷。'],['舞台侧幕','从幕布的缝隙望出去，舞台中央悬着一张巨大的假面，正在等你入场。'],['终幕 · 假面之主','「欢迎，我的人偶们。最后一首歌，就由你们来唱吧。」']]}];
+const BTAUNT=['「迷途的小人偶。我的烛台，正好缺一根会哭的蜡烛。」','「想带走我笼中的歌？那就先学会，在风里不发出声音。」','「别过来……她是我的眼泪。我只剩下她了……」','「爱是需要养分的。你，和笼子里的那一个，都很合适。」','「来吧。让这场演出，永远不要落幕。」'];
+const RESCUE={doloris:'「你来了……我一直在笼子里唱歌。我想，总会有人听见的吧。」',mortis:'「……好安静。」她攥住你的衣角，过了很久才说，「……一起，走。」',timoris:'「比预想的晚了一点。……不过，谢谢。剩下的路，低音交给我。」',
+  amoris:'「呜哇，得救了！这份人情我记下了哦。接下来，节拍就交给我♪」',oblivionis:'「……我以为不会有人来了。」她理好手套，抬起头，「走吧。舞台还在等我们。」'};
 const MJF=[
-  {k:'doloris',name:'悲伤之面',col:'#a57ee6',pats:['starRain','fan','slam','ring','stream'],crack:'「……悲伤，原来也会碎啊。」',line:'「悲伤是我借来的第一张脸。来吧，为我哭泣。」'},
-  {k:'mortis',name:'死之面',col:'#ff4fa8',pats:['dash','spiral','slam2','stream','fan'],crack:'「这张脸撑不住了。」',line:'「悲伤的面具碎了？那就换上死亡吧。」'},
-  {k:'timoris',name:'恐惧之面',col:'#4ccac2',pats:['quake','pulse','sweep','ring','slam'],crack:'「死亡也拦不住你……」',line:'「那么，你害怕吗？害怕吧。害怕才会留下来。」'},
-  {k:'amoris',name:'爱之面',col:'#ff6a9a',pats:['hearts','summon','slam2','fanRing','sweep'],crack:'「你不害怕……为什么？」',line:'「那就让你爱上这里，再也走不出去。」'},
-  {k:'oblivionis',name:'忘却之面',col:'#8d93dd',pats:['freeze','spiral','spikes','sweep','rain','slam2','quake'],crack:'「还剩……最后一张。」',line:'「忘了吧。忘掉一切，永远留在我的舞台上。」'}];
+  {k:'doloris',name:'悲伤之面',col:'#a57ee6',pats:['starRain','fan','slam','ring','stream'],crack:'「……原来悲伤，也会碎的啊。」',line:'「悲伤是我借来的第一张脸。来，替我哭吧。」'},
+  {k:'mortis',name:'死之面',col:'#ff4fa8',pats:['dash','spiral','slam2','stream','fan'],crack:'「这张脸……撑不住了。」',line:'「悲伤碎了？那就戴上死亡。死亡，从来不会离开。」'},
+  {k:'timoris',name:'恐惧之面',col:'#4ccac2',pats:['quake','pulse','sweep','ring','slam'],crack:'「连死亡都拦不住你……」',line:'「那么，你害怕吗？害怕吧。害怕的人，才会留下来。」'},
+  {k:'amoris',name:'爱之面',col:'#ff6a9a',pats:['hearts','summon','slam2','fanRing','sweep'],crack:'「你不害怕……为什么？」',line:'「那就爱上这里吧。爱上了，就再也走不出去了。」'},
+  {k:'oblivionis',name:'忘却之面',col:'#8d93dd',pats:['freeze','spiral','spikes','sweep','rain','slam2','quake'],crack:'「只剩……最后一张了。」',line:'「忘了吧。把一切都忘掉，就能永远留在我的舞台上。」'}];
 const MJDEB=[{n:'泪雨',d:'护盾无法恢复'},{n:'凋零',d:'每秒失去 2% 最大生命'},{n:'恐惧',d:'视野被黑暗吞没'},{n:'魅惑',d:'同伴停止攻击，移动速度 -25%'},{n:'忘却',d:'技能被封印，闪避恢复减半'}];
-const CHTAUNT=['「第一章。烛火会替我看着你。」','「风会把你的歌声吹散，一个音也不剩。」','「沉下去吧。泪水会温柔地包住你。」','「荆棘会记住你流下的每一滴血。」','「终于走到这里了。舞台已经准备好了。」'];
+const CHTAUNT=['「第一章。烛火会替我记住你的影子。」','「风会把你的歌拆成羽毛，一片，一片。」','「沉下去吧。眼泪的底部，是很安静的。」','「荆棘会替我数，你为她们流了几滴血。」','「终于走到这里了。帷幕，一直在等你的手。」'];
 function setDeb(f){G.mjDeb=f;$('game').classList.toggle('dark',f===3);if(G.boss&&G.boss.mj)mjBar(G.boss);if(f){const d=MJDEB[f-1];later(.4,()=>toast(`不利机制 · ${d.n}：${d.d}`))}}
 const RELICS=[{id:'key',n:'生锈的发条钥匙',ic:'⚿',d:'钥匙的背面刻着一行小字：「给第六个人偶」。'},{id:'letter',n:'褪色的邀请函',ic:'✉',d:'「诚邀您出席：一场没有观众的演出。」落款被人撕掉了。'},{id:'shard',n:'空白假面的碎片',ic:'◇',d:'一片光滑的白瓷，没有任何花纹。摸上去是温的，像有人刚刚戴过。'}];
-const ACT5A={name:'假面舞台',el:'终幕',poem:'帷幕升起，观众屏息。\n欢迎来到 Ave Mujica 的世界，直至终焉。'},ACT5B={name:'镜之后台',el:'空白',poem:'镜子的背面没有观众，也没有掌声。\n只有一张空白的脸，在写下一页剧本。'};
-const SECS5B=[['镜中的走廊','镜子里的你没有戴面具，却在对你微笑。'],['剧本室','桌上堆满了写好的剧本。每一本的结局，都是你们五个人分开。'],['提线的森林','成千上万根丝线从天花板垂下，每一根都系着一个名字。'],['被遗忘的观众席','坐在这里的观众，是被你们一个个遗忘的自己。'],['舞台背面','没有灯光，没有掌声。只有一张空白的脸，在等你。']];
+const ACT5A={name:'假面舞台',el:'终幕',poem:'幕布的褶皱里，藏着所有没说出口的话。\nWelcome to the world of Ave Mujica.'},ACT5B={name:'镜之后台',el:'空白',poem:'镜子背面没有灯，也没有掌声。\n只有一张空白的脸，用你们的眼泪写字。'};
+const SECS5B=[['镜中的走廊','镜子里的你没有戴面具，正温柔地朝你微笑。你却不记得自己会这样笑。'],['剧本室','桌上堆满写好的剧本。每一本的最后一页，都写着同一句：她们走散了。'],['提线的森林','成千上万根丝线从黑暗里垂下，每一根的末端，都系着一个被叫过的名字。'],['被遗忘的观众席','坐在这里的，是被你们一个个遗忘的自己。她们安静地，看完了每一场。'],['舞台背面','没有灯，也没有掌声。只有一张空白的脸，握着笔，在等你。']];
 const BOSSB={name:'空白假面',sub:'Sans Visage · 剧本的作者',spr:'blank',hp:1700,r:16,spd:18,pats:['spiral','rain','shades','fanRing','stream','spikes','ring','summon'],sum:['mask','mari'],h:56,float:1};
 function darkStep(){G.dark=(G.dark||0)+1;later(.8,()=>toast(G.dark>=2?'碎片里的低语越来越清晰了……':'你听见假面在低语……'))}
 let SECS5A=null;
@@ -952,10 +953,10 @@ const STRANGERS=[
   {id:'collector',name:'面具收藏家',spr:'mask',line:'「多么漂亮的假面……在黑暗里撑过 30 秒吧。撑住了，我就把最好的藏品送你。」',acc:'步入暗幕',ad:'在黑暗中存活 30 秒，敌人不断涌出。奖励：传说旋律 + ✿40',trial:'survive'},
   {id:'crow',name:'乌鸦信使',spr:'crow',line:'「嘎——带来一份契约。签下它，立刻得到力量。代价嘛……这一章剩下的敌人，会更顽强。」',acc:'签下契约',ad:'立即获得一段传说旋律，但本章剩余敌人生命 +40%',curse:1}];
 const MAINQ=[
-  {frag:'灰烬',after:'「烛火……熄了……」\n伯爵的烛台滚落在地。熄灭的火芯里，浮起一段带着余温的旋律。'},
-  {frag:'风信',after:'「飞吧……飞去你想去的地方……」\n黑羽散尽，羽翼下藏着一页被风吹皱的乐谱。'},
-  {frag:'泪海',after:'「我不哭了……我不哭了……」\n瓷娃娃的泪水在地上汇成一行音符，慢慢凝固。'},
-  {frag:'荆冠',after:'荆棘松开了王座，一张染红的谱页从王冠里飘落。\n黑暗里传来掌声：「四个乐章都齐了？那么，终幕开演。」'}];
+  {frag:'灰烬',after:'「烛火……原来，也会累的……」\n伯爵的烛台滚落在地。熄灭的火芯里，浮起一段还带着余温的旋律。'},
+  {frag:'风信',after:'「飞吧……飞去，我到不了的地方……」\n黑羽散尽。羽翼深处，藏着一页被风吹皱的乐谱。'},
+  {frag:'泪海',after:'「我不哭了……我不哭了……」\n她的泪水在地上汇成一行音符，慢慢地，凝固成了光。'},
+  {frag:'荆冠',after:'荆棘松开了王座。一页染红的谱纸，从王冠里轻轻飘落。\n黑暗里传来掌声：「四个乐章都齐了？那么，终幕开演。」'}];
 const PROLOGUE='黑暗里，有个声音在轻笑。\n「欢迎来到假面回廊，我的人偶。你们的乐章被我拆成了四份，藏在火、风、水、地的尽头。」\n「想再一次站上舞台，就去取回来吧。如果你们还记得怎么唱的话。」';
 const CN='一二三四五';
 const SQ={
@@ -974,7 +975,7 @@ STRANGERS.push(
   {id:'mirror',name:'镜中的你',spr:'mirror',ev:'shadow',line:'镜子里的你没有戴假面。她开口说话：「证明你比我更配站在那个舞台上。」'},
   {id:'musicbox',name:'古旧的八音盒',spr:'musicbox',ev:'musicbox',line:'八音盒上的小人偶停在半个转身里。发条还能转一圈，你可以选一首曲子。'},
   {id:'maestro',name:'无头的指挥家',spr:'maestro',ev:'timed',line:'礼帽悬在空无一物的领口上方。「乐团缺一位独奏者。25 秒内让全场安静下来，掌声就归你。」'});
-const EVMOOD=['烛火在它身后摇晃。','风把它的影子吹得猎猎作响。','它站在齐膝的积水里。','荆棘小心地绕开了它的脚边。','聚光灯恰好打在它身上。'];
+const EVMOOD=['烛光在它身后，替它投下一道很长的影子。','风经过它，却没有吹动它的衣角。','它站在齐膝的积水里，倒影比它本人更清楚。','荆棘小心翼翼地，从它脚边绕开。','一束聚光灯不知从何处落下，恰好照着它。'];
 const QUIZ=[
   {q:'Doloris 的箴言是？',a:'吾、勿畏悲伤',w:['吾、勿畏死亡','吾、勿畏忘却']},{q:'Mortis 的箴言是？',a:'吾、勿畏死亡',w:['吾、勿畏爱','吾、勿畏悲伤']},
   {q:'Timoris 的箴言是？',a:'吾、勿畏恐惧本身',w:['吾、勿畏忘却','吾、勿畏死亡']},{q:'Amoris 的箴言是？',a:'吾、勿畏爱',w:['吾、勿畏悲伤','吾、勿畏恐惧本身']},
@@ -1177,7 +1178,7 @@ function postDraw(t){ctx.save();ctx.setTransform(1,0,0,1,0,0);
     ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(cv.width/2,cv.height/2,cv.height*.35,cv.width/2,cv.height/2,cv.width*.7);g.addColorStop(0,hexA(col,0));g.addColorStop(1,hexA(col,.45*bg));ctx.globalAlpha=1;ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height)}ctx.globalCompositeOperation='overlay';ctx.globalAlpha=.12;ctx.fillStyle=GRADE[G.act-1];ctx.fillRect(0,0,cv.width,cv.height);
   if(QUAL>1){if(!GRAINP)GRAINP=ctx.createPattern(GRAIN,'repeat');ctx.globalAlpha=.07;ctx.translate(rint(0,127),rint(0,127));ctx.fillStyle=GRAINP;ctx.fillRect(-128,-128,cv.width+256,cv.height+256)}ctx.restore()}
 function enterRoom(type,noCount){
-  G.type=type;if(!noCount)G.room++;G.roomsDone++;G.turrets=[];G.vortex=null;G.wind=null;G.hzT=3;G.roomKills=0;G.cage=null;makeZones();G.npc=null;G.evFight=0;G.hard=1;G.hardDmg=1;G.surviveT=0;G.timedT=0;G.espd=1;G.mjDeb=0;$('game').classList.remove('dark');G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
+  G.type=type;G.ots=null;$('game').classList.remove('ots');if(!noCount)G.room++;G.roomsDone++;G.turrets=[];G.vortex=null;G.wind=null;G.hzT=3;G.roomKills=0;G.cage=null;makeZones();G.npc=null;G.evFight=0;G.hard=1;G.hardDmg=1;G.surviveT=0;G.timedT=0;G.espd=1;G.mjDeb=0;$('game').classList.remove('dark');G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
   G.cleared=false;G.boss=null;G.bossSpawned=0;G.waveWait=0;G.timeStop=0;G.bg=buildBg();
   P.x=RW/2;P.y=RH-34;P.vx=P.vy=0;P.dashT=0;P.inv=.8;stats();P.sh=P.shMax;P.shT=9;
   if(type==='combat'||type==='elite'||type==='trial'){
@@ -1202,7 +1203,7 @@ function enterRoom(type,noCount){
     if(type==='rest'){G.deco.push({k:'piano',x:RW/2,y:RH/2-30});later(.5,showRest)}
     else if(type==='shop'){G.deco.push({k:'mannequin',x:RW/2,y:RH/2-30});later(.5,showShop)}
     else if(type==='treasure'){G.picks.push({k:'chest',x:RW/2,y:RH/2-20,t:0})}
-    else if(type==='event'){G.npc={x:RW/2,y:RH/2-6,ev:pickEvent(),talked:0};later(.6,()=>toast('有人在等你 · 靠近她对话'))}
+    else if(type==='event'){G.npc={x:RW/2,y:RH/2-6,ev:pickEvent(),talked:1};G.ots={ph:'intro',t:0,k:0,lb:0};$('game').classList.add('ots')}
   }
   placeAllies();updStage();later(.35,showSection);
 }
@@ -1336,7 +1337,7 @@ function updRhythm(dt){const bi=Math.floor(beatPos());
   else if(bi!==G.lbeat){G.lbeat=bi;G.beatGlow=Math.max(G.beatGlow||0,.45)}
   G.beatGlow=Math.max(0,(G.beatGlow||0)-dt*3)}
 /* boss second phase */
-const P2LINE=['「烛火不够亮？那就把整座大厅都点燃吧！」','「孩子们，一起来，把她撕成碎片！」','「为什么……为什么你们都要离开我——！」','「大地啊，把她拖进根里去。」'],P2COL=['#ff7a2a','#b080ff','#4fb0ff','#7ae05a'];
+const P2LINE=['「烛火不够亮？那就把整座大厅，点成一首挽歌。」','「孩子们，来。把她撕成，风能带走的大小。」','「为什么……为什么你们都要离开我——」','「大地啊。把她，种进根里去。」'],P2COL=['#ff7a2a','#b080ff','#4fb0ff','#7ae05a'];
 function bossP2(e){e.trans=1;const np=e.phase+1;e.phase=np;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
   e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;const fin=FINAL[e.boss.spr];
   later(.8,()=>playCut(fin?cutBossPhase(e,np):cutBossP2(G.act,e),()=>{e.mhp=e.baseHp*PHM[np-1];e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.4;if(fin){G.espd=1+.08*(np-1);if(np===5)e.sc*=1.12;if(np>=4)setTrack('mj5')}
@@ -1770,17 +1771,17 @@ function mjChoice(){openModal('choice',`<h3>碎片的低语</h3><p class="sub">M
   <button class="card r0" data-a="a"><span class="ic">✂</span><b>剪断丝线</b><span class="d">让演出就此落幕</span></button></div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{closeModal();b.dataset.a==='c'?playCut(cutReflIn(),()=>{G.reflOn=1;G.cleared=false;G.bossSpawned=0;setTrack('mj4');spawnBoss(BOSSC)}):playCut(cutEnding(),()=>winGame('a'))})}
 function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `${hard()?'<div class="bond" style="color:#ffb3c0;border-color:#9b1b30">困难模式 · 掌声 ×2</div>':''}<div class="summary"><div><b>${G.act}</b>到达章节</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
-function gameOver(){feverReset();G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
-  const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线断了。<br>「${ch().motto}」</p>${apHtml(apn)}${summaryHtml()}
+function gameOver(){G.ots=null;$('game').classList.remove('ots');feverReset();G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
+  const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线，在掌声里断了。<br>「${ch().motto}」</p>${apHtml(apn)}${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
     $('again').onclick=()=>{closeModal();startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
 function winGame(route){route=route||'a';G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;best.endings=best.endings||{};best.endings[route]=1;store.set('amj_best',best);
   const got=[];if(unlock('mortis'))got.push('mortis');if((route==='b'||route==='d')&&unlock('oblivionis'))got.push('oblivionis');const apn=award(route);
   const un=got.length?`<div class="bond got">解锁新角色：${got.map(cname).join('、')}</div>`:'';
-  const WB={c:'<p class="sub">你戴上了碎片拼成的假面。丝线从你的指尖垂下，系在同伴们的手腕上。<br>掌声响起，新的 Ave Mujica 开演了。<br>这一次没有人会离开，也没有人能离开。</p>',
-    d:'<p class="sub">掌声停了，观众离开了座位。原来写下剧本的，是要演出永不落幕的黑暗观众席。<br>五个人推开后台的门，外面是清晨。<br>Ave Mujica 不再是一场演出，只是五个人一起唱的歌。</p>'};
-  const body=WB[route]||(route==='b'?'<p class="sub">空白假面碎成了无数页剧本。写在上面的结局，一个字也看不清了。<br>Mujica 的丝线断开，她第一次看见了观众。<br>没有剧本，也没有观众。五个人摘下面具，又亲手把它戴上。<br>这一次，是她们自己选择的演出。</p>'
-    :'<p class="sub">假面之主的面具碎裂，露出一张小小的人偶的脸。原来她也只是被丝线牵着的人偶。<br>你们剪断了她的线。四个乐章在掌心合而为一，五个人的声音终于完整。<br>掌声如潮水涌来，帷幕缓缓落下。下一场，早已排定。</p>');
+  const WB={c:'<p class="sub">镜中的你倒下了，她说：我已经没办法替你哭了。<br>你戴上碎片拼成的假面，丝线从指尖垂下，温柔地系上了她们的手腕。<br>掌声响起。这一次没有人会离开，也再没有人能够离开。</p>',
+    d:'<p class="sub">握笔的，从来是那片不肯散场的黑暗。<br>掌声终于稀了，观众像一场雨那样散去。五个人推开后台的门，外面是清晨，风很凉。<br>Ave Mujica 不再是一场演出，只是五个人在晨光里，一起唱的歌。</p>'};
+  const body=WB[route]||(route==='b'?'<p class="sub">空白的面具碎成一场迟到的雪，写好的结局被融化了。<br>丝线松开，Mujica 第一次看见台下坐着真正的人。<br>没有剧本，也没有观众。五个人摘下假面，又亲手把它重新戴上。<br>这一次，是她们自己写下的序曲。</p>'
+    :'<p class="sub">假面碎了，后面只站着一个小小的人偶，手腕上还缠着线。<br>你们替她剪断了那根线。四个乐章在掌心合拢，五个人的声音终于不再缺一块。<br>帷幕落下之前，有人轻声说：再见，Ave Mujica。</p>');
   openModal('win',`<h3 class="big">${{a:'Ave Mujica',b:'Sans Visage',c:'Nouvelle Mujica',d:'Au-delà du rideau'}[route]}</h3><p class="sub" style="color:var(--gold)">${ENDS[route].t}</p>${body}${un}${apHtml(apn)}${summaryHtml()}
    <div class="row"><button class="cta" id="again">再演一场</button></div><div class="row"><button class="ghost" id="toT">回到标题</button></div>`);
   $('again').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}}
@@ -1895,12 +1896,12 @@ function renderCut(){const sh=CUT.shots[CUT.i];if(!sh)return;const t=CUT.t;ctx.s
   if(sh.flash&&t<sh.flash){ctx.fillStyle=`rgba(255,250,235,${1-t/sh.flash})`;ctx.fillRect(0,0,VW,VH)}
   const bh=VH*.14*CUT.lb;ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh)}
 function cutPrologue(){const me=ch().id,cx=VW/2,fy=VH*.72;return[
-  {d:3.2,bg:'stage',fadeIn:1,music:'title',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'黑暗里，有个声音在轻笑。'}},
-  {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'mj',x:cx,y:VH*.62,sc:.36,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「欢迎来到假面回廊，我的人偶。」'}},
+  {d:3.2,bg:'stage',fadeIn:1,music:'title',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'幕布落下之后，黑暗里仍有人在鼓掌。很轻，很慢，像在数谁的心跳。'}},
+  {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'mj',x:cx,y:VH*.62,sc:.36,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「Welcome to the world of Ave Mujica……欢迎回来，我的人偶。」'}},
   {d:4.4,bg:'stage',actors:[...G.caps.map((id,i)=>({k:'ch',id,x:cx+(i-1.5)*48,y:fy-6,y1:fy-170,face:i<2?1:-1,anim:'hurt',sc:1.1,a1:0,strings:1,delay:1.2})),{k:'ch',id:me,x:cx,y:fy+12,face:1,sc:1.4}],
-    sub:{who:'Mujica',text:'「你的同伴，还有你们的乐章，都被我藏在了回廊的尽头。」'}},
-  {d:3,bg:'stage',z0:1.2,z1:1.4,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:cname(me),text:'「……」'}},
-  {d:3.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,x1:cx+150,y:fy,face:1,anim:'run',sc:1.4}],sub:{who:'Mujica',text:'「想再一次站上舞台，就去把她们带回来吧。如果你们还记得怎么唱的话。」'}}]}
+    sub:{who:'Mujica',text:'「你的同伴，你们的歌，我都替你们收好了。在火、风、水、地的尽头，一处一处地。」'}},
+  {d:3,bg:'stage',z0:1.2,z1:1.4,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:cname(me),text:`「……${ch().motto}。」`}},
+  {d:3.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,x1:cx+150,y:fy,face:1,anim:'run',sc:1.4}],sub:{who:'Mujica',text:'「想再站上舞台，就去把她们带回来吧。如果你们还记得，那首歌该怎么唱。」'}}]}
 function cutRescue(act,cap){const me=ch().id,b=BOSSES[act-1],cx=VW/2,fy=VH*.74,mq=MAINQ[act-1],lines=mq.after.split('\n'),bd=cap&&BONDS[cap],sh=[
   {d:3.4,bg:'room',fadeIn:1,shake:1.2,init:()=>cutBurst(cx,fy-36,50,['#fff',GOLD,'#e0283c'],100),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.2,a1:0,sink:14,shake:1}],sub:{who:b.name,text:lines[0]}}];
   if(cap){sh.push({d:3.4,bg:'room',z0:1.05,z1:1.2,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.9,breakAt:1.4}],sub:{text:lines[1]&&act<4?lines[1]:'笼门应声而开。'}},
@@ -1910,30 +1911,30 @@ function cutRescue(act,cap){const me=ch().id,b=BOSSES[act-1],cx=VW/2,fy=VH*.74,m
   if(act===4&&lines[1])sh.push({d:3.6,bg:'void',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.8,sc:.45,alpha:0,a1:.9}],sub:{who:'Mujica',text:lines[1].replace(/^.*?「/,'「')}});
   return sh}
 function cutMjIntro(){const cx=VW/2,y=VH*.84;return[
-  {d:3.2,bg:'void',fadeIn:1,actors:[{k:'mj',f:1,x:cx,y:VH*.35,y1:y,sc:.45,alpha:0,a1:1,dur:2}],sub:{who:'Mujica',text:'「终于来了，我的人偶。」'}},
-  {d:3.4,bg:'void',z0:1,z1:1.15,actors:[{k:'mj',f:1,x:cx,y,sc:.45,spread:1}],sub:{who:'Mujica',text:'「这五张面具，是你们弄丢的东西。想要回去，就一张一张地，从我脸上撕下来吧。」'}},
+  {d:3.2,bg:'void',fadeIn:1,actors:[{k:'mj',f:1,x:cx,y:VH*.35,y1:y,sc:.45,alpha:0,a1:1,dur:2}],sub:{who:'Mujica',text:'「你终于来了。这一幕，我等了很久。」'}},
+  {d:3.4,bg:'void',z0:1,z1:1.15,actors:[{k:'mj',f:1,x:cx,y,sc:.45,spread:1}],sub:{who:'Mujica',text:'「这五张脸，是你们一路上丢下的东西。想要回去，就一张一张，从我脸上揭下来吧。」'}},
   {d:2.6,bg:'void',fadeOut:1,music:'mj1',actors:[{k:'mj',f:1,x:cx,y,sc:.45}],sub:{who:'Mujica · 悲伤之面',text:MJF[0].line}}]}
 function cutMjForm(f){const cx=VW/2,y=VH*.84,n=MJF[f];return[
   {d:2.6,bg:'void',shake:1.4,actors:[{k:'mj',f,x:cx,y,sc:.45,crack:1}],sub:{who:'Mujica',text:MJF[f-1].crack}},
-  {d:2.6,bg:'void',shake:1,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(f-1,cx,y,.45);cutBurst(mx,my,40,['#fff',MJF[f-1].col,GOLD,'#f0e4d6'],120)},actors:[{k:'mj',f,x:cx,y,sc:.45,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎裂了。丝线把下一张面具拉了下来。`}},
+  {d:2.6,bg:'void',shake:1,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(f-1,cx,y,.45);cutBurst(mx,my,40,['#fff',MJF[f-1].col,GOLD,'#f0e4d6'],120)},actors:[{k:'mj',f,x:cx,y,sc:.45,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎了，碎得很安静。丝线从黑暗里，垂下了下一张脸。`}},
   {d:3.4,bg:'void',music:'mj'+(f+1),z0:1.25,z1:1,actors:[{k:'mj',f:f+1,x:cx,y:VH*.3,y1:y,sc:.45,alpha:0,a1:1,dur:1.4,spread:1}],sub:{who:`Mujica · ${n.name}（形态 ${f+1} / 5）`,text:n.line}}]}
 function cutChapter(n){const rb=n===5&&G.route==='b',me=ch().id,cx=VW/2,fy=VH*.76,a=ACTS[n-1],party=[me,...G.allies.map(x=>x.id)],cap=n<5&&G.caps?G.caps[n-1]:null,pl=a.poem.split('\n');
   const at=(i)=>({x:cx+40-i*34,y:fy+(i%2)*8});return[
   {d:3.6,bg:'room',fadeIn:1,actors:party.map((id,i)=>({k:'ch',id,x:-30-i*34,x1:at(i).x,y:at(i).y,face:1,anim:'run',animEnd:'idle',sc:1.3,dur:2.6})),sub:{who:`第${CN[n-1]}章 · ${a.name}`,text:pl[0]}},
-  rb?{d:3.4,bg:'room',z0:1,z1:1.1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.6,sc:1.1,alpha:0,a1:.6,dur:1.6},...party.map((id,i)=>({k:'ch',id,...at(i),face:1,sc:1.3}))],sub:{who:'？？？',text:'「你们本不该看到这里的。」'}}
+  rb?{d:3.4,bg:'room',z0:1,z1:1.1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.6,sc:1.1,alpha:0,a1:.6,dur:1.6},...party.map((id,i)=>({k:'ch',id,...at(i),face:1,sc:1.3}))],sub:{who:'？？？',text:'「这一页，本不该被翻开。」'}}
    :{d:3.4,bg:'room',z0:1,z1:1.1,actors:[{k:'mj',x:cx,y:VH*.52,sc:.3,alpha:0,a1:.6,dur:1.6},...party.map((id,i)=>({k:'ch',id,...at(i),face:1,sc:1.3}))],sub:{who:'Mujica',text:CHTAUNT[n-1]}},
-  rb?{d:3.8,bg:'room',fadeOut:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:0,a1:1,dur:1.8}],sub:{who:'空白假面',text:'「剧本已经写好了。你们五个，最后都会分开。」'}}:cap?{d:3.6,bg:'room',fadeOut:1,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.7,breakAt:999}],sub:{text:`${pl[1]||''}传闻 ${cname(cap)} 被囚禁在这一章的尽头。`}}
-     :{d:3.8,bg:'room',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.8}],sub:{who:'Mujica',text:'「所有的面具都在等你。来吧，终幕开演。」'}}]}
+  rb?{d:3.8,bg:'room',fadeOut:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:0,a1:1,dur:1.8}],sub:{who:'空白假面',text:'「剧本早就写好了。最后一行是：她们走散了。」'}}:cap?{d:3.6,bg:'room',fadeOut:1,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.7,breakAt:999}],sub:{text:`${pl[1]||''}传闻 ${cname(cap)} 被囚禁在这一章的尽头。`}}
+     :{d:3.8,bg:'room',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.8}],sub:{who:'Mujica',text:'「五张面具，都在等它们的主人。来吧，终幕开演。」'}}]}
 function cutRoute(){const cx=VW/2,fy=VH*.78,me=ch().id;return[
-  {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「Mujica 也只是一具人偶。牵着她的线，一直通向舞台背面。」'}},
-  {d:3.8,bg:'void',z0:1,z1:1.15,actors:[{k:'spr',name:'blank',x:cx,y:VH*.82,sc:1.6,alpha:0,a1:.75,dur:2}],sub:{who:'后台的老人偶师',text:'「坐在那里的，是没有脸的那一位。是它写下剧本，让你们一次又一次戴上面具、彼此失去。」'}},
-  {d:3.6,bg:'void',fadeOut:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「去吧。这一次，别再照着它的剧本演了。」'}}]}
+  {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「Mujica 也只是人偶而已。牵着她的那根线，一直通到舞台的背面去。」'}},
+  {d:3.8,bg:'void',z0:1,z1:1.15,actors:[{k:'spr',name:'blank',x:cx,y:VH*.82,sc:1.6,alpha:0,a1:.75,dur:2}],sub:{who:'后台的老人偶师',text:'「那里坐着没有脸的那一位。是它写下剧本，让你们一次次戴上面具，一次次失去彼此。」'}},
+  {d:3.6,bg:'void',fadeOut:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「去吧，孩子们。这一次，别再照着别人写的台词活了。」'}}]}
 function cutEndingB(){const me=ch().id,cx=VW/2,fy=VH*.74,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
-  {d:3.4,bg:'void',fadeIn:1,shake:1.4,sfx:'bossdie',actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,shake:1.5}],sub:{who:'空白假面',text:'「……原来，你们会自己选择结局。」'}},
-  {d:3.8,bg:'void',flash:.6,init:()=>{for(let i=0;i<70;i++)CUT.parts.push({x:cx+rnd(-60,60),y:VH*.4+rnd(-40,40),vx:rnd(-30,30),vy:rnd(-20,30),life:rnd(2,4),max:4,col:pick(['#f0e8dc','#e8e4f0','#d8cebe']),sz:2,g:12})},actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:1,a1:0,dur:1.6}],sub:{text:'空白的面具碎成了无数页剧本，像雪一样落下。上面写着的结局，一个字也看不清了。'}},
-  {d:4,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.66,w:200,alpha:.9,a1:0,dur:3.6},...row({})],sub:{text:'Mujica 身上的丝线一根根断开。她最后看了你们一眼，像是第一次看见了观众。'}},
-  {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'没有剧本，也没有观众。五个人摘下了面具，又一次，亲手把它戴上。'}},
-  {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'Ave Mujica。这一次，是我们自己选择的演出。'}}]}
+  {d:3.4,bg:'void',fadeIn:1,shake:1.4,sfx:'bossdie',actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,shake:1.5}],sub:{who:'空白假面',text:'「……原来人偶，也会自己选择结局。」'}},
+  {d:3.8,bg:'void',flash:.6,init:()=>{for(let i=0;i<70;i++)CUT.parts.push({x:cx+rnd(-60,60),y:VH*.4+rnd(-40,40),vx:rnd(-30,30),vy:rnd(-20,30),life:rnd(2,4),max:4,col:pick(['#f0e8dc','#e8e4f0','#d8cebe']),sz:2,g:12})},actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:1,a1:0,dur:1.6}],sub:{text:'空白的面具碎成无数页剧本，像一场迟到的雪。写好的结局被融化了，一个字也认不出。'}},
+  {d:4,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.66,w:200,alpha:.9,a1:0,dur:3.6},...row({})],sub:{text:'丝线一根根松开。Mujica 最后看了你们一眼，像是第一次看见，台下坐着真正的人。'}},
+  {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'没有剧本，也没有观众。五个人摘下假面，又亲手，把它重新戴上。'}},
+  {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'Ave Mujica。这一次，是我们自己写下的序曲。'}}]}
 function cutReflIn(){const me=ch().id,cx=VW/2,fy=VH*.76;return[
   {d:3.2,bg:'stage',fadeIn:1,sfx:'shbreak',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'面具碎了。碎片却没有落地。'}},
   {d:3.8,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx-40,y:VH*.25,y1:fy-50,sc:3,dur:3.2}],sub:{who:'？？？',text:'「戴上它吧。这样，就再也不会失去任何人了。」'}},
@@ -1941,25 +1942,58 @@ function cutReflIn(){const me=ch().id,cx=VW/2,fy=VH*.76;return[
   {d:2.6,bg:'void',fadeOut:1,actors:[{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.9,filt:'refl',aura:'#d8c0ff',anim:'skill'}],sub:{text:'—— 最后的对手，是你自己 ——'}}]}
 function cutEndingC(){const me=ch().id,cx=VW/2,fy=VH*.76,al=G.allies.map(a=>a.id),row=al.map((id,i)=>({k:'ch',id,x:cx+(i<2?-1:1)*(50+(i%2)*36),y:fy+6,face:i<2?1:-1,sc:1.2,strings:1,anim:'idle'}));return[
   {d:3.4,bg:'void',fadeIn:1,sfx:'bossdie',actors:[{k:'ch',id:me,x:cx,y:fy,face:-1,sc:1.9,filt:'refl',alpha:1,a1:0,dur:2.6,anim:'death'}],sub:{who:'镜中的你',text:'「……你会后悔的。可我，已经没办法替你哭了。」'}},
-  {d:3.4,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx,y:VH*.25,y1:fy-34,sc:3,dur:2.8}],sub:{text:'再也没有人阻止你了。'}},
-  {d:4,bg:'stage',flash:.5,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row],sub:{text:'你戴上了假面。丝线从你的指尖垂下，系在了她们的手腕上。'}},
-  {d:4.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row,{k:'curtain'}],sub:{text:'掌声响起。新的 Ave Mujica 开演了。这一次，没有人会离开。也没有人能离开。'}}]}
+  {d:3.4,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx,y:VH*.25,y1:fy-34,sc:3,dur:2.8}],sub:{text:'再也没有人拦着你了。连你自己，也不再拦了。'}},
+  {d:4,bg:'stage',flash:.5,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row],sub:{text:'你戴上了假面。丝线从你的指尖垂下，温柔地，系上了她们的手腕。'}},
+  {d:4.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row,{k:'curtain'}],sub:{text:'掌声响起，新的 Ave Mujica 开演了。这一次，没有人会离开。也再没有人，能够离开。'}}]}
 function cutAudienceIn(){const cx=VW/2;return[
-  {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:1,a1:0,dur:2}],sub:{text:'空白假面碎了。可是，掌声没有停。'}},
+  {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:1,a1:0,dur:2}],sub:{text:'空白假面碎了。可是，掌声还在。'}},
   {d:4,bg:'stage',sfx:'boss',z0:1.2,z1:1,actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,alpha:0,a1:1,dur:2}],sub:{who:'无尽的观众',text:'「再来一首。再来一首。永远，再来一首。」'}},
-  {d:3.4,bg:'stage',fadeOut:1,actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,aura:'#ffd27a'}],sub:{text:'写剧本的从来不是它。是坐满黑暗的观众，要这场演出永不落幕。'}}]}
+  {d:3.4,bg:'stage',fadeOut:1,actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,aura:'#ffd27a'}],sub:{text:'握笔的从来不是它。是坐满黑暗的观众：是她们，要这场演出永不落幕。'}}]}
 function cutEndingD(){const me=ch().id,cx=VW/2,fy=VH*.74,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
-  {d:3.6,bg:'stage',fadeIn:1,sfx:'bossdie',actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,alpha:1,a1:0,dur:3}],sub:{text:'掌声渐渐稀疏。观众一个接一个站起身，离开了座位。'}},
-  {d:4,bg:'stage',actors:row({}),sub:{text:'空无一人的舞台上，五个人第一次，没有为任何人摘下面具。'}},
-  {d:4.4,bg:'dawn',music:'title',actors:all.map((id,i)=>({k:'ch',id,x:-40-i*30,x1:VW*.55-i*30,y:VH*.74,face:1,anim:'run',animEnd:'idle',sc:1.25,dur:3.6})),sub:{text:'她们推开后台的门。外面是清晨，风里没有掌声。'}},
-  {d:4.8,bg:'dawn',fadeOut:1,init:()=>{CUT.petals=1},actors:all.map((id,i)=>({k:'ch',id,x:VW*.55-i*30,y:VH*.74,face:1,sc:1.25})),sub:{text:'Ave Mujica 不再是一场演出。只是五个人，一起唱的歌。'}}]}
+  {d:3.6,bg:'stage',fadeIn:1,sfx:'bossdie',actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,alpha:1,a1:0,dur:3}],sub:{text:'掌声渐渐稀了。观众一个接一个站起身，像一场散去的雨。'}},
+  {d:4,bg:'stage',actors:row({}),sub:{text:'空无一人的舞台上，五个人第一次摘下面具。不是为了谁，只是为了彼此。'}},
+  {d:4.4,bg:'dawn',music:'title',actors:all.map((id,i)=>({k:'ch',id,x:-40-i*30,x1:VW*.55-i*30,y:VH*.74,face:1,anim:'run',animEnd:'idle',sc:1.25,dur:3.6})),sub:{text:'她们推开后台的门。外面是清晨，风很凉，风里没有掌声。'}},
+  {d:4.8,bg:'dawn',fadeOut:1,init:()=>{CUT.petals=1},actors:all.map((id,i)=>({k:'ch',id,x:VW*.55-i*30,y:VH*.74,face:1,sc:1.25})),sub:{text:'Ave Mujica 不再是一场演出。只是五个人，在晨光里，一起唱的歌。'}}]}
 function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
-  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
-  {d:3.8,bg:'stage',flash:.7,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(4,cx,VH*.84,.45);cutBurst(mx,my,60,['#fff','#f0e8dc',GOLD],130)},actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'最后一张面具，也碎了。'}},
-  {d:3.6,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.84,w:170,dur:2.6},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:3.2}],sub:{text:'丝线断了，Mujica 垮了下来。面具后面站着的，是一个小小的、被丝线牵着的人偶。'}},
-  {d:3.6,bg:'stage',z0:1.15,z1:1.3,actors:[{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,strings:1,cutStrings:1.3}],sub:{text:'你们剪断了她的线。'}},
-  {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'四个乐章合而为一。五个人的声音，终于完整。'}},
-  {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'掌声如潮水涌来，帷幕缓缓落下。'}}]}
+  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1}],sub:{who:'Mujica',text:'「不……幕，还不能落……」'}},
+  {d:3.8,bg:'stage',flash:.7,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(4,cx,VH*.84,.45);cutBurst(mx,my,60,['#fff','#f0e8dc',GOLD],130)},actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'最后一张面具碎了。碎片落地的声音，像一声很轻的叹息。'}},
+  {d:3.6,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.84,w:170,dur:2.6},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:3.2}],sub:{text:'丝线断了，Mujica 垮了下来。面具背后，只站着一个小小的人偶，手腕上还缠着线。'}},
+  {d:3.6,bg:'stage',z0:1.15,z1:1.3,actors:[{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,strings:1,cutStrings:1.3}],sub:{text:'你们替她，剪断了那根线。'}},
+  {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'四个乐章在掌心合拢。五个人的声音，终于不再缺一块。'}},
+  {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'掌声像潮水一样涌来。帷幕落下之前，你听见有人轻声说：再见，Ave Mujica。'}}]}
+
+/* =================================================================== encounter: intro + over-the-shoulder view */
+const ease=v=>{v=clamp(v,0,1);return v<.5?2*v*v:1-Math.pow(-2*v+2,2)/2};
+function updOts(dt){const o=G.ots;o.t+=dt;
+  if(o.ph==='intro'){o.lb=Math.min(1,o.t/.5);if(o.t>2.1){o.ph='swoop';o.t=0}}
+  else if(o.ph==='swoop'){o.k=ease(o.t/1.2);if(o.t>=1.2){o.k=1;o.ph='walk';o.t=0;o.y0=P.y}}
+  else if(o.ph==='walk'){const p=Math.min(1,o.t/1.5);P.y=o.y0+(G.npc.y+32-o.y0)*ease(p);P.moving=p<1;P.walk=(P.walk||0)+dt;P.animT=(P.animT||0)+dt;P.face=1;if(p>=1){P.moving=false;o.ph='talk';o.t=0;openTalk()}}
+  else if(o.ph==='talk'){P.animT=(P.animT||0)+dt;if(G.npc&&G.npc.done&&$('modal').hidden){o.ph='return';o.t=0}}
+  else if(o.ph==='return'){o.k=1-ease(o.t/1);o.lb=1-Math.min(1,o.t/1);if(o.t>=1){G.ots=null;$('game').classList.remove('ots')}}}
+let OC=null,OX=null;
+function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(cv.width,cv.height);OX=OC.getContext('2d')}const x=OX,n=G.npc;
+  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.globalCompositeOperation='source-over';x.fillStyle='#040204';x.fillRect(0,0,OC.width,OC.height);x.setTransform(SC,0,0,SC,0,0);x.imageSmoothingEnabled=false;
+  const cx=P.x+14,cy=P.y+44,H=24,f=VH*.95,hy=VH*.3;
+  const zW=cy-TOP;if(zW>4){const s=f/zW,fy=hy+H*s,wh=TOP*s*1.7;x.drawImage(G.bg,0,0,RW*2,TOP*2,VW/2-cx*s,fy-wh,RW*s,wh)}
+  for(let sy=Math.ceil(hy+1);sy<VH;sy++){const z=H*f/(sy-hy),wy=cy-z;if(wy<TOP||wy>RH)continue;const hw=VW/2*z/f;x.drawImage(G.bg,Math.max(0,(cx-hw)*2),wy*2,Math.min(RW*2,hw*4),2,(cx-hw)<0?-(cx-hw)*f/z:0,sy,Math.min(VW,RW*f/z),1.05)}
+  let g=x.createLinearGradient(0,hy,0,VH*.75);g.addColorStop(0,'rgba(4,2,4,.95)');g.addColorStop(.35,'rgba(4,2,4,.5)');g.addColorStop(1,'rgba(4,2,4,0)');x.fillStyle=g;x.fillRect(0,0,VW,VH*.75);
+  const proj=(wx,wy)=>{const z=cy-wy;if(z<4)return null;const s=f/z;return{X:VW/2+(wx-cx)*s,Y:hy+H*s,s}};
+  if(n){const q=proj(n.x,n.y);if(q){const im=npcImg(n.ev),w=im.sw*im.sc*q.s*.55,h=im.sh*im.sc*q.s*.55,col=n.ev.stranger&&n.ev.stranger.quest?'#ffd27a':'#d8c0ff';
+      x.save();x.globalCompositeOperation='lighter';x.globalAlpha=.55+.15*Math.sin(t*2);const r=h*1.3;x.drawImage(glow(col),q.X-r,q.Y-h*.6-r,r*2,r*2);x.globalAlpha=.25;const cone=x.createLinearGradient(0,0,0,q.Y);cone.addColorStop(0,'rgba(255,243,220,.0)');cone.addColorStop(1,'rgba(255,243,220,.5)');x.fillStyle=cone;x.beginPath();x.moveTo(q.X-6,0);x.lineTo(q.X+6,0);x.lineTo(q.X+w*.9,q.Y);x.lineTo(q.X-w*.9,q.Y);x.fill();x.restore();
+      x.fillStyle='rgba(0,0,0,.5)';x.beginPath();x.ellipse(q.X,q.Y,w*.55,w*.12,0,0,TAU);x.fill();const fl=Math.sin(t*2)*q.s*.6;x.drawImage(im.c,im.sx,im.sy,im.sw,im.sh,q.X-w/2,q.Y-h+fl,w,h)}}
+  const pq=proj(P.x,P.y);if(pq){const pf=pFrame(false),w=pf.c.width*pf.sc*pq.s*.6,h=pf.c.height*pf.sc*pq.s*.6;x.save();x.filter='brightness(.42) saturate(.7)';x.translate(pq.X,0);x.drawImage(pf.c,-w/2,pq.Y-h+pf.dy*pq.s*.6,w,h);x.restore();x.filter='none';
+    x.save();x.globalCompositeOperation='lighter';x.globalAlpha=.18;x.drawImage(glow('#ffd8c0'),pq.X-w*.2-40,pq.Y-h*.8-40,80,80);x.restore()}
+  g=x.createRadialGradient(VW/2,VH*.45,VH*.25,VW/2,VH*.5,VW*.7);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.75)');x.fillStyle=g;x.fillRect(0,0,VW,VH);
+  for(let i=0;i<26;i++){const px=(i*53.7+t*6*(1+i%3))%VW,py=(i*31.3+Math.sin(t*.6+i)*12)%(VH*.8);x.globalAlpha=.25+.2*Math.sin(t*2+i);x.fillStyle='#fff3dc';x.fillRect(px,py,1,1)}x.globalAlpha=1}
+function otsOverlay(t){const o=G.ots;if(!o)return;
+  if(o.k>0.001){otsScene(t);ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=o.k;const z=1+.18*(1-o.k),ox=cv.width/2,oy=cv.height*.65;ctx.translate(ox,oy);ctx.scale(z,z);ctx.translate(-ox,-oy);ctx.drawImage(OC,0,0);ctx.restore()}
+  ctx.save();ctx.setTransform(SC,0,0,SC,0,0);const bh=VH*.11*(o.lb||0);ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh);
+  if(o.ph==='intro'||o.ph==='swoop'){const a=o.ph==='intro'?Math.min(1,Math.max(0,(o.t-.4)/.6)):1-Math.min(1,o.t/.6);if(a>0&&G.npc){const ev=G.npc.ev;ctx.globalAlpha=a;ctx.textAlign='center';
+      const ty=VH*.66;ctx.fillStyle=GOLD;ctx.font='7px "Noto Serif SC",serif';ctx.fillText('— 邂 逅 —',VW/2,ty);ctx.fillStyle='#f0e6dc';ctx.font='bold 15px "Noto Serif SC",serif';ctx.fillText(npcName(ev),VW/2,ty+18);
+      ctx.fillStyle='#bdb3bf';ctx.font='7px "Noto Serif SC",serif';ctx.fillText(EVMOOD[G.act-1],VW/2,ty+31);ctx.globalAlpha=1}}
+  ctx.restore()}
+function otsSpot(t){const o=G.ots;if(!o||o.ph!=='intro'||!G.npc)return;const n=G.npc,a=Math.min(1,o.t/.8);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35*a;const cone=ctx.createLinearGradient(0,TOP-30,0,n.y);cone.addColorStop(0,'rgba(255,243,220,0)');cone.addColorStop(1,'rgba(255,243,220,.6)');ctx.fillStyle=cone;
+  ctx.beginPath();ctx.moveTo(n.x-5,TOP-40);ctx.lineTo(n.x+5,TOP-40);ctx.lineTo(n.x+22,n.y);ctx.lineTo(n.x-22,n.y);ctx.fill();ctx.globalAlpha=.6*a;ctx.drawImage(glow('#fff3dc'),n.x-26,n.y-14,52,28);ctx.restore()}
 
 /* =================================================================== render */
 let last=performance.now();
@@ -1970,7 +2004,8 @@ function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastD
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
-  if(G.state==='play'&&!G.paused&&!portraitMQ.matches){if(G.hitstop>0)G.hitstop-=dt;else update(dt)}
+  if(G.state==='play'&&!G.paused&&!portraitMQ.matches&&G.ots){updOts(dt);G.time+=dt;updAmb(dt)}
+  else if(G.state==='play'&&!G.paused&&!portraitMQ.matches){if(G.hitstop>0)G.hitstop-=dt;else update(dt)}
   else if(G.state==='dead'){for(const p of G.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=(p.g||0)*dt;p.life-=dt}G.parts=G.parts.filter(p=>p.life>0)}
   else if(G.state==='title'||G.state==='select'){G.time+=dt;updAmb(dt);G.selT=(G.selT||0)+dt;if(G.state==='select')drawSel()}
   if(G.state==='play'&&(G.paused||portraitMQ.matches)){if(G.drawnPaused)return;G.drawnPaused=1}else G.drawnPaused=0;
@@ -1978,7 +2013,7 @@ function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastD
 function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
   if(G.state==='title'||G.state==='select'){drawTitleScene();return}
   if(!G.bg)return;
-  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-(fb.mj?72:fb.boss.spr==='blank'||fb.boss.spr==='audience'?44:fb.boss.spr==='refl'?30:0)-P.y)*(fb.mj?.75:fb.boss.spr==='blank'||fb.boss.spr==='audience'?.68:.5):0);G.lkx=(G.lkx||0)+((IN.aimA!=null?Math.cos(IN.aimA)*46:0)-(G.lkx||0))*.12;G.lky=(G.lky||0)+((IN.aimA!=null?Math.sin(IN.aimA)*30:0)-(G.lky||0))*.12;cam.x=RW>VW?clamp(tx+G.lkx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty+G.lky,-20,RH-VH+20):(RH-VH)/2;
+  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,oi=G.ots&&G.npc&&(G.ots.ph==='intro'||G.ots.ph==='swoop')?ease(G.ots.ph==='intro'?G.ots.t/1.2:1):0,tx=P.x-VW/2+(oi?(G.npc.x-P.x)*oi:0)+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(oi?(G.npc.y-30-P.y)*oi:0)+(fb?(fb.y-(fb.mj?72:fb.boss.spr==='blank'||fb.boss.spr==='audience'?44:fb.boss.spr==='refl'?30:0)-P.y)*(fb.mj?.75:fb.boss.spr==='blank'||fb.boss.spr==='audience'?.68:.5):0);G.lkx=(G.lkx||0)+((IN.aimA!=null?Math.cos(IN.aimA)*46:0)-(G.lkx||0))*.12;G.lky=(G.lky||0)+((IN.aimA!=null?Math.sin(IN.aimA)*30:0)-(G.lky||0))*.12;cam.x=RW>VW?clamp(tx+G.lkx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty+G.lky,-20,RH-VH+20):(RH-VH)/2;
   const sx=G.shake?rnd(-G.shake,G.shake)*.3:0,sy=G.shake?rnd(-G.shake,G.shake)*.3:0;
   ctx.setTransform(SC,0,0,SC,Math.round((-cam.x+sx)*SC),Math.round((-cam.y+sy)*SC));
   ctx.drawImage(G.bg,0,0,RW,RH);
@@ -2003,7 +2038,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   drawAmb(t);
   ctx.textAlign='center';for(const n of G.nums){const k=n.t/.7;ctx.globalAlpha=1-k*k;ctx.font=n.say?'bold 7px "Noto Serif SC",serif':`${n.crit?9:n.burn||n.ally?6:7}px Silkscreen,monospace`;ctx.fillStyle='#000';ctx.fillText(n.v,n.x+.6,n.y-k*12+.6);
     ctx.fillStyle=n.heal?'#7ad0a0':n.say?GOLD:n.shb?'#9fd4ff':n.burn?'#ff9a3a':n.ally?'#d8c8e8':n.crit?'#ffe066':'#fff';ctx.fillText(n.v,n.x,n.y-k*12)}ctx.globalAlpha=1;
-  postDraw(t);tintFx(t)}
+  otsSpot(t);postDraw(t);otsOverlay(t);tintFx(t)}
 let tintKey='';function tintFx(t){let bg='',op=0;
   if(G.hurtFlash>0){bg='radial-gradient(ellipse at center,rgba(160,0,20,0) 40%,rgba(170,0,24,1) 100%)';op=Math.min(.6,G.hurtFlash*1.5)}
   else if(G.flash>0){bg='#fff0dc';op=G.flash*.5}
@@ -2055,7 +2090,7 @@ function drawNpc(t){const n=G.npc,ev=n.ev,im=npcImg(ev),fl=ev.stranger&&['mask',
   else{if(ev.stranger.spr==='knight')ctx.globalAlpha=.75;drawSpr(im.c,n.x,n.y+fl,face,null,im.sc);ctx.globalAlpha=1}
   if(ev.member&&!n.freed){ctx.strokeStyle=ev.member==='doloris'?'#2f6a34':'rgba(230,220,210,.5)';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<5;i++){const a=t*.7+i*1.26;ctx.moveTo(n.x+Math.cos(a)*9,n.y-4+Math.sin(a)*3);ctx.lineTo(n.x+Math.cos(a+2)*7,n.y-26+Math.sin(a*1.3)*4)}ctx.stroke()}
   if(!n.done){const by=n.y-(ev.member?40:34)+Math.sin(t*4)*1.5;ctx.fillStyle='rgba(11,8,13,.85)';ctx.fillRect(n.x-6,by-6,12,9);ctx.fillStyle=GOLD;ctx.font='bold 8px Silkscreen,monospace';ctx.textAlign='center';ctx.fillText(n.talked?'!':'…',n.x,by+1)}
-  ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm=npcName(ev),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(n.x-tw/2-2,n.y+4,tw+4,8);ctx.fillStyle=ev.member?'#ece2d2':'#c08aff';ctx.fillText(nm,n.x,n.y+10)}
+  if(G.ots)return;ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm=npcName(ev),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(n.x-tw/2-2,n.y+4,tw+4,8);ctx.fillStyle=ev.member?'#ece2d2':'#c08aff';ctx.fillText(nm,n.x,n.y+10)}
 function drawTurret(u,t){shadow(u.x,u.y,5);ctx.fillStyle='#4a2a1a';ctx.fillRect(Math.round(u.x-4),Math.round(u.y-5),8,5);ctx.fillStyle=GOLD;ctx.fillRect(Math.round(u.x-1),Math.round(u.y-9),2,4);ctx.beginPath();ctx.moveTo(u.x,u.y-9);ctx.lineTo(u.x+8,u.y-15);ctx.lineTo(u.x+6,u.y-7);ctx.fill();ctx.globalAlpha=Math.min(1,u.t);ctx.fillStyle='#f6dc8a';ctx.fillRect(Math.round(u.x-4),Math.round(u.y-1),Math.round(8*u.t/6),1);ctx.globalAlpha=1}
 function drawDeco(d,t){if(d.k==='piano'){ctx.fillStyle='#120c10';ctx.fillRect(d.x-18,d.y-14,36,14);ctx.fillStyle='#e8e4dc';ctx.fillRect(d.x-16,d.y-6,32,3);ctx.fillStyle='#120c10';for(let i=0;i<32;i+=3)ctx.fillRect(d.x-16+i,d.y-6,1,2);
     ctx.fillStyle=GOLD;ctx.fillRect(d.x-18,d.y-14,36,1);ctx.fillStyle='#ece4d4';ctx.fillRect(d.x+12,d.y-20,2,5);ctx.fillStyle='#ffd27a';ctx.fillRect(d.x+12,d.y-23-(Math.sin(t*12)>0?1:0),2,2)}
