@@ -188,6 +188,12 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #actCard h2{margin:0;font-size:30px;font-weight:900;letter-spacing:.4em;margin-right:-.4em}
 #actCard p{margin:0;max-width:22em;font-size:14px;line-height:2;color:#bdb3bf;white-space:pre-line}
 #actCard small{color:#5e5566;font-size:11px;margin-top:18px}
+#cut{position:fixed;inset:0;cursor:pointer;touch-action:none}
+#cutSkip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);border:1px solid #5a4520;background:rgba(0,0,0,.6);color:var(--gold);font-size:13px;padding:6px 12px;letter-spacing:.1em}
+#cutSub{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 3%);transform:translateX(-50%);width:min(88vw,46rem);text-align:center;display:flex;flex-direction:column;gap:3px;text-shadow:0 2px 0 #000;pointer-events:none}
+#cutWho{font-size:13px;color:var(--gold);letter-spacing:.25em;min-height:1em}
+#cutTxt{font-size:16px;line-height:1.7;color:#f0e6dc;min-height:1.7em}
+#game.cut #hud,#game.cut #pad,#game.cut #stickZone,#game.cut #bossBar,#game.cut #vig,#game.cut #tint,#game.cut #secBanner,#game.cut #toast{display:none!important}
 #fade{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .28s}
 #fade.on{opacity:1}
 #secBanner{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity .5s;display:flex;flex-direction:column;gap:2px;max-width:70vw;text-shadow:0 2px 0 #000,0 0 10px #000}
@@ -302,6 +308,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 <div id="modal" class="modal" hidden><div class="panel" id="panel"></div></div>
 <div id="actCard" hidden></div>
 <div id="fade"></div>
+<div id="cut" hidden><button id="cutSkip" type="button">跳过 ››</button><div id="cutSub"><b id="cutWho"></b><span id="cutTxt"></span></div></div>
 <div id="rotate"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4"/><path d="M29 46h6"/><path d="M10 40a24 24 0 0 0 14 16M54 24A24 24 0 0 0 40 8"/><path d="M40 4l0 6 6 0"/></svg>
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
@@ -331,7 +338,7 @@ function auInit(){
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   const c=A.ctx=new AC();
   A.comp=c.createDynamicsCompressor();A.comp.threshold.value=-20;A.comp.knee.value=8;A.comp.ratio.value=6;A.comp.attack.value=.003;A.comp.release.value=.25;
-  A.lim=c.createDynamicsCompressor();A.lim.threshold.value=-4;A.lim.knee.value=0;A.lim.ratio.value=20;A.lim.attack.value=.001;A.lim.release.value=.1;A.comp.connect(A.lim);A.lim.connect(c.destination);
+  A.lim=c.createDynamicsCompressor();A.lim.threshold.value=-4;A.lim.knee.value=0;A.lim.ratio.value=20;A.lim.attack.value=.001;A.lim.release.value=.2;A.comp.connect(A.lim);A.lim.connect(c.destination);
   A.master=c.createGain();A.master.gain.value=.7;A.master.connect(A.comp);
   A.rev=c.createGain();{const lp=c.createBiquadFilter(),d1=c.createDelay(1),d2=c.createDelay(1),f1=c.createGain(),f2=c.createGain(),rg=c.createGain();lp.type='lowpass';lp.frequency.value=2400;
     d1.delayTime.value=.137;d2.delayTime.value=.211;f1.gain.value=.5;f2.gain.value=.45;rg.gain.value=.3;A.rev.connect(lp);lp.connect(d1);lp.connect(d2);d1.connect(f1);f1.connect(d2);d2.connect(f2);f2.connect(d1);d1.connect(rg);d2.connect(rg);rg.connect(A.master)}
@@ -341,8 +348,8 @@ function auInit(){
   A.sfx=c.createGain();A.sfx.gain.value=settings.sfx?.6:0;A.sfx.connect(A.master);
   A.sfxWet=c.createGain();A.sfxWet.connect(A.sfx);const ss=c.createGain();ss.gain.value=.4;A.sfxWet.connect(ss);ss.connect(A.rev);
   const nb=c.createBuffer(1,c.sampleRate,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;A.noise=nb;
-  const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+70)*x/(1+70*Math.abs(x))}A.curve=cv;
-  setInterval(schedule,25);
+  const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+24)*x/(1+24*Math.abs(x))}A.curve=cv;
+  const n0=MUS.name;MUS.name=null;setTrack(n0);setTimeout(()=>{renderTrack('battle');setTimeout(()=>renderTrack('calm'),1500)},1200);
 }
 function impulse(sec,decay){const c=A.ctx,len=Math.floor(c.sampleRate*sec),b=c.createBuffer(2,len,c.sampleRate);
   for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay)}return b}
@@ -361,7 +368,7 @@ const I={
   crash(t,v=.2){noise(t,1.3,A.musWet,v,'highpass',4800)},
   bass(m,t,d,v=.26,dest){const c=A.ctx,f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(900,t);f.frequency.exponentialRampToValueAtTime(300,t+d);f.connect(dest||A.mus);
     tone('sawtooth',mtof(m),t,.004,d*.3,d*.7,f,v);tone('sine',mtof(m-12),t,.004,d*.3,d*.7,f,v*.9)},
-  gtr(ms,t,d,v=.13,mute,dest){const c=A.ctx,ws=c.createWaveShaper();ws.curve=A.curve;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=mute?1000:2800;
+  gtr(ms,t,d,v=.13,mute,dest){const c=A.ctx,ws=c.createWaveShaper();ws.curve=A.curve;ws.oversample='4x';const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=mute?1000:2800;
     const g=c.createGain();g.gain.value=v;ws.connect(f);f.connect(g);g.connect(dest||A.mus);
     (mute?ms.slice(0,1):ms.slice(0,2)).forEach((m,i)=>tone('sawtooth',mtof(m),t,.003,mute?0:d*.4,mute?d:d*.6,ws,.4,i*7))},
   harp(m,t,d=.4,v=.09,dest){dest=dest||A.harpBus;tone('sawtooth',mtof(m),t,.002,0,d,dest,v*.6);tone('triangle',mtof(m),t,.002,0,d*1.4,dest,v*.55)},
@@ -377,12 +384,12 @@ const MEL=[[7,-1,9,11,10,9,8,9],[10,-1,9,7,5,7,9,10],[11,10,9,8,7,8,9,7],[6,-1,8
 const MELB=[[7,7,8,9,11,9,8,6],[10,10,11,12,14,12,11,10],[12,11,10,9,8,9,10,12],[13,11,8,6,4,6,8,13]];
 const MELW=[[7,9,11,-1,9,7],[10,9,7,-1,5,7],[6,8,11,-1,8,6],[9,8,7,-1,-1,-1]];
 const TRACKS={
-  title:{bpm:66,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROG[bar%4];
+  title:{bpm:66,steps:128,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROG[bar%4];
     if(st===0){I.organ(ch.c.map(m=>m+12),t,sd*15,.022);I.bass(ch.r+12,t,sd*15,.12);if(bar%4===0)I.bell(74,t,.09)}
     if(bar>=4&&st===0)I.choir(ch.c.map(m=>m+24),t,sd*14,.02);
     if(st%2===0){const seq=[0,1,2,1,2,0,1,2];const idx=seq[(st/2)%8];I.harp(ch.c[idx]+12+(st>=8?12:0),t,.5,.05)}
   }},
-  battle:{bpm:144,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROG[bar%4],B=bar>=4,r=ch.r;
+  battle:{bpm:144,steps:128,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROG[bar%4],B=bar>=4,r=ch.r;
     if(B){I.kick(t,st%2?.45:.7)}else if([0,3,6,8,10,14].includes(st))I.kick(t,.75);
     if(st===4||st===12)I.snare(t);if(st%2===0)I.hat(t,.06);if(st===0&&bar%4===0)I.crash(t);
     if(st%2===0)I.bass(r+12,t,sd*1.7,.2);
@@ -392,7 +399,7 @@ const TRACKS={
     if(!B){if(st%2===0){const seq=[0,1,2,1];I.harp(ch.c[seq[(st/2)%4]]+24,t,.25,.05)}}
     else if(st%2===0){const n=MEL[bar%4][st/2];if(n>=0)I.harp(deg(n),t,sd*2.4,.085)}
   }},
-  boss:{bpm:168,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROGB[bar%4],r=ch.r,B=bar>=4;
+  boss:{bpm:168,steps:128,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%16,ch=PROGB[bar%4],r=ch.r,B=bar>=4;
     I.kick(t,st%2?.45:.7);if(st===4||st===12)I.snare(t,.48);if(st%2===0)I.hat(t,.07,st===14);
     if(st===0){I.crash(t,.22);I.choir(ch.c.map(m=>m+12),t,sd*15,.028);if(bar%2===0)I.bell(50,t,.14)}
     I.bass(r+12,t,sd*.9,.18);
@@ -400,23 +407,34 @@ const TRACKS={
     if(B&&st%2===0){const n=MELB[bar%4][st/2];if(n>=0){I.harp(deg(n),t,sd*2,.08);}}
     if(!B&&st%4===0)I.organ([ch.c[st/4%3]+24],t,sd*3,.03);
   }},
-  calm:{bpm:100,play(s,t,sd){const bar=Math.floor(s/12)%4,st=s%12,ch=[PROG[0],PROG[2],PROG[3],PROG[0]][bar];
+  calm:{bpm:100,steps:48,play(s,t,sd){const bar=Math.floor(s/12)%4,st=s%12,ch=[PROG[0],PROG[2],PROG[3],PROG[0]][bar];
     if(st===0){I.bass(ch.r+12,t,sd*10,.08);I.organ(ch.c.map(m=>m+12),t,sd*10,.01)}
     if(st===4||st===8)ch.c.forEach(m=>I.harp(m+12,t,.25,.025));
     if(st%2===0){const n=MELW[bar][st/2];if(n>=0)I.box(deg(n)+12,t,.09)}
   }},
-  death:{bpm:50,play(s,t,sd){const bar=Math.floor(s/16)%2,st=s%16;if(st===0){I.organ(bar?[45,49,52]:[50,53,57],t,sd*15,.025);I.bell(bar?45:38,t,.12)}}}
+  death:{bpm:50,steps:32,play(s,t,sd){const bar=Math.floor(s/16)%2,st=s%16;if(st===0){I.organ(bar?[45,49,52]:[50,53,57],t,sd*15,.025);I.bell(bar?45:38,t,.12)}}}
 };
-const MUS={name:null,track:null,step:0,next:0};
-function setTrack(n){if(MUS.name===n)return;MUS.name=n;MUS.track=TRACKS[n]||null;MUS.step=0;if(A.ctx)MUS.next=A.ctx.currentTime+.1}
-function schedule(){if(!A.ctx||!MUS.track||!settings.music||A.ctx.state!=='running')return;const sd=60/MUS.track.bpm/4;
-  if(MUS.next<A.ctx.currentTime-.2)MUS.next=A.ctx.currentTime+.05;
-  while(MUS.next<A.ctx.currentTime+.14){try{MUS.track.play(MUS.step,MUS.next,sd)}catch(e){}MUS.step++;MUS.next+=sd}}
+const MUS={name:null,buf:{},busy:{},src:null,g:null};
+/* Each track is rendered once into a looping buffer (OfflineAudioContext), so playback costs almost nothing on phones. */
+function renderTrack(n){if(!A.ctx||MUS.buf[n]||MUS.busy[n]||!TRACKS[n])return;const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC)return;MUS.busy[n]=1;
+  const tr=TRACKS[n],sd=60/tr.bpm/4,L=tr.steps*sd,T=2.6,sr=32000,off=new OAC(1,Math.ceil((L+T)*sr),sr);
+  const mus=off.createGain(),lp=off.createBiquadFilter();lp.type='lowpass';lp.frequency.value=8500;mus.connect(lp);lp.connect(off.destination);
+  const rev=off.createGain();{const l2=off.createBiquadFilter(),d1=off.createDelay(1),d2=off.createDelay(1),f1=off.createGain(),f2=off.createGain(),rg=off.createGain();l2.type='lowpass';l2.frequency.value=2400;
+    d1.delayTime.value=.137;d2.delayTime.value=.211;f1.gain.value=.5;f2.gain.value=.45;rg.gain.value=.3;rev.connect(l2);l2.connect(d1);l2.connect(d2);d1.connect(f1);f1.connect(d2);d2.connect(f2);f2.connect(d1);d1.connect(rg);d2.connect(rg);rg.connect(mus)}
+  const wet=off.createGain();wet.connect(mus);const ms=off.createGain();ms.gain.value=.55;wet.connect(ms);ms.connect(rev);const hb=off.createBiquadFilter();hb.type='lowpass';hb.frequency.value=3800;hb.connect(wet);
+  const save={ctx:A.ctx,mus:A.mus,musWet:A.musWet,harpBus:A.harpBus,rev:A.rev};Object.assign(A,{ctx:off,mus,musWet:wet,harpBus:hb,rev});
+  try{for(let k=0;k<tr.steps;k++)tr.play(k,k*sd+.01,sd)}catch(e){}finally{Object.assign(A,save)}
+  const done=buf=>{const d=buf.getChannelData(0),len=Math.round(L*sr),out=A.ctx.createBuffer(1,len,sr),o=out.getChannelData(0);o.set(d.subarray(0,len));for(let i=len;i<d.length&&i-len<len;i++)o[i-len]+=d[i];
+    MUS.buf[n]=out;MUS.busy[n]=0;if(MUS.name===n)startMus(n)};
+  const pr=off.startRendering();if(pr&&pr.then)pr.then(done);else off.oncomplete=e=>done(e.renderedBuffer)}
+function stopMus(){if(!MUS.src||!A.ctx)return;const g=MUS.g,src=MUS.src,t=A.ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);try{src.stop(t+.65)}catch(e){}MUS.src=MUS.g=null}
+function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g}
+function setTrack(n){if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{stopMus();renderTrack(n)}}
 const RIFF={doloris:[7,9,11,14,11,9,8,9],mortis:[14,13,11,14,16,14,13,11],timoris:[0,0,4,0,3,0,4,6],amoris:[0,0,0,0],oblivionis:[7,11,14,18,16,14,11,13]};
 const S={_l:{},_min:{ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
   _q:[],_imp:{boss:1,bossdie:1,die:1,win:1,skill:1,pick:1,door:1,hurt:1},
   p(name,...a){if(!A.ctx||!settings.sfx||A.ctx.state!=='running')return;const now=A.ctx.currentTime;if(now-(S._l[name]||0)<(S._min[name]||.02))return;
-    if(!S._imp[name]){S._q=S._q.filter(x=>now-x<.1);if(S._q.length>=6)return;S._q.push(now)}S._l[name]=now;try{S[name](now,...a)}catch(e){}},
+    if(!S._imp[name]){S._q=S._q.filter(x=>now-x<.1);if(S._q.length>=5)return;S._q.push(now)}S._l[name]=now;try{S[name](now,...a)}catch(e){}},
   swing(t,id){noise(t,.13,A.sfx,.22,'bandpass',700,1.2,3600);
     if(id==='doloris')I.gtr([50,57,62],t,.18,.1,false,A.sfx);
     else if(id==='mortis')I.gtr([62,69],t,.1,.08,true,A.sfx);
@@ -817,7 +835,7 @@ const SHBASE={doloris:30,mortis:22,timoris:45,amoris:30,oblivionis:26};
 
 /* =================================================================== input */
 const IN={keys:{},sx:0,sy:0,melee:false,ranged:false,dashQ:false,skillQ:false,kMelee:false,kRanged:false};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();IN.keys[k]=true;if(G.state!=='play')return;
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(CUT.on){if(k===' '||k==='enter'||k==='j'||k==='k'){cutNext();e.preventDefault()}else if(k==='escape')endCut();return}IN.keys[k]=true;if(G.state!=='play')return;
   if(k==='j')IN.kMelee=true;if(k==='k')IN.kRanged=true;if(k==='l'||k==='shift')IN.dashQ=true;if(k===' '||k==='i'){IN.skillQ=true;e.preventDefault()}
   if(k==='escape'||k==='p'){if(!$('modal').hidden&&G.modalKind==='pause')closeModal();else if($('modal').hidden)showPause()}});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();IN.keys[k]=false;if(k==='j')IN.kMelee=false;if(k==='k')IN.kRanged=false});
@@ -1208,11 +1226,9 @@ function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');if(G.mods.roo
     if(own.length){const u=pick(own);applyUp(u);later(.6,()=>outcome('镜子碎了',`碎片里映出你的一段旋律，它被复制了一份。\n获得「${u.n}」+1 与 ✿30。`))}else later(.6,()=>showReward('trial'));return}
   if(type==='trial'){qProg('trials');G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
-    if(G.act>=5){later(1.6,winGame);return}
+    if(G.act>=5){later(1.6,()=>playCut(cutEnding(),winGame));return}
     later(1.4,()=>{G.frags=G.act;const cap=G.cage&&G.cage.id,nm=cap?cname(cap):'';
-      showStory(`第${CN[G.act-1]}乐章 · ${MAINQ[G.act-1].frag}`,MAINQ[G.act-1].after+(cap?`\n\n笼门应声而开，${nm} 走了出来。\n${RESCUE[cap]}`:''),
-        ()=>{if(cap){addAlly(cap);grantBond(cap);placeAllies();toast(nm+' 加入了队伍')}G.cage=null;showReward('boss')},
-        (cap?`<div class="bond got">${nm} 加入了队伍<br><span>她会一直跟随你，用近战、远程与技能协助战斗（不受强化效果影响）</span><br><span>并带来羁绊「${BONDS[cap].ic} ${BONDS[cap].n}」：${BONDS[cap].d}</span></div>`:'')+fragsHtml())})}
+      playCut(cutRescue(G.act,cap),()=>{if(cap){addAlly(cap);grantBond(cap);placeAllies();toast(nm+' 加入了队伍')}G.cage=null;showReward('boss')})})}
   else{if(G.quests.pages&&!G.quests.pages.done&&Math.random()<.6){const q=spawnPos();G.picks.push({k:'page',x:q.x,y:q.y,t:0});later(1,()=>toast('附近有一页散落的乐谱'))}
     later(.5,()=>showReward(type))}}
 function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qReward(k,openDoors);return}G.doors=[];G.cleared=true;
@@ -1389,12 +1405,84 @@ function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.u
   G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
-  G.bg=null;showActCard(1,()=>{enterRoom('combat');showStory('序幕',PROLOGUE)})}
+  G.bg=null;playCut(cutPrologue(),()=>showActCard(1,()=>enterRoom('combat')))}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
   const pr=rf.call(el);pr&&pr.then&&pr.then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}}
 $('go').onclick=()=>{auInit();goLandscape();startRun(G.charIdx)};
+
+/* =================================================================== cutscenes */
+const CUT={on:false,shots:[],i:0,t:0,parts:[],onEnd:null,typed:-1,lb:0,petals:0};
+function playCut(shots,onEnd){CUT.on=true;CUT.shots=shots;CUT.i=0;CUT.parts=[];CUT.onEnd=onEnd;CUT.lb=0;CUT.petals=0;releaseInputs();G.paused=true;$('game').classList.add('cut');$('cut').hidden=false;cutShot()}
+function cutShot(){const sh=CUT.shots[CUT.i];CUT.t=0;CUT.typed=-1;const sb=sh.sub||{};$('cutWho').textContent=sb.who||'';$('cutTxt').textContent='';if(sh.sfx)S.p(sh.sfx);if(sh.music)setTrack(sh.music);if(sh.init)sh.init()}
+function cutText(){const sh=CUT.shots[CUT.i];return(sh&&sh.sub&&sh.sub.text)||''}
+function cutLen(){const sh=CUT.shots[CUT.i];return Math.max(sh.d,cutText().length/18+1.8)}
+function cutNext(){if(!CUT.on)return;const n=cutText().length;if(CUT.t*18<n){CUT.t=n/18+.01;return}CUT.i++;if(CUT.i>=CUT.shots.length)endCut();else cutShot()}
+function endCut(){if(!CUT.on)return;CUT.on=false;$('cut').hidden=true;$('game').classList.remove('cut');G.paused=false;last=performance.now();const f=CUT.onEnd;CUT.onEnd=null;if(f)f()}
+function cutBurst(x,y,n,cols,spd=70){for(let i=0;i<n;i++){const a=rnd(TAU),v=rnd(spd*.3,spd);CUT.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(.4,1),max:1,col:pick(cols),sz:rnd()<.3?2:1,g:30})}}
+function updCut(dt){CUT.t+=dt;CUT.lb=Math.min(1,CUT.lb+dt*2);const txt=cutText(),n=Math.min(txt.length,Math.floor(CUT.t*18));if(n!==CUT.typed){CUT.typed=n;$('cutTxt').textContent=txt.slice(0,n)}
+  if(CUT.petals&&Math.random()<dt*14)CUT.parts.push({x:rnd(VW),y:-4,vx:rnd(-6,6),vy:rnd(14,26),life:12,max:12,col:pick(['#c8304a','#e05a70','#f2a2b6']),sz:2});
+  for(const p of CUT.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=(p.g||0)*dt;p.life-=dt}CUT.parts=CUT.parts.filter(p=>p.life>0&&p.y<VH+10);
+  if(CUT.t>cutLen())cutNext()}
+function cutBg(k,t){if(k==='black')return;
+  if(k==='room'&&G.bg){const s=Math.max(VW/RW,VH/RH)*1.05;ctx.drawImage(G.bg,VW/2-RW*s/2,VH/2-RH*s/2,RW*s,RH*s);ctx.fillStyle='rgba(5,2,8,.4)';ctx.fillRect(-VW,-VH,VW*3,VH*3);return}
+  const g=ctx.createLinearGradient(0,0,0,VH);g.addColorStop(0,'#0b0609');g.addColorStop(.7,'#1a0a12');g.addColorStop(1,'#080406');ctx.fillStyle=g;ctx.fillRect(-VW,-VH,VW*3,VH*3);if(k==='void')return;
+  for(let x=-30;x<30;x+=6){ctx.fillStyle=(x+30)%12?'#5a0e1c':'#420a14';ctx.fillRect(x,0,6,VH);ctx.fillRect(VW-x-6,0,6,VH)}
+  const fy=VH*.72;ctx.fillStyle='#1c1014';ctx.fillRect(-VW,fy,VW*3,VH);ctx.fillStyle=GOLD;ctx.fillRect(-VW,fy,VW*3,1);
+  ctx.globalAlpha=.12+.04*Math.sin(t*1.3);ctx.fillStyle='#fff3dc';const cx=VW/2;ctx.beginPath();ctx.moveTo(cx-8,0);ctx.lineTo(cx+8,0);ctx.lineTo(cx+60,fy);ctx.lineTo(cx-60,fy);ctx.fill();ctx.globalAlpha=1}
+function cutActor(a,t,sh){const dl=a.delay||0,dur=Math.max(.01,(a.dur||sh.d)-dl),p=clamp((t-dl)/dur,0,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  const x=a.x+((a.x1!==undefined?a.x1:a.x)-a.x)*e,y=a.y+((a.y1!==undefined?a.y1:a.y)-a.y)*e+(a.sink?a.sink*p:0),a0=a.alpha!==undefined?a.alpha:1,al=a0+((a.a1!==undefined?a.a1:a0)-a0)*p;
+  if(al<=.01)return;ctx.globalAlpha=al;const sc=a.sc||1;
+  if(a.k==='ch'){const fr=ART.fr[a.id];let an=a.anim||'idle';if(a.animEnd&&p>=1)an=a.animEnd;let c;
+    if(fr){const arr=fr[an]||fr.idle,once=['death','skill','hurt','melee'].includes(an);c=arr[once?Math.min(arr.length-1,Math.floor(t*7)):Math.floor(t*(an==='run'?10:5))%arr.length]}else c=SPR['ch_'+a.id].f[0];
+    if(a.strings){ctx.strokeStyle='rgba(230,220,210,.6)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-7,0,7]){ctx.moveTo(x+dx*sc*.7,y-26*sc);ctx.lineTo(x+dx*.5,-20)}ctx.stroke()}
+    shadow(x,y+1,7*sc);drawSpr(c,x,y+2*sc,a.face||1,null,(fr?.5:1)*sc)}
+  else if(a.k==='spr'){const sp=SPR[a.name],c=sp.f[Math.floor(t*4)%sp.f.length],sx=a.shake?rnd(-1,1)*a.shake:0,h=c.height*sc;
+    if(a.strings&&!(a.cutStrings&&t>a.cutStrings)){ctx.strokeStyle='rgba(230,220,210,.6)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-8,0,8]){ctx.moveTo(x+dx,y-h*.6);ctx.lineTo(x+dx*.4,-20)}ctx.stroke()}
+    if(a.cutStrings&&t>a.cutStrings&&!a._c){a._c=1;cutBurst(x,y-h,24,['#fff','#e6dcd2',GOLD],60);S.p('deflect')}
+    drawSpr(c,x+sx,y,1,null,sc);
+    if(a.crack){ctx.strokeStyle='#1b151f';ctx.lineWidth=1.2;const L=Math.min(1,t/2.2),cy0=y-h*.55;for(let k=0;k<6;k++){const an=k*1.05+.3;ctx.beginPath();ctx.moveTo(x,cy0);for(let j=1;j<=4;j++){const r=j*9*sc*L,w=an+Math.sin(j*3+k)*.35;ctx.lineTo(x+Math.cos(w)*r,cy0+Math.sin(w)*r*.6)}ctx.stroke()}}}
+  else if(a.k==='cage'){const fr=ART.fr[a.id],broken=t>a.breakAt;if(broken&&!a._b){a._b=1;cutBurst(x,y-24*sc,46,[GOLD,'#fff','#f6dc8a'],90);S.p('shbreak')}
+    drawSpr(fr?fr.idle[Math.floor(t*4)%fr.idle.length]:SPR['ch_'+a.id].f[0],x,y+2*sc,-1,null,(fr?.5:1)*sc);
+    if(!broken){const w=14*sc,h=34*sc,sh2=t>a.breakAt-.6?rnd(-1,1):0;ctx.strokeStyle=GOLD;ctx.lineWidth=1.2;for(let i=-w;i<=w+.1;i+=4*sc){ctx.beginPath();ctx.moveTo(x+i+sh2,y-h);ctx.lineTo(x+i+sh2,y+2);ctx.stroke()}
+      ctx.beginPath();ctx.ellipse(x+sh2,y-h,w,8*sc,0,Math.PI,0);ctx.stroke();ctx.fillStyle=GOLD;ctx.fillRect(x-w-2,y+1,w*2+4,3)}}
+  else if(a.k==='frag'){const yy=y-Math.min(22,t*9),g=ctx.createRadialGradient(x,yy,1,x,yy,24);g.addColorStop(0,'rgba(255,233,160,.85)');g.addColorStop(1,'rgba(255,233,160,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,yy,24,0,TAU);ctx.fill();
+    const n=SPR.note;ctx.drawImage(n,Math.round(x-n.width*1.5),Math.round(yy-n.height*1.5),n.width*3,n.height*3)}
+  else if(a.k==='shards'){const im=SPR.mujica.f[0],w=im.width,h=im.height,sw=w/5;for(let i=0;i<5;i++){const dir=i-2;ctx.save();ctx.translate(x+dir*sw*sc+dir*t*34,y-h*sc/2+t*t*36+Math.abs(dir)*t*6);ctx.rotate(dir*t*.7);ctx.globalAlpha=al*Math.max(0,1-t/2.6);
+      ctx.drawImage(im,i*sw,0,sw,h,-sw*sc/2,-h*sc/2,sw*sc,h*sc);ctx.restore()}}
+  else if(a.k==='curtain'){const hh=VH*clamp((t-.8)/2.6,0,1);for(let i=-VW;i<VW*2;i+=8){ctx.fillStyle=(i+VW)%16?'#5a0e1c':'#420a14';ctx.fillRect(i,-VH,8,hh+VH)}ctx.fillStyle=GOLD;ctx.fillRect(-VW,hh-2,VW*3,2)}
+  ctx.globalAlpha=1}
+function renderCut(){const sh=CUT.shots[CUT.i];if(!sh)return;const t=CUT.t;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
+  const z=sh.z0!==undefined?sh.z0+(sh.z1-sh.z0)*Math.min(1,t/sh.d):1,shk=sh.shake?rnd(-1,1)*sh.shake:0;
+  ctx.setTransform(SC*z,0,0,SC*z,VW*SC/2*(1-z)+shk*SC,VH*SC*.6*(1-z));cutBg(sh.bg,t);for(const a of sh.actors||[])cutActor(a,t,sh);
+  for(const p of CUT.parts){ctx.globalAlpha=clamp(p.life/p.max*2,0,1);ctx.fillStyle=p.col;ctx.fillRect(Math.round(p.x),Math.round(p.y),p.sz||1,p.sz||1)}ctx.globalAlpha=1;
+  ctx.setTransform(SC,0,0,SC,0,0);const L=cutLen();
+  if(sh.fadeIn&&t<.6){ctx.fillStyle=`rgba(0,0,0,${1-t/.6})`;ctx.fillRect(0,0,VW,VH)}
+  if(sh.fadeOut&&t>L-.7){ctx.fillStyle=`rgba(0,0,0,${clamp((t-(L-.7))/.7,0,1)})`;ctx.fillRect(0,0,VW,VH)}
+  if(sh.flash&&t<sh.flash){ctx.fillStyle=`rgba(255,250,235,${1-t/sh.flash})`;ctx.fillRect(0,0,VW,VH)}
+  const bh=VH*.14*CUT.lb;ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh)}
+function cutPrologue(){const me=ch().id,cx=VW/2,fy=VH*.72;return[
+  {d:3.2,bg:'stage',fadeIn:1,music:'title',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'黑暗里，有个声音在轻笑。'}},
+  {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'spr',name:'mujica',x:cx,y:VH*.56,sc:2.2,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「欢迎来到假面回廊，我的人偶。」'}},
+  {d:4.4,bg:'stage',actors:[...G.caps.map((id,i)=>({k:'ch',id,x:cx+(i-1.5)*48,y:fy-6,y1:fy-170,face:i<2?1:-1,anim:'hurt',sc:1.1,a1:0,strings:1,delay:1.2})),{k:'ch',id:me,x:cx,y:fy+12,face:1,sc:1.4}],
+    sub:{who:'Mujica',text:'「你的同伴，还有你们的乐章，都被我藏在了回廊的尽头。」'}},
+  {d:3,bg:'stage',z0:1.2,z1:1.4,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:cname(me),text:'「……」'}},
+  {d:3.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,x1:cx+150,y:fy,face:1,anim:'run',sc:1.4}],sub:{who:'Mujica',text:'「想再一次站上舞台，就去把她们带回来吧。如果你们还记得怎么唱的话。」'}}]}
+function cutRescue(act,cap){const me=ch().id,b=BOSSES[act-1],cx=VW/2,fy=VH*.74,mq=MAINQ[act-1],lines=mq.after.split('\n'),bd=cap&&BONDS[cap],sh=[
+  {d:3.4,bg:'room',fadeIn:1,shake:1.2,init:()=>cutBurst(cx,fy-36,50,['#fff',GOLD,'#e0283c'],100),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.2,a1:0,sink:14,shake:1}],sub:{who:b.name,text:lines[0]}}];
+  if(cap){sh.push({d:3.4,bg:'room',z0:1.05,z1:1.2,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.9,breakAt:1.4}],sub:{text:lines[1]&&act<4?lines[1]:'笼门应声而开。'}},
+    {d:3.6,bg:'room',actors:[{k:'ch',id:me,x:cx-70,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+90,x1:cx+40,y:fy,face:-1,anim:'run',animEnd:'idle',sc:1.5,dur:1.6}],sub:{who:cname(cap),text:RESCUE[cap]}},
+    {d:3.8,bg:'room',fadeOut:act<4,sfx:'pick',actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+40,y:fy,face:-1,sc:1.5},{k:'frag',x:cx,y:fy-60}],
+      sub:{text:`取回第${CN[act-1]}乐章「${mq.frag}」。${cname(cap)} 加入了队伍，带来羁绊「${bd.n}」。`}})}
+  if(act===4&&lines[1])sh.push({d:3.6,bg:'void',fadeOut:1,actors:[{k:'spr',name:'mujica',x:cx,y:VH*.6,sc:2,alpha:0,a1:.8}],sub:{who:'Mujica',text:lines[1].replace(/^.*?「/,'「')}});
+  return sh}
+function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
+  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'spr',name:'mujica',x:cx,y:VH*.66,sc:2.6,crack:1,shake:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
+  {d:3.8,bg:'stage',flash:.7,init:()=>cutBurst(cx,VH*.4,60,['#fff','#f0e8dc',GOLD],120),actors:[{k:'shards',x:cx,y:VH*.66,sc:2.6},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:2}],sub:{text:'面具碎成了五片。后面站着的，是一个小小的、被丝线牵着的人偶。'}},
+  {d:3.6,bg:'stage',z0:1.15,z1:1.3,actors:[{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,strings:1,cutStrings:1.3}],sub:{text:'你们剪断了她的线。'}},
+  {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'四个乐章合而为一。五个人的声音，终于完整。'}},
+  {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'掌声如潮水涌来，帷幕缓缓落下。'}}]}
 
 /* =================================================================== render */
 let last=performance.now();
@@ -1402,6 +1490,7 @@ const portraitMQ=matchMedia('(orientation:portrait) and (pointer:coarse)');
 portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInputs());
 let lastDraw=0,slow=0;
 function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastDraw=now;const dt=Math.min(.05,(now-last)/1000);last=now;
+  if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
   if(G.state==='play'&&!G.paused&&!portraitMQ.matches){if(G.hitstop>0)G.hitstop-=dt;else update(dt)}
@@ -1541,7 +1630,8 @@ function drawSel(){const c=$('selCv'),x=c.getContext('2d');x.clearRect(0,0,c.wid
   const bob=Math.round(Math.sin(G.selT*2.4)*2);x.drawImage(s.f[f],0,0,20,29,15,10+bob,120,174)}
 
 /* =================================================================== boot */
+$('cut').addEventListener('click',()=>cutNext());$('cutSkip').addEventListener('click',e=>{e.stopPropagation();endCut()});
 function boot(){resize();buildSprites();loadArt();buildTabs();selChar(0);toTitle();if(!isTouch)$('kbdHint').textContent='键盘：WASD 移动 · J 近战 · K 远程 · L 闪避 · 空格 技能 · Esc 暂停';requestAnimationFrame(frame)}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){if(G.state==='play'&&modal.hidden&&$('actCard').hidden)showPause();if(A.ctx)A.ctx.suspend()}else if(A.ctx)A.ctx.resume()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(G.state==='play'&&!CUT.on&&modal.hidden&&$('actCard').hidden)showPause();if(A.ctx)A.ctx.suspend()}else if(A.ctx)A.ctx.resume()});
 boot();
 </script>

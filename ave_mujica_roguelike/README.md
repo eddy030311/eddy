@@ -17,5 +17,5 @@
 
 ## 安卓安装包
 
-`dist/AveMujica.apk`：横屏全屏、离线运行（字体与图片都打包在内）。在 `android/` 目录运行 `./build.sh` 可重新构建（需要 Ubuntu 包 android-sdk-platform-23、aapt、apksigner、dalvik-exchange、zipalign 与 JDK）。
+`dist/AveMujica.apk`：横屏全屏、离线运行（字体与图片都打包在内）。桌面图标在 `android/icon/icon512.png`。剧情文字改动后先运行 `python3 android/update_fonts.py` 补齐字体，再在 `android/` 目录运行 `./build.sh` 重新构建（需要 Ubuntu 包 android-sdk-platform-23、aapt、apksigner、dalvik-exchange、zipalign 与 JDK）。
 签名密钥默认生成在 `~/.ave_mujica_release.keystore`，不在仓库里；换了密钥的新版本需要先卸载旧版再安装。

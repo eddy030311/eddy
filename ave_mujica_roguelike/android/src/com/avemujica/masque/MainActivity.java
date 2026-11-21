@@ -66,11 +66,11 @@ public class MainActivity extends Activity {
         hideBars();
     }
 
-    /** Back: pause in game, close the pause menu, go back from character select, exit from the title. */
+    /** Back: skip a cutscene, pause in game, close the pause menu, go back from character select, exit from the title. */
     @Override
     public void onBackPressed() {
         web.evaluateJavascript(
-            "(function(){try{if(G.state==='play'){if(modal.hidden&&$('actCard').hidden)showPause();else if(G.modalKind==='pause')closeModal();return 'stay'}"
+            "(function(){try{if(CUT.on){endCut();return 'stay'}if(G.state==='play'){if(modal.hidden&&$('actCard').hidden)showPause();else if(G.modalKind==='pause')closeModal();return 'stay'}"
             + "if(G.state==='select'){toTitle();return 'stay'}if(G.state==='title')return 'exit'}catch(e){}return 'stay'})()",
             new ValueCallback<String>() {
                 @Override public void onReceiveValue(String v) {
