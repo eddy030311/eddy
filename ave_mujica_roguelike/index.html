@@ -371,7 +371,7 @@ function auInit(){
   A.sfxWet=c.createGain();A.sfxWet.connect(A.sfx);const ss=c.createGain();ss.gain.value=.4;A.sfxWet.connect(ss);ss.connect(A.rev);
   const nb=c.createBuffer(1,c.sampleRate,c.sampleRate),nd=nb.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;A.noise=nb;
   const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i*2/n-1;cv[i]=(1+24)*x/(1+24*Math.abs(x))}A.curve=cv;
-  const n0=MUS.name;MUS.name=null;setTrack(n0);setTimeout(()=>{renderTrack('battle');setTimeout(()=>renderTrack('fever'),1200);setTimeout(()=>renderTrack('calm'),2600)},900);
+  const n0=MUS.name;MUS.name=null;setTrack(n0);setTimeout(()=>preloadTracks(['battle','fever','calm','boss']),600);
 }
 function impulse(sec,decay){const c=A.ctx,len=Math.floor(c.sampleRate*sec),b=c.createBuffer(2,len,c.sampleRate);
   for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay)}return b}
@@ -450,8 +450,13 @@ TRACKS.fever={bpm:176,steps:128,play(s,t,sd){const bar=Math.floor(s/16)%8,st=s%1
   if(st%2===0){const n=MEL[bar%4][st/2];if(n>=0)I.harp(deg(n)+12,t,sd*2,.09)}else{const n=MELB[bar%4][(st-1)/2];if(bar>=4&&n>=0)I.harp(deg(n)+19,t,sd,.035)}}};
 const MUS={name:null,buf:{},busy:{},src:null,g:null};
 /* Each track is rendered once into a looping buffer (OfflineAudioContext), so playback costs almost nothing on phones. */
-function renderTrack(n){if(!A.ctx||MUS.buf[n]||MUS.busy[n]||!TRACKS[n])return;const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC)return;MUS.busy[n]=1;
-  const tr=TRACKS[n],sd=60/tr.bpm/4,L=tr.steps*sd,T=2.6,sr=32000,off=new OAC(1,Math.ceil((L+T)*sr),sr);
+/* one render at a time; the track that is needed now jumps the queue */
+function renderTrack(n,urgent){if(!A.ctx||MUS.buf[n]||!TRACKS[n])return;MUS.q=MUS.q||[];const i=MUS.q.indexOf(n);if(MUS.busy[n])return;if(i>=0){if(urgent){MUS.q.splice(i,1);MUS.q.unshift(n)}}else urgent?MUS.q.unshift(n):MUS.q.push(n);pumpRender()}
+function pumpRender(){if(MUS.rendering||!MUS.q||!MUS.q.length)return;const n=MUS.q.shift();if(MUS.buf[n]){pumpRender();return}MUS.rendering=n;renderNow(n)}
+function preloadTracks(list){list.forEach(n=>renderTrack(n))}
+function fallbackFor(n){const m=/^mj(\d)$/.exec(n);if(m){for(let k=+m[1]-1;k>=1;k--)if(MUS.buf['mj'+k])return'mj'+k;return MUS.buf.boss?'boss':MUS.buf.battle?'battle':null}if(n==='boss'||n==='fever')return MUS.buf.battle?'battle':null;return null}
+function renderNow(n){const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!OAC){MUS.rendering=null;return}MUS.busy[n]=1;
+  const tr=TRACKS[n],sd=60/tr.bpm/4,L=tr.steps*sd,T=2.6,sr=24000,off=new OAC(1,Math.ceil((L+T)*sr),sr);
   const mus=off.createGain(),lp=off.createBiquadFilter();lp.type='lowpass';lp.frequency.value=8500;mus.connect(lp);lp.connect(off.destination);
   const rev=off.createGain();{const l2=off.createBiquadFilter(),d1=off.createDelay(1),d2=off.createDelay(1),f1=off.createGain(),f2=off.createGain(),rg=off.createGain();l2.type='lowpass';l2.frequency.value=2400;
     d1.delayTime.value=.137;d2.delayTime.value=.211;f1.gain.value=.5;f2.gain.value=.45;rg.gain.value=.3;rev.connect(l2);l2.connect(d1);l2.connect(d2);d1.connect(f1);f1.connect(d2);d2.connect(f2);f2.connect(d1);d1.connect(rg);d2.connect(rg);rg.connect(mus)}
@@ -459,11 +464,11 @@ function renderTrack(n){if(!A.ctx||MUS.buf[n]||MUS.busy[n]||!TRACKS[n])return;co
   const save={ctx:A.ctx,mus:A.mus,musWet:A.musWet,harpBus:A.harpBus,rev:A.rev};Object.assign(A,{ctx:off,mus,musWet:wet,harpBus:hb,rev});
   try{for(let k=0;k<tr.steps;k++)tr.play(k,k*sd+.01,sd)}catch(e){}finally{Object.assign(A,save)}
   const done=buf=>{const d=buf.getChannelData(0),len=Math.round(L*sr),out=A.ctx.createBuffer(1,len,sr),o=out.getChannelData(0);o.set(d.subarray(0,len));for(let i=len;i<d.length&&i-len<len;i++)o[i-len]+=d[i];
-    MUS.buf[n]=out;MUS.busy[n]=0;if(MUS.name===n)startMus(n)};
+    MUS.buf[n]=out;MUS.busy[n]=0;MUS.rendering=null;if(MUS.name===n&&MUS.playing!==n)startMus(n);else if(MUS.name&&!MUS.buf[MUS.name]&&!MUS.playing&&TRACKS[MUS.name]){const fb=fallbackFor(MUS.name);if(fb)startMus(fb)}setTimeout(pumpRender,60)};
   const pr=off.startRendering();if(pr&&pr.then)pr.then(done);else off.oncomplete=e=>done(e.renderedBuffer)}
-function stopMus(){if(!MUS.src||!A.ctx)return;const g=MUS.g,src=MUS.src,t=A.ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);try{src.stop(t+.65)}catch(e){}MUS.src=MUS.g=null}
-function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
-function setTrack(n,force){if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{stopMus();renderTrack(n)}}
+function stopMus(){MUS.playing=null;if(!MUS.src||!A.ctx)return;const g=MUS.g,src=MUS.src,t=A.ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);try{src.stop(t+.65)}catch(e){}MUS.src=MUS.g=null}
+function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.playing=n;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
+function setTrack(n,force){if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
 const RIFF={doloris:[7,9,11,14,11,9,8,9],mortis:[14,13,11,14,16,14,13,11],timoris:[0,0,4,0,3,0,4,6],amoris:[0,0,0,0],oblivionis:[7,11,14,18,16,14,11,13]};
 const S={_l:{},_min:{ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
   _q:[],_imp:{boss:1,bossdie:1,die:1,win:1,skill:1,pick:1,door:1,hurt:1},
@@ -1158,7 +1163,7 @@ function enterRoom(type,noCount){
     if(type!=='trial')setTrack('battle');
   }else if(type==='boss'){
     [[90,TOP+46],[RW-106,TOP+46],[90,RH-72],[RW-106,RH-72]].forEach(([ox,oy])=>G.obs.push({x:ox+1,y:oy+2,w:14,h:10}));
-    setTrack(null);if(G.act===5&&G.route!=='b')renderTrack('mj1');later(.9,()=>spawnBoss());if(G.act<5)G.cage={id:G.caps[G.act-1],x:RW-56,y:TOP+30};
+    setTrack(null);if(G.act===5&&G.route!=='b')renderTrack('mj1',1);else renderTrack('boss',1);later(.9,()=>spawnBoss());if(G.act<5)G.cage={id:G.caps[G.act-1],x:RW-56,y:TOP+30};
   }else{
     setTrack('calm');
     if(type==='rest'){G.deco.push({k:'piano',x:RW/2,y:RH/2-30});later(.5,showRest)}
@@ -1187,11 +1192,11 @@ function mjBar(e){const f=MJF[e.form-1],d=G.mjDeb?MJDEB[G.mjDeb-1]:null;$('bossN
 function spawnMujica(hm){const b=BOSSES[4],hp=mjHp(1,hm);G.espd=1;
   const e={t:'boss',boss:{...b,pats:MJF[0].pats},mj:1,form:1,hm,x:RW/2,y:TOP+124,r:26,hp,mhp:hp,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:'mujica',h:90,float:1},amb:2,st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.2,
     hands:[-1,1].map(sd=>({s:sd,x:RW/2+(sd<0?-64:64),y:TOP+130,tx:0,ty:0,sp:4,fr:0,act:0,sw:0}))};
-  G.en.push(e);G.boss=e;$('bossBar').hidden=false;mjBar(e);setTrack('mj1');renderTrack('mj2');
+  G.en.push(e);G.boss=e;$('bossBar').hidden=false;mjBar(e);setTrack('mj1');preloadTracks(['mj2','mj3','mj4','mj5']);
   playCut(cutMjIntro(),()=>{shake(6);S.p('boss');toast('终幕 · Mujica');setDeb(1)})}
 function mjNext(e){e.trans=1;setDeb(0);G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
   e.hands.forEach(h=>{h.act=0;h.sw=0});e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;
-  later(.9,()=>playCut(cutMjForm(e.form),()=>{e.form++;const f=MJF[e.form-1];e.mhp=e.hp=mjHp(e.form,e.hm);e.boss={...e.boss,pats:f.pats};e.pi=0;e.stT=1;e.trans=0;e.ph2=0;G.espd=1+.08*(e.form-1);setDeb(e.form);if(e.form<5)renderTrack('mj'+(e.form+1));toast(f.name)}))}
+  later(.9,()=>playCut(cutMjForm(e.form),()=>{e.form++;const f=MJF[e.form-1];e.mhp=e.hp=mjHp(e.form,e.hm);e.boss={...e.boss,pats:f.pats};e.pi=0;e.stT=1;e.trans=0;e.ph2=0;G.espd=1+.08*(e.form-1);setDeb(e.form);if(e.form<5)renderTrack('mj'+(e.form+1),1);toast(f.name)}))}
 function handSlam(e,h,x,y,dly=0){laterE(dly,()=>{h.act=1;h.st='up';h.stt=G.etime;h.tx=x;h.ty=y-30;h.sp=7;G.fx.push({k:'warnC',x,y,r:24,t:0,d:.8,en:1});S.p('warn')});
   laterE(dly+.72,()=>{h.ty=y+6;h.sp=30;h.fr=1;h.st='down';h.stt=G.etime});
   laterE(dly+.82,()=>{if((P.x-x)**2+(P.y-y)**2<(24+P.r)**2)hurtPlayer(10+G.act*3);shake(4);S.p('slam');burst(x,y,16,['#cfc3b6','#9b1b30','#3a2030'],80,.5);G.fx.push({k:'ring',x,y,r0:4,r1:26,t:0,d:.25,col:'#e0283c'});
@@ -1578,7 +1583,7 @@ function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qRew
     const xs=n===3?[RW/2-80,RW/2,RW/2+80]:[RW/2-56,RW/2+56];G.doors=ch.map((t,i)=>({x:xs[i],t}))}
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
 function takeDoor(d){if(G.trans)return;G.trans=1;S.p('door');$('fade').classList.add('on');releaseInputs();
-  setTimeout(()=>{G.trans=0;if(d.t==='next'){G.act++;if(G.act>=3)unlock('timoris');G.room=0;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);best.act=Math.max(best.act,G.act);store.set('amj_best',best);
+  setTimeout(()=>{G.trans=0;if(d.t==='next'){G.act++;if(G.act>=3)unlock('timoris');if(G.act===5&&G.route!=='b')preloadTracks(['mj1','mj2','mj3','mj4','mj5']);G.room=0;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);best.act=Math.max(best.act,G.act);store.set('amj_best',best);
       G.zones=[];G.bg=buildBg();$('fade').classList.remove('on');playCut(cutChapter(G.act),()=>showActCard(G.act,()=>enterRoom('combat')))}
     else{enterRoom(d.t);$('fade').classList.remove('on')}},300)}
 
