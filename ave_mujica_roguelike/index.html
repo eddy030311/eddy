@@ -178,6 +178,8 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .qlog li span{font:11px var(--f-pixel);color:var(--gold)}
 .qlog li.main b{color:var(--gold)}
 .qlog li.done{opacity:.55}
+.t-wrap #meta{margin-top:2px}
+.qlog ul.ends li.done b{color:var(--gold)}
 .summary{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px}
 .summary div{border:1px solid var(--line);padding:8px 4px}
 .summary b{display:block;font:14px var(--f-pixel);color:var(--gold)}
@@ -299,6 +301,7 @@ body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow
     <div class="t-sub">假面回廊</div>
     <p class="t-line">五具人偶，五张假面。悲伤、死亡、恐惧、爱、忘却。<br>穿过五章回廊，救出被囚禁的同伴，直到终幕落下。</p>
     <button class="cta" id="start">开 演</button>
+    <button class="ghost" id="meta">后台 · 局外成长</button>
     <div class="t-best" id="best"></div>
     <div class="t-note">同人像素肉鸽 · 配乐为程序合成的哥特金属风原创旋律</div>
   </div>
@@ -630,6 +633,8 @@ function buildSprites(){
   reg('maestro',[spr(12,26,r=>{r(3,0,6,3,'#18141c');r(2,3,8,1,'#18141c');r(4,7,4,1,'#ece4d8');r(2,8,8,10,'#18141c');r(5,8,2,7,'#ece4d8');r(1,9,2,7,'#18141c');r(9,9,2,5,'#18141c');r(10,5,1,5,'#ece4d8');r(3,18,2,8,'#18141c');r(7,18,2,8,'#18141c');r(2,14,8,1,GOLD)})]);
   reg('puppeteer',[spr(18,30,r=>{r(4,6,10,20,'#3a2a20');r(3,10,12,16,'#4a3424');r(4,4,8,6,'#2a1e16');r(6,6,4,3,'#d8c8b4');r(7,7,1,1,'#18101a');r(9,7,1,1,'#18101a');r(5,26,3,4,'#2a1e16');r(10,26,3,4,'#2a1e16');
     r(13,14,3,1,'#5a4030');r(15,15,2,4,GOLD);r(15,16,2,2,'#ffd27a');r(0,2,9,1,'#6a5040');r(4,0,1,4,'#6a5040');for(const sx of[1,4,8])r(sx,3,1,5,'#cfc6d4');r(3,26,12,1,'#1a120e')})]);
+  reg('audience',[0,1].map(f=>spr(60,44,r=>{for(let row=0;row<4;row++){const y=4+row*8,n=7-row%2;for(let i=0;i<n;i++){const x=3+i*8+(row%2)*4;r(x,y+6,7,3,'#2a1218');r(x+1,y,5,6,'#ece4d8');r(x+1,y,5,1,'#fff');r(x+2,y+2,1,1,'#120a10');r(x+4,y+2,1,1,'#120a10');if((i+row+f)%3===0)r(x+3,y+4,1,1,'#9b1b30')}}
+    r(0,36,60,8,'#5e0f1c');r(0,36,60,1,GOLD);const hx=f?18:10;r(hx,24,9,12,'#f0e8dc');r(hx+1,22,2,3,'#f0e8dc');r(hx+4,21,2,3,'#f0e8dc');r(60-hx-9,24,9,12,'#f0e8dc');r(60-hx-3,22,2,3,'#f0e8dc');r(60-hx-6,21,2,3,'#f0e8dc');r(hx,34,9,1,GOLD);r(60-hx-9,34,9,1,GOLD)})));
   reg('blank',[0,1].map(f=>spr(48,60,r=>{for(let y=0;y<44;y++)for(let x=0;x<36;x++){const dx=(x-17.5)/17.5,dy=(y-22)/22;if(dx*dx+dy*dy<=1){const sh=dx*-.45+dy*-.35;r(6+x,2+y,1,1,sh>.3?'#ffffff':sh>-.05?'#ece6ee':sh>-.45?'#cfc6d4':'#a89cb0')}}
     r(23,9,1,3,'#8a7e92');r(24,12,1,4,'#8a7e92');r(23,16,1,3,'#8a7e92');r(25,14,2,1,'#8a7e92');r(10,44,28,3,'#9b1b30');r(10,44,28,1,GOLD);r(8,47,6,10+f,'#7a1626');r(34,47,6,11-f,'#7a1626');r(20,46,8,13,'#1e1a24');r(22,47,4,11,'#e8e4f0');
     for(const sx of[12,24,36])r(sx,0,1,4,'#cfc6d4')},'#0c0910')));
@@ -812,7 +817,25 @@ const RELICS=[{id:'key',n:'生锈的发条钥匙',ic:'⚿',d:'钥匙的背面刻
 const ACT5A={name:'假面舞台',el:'终幕',poem:'帷幕升起，观众屏息。\n欢迎来到 Ave Mujica 的世界，直至终焉。'},ACT5B={name:'镜之后台',el:'空白',poem:'镜子的背面没有观众，也没有掌声。\n只有一张空白的脸，在写下一页剧本。'};
 const SECS5B=[['镜中的走廊','镜子里的你没有戴面具，却在对你微笑。'],['剧本室','桌上堆满了写好的剧本。每一本的结局，都是你们五个人分开。'],['提线的森林','成千上万根丝线从天花板垂下，每一根都系着一个名字。'],['被遗忘的观众席','坐在这里的观众，是被你们一个个遗忘的自己。'],['舞台背面','没有灯光，没有掌声。只有一张空白的脸，在等你。']];
 const BOSSB={name:'空白假面',sub:'Sans Visage · 剧本的作者',spr:'blank',hp:1700,r:16,spd:18,pats:['spiral','rain','shades','fanRing','stream','spikes','ring','summon'],sum:['mask','mari'],h:56,float:1};
+function darkStep(){G.dark=(G.dark||0)+1;later(.8,()=>toast(G.dark>=2?'碎片里的低语越来越清晰了……':'你听见假面在低语……'))}
 let SECS5A=null;
+const BOSSD={name:'无尽的观众',sub:'Le Public · 永不落幕',spr:'audience',hp:1900,r:22,spd:0,pats:['ring','rain','stream','summon','spiral','fanRing','shades','spikes'],sum:['mari','mask','crow'],h:44};
+const ENDS={a:{t:'第一结局 · 剪断的丝线',h:'击败 Mujica。'},b:{t:'第二结局 · 自己选择的演出',h:'旅途中集齐三件神秘物品，在邂逅里跟随老人偶师。'},
+  c:{t:'第三结局 · 新的假面之主',h:'在旅途中做出至少两次「黑暗的选择」（契约、献祭、饮下泪泉……），再击败 Mujica。'},d:{t:'第四结局 · 帷幕之外（真结局）',h:'在后台取得「失落的第五乐章」，再一次走向舞台背面。'}};
+const META=[
+  {id:'hp',n:'坚韧的丝线',d:'初始最大生命 +10',max:5,c:30,ic:'❤'},{id:'sh',n:'银镜之誓',d:'初始最大护盾 +8',max:5,c:30,ic:'◇'},
+  {id:'dmg',n:'练习曲',d:'全部伤害 +5%',max:5,c:45,ic:'⚔'},{id:'pet',n:'后台的储蓄',d:'开局花瓣 +25',max:4,c:25,ic:'✿'},
+  {id:'fev',n:'节拍器',d:'Fever 积攒速度 +15%',max:3,c:40,ic:'♬'},{id:'shop',n:'熟客',d:'商店价格 -8%',max:3,c:35,ic:'¤'},
+  {id:'dash',n:'舞步',d:'闪避恢复 +10%',max:3,c:35,ic:'≫'},{id:'rare',n:'试音',d:'每局开局获得一段稀有旋律',max:1,c:150,ic:'♪'},
+  {id:'pick',n:'选曲',d:'选择旋律时多一个选项',max:1,c:220,ic:'☰'},{id:'ave',n:'第二次登台',d:'每局获得 1 次复活',max:1,c:260,ic:'✝'},
+  {id:'score',n:'失落的第五乐章',d:'开启第四结局的道路',max:1,c:300,ic:'𝄞',req:()=>best.endings&&best.endings.a&&best.endings.b,rq:'需先达成第一、第二结局'}];
+let MT=Object.assign({ap:0,lv:{}},store.get('amj_meta',{}));
+const ml=id=>MT.lv[id]||0,mcost=m=>m.c*(ml(m.id)+1);
+function saveMeta(){store.set('amj_meta',MT)}
+function award(ending){const n=Math.round(10*(G.act-1)+2*G.room+Math.floor(G.kills/8)+15*(G.bossK||0)+(ending?60:0));MT.ap+=n;saveMeta();return n}
+function apHtml(n){return `<div class="bond got">获得掌声 ✦${n}<br><span>共 ✦${MT.ap}，可在标题页「后台」使用</span></div>`}
+function applyMeta(){const m=G.mods;m.maxHp+=10*ml('hp');m.shMax+=8*ml('sh');m.melee+=.05*ml('dmg');m.ranged+=.05*ml('dmg');m.shop*=1-.08*ml('shop');m.dashCd*=1-.1*ml('dash');m.revive+=ml('ave')}
+function nCh(){return 3+ml('pick')}
 function applyRoute(){const b=G.route==='b';if(!SECS5A)SECS5A=CHAP[4].secs;Object.assign(ACTS[4],b?ACT5B:ACT5A);CHAP[4].secs=b?SECS5B:SECS5A}
 function relicN(){return RELICS.filter(r=>G.relics&&G.relics[r.id]).length}
 function dropRelic(x,y,chance){if(G.route||relicN()>=3||Math.random()>chance)return;const r=RELICS.find(q=>!G.relics[q.id]&&!G.picks.some(k=>k.k==='relic'&&k.id===q.id&&!k.dead));if(!r)return;G.picks.push({k:'relic',id:r.id,x:clamp(x,30,RW-30),y:clamp(y,TOP+24,RH-30),t:0});later(.8,()=>toast('有什么东西在发光……'))}
@@ -1182,11 +1205,12 @@ function makeEnemy(t,x,y,elite){const d=EN[t],hm=[1,1.7,2.6,3.7,5][G.act-1]*(1+G
   const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*[1,1.3,1.65,2.05,2.5][G.act-1]*(elite?1.3:1)*(G.hardDmg||1),elite:!!elite,d,
     st:'idle',stT:rnd(.3,1.2),fire:(d.fire||2)*rnd(.5,1),fl:0,kx:0,ky:0,stun:0,an:rnd(TAU),face:1,hitCd:new Map(),sc:elite?1.4:1};
   G.en.push(e);return e}
-function spawnBoss(){const b=G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-1],hm=1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length);
-  if(G.act===5&&G.route!=='b')return spawnMujica(hm);
+function spawnBoss(ov){const b=ov||(G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-1]),hm=1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length);
+  if(!ov&&G.act===5&&G.route!=='b')return spawnMujica(hm);
   const e={t:'boss',phase:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   if(b.spr==='blank'){e.sc=1.3;e.y=TOP+92;e.r=20}
-  G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name);later(1.6,()=>toast(b.spr==='blank'?'「欢迎来到后台。这里没有观众，所以也没有结局。」':BTAUNT[G.act-1]))}
+  if(b.spr==='audience'){e.sc=1.5;e.y=TOP+86;e.r=26}
+  G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name);later(1.6,()=>toast(b.spr==='audience'?'「再来一首。再来一首。永远，再来一首。」':b.spr==='blank'?'「欢迎来到后台。这里没有观众，所以也没有结局。」':BTAUNT[G.act-1]))}
 function mjHp(f,hm){return BOSSES[4].hp*.45*hm*(1+.15*(f-1))*5}
 function mjBar(e){const f=MJF[e.form-1],d=G.mjDeb?MJDEB[G.mjDeb-1]:null;$('bossName').innerHTML=`Mujica · ${f.name}<small>形态 ${e.form} / 5${d?` · ${d.n}：${d.d}`:''}</small>`;hudCache.bf=null}
 function spawnMujica(hm){const b=BOSSES[4],hp=mjHp(1,hm);G.espd=1;
@@ -1286,7 +1310,7 @@ const FEVER_T=9;
 function beatPos(){if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 function perfectFx(){if(G.time-(G.pfT||0)<.35)return;G.pfT=G.time;G.nums.push({x:P.x+rnd(-6,6),y:P.y-30,v:'PERFECT',t:0,say:1});G.beatGlow=1}
-function feverAdd(n){if(G.feverT>0||G.state!=='play')return;G.fever=Math.min(100,(G.fever||0)+n*.25);if(G.fever>=100)feverStart()}
+function feverAdd(n){if(G.feverT>0||G.state!=='play')return;G.fever=Math.min(100,(G.fever||0)+n*.25*(1+.15*ml('fev')));if(G.fever>=100)feverStart()}
 function feverStart(){G.fever=0;G.feverT=FEVER_T;G.feverPrev=MUS.name;setTrack('fever',1);P.sh=P.shMax;P.skillCd*=.4;G.flash=.45;shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
   const el=$('fever');el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');clearTimeout(feverStart.t);feverStart.t=setTimeout(()=>el.hidden=true,1700);$('game').classList.add('fv')}
 function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.feverT=0;$('game').classList.remove('fv');const p=G.feverPrev;G.feverPrev=null;
@@ -1304,10 +1328,10 @@ const P2LINE=['「烛火不够亮？那就把整座大厅都点燃吧！」','�
 function bossP2(e){e.trans=1;e.phase=2;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
   e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;
   later(.8,()=>playCut(cutBossP2(G.act,e),()=>{e.mhp*=2;e.hp=e.mhp;e.trans=0;e.ph2=1;e.stT=.4;$('bossName').innerHTML=`${e.boss.name}<small>第二乐章</small>`;hudCache.bf=null}))}
-function p2col(e){return e.boss.spr==='blank'?'#e8e4f0':P2COL[(G.act-1)%4]}
+function p2col(e){return e.boss.spr==='audience'?'#ffd27a':e.boss.spr==='blank'?'#e8e4f0':P2COL[(G.act-1)%4]}
 function cutBossP2(act,e){const b=e.boss,cx=VW/2,fy=VH*.8,col=p2col(e);return[
   {d:2.6,bg:'room',shake:1.6,actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.spr==='blank'?1.7:2.4,shake:1.5}],sub:{who:b.name,text:'「……还没完。」'}},
-  {d:3.6,bg:'room',flash:.6,z0:1.12,z1:1.3,fadeOut:1,init:()=>cutBurst(cx,fy-50,70,[col,'#fff',GOLD],130),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.spr==='blank'?1.8:2.6,aura:col}],sub:{who:b.name,text:b.spr==='blank'?'「这一页，不在剧本里。」':P2LINE[(act-1)%4]}}]}
+  {d:3.6,bg:'room',flash:.6,z0:1.12,z1:1.3,fadeOut:1,init:()=>cutBurst(cx,fy-50,70,[col,'#fff',GOLD],130),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.spr==='blank'?1.8:2.6,aura:col}],sub:{who:b.name,text:b.spr==='audience'?'「安可！安可！安可！」':b.spr==='blank'?'「这一页，不在剧本里。」':P2LINE[(act-1)%4]}}]}
 
 /* =================================================================== player actions */
 function ch(){return CHARS[G.charIdx]}
@@ -1388,7 +1412,7 @@ function onProjHit(b,e){const m=G.mods,cur=Math.atan2(b.vy,b.vx);if(!b.child)fev
   if(m.split&&!b.child)for(const s of[-.6,.6]){const c=shoot({x:b.x,y:b.y,a:cur+s,spd:b.spd*.8,dmg:b.dmg*.4*m.split,k:'riff',pierce:0,col:b.col,life:.45,r:2,child:1});c.hit.add(e)}
   if(m.chain&&Math.random()<.2*m.chain){let best=null,bd=70*70;for(const o of G.en){if(o.dead||o===e)continue;const dd=d2(o,e);if(dd<bd){bd=dd;best=o}}
     if(best){G.fx.push({k:'bolt',x:e.x,y:e.y-8,x2:best.x,y2:best.y-8,t:0,d:.2});hurtEnemy(best,b.dmg*.6,{noMod:1});S.p('deflect')}}}
-function killEnemy(e){e.dead=1;G.kills++;if(!e.boss)feverAdd(3);G.roomKills=(G.roomKills||0)+1;{const m=G.mods;if(m.shKill)P.sh=Math.min(P.shMax,P.sh+4*m.shKill);if(e.elite&&m.eliteReset)P.skillCd=0}S.p('kill');const cols=e.boss?['#fff','#e0283c',GOLD]:{mari:['#c79a6a','#ece4d8','#4a2236'],mask:['#ece4d8',GOLD,'#6a3a7a'],rose:['#a01a32','#2f6a34','#e05a70'],crow:['#18131c','#2a2232','#e0283c'],knight:['#4a4a5a','#9b1b30','#c8ccd8']}[e.t];
+function killEnemy(e){e.dead=1;G.kills++;if(e.boss)G.bossK=(G.bossK||0)+1;if(!e.boss)feverAdd(3);G.roomKills=(G.roomKills||0)+1;{const m=G.mods;if(m.shKill)P.sh=Math.min(P.shMax,P.sh+4*m.shKill);if(e.elite&&m.eliteReset)P.skillCd=0}S.p('kill');const cols=e.boss?['#fff','#e0283c',GOLD]:{mari:['#c79a6a','#ece4d8','#4a2236'],mask:['#ece4d8',GOLD,'#6a3a7a'],rose:['#a01a32','#2f6a34','#e05a70'],crow:['#18131c','#2a2232','#e0283c'],knight:['#4a4a5a','#9b1b30','#c8ccd8']}[e.t];
   burst(e.x,e.y-8,e.boss?80:14,cols,e.boss?140:80,e.boss?1.2:.6,e.boss?2:1,60);
   const pr=e.boss?[30,40]:e.d.petals,n=Math.round(rint(pr[0],pr[1])*(e.elite?4:1));for(let i=0;i<n;i++)G.picks.push({k:'petal',x:e.x,y:e.y-4,vx:rnd(-50,50),vy:rnd(-60,10),t:0,v:1});
   if(Math.random()<(e.elite?.6:.05)||e.boss)G.picks.push({k:'hp',x:e.x,y:e.y,vx:rnd(-20,20),vy:-30,t:0});
@@ -1569,7 +1593,12 @@ function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');if(G.mods.roo
   if(type==='trial'){dropRelic(RW/2,RH/2,.5);qProg('trials');G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
   if(type==='elite')dropRelic(RW/2,RH/2+20,.35);
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
-    if(G.act>=5){later(1.6,()=>G.route==='b'?playCut(cutEndingB(),()=>winGame('b')):playCut(cutEnding(),()=>winGame('a')));return}
+    if(G.act>=5){
+      if(G.route==='b'&&ml('score')&&!G.audDone){G.audDone=1;later(1.6,()=>playCut(cutAudienceIn(),()=>{G.cleared=false;G.bossSpawned=0;setTrack('mj5');spawnBoss(BOSSD)}));return}
+      if(G.audDone){later(1.6,()=>playCut(cutEndingD(),()=>winGame('d')));return}
+      if(G.route==='b'){later(1.6,()=>playCut(cutEndingB(),()=>winGame('b')));return}
+      if((G.dark||0)>=2){later(1.6,mjChoice);return}
+      later(1.6,()=>playCut(cutEnding(),()=>winGame('a')));return}
     later(1.4,()=>{G.frags=G.act;const cap=G.cage&&G.cage.id,nm=cap?cname(cap):'';
       playCut(cutRescue(G.act,cap),()=>{if(cap){addAlly(cap);grantBond(cap);placeAllies();toast(nm+' 加入了队伍')}G.cage=null;showReward('boss')})})}
   else{if(G.quests.pages&&!G.quests.pages.done&&Math.random()<.6){const q=spawnPos();G.picks.push({k:'page',x:q.x,y:q.y,t:0});later(1,()=>toast('附近有一页散落的乐谱'))}
@@ -1596,7 +1625,7 @@ function rollUps(n,minR,bias=0){bias+=.08*((G.mods&&G.mods.luck)||0);const res=[
   while(res.length<n){const pool=avail.filter(u=>!res.includes(u));if(!pool.length)break;res.push(pick(pool))}return res}
 function upCard(u,i,extra=''){return `<button class="card r${u.r}" data-i="${i}">${upIc(u)}<b>${u.n}<span class="rt">${RAR[u.r]}</span></b><span class="d">${u.d}${extra}</span></button>`}
 function applyUp(u){G.ups[u.id]=(G.ups[u.id]||0)+1;u.a(G.mods,P);stats();P.hp=Math.min(P.hp,P.maxHp);S.p('pick')}
-function showReward(kind){const minR=kind==='trial'||kind==='curse'?2:kind==='boss'?1:kind==='elite'?1:0,bias=kind==='boss'?.4:kind==='treasure'?.15:0;const cs=rollUps(3,minR,bias);
+function showReward(kind){const minR=kind==='trial'||kind==='curse'?2:kind==='boss'?1:kind==='elite'?1:0,bias=kind==='boss'?.4:kind==='treasure'?.15:0;const cs=rollUps(nCh(),minR,bias);
   const title=kind==='trial'?'试炼 · 献礼':kind==='curse'?'契约':kind==='boss'?'幕间 · 喝彩':kind==='treasure'?'衣柜深处':'选择一段旋律';
   if(kind==='trial'||kind==='curse'){const sub=kind==='trial'?'你从试炼中活着走了出来。挑选一段传说旋律。':'墨迹还未干透。力量已经流进你的丝线。';
     openModal('reward',`<h3>${title}</h3><p class="sub">${sub}</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
@@ -1648,7 +1677,7 @@ function openTalk(){const ev=G.npc.ev;S.p('summon');
     panel.querySelectorAll('.card').forEach(btn=>btn.onclick=()=>{closeModal();G.npc.done=1;
       if(btn.dataset.a==='no'){openDoors();return}
       if(s.quest){qStart(s.quest);openDoors();return}
-      if(s.curse){G.curseAct=G.act;S.p('boss');toast('契约成立');later(.3,()=>showReward('curse'));return}
+      if(s.curse){G.curseAct=G.act;darkStep();S.p('boss');toast('契约成立');later(.3,()=>showReward('curse'));return}
       startTrial(s.trial)})}}
 function startTrial(k){G.trialKind=k;if(G.trans)return;G.trans=1;$('fade').classList.add('on');releaseInputs();setTimeout(()=>{G.trans=0;enterRoom('trial',true);$('fade').classList.remove('on')},350)}
 function outcome(title,text){showStory(title,text,openDoors)}
@@ -1672,10 +1701,10 @@ const EVX={
   fountain(s,ev){evChoices(s,ev,[
       {ic:'✿',r:0,t:'投入一把花瓣',d:'花费 ✿20：一半几率得到稀有旋律，否则回复 30% 生命',can:G.petals>=20,fn:()=>{G.petals-=20;if(Math.random()<.5)offerUps('泉水回应了','水面泛起银光。挑选一段稀有旋律。',rollUps(3,1));else{P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.3);S.p('heal');outcome('泉水沉默了','水面只是轻轻荡了一下。\n回复 30% 生命。')}}},
       {ic:'✿',r:2,t:'投入满怀的花瓣',d:'花费 ✿50：六成几率得到传说旋律，否则得到稀有旋律',can:G.petals>=50,fn:()=>{G.petals-=50;if(Math.random()<.6)offerUps('泉水沸腾了','金色的光从水底升起。挑选一段传说旋律。',rollUps(3,2));else offerUps('泉水回应了','水面泛起银光。挑选一段稀有旋律。',rollUps(3,1))}},
-      {ic:'☕',r:1,t:'饮下泉水',d:'生命与护盾全满，但最大生命永久 -8',fn:()=>{G.mods.maxHp-=8;stats();P.hp=P.maxHp;P.sh=P.shMax;S.p('heal');outcome('咸涩的味道','泉水是咸的，像眼泪。你的伤口全部愈合了，心里却空了一小块。\n生命与护盾全满，最大生命 -8。')}},LEAVE])},
+      {ic:'☕',r:1,t:'饮下泉水',d:'生命与护盾全满，但最大生命永久 -8',fn:()=>{darkStep();G.mods.maxHp-=8;stats();P.hp=P.maxHp;P.sh=P.shMax;S.p('heal');outcome('咸涩的味道','泉水是咸的，像眼泪。你的伤口全部愈合了，心里却空了一小块。\n生命与护盾全满，最大生命 -8。')}},LEAVE])},
   altar(s,ev){const pt=Math.floor(G.petals);evChoices(s,ev,[
-      {ic:'❤',r:1,t:'献上鲜血',d:'失去 25% 最大生命（不会致死），换取一段稀有以上的旋律',fn:()=>{P.hp=Math.max(1,P.hp-P.maxHp*.25);S.p('hurt');G.hurtFlash=.3;offerUps('祭品已收下','红烛的火焰变成了正着长的。挑选一段旋律。',rollUps(3,1,.3))}},
-      {ic:'✿',r:2,t:'献上全部花瓣',d:pt>=40?`献上 ✿${pt}，换取一段传说旋律`:'至少需要 ✿40',can:pt>=40,fn:()=>{G.petals=0;offerUps('祭品已收下','花瓣在火里化成了金色的灰。挑选一段传说旋律。',rollUps(3,2))}},LEAVE])},
+      {ic:'❤',r:1,t:'献上鲜血',d:'失去 25% 最大生命（不会致死），换取一段稀有以上的旋律',fn:()=>{darkStep();P.hp=Math.max(1,P.hp-P.maxHp*.25);S.p('hurt');G.hurtFlash=.3;offerUps('祭品已收下','红烛的火焰变成了正着长的。挑选一段旋律。',rollUps(3,1,.3))}},
+      {ic:'✿',r:2,t:'献上全部花瓣',d:pt>=40?`献上 ✿${pt}，换取一段传说旋律`:'至少需要 ✿40',can:pt>=40,fn:()=>{darkStep();G.petals=0;offerUps('祭品已收下','花瓣在火里化成了金色的灰。挑选一段传说旋律。',rollUps(3,2))}},LEAVE])},
   quiz(s,ev){const q=pick(QUIZ),ans=shuffle([q.a,...q.w]);evChoices(s,ev,ans.map(a=>({ic:'?',r:0,t:a,fn:()=>{
       if(a===q.a){G.petals+=20;S.p('pick');offerUps('答对了','幽灵拉了一段欢快的旋律：「正确。拿去吧。」\n获得 ✿20，并挑选一段稀有旋律。'.replace('\n','<br>'),rollUps(3,1))}
       else{let pen;if(G.petals>=15){G.petals-=15;pen='失去 ✿15。'}else{P.hp=Math.max(1,P.hp-P.maxHp*.1);pen='失去 10% 生命。'}S.p('hurt');outcome('答错了',`幽灵的琴弦发出刺耳的尖叫：「错了哦。」\n正确答案是「${q.a}」。${pen}`)}}})).concat([{ic:'…',r:0,t:'不回答',d:'它耸耸肩，飘走了',fn:openDoors}]),s.line+'<br><br><b>「'+q.q+'」</b>')},
@@ -1695,7 +1724,7 @@ function showRest(){openModal('rest',`<h3>化妆间</h3><p class="sub">镜前的
   <button class="card r0" data-a="heal"><span class="ic">✚</span><b>小憩</b><span class="d">回复 45% 生命</span></button>
   <button class="card r1" data-a="up"><span class="ic">♪</span><b>排练</b><span class="d">从稀有旋律中选择一段</span></button></div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{if(b.dataset.a==='heal'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.45);S.p('heal');closeModal();G.cleared=true;openDoors()}
-    else{closeModal();const cs=rollUps(3,1);openModal('reward',`<h3>排练</h3><p class="sub">重复，直到身体记住。</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
+    else{closeModal();const cs=rollUps(nCh(),1);openModal('reward',`<h3>排练</h3><p class="sub">重复，直到身体记住。</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
       panel.querySelectorAll('.card').forEach(c=>c.onclick=()=>{applyUp(cs[+c.dataset.i]);closeModal();G.cleared=true;openDoors()})}})}
 function showShop(){const ups=rollUps(3,0,.2);const price=u=>Math.round([28,48,80][u.r]*(1+(G.act-1)*.15)*G.mods.shop);
   const items=[{k:'heal',n:'温热的红茶',d:'回复 35% 生命',ic:'☕',p:Math.round(22*(1+(G.act-1)*.15)*G.mods.shop),r:0},{k:'shield',n:'备用假面',d:'立即回满护盾，最大护盾永久 +10',ic:'◈',p:30,r:0},...ups.map(u=>({k:'up',u,n:u.n,d:u.d,ic:u.ic,p:price(u),r:u.r}))];
@@ -1705,7 +1734,8 @@ function showShop(){const ups=rollUps(3,0,.2);const price=u=>Math.round([28,48,8
     $('leave').onclick=()=>{closeModal();G.cleared=true;openDoors()}};
   openModal('shop','');render()}
 function questLog(){const side=Object.keys(G.quests).map(k=>{const q=G.quests[k],sd=SQ[k];return `<li class="${q.done?'done':''}"><b>◇ ${sd.n}</b><span>${q.done?'已完成':`${q.p}/${sd.goal}`}</span><small>${sd.d} · 奖励：${sd.rew}</small></li>`}).join('');
-  const rl=relicN()&&!G.route?`<li><b>◇ 神秘的收集品</b><span>${relicN()}/3</span><small>${RELICS.filter(r=>G.relics[r.id]).map(r=>r.n).join('、')}。据说集齐之后，会有人认得它们。</small></li>`:G.route==='b'?'<li class="main"><b>◆ 隐藏 · 舞台背面</b><span>进行中</span><small>跟随老人偶师，揭开空白假面。</small></li>':'';
+  const dk=(G.dark||0)&&G.route!=='b'?`<li><b>◇ 假面的低语</b><span>${Math.min(2,G.dark)}/2</span><small>${G.dark>=2?'碎片在等你。击败 Mujica 之后，你会面临一个选择。':'你做过一次黑暗的选择。'}</small></li>`:'';
+  const rl=dk+(relicN()&&!G.route?`<li><b>◇ 神秘的收集品</b><span>${relicN()}/3</span><small>${RELICS.filter(r=>G.relics[r.id]).map(r=>r.n).join('、')}。据说集齐之后，会有人认得它们。</small></li>`:G.route==='b'?'<li class="main"><b>◆ 隐藏 · 舞台背面</b><span>进行中</span><small>跟随老人偶师，揭开空白假面。</small></li>':'');
   return `<div class="qlog"><div class="qh">任务</div><ul>${rl}<li class="main"><b>◆ 主线 · 假面之下</b><span>${G.frags}/4</span><small>${mainLine()}</small></li>${side||'<li><small>还没有支线。在「邂逅」里可能遇到委托人。</small></li>'}</ul>${fragsHtml()}</div>`}
 function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).map(id=>{const u=UPS.find(x=>x.id===id);return `<span>${UI.ups&&UPIDX(id)<69?`<i class="ci" style="background-position:${(UPIDX(id)*100/68).toFixed(4)}% 0"></i>`:u.ic+' '}${u.n}${G.ups[id]>1?' ×'+G.ups[id]:''}</span>`}).join('')+Object.keys(G.bonds).map(id=>`<span class="bd">${BONDS[id].ic} ${BONDS[id].n} · ${BONDS[id].from}</span>`).join('')+(G.curseAct===G.act?'<span class="bd">✒ 乌鸦的契约</span>':'')||'<span>尚无旋律</span>';
   openModal('pause',`<h3>暂停</h3><p class="sub">${ch().name} · 第${CN[G.act-1]}章「${ACTS[G.act-1].name}」· 本章特色：${CHAP[G.act-1].feat.n}</p>${G.allies.length?`<div class="chips">${G.allies.map(a=>`<span class="bd">同伴 · ${cname(a.id)}</span>`).join('')}</div>`:''}<div class="chips">${owned}</div>${questLog()}
@@ -1714,17 +1744,23 @@ function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).m
   $('resume').onclick=closeModal;$('tMus').onclick=()=>{settings.music=!settings.music;store.set('amj_settings',settings);if(A.mus)A.mus.gain.value=settings.music?.34:0;$('tMus').textContent=settings.music?'开':'关'};
   $('tSfx').onclick=()=>{settings.sfx=!settings.sfx;store.set('amj_settings',settings);if(A.sfx)A.sfx.gain.value=settings.sfx?.6:0;$('tSfx').textContent=settings.sfx?'开':'关'};
   $('quit').onclick=()=>{closeModal();toTitle()}}
+function mjChoice(){openModal('choice',`<h3>碎片的低语</h3><p class="sub">Mujica 碎了。碎片却没有落地，而是悬在你面前，拼成了一张完整的假面。<br>「戴上它吧。这样，就再也不会失去任何人了。」</p><div class="cards">
+  <button class="card r2" data-a="c"><span class="ic">◈</span><b>戴上假面</b><span class="d">成为新的假面之主</span></button>
+  <button class="card r0" data-a="a"><span class="ic">✂</span><b>剪断丝线</b><span class="d">让演出就此落幕</span></button></div>`);
+  panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{closeModal();b.dataset.a==='c'?playCut(cutEndingC(),()=>winGame('c')):playCut(cutEnding(),()=>winGame('a'))})}
 function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `<div class="summary"><div><b>${G.act}</b>到达章节</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
 function gameOver(){feverReset();G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
-  setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线断了。<br>「${ch().motto}」</p>${summaryHtml()}
+  const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线断了。<br>「${ch().motto}」</p>${apHtml(apn)}${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
     $('again').onclick=()=>{closeModal();startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
 function winGame(route){route=route||'a';G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;best.endings=best.endings||{};best.endings[route]=1;store.set('amj_best',best);
-  const got=[];if(unlock('mortis'))got.push('mortis');if(route==='b'&&unlock('oblivionis'))got.push('oblivionis');
+  const got=[];if(unlock('mortis'))got.push('mortis');if((route==='b'||route==='d')&&unlock('oblivionis'))got.push('oblivionis');const apn=award(route);
   const un=got.length?`<div class="bond got">解锁新角色：${got.map(cname).join('、')}</div>`:'';
-  const body=route==='b'?'<p class="sub">空白假面碎成了无数页剧本。写在上面的结局，一个字也看不清了。<br>Mujica 的丝线断开，她第一次看见了观众。<br>没有剧本，也没有观众。五个人摘下面具，又亲手把它戴上。<br>这一次，是她们自己选择的演出。</p>'
-    :'<p class="sub">假面之主的面具碎裂，露出一张小小的人偶的脸。原来她也只是被丝线牵着的人偶。<br>你们剪断了她的线。四个乐章在掌心合而为一，五个人的声音终于完整。<br>掌声如潮水涌来，帷幕缓缓落下。下一场，早已排定。</p>';
-  openModal('win',`<h3 class="big">${route==='b'?'Sans Visage':'Ave Mujica'}</h3><p class="sub" style="color:var(--gold)">${route==='b'?'第二结局 · 自己选择的演出':'第一结局 · 剪断的丝线'}</p>${body}${un}${summaryHtml()}
+  const WB={c:'<p class="sub">你戴上了碎片拼成的假面。丝线从你的指尖垂下，系在同伴们的手腕上。<br>掌声响起，新的 Ave Mujica 开演了。<br>这一次没有人会离开，也没有人能离开。</p>',
+    d:'<p class="sub">掌声停了，观众离开了座位。原来写下剧本的，是要演出永不落幕的黑暗观众席。<br>五个人推开后台的门，外面是清晨。<br>Ave Mujica 不再是一场演出，只是五个人一起唱的歌。</p>'};
+  const body=WB[route]||(route==='b'?'<p class="sub">空白假面碎成了无数页剧本。写在上面的结局，一个字也看不清了。<br>Mujica 的丝线断开，她第一次看见了观众。<br>没有剧本，也没有观众。五个人摘下面具，又亲手把它戴上。<br>这一次，是她们自己选择的演出。</p>'
+    :'<p class="sub">假面之主的面具碎裂，露出一张小小的人偶的脸。原来她也只是被丝线牵着的人偶。<br>你们剪断了她的线。四个乐章在掌心合而为一，五个人的声音终于完整。<br>掌声如潮水涌来，帷幕缓缓落下。下一场，早已排定。</p>');
+  openModal('win',`<h3 class="big">${{a:'Ave Mujica',b:'Sans Visage',c:'Nouvelle Mujica',d:'Au-delà du rideau'}[route]}</h3><p class="sub" style="color:var(--gold)">${ENDS[route].t}</p>${body}${un}${apHtml(apn)}${summaryHtml()}
    <div class="row"><button class="cta" id="again">再演一场</button></div><div class="row"><button class="ghost" id="toT">回到标题</button></div>`);
   $('again').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}}
 let toastT=0;function toast(t){const el=$('toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),1400)}
@@ -1748,7 +1784,7 @@ function updStage(){const a=ACTS[G.act-1];setH('stage',`第${CN[G.act-1]}章 · 
 /* =================================================================== screens */
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
 function toTitle(){feverReset();$('gpLegend').hidden=true;G.state='title';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('title');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');G.amb=[];
-  $('best').textContent=best.wins?`通关 ${best.wins} 次`:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章`:''}
+  const ne=Object.keys(best.endings||{}).length;$('best').textContent=(best.wins?`通关 ${best.wins} 次 · 结局 ${ne}/4`:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章`:'')+(MT.ap?`　✦${MT.ap}`:'')}
 function toSelect(){feverReset();$('gpLegend').hidden=true;if(!isUnl(CHARS[G.charIdx].id))G.charIdx=0;G.state='select';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('select');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');selChar(G.charIdx)}
 function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{const b=document.createElement('button');const lk=!isUnl(c.id);b.className='tab'+(lk?' lock':'');b.innerHTML=`<canvas width="40" height="58"></canvas><span>${lk?'？？？':c.name}</span>${lk?'<em class="lk">未解锁</em>':''}`;
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
@@ -1758,13 +1794,21 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   const lk=!isUnl(c.id);if(lk){$('sAbil').innerHTML=`<li class="lockrow"><b>未解锁</b><span>解锁条件：${UNLOCKREQ[c.id]}</span></li>`;$('sMotto').textContent='「……」'}
   $('go').disabled=lk;$('go').textContent=lk?'未 解 锁':'登 台';
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
-function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
-  Object.assign(P,{hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});stats();P.sh=P.shMax;P.dch=G.mods.dashCh;
+function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+  Object.assign(P,{hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});applyMeta();stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.petals+=25*ml('pet');G.rareGot=null;if(ml('rare')){const u=pick(UPS.filter(x=>x.r===1&&!x.rep));applyUp(u);G.rareGot=u.n}
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=!isTouch&&!GP.seen;$('stickZone').hidden=!isTouch||!!GP.seen;$('gpLegend').hidden=!GP.seen;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
-  G.zones=[];G.bg=buildBg();playCut(cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>enterRoom('combat')))}
+  G.zones=[];G.bg=buildBg();playCut(cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>{enterRoom('combat');if(G.rareGot)later(1.2,()=>toast('试音 · 获得「'+G.rareGot+'」'))}))}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
+$('meta').onclick=()=>{auInit();showMeta()};
+function showMeta(){const end=best.endings||{};const ups=META.map(m=>{const l=ml(m.id),mx=l>=m.max,lk=m.req&&!m.req(),cost=mcost(m),can=!mx&&!lk&&MT.ap>=cost;
+    return `<button class="card ${mx?'r2':'r1'}" data-id="${m.id}" ${can?'':'disabled'}><span class="ic">${m.ic}</span><b>${m.n} <span class="price">${mx?'已满':lk?'未开放':'✦'+cost}</span></b><span class="d">${m.d}　${'●'.repeat(l)}${'○'.repeat(m.max-l)}${lk?'<br>'+m.rq:''}</span></button>`}).join('');
+  const eg=Object.keys(ENDS).map(k=>`<li class="${end[k]?'done':''}"><b>${end[k]?ENDS[k].t:'？？？'}</b><small>${end[k]?'已达成':'提示：'+ENDS[k].h}</small></li>`).join('');
+  openModal('meta',`<h3>后台</h3><p class="sub">每一场演出，无论成败，都会留下掌声。用掌声换取永久的成长。<br>当前掌声：<b style="color:var(--gold)">✦${MT.ap}</b></p><div class="cards">${ups}</div>
+    <div class="qlog"><div class="qh">结局 · ${Object.keys(end).length}/4</div><ul class="ends">${eg}</ul></div><div class="row"><button class="cta" id="metaOk">返回</button></div>`);
+  panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const m=META.find(x=>x.id===b.dataset.id),c=mcost(m);if(MT.ap<c||ml(m.id)>=m.max)return;MT.ap-=c;MT.lv[m.id]=ml(m.id)+1;saveMeta();S.p('pick');showMeta();const nb=panel.querySelector(`.card[data-id="${m.id}"]`);nb&&nb.focus()});
+  $('metaOk').onclick=()=>{closeModal();toTitle()}}
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
   const pr=rf.call(el);pr&&pr.then&&pr.then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}}
@@ -1784,6 +1828,7 @@ function updCut(dt){CUT.t+=dt;CUT.lb=Math.min(1,CUT.lb+dt*2);const txt=cutText()
   for(const p of CUT.parts){p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=(p.g||0)*dt;p.life-=dt}CUT.parts=CUT.parts.filter(p=>p.life>0&&p.y<VH+10);
   if(CUT.t>cutLen())cutNext()}
 function cutBg(k,t){if(k==='black')return;
+  if(k==='dawn'){const g=ctx.createLinearGradient(0,0,0,VH);g.addColorStop(0,'#3a2a5a');g.addColorStop(.55,'#e08a6a');g.addColorStop(1,'#f6d8a8');ctx.fillStyle=g;ctx.fillRect(-VW,-VH,VW*3,VH*3);ctx.globalAlpha=.7;ctx.fillStyle='#fff3dc';ctx.beginPath();ctx.arc(VW*.78,VH*.6,16,0,TAU);ctx.fill();ctx.globalAlpha=1;ctx.fillStyle='#2a1a22';ctx.fillRect(-VW,VH*.76,VW*3,VH);return}
   if(k==='room'&&G.bg){const s=Math.max(VW/RW,VH/RH)*1.05;ctx.drawImage(G.bg,VW/2-RW*s/2,VH/2-RH*s/2,RW*s,RH*s);ctx.fillStyle='rgba(5,2,8,.4)';ctx.fillRect(-VW,-VH,VW*3,VH*3);return}
   const g=ctx.createLinearGradient(0,0,0,VH);g.addColorStop(0,'#0b0609');g.addColorStop(.7,'#1a0a12');g.addColorStop(1,'#080406');ctx.fillStyle=g;ctx.fillRect(-VW,-VH,VW*3,VH*3);if(k==='void')return;
   for(let x=-30;x<30;x+=6){ctx.fillStyle=(x+30)%12?'#5a0e1c':'#420a14';ctx.fillRect(x,0,6,VH);ctx.fillRect(VW-x-6,0,6,VH)}
@@ -1864,6 +1909,20 @@ function cutEndingB(){const me=ch().id,cx=VW/2,fy=VH*.74,all=[me,...G.allies.map
   {d:4,bg:'stage',actors:[{k:'mjfall',x:cx,y:VH*.66,w:200,alpha:.9,a1:0,dur:3.6},...row({})],sub:{text:'Mujica 身上的丝线一根根断开。她最后看了你们一眼，像是第一次看见了观众。'}},
   {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'没有剧本，也没有观众。五个人摘下了面具，又一次，亲手把它戴上。'}},
   {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'Ave Mujica。这一次，是我们自己选择的演出。'}}]}
+function cutEndingC(){const me=ch().id,cx=VW/2,fy=VH*.76,al=G.allies.map(a=>a.id),row=al.map((id,i)=>({k:'ch',id,x:cx+(i<2?-1:1)*(50+(i%2)*36),y:fy+6,face:i<2?1:-1,sc:1.2,strings:1,anim:'idle'}));return[
+  {d:3.2,bg:'stage',fadeIn:1,sfx:'shbreak',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'面具碎了。碎片却没有落地。'}},
+  {d:3.8,bg:'void',z0:1,z1:1.2,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.6},{k:'spr',name:'mask',x:cx,y:VH*.25,y1:fy-34,sc:3,dur:3.2}],sub:{who:'？？？',text:'「戴上它吧。这样，就再也不会失去任何人了。」'}},
+  {d:4,bg:'stage',flash:.5,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row],sub:{text:'你戴上了假面。丝线从你的指尖垂下，系在了她们的手腕上。'}},
+  {d:4.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,y:fy-4,face:1,sc:1.6,strings:1},{k:'spr',name:'mask',x:cx,y:fy-34,sc:2.2},...row,{k:'curtain'}],sub:{text:'掌声响起。新的 Ave Mujica 开演了。这一次，没有人会离开。也没有人能离开。'}}]}
+function cutAudienceIn(){const cx=VW/2;return[
+  {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:1,a1:0,dur:2}],sub:{text:'空白假面碎了。可是，掌声没有停。'}},
+  {d:4,bg:'stage',sfx:'boss',z0:1.2,z1:1,actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,alpha:0,a1:1,dur:2}],sub:{who:'无尽的观众',text:'「再来一首。再来一首。永远，再来一首。」'}},
+  {d:3.4,bg:'stage',fadeOut:1,actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,aura:'#ffd27a'}],sub:{text:'写剧本的从来不是它。是坐满黑暗的观众，要这场演出永不落幕。'}}]}
+function cutEndingD(){const me=ch().id,cx=VW/2,fy=VH*.74,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
+  {d:3.6,bg:'stage',fadeIn:1,sfx:'bossdie',actors:[{k:'spr',name:'audience',x:cx,y:VH*.82,sc:2.6,alpha:1,a1:0,dur:3}],sub:{text:'掌声渐渐稀疏。观众一个接一个站起身，离开了座位。'}},
+  {d:4,bg:'stage',actors:row({}),sub:{text:'空无一人的舞台上，五个人第一次，没有为任何人摘下面具。'}},
+  {d:4.4,bg:'dawn',music:'title',actors:all.map((id,i)=>({k:'ch',id,x:-40-i*30,x1:VW*.55-i*30,y:VH*.74,face:1,anim:'run',animEnd:'idle',sc:1.25,dur:3.6})),sub:{text:'她们推开后台的门。外面是清晨，风里没有掌声。'}},
+  {d:4.8,bg:'dawn',fadeOut:1,init:()=>{CUT.petals=1},actors:all.map((id,i)=>({k:'ch',id,x:VW*.55-i*30,y:VH*.74,face:1,sc:1.25})),sub:{text:'Ave Mujica 不再是一场演出。只是五个人，一起唱的歌。'}}]}
 function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
   {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
   {d:3.8,bg:'stage',flash:.7,sfx:'shbreak',init:()=>{const [mx,my]=mjScreen(4,cx,VH*.84,.45);cutBurst(mx,my,60,['#fff','#f0e8dc',GOLD],130)},actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,shatter:1}],sub:{text:'最后一张面具，也碎了。'}},
