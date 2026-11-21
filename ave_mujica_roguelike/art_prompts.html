@@ -109,7 +109,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
   <div id="foeList"></div>
 </section>
 <section id="mujica">
-  <h2>七、Mujica 动作 <small>生成时请务必上传你给我的那张 Mujica 原图作参考。M1–M3 是动作：本体（不含双手）、单只骨手、退场；M4-1 到 M4-5 是五张面具各自的破碎过程。手只画观众左边那只，右手我在游戏里镜像。面具破碎和发光眼睛由游戏代码处理，图里保持五张面具完整、无发光。</small></h2>
+  <h2>七、Mujica 动作 <small>生成时请务必上传你给我的那张 Mujica 原图作参考。M1–M3 是动作：本体（不含双手）、单只骨手、退场；M4-1 到 M4-5 是五张面具各自的破碎过程。两只手分开各画一张（M2-L、M2-R）。面具破碎和发光眼睛由游戏代码处理，图里保持五张面具完整、无发光。</small></h2>
   <div id="mjList"></div>
 </section>
 <section id="rooms">
@@ -265,12 +265,15 @@ const MJS=[
  {id:'M1',n:'Mujica 本体（不含双手）',chips:[['必需','must'],['4×3 格'],['1024×576'],['--ar 16:9']],what:'五张面具、丝带、链子和宝石胸针这一整团，去掉两只骨手。每格 256×192，每一帧大小和位置一致，底部对齐。',
   rows:[['第1行','漂浮待机 4 帧：丝带飘动、链子摆动、整体轻微上下浮动'],['第2行','施法 4 帧：向后一仰，丝带向外炸开，胸针宝石闪亮，再回正'],['第3行','受击 2 帧（向后一颤）+ 暴怒 2 帧（丝带剧烈甩动、链子绷直）']],
   prompt:"Sprite sheet of ONLY the central body of the boss from the reference: the cluster of five masks with the crimson ribbons, silver chains, ruby drops and the ruby brooch. Do NOT draw the two skeletal hands. Exact grid of 4 columns by 3 rows of equal cells (each 256x192 pixels, whole sheet 1024x576, or an exact integer upscale). The body is the same size in every frame, centered horizontally, with its lowest point on a shared baseline 8 pixels above the cell bottom; nothing crosses a cell edge.\nRow 1 — IDLE FLOAT, 4 frames: ribbons ripple, chains and ruby drops swing gently, the whole cluster bobs up and down by a few pixels.\nRow 2 — CAST, 4 frames: the cluster rears back, ribbons flare outward, the ruby brooch flashes brighter, then it settles back.\nRow 3 — HURT, 2 frames: the cluster jolts backward and tilts; then ENRAGED, 2 frames: ribbons whip violently and chains pull taut."},
- {id:'M2',n:'Mujica 骨手（观众左边那只）',chips:[['必需','must'],['6×4 格'],['768×512'],['--ar 3:2']],what:'只画一只手：参考图里观众左侧的骷髅恶魔手（含手腕上的链子和丝带）。每格 128×128，手腕在上、爪尖朝下，底部对齐。',
+ {id:'M2-L',n:'Mujica 骨手 · 观众左边那只',chips:[['必需','must'],['6×4 格'],['768×512'],['--ar 3:2']],what:'只画一只手：参考图里观众左侧的骷髅恶魔手（含手腕上的链子和丝带）。每格 128×128，手腕在上、爪尖朝下，底部对齐。',
   rows:[['第1行','悬浮 4 帧：手指缓慢屈伸'],['第2行','砸地 6 帧：高举、五指张开、下落、掌心拍地、爪尖嵌入、收回'],['第3行','横扫 4 帧：侧身横向扫过，掌心在前、利爪拖在后'],['第4行','崩解 5 帧：指骨松脱、一节节散落']],
   prompt:"Sprite sheet of ONLY ONE skeletal demon hand: the hand on the VIEWER'S LEFT in the reference image, with its bony fingers, long curved blood-red claws, the silver chain wrapped around the wrist and the trailing crimson ribbon. Exact grid of 6 columns by 4 rows of equal cells (each 128x128 pixels, whole sheet 768x512, or an exact integer upscale). The wrist is at the top and the claws point down; the hand is the same size in every frame and centered, with the claw tips on a shared baseline 6 pixels above the cell bottom; nothing crosses a cell edge. Unused cells stay empty magenta.\nRow 1 — HOVER, 4 frames: the fingers slowly curl and uncurl.\nRow 2 — SLAM, 6 frames: raised high, claws spread wide, falling, palm slamming flat down, claws digging in, lifting back up.\nRow 3 — SWEEP, 4 frames: turned sideways, sweeping horizontally with the palm leading and the claws trailing behind.\nRow 4 — CRUMBLE, 5 frames: the finger bones loosen joint by joint and fall apart, the chain slips off."},
  {id:'M3',n:'Mujica 退场（结局用）',chips:[['可选','opt'],['4×2 格'],['1024×384'],['--ar 8:3']],what:'完整的 Mujica（含双手）。每格 256×192。用于结局：丝线断开后整体垮塌。',
   rows:[['第1行','垮塌 4 帧：双手无力垂下、丝带失去张力'],['第2行','坠落 4 帧：链子松开、面具团整体下坠并散开']],
   prompt:"Sprite sheet of the COMPLETE boss from the reference (the mask cluster together with both skeletal hands). Exact grid of 4 columns by 2 rows of equal cells (each 256x192 pixels, whole sheet 1024x384, or an exact integer upscale), same scale in every frame, centered, nothing crosses a cell edge.\nRow 1 — COLLAPSE, 4 frames: as if the puppet strings were cut, both hands drop limply, the ribbons lose their tension and droop, the cluster sags.\nRow 2 — FALL, 4 frames: the chains come loose, the cluster tips forward and falls apart, ribbons and ruby drops scattering, the last frame almost empty."}];
+{const L=MJS.find(m=>m.id==='M2-L');MJS.splice(MJS.indexOf(L)+1,0,{...L,id:'M2-R',n:'Mujica 骨手 · 观众右边那只',
+  what:'只画一只手：参考图里观众右侧的骷髅恶魔手（含手腕上的链子和丝带）。每格 128×128，手腕在上、爪尖朝下，底部对齐。动作和左手一一对应，方便两只手同步。',
+  prompt:L.prompt.replace("the hand on the VIEWER'S LEFT in the reference image","the hand on the VIEWER'S RIGHT in the reference image (keep its own shape, finger positions and claws exactly as drawn on that side; do not simply mirror the left hand)").replace("SWEEP, 4 frames: turned sideways,","SWEEP, 4 frames: turned sideways toward the left,")+"\nThe row order and frame counts must match the left-hand sheet exactly, so both hands can play the same animation side by side."})}
 document.getElementById('mjList').innerHTML=MJS.map(m=>ticket({id:m.id,stub:'Mujica',title:m.n,what:m.what,chips:m.chips,rows:m.rows,prompt:`${MJSTYLE}\n\n${m.prompt}`})).join('');
 
 const MJMASKS=[
