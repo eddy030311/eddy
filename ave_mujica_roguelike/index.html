@@ -271,7 +271,7 @@ body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow
   #selCv{width:96px;height:128px}
   .pname{font-size:28px}
   .stats{margin:0}
-  .abil{font-size:12px}
+  .abil{font-size:11px;line-height:1.42;gap:3px}.abil li{padding-top:3px;gap:6px}.selR .kbd{display:none}
   .gobar{position:static;margin:auto 0 0;padding:6px 0 calc(env(safe-area-inset-bottom,0px) + 8px);background:none}
   .panel{width:min(100%,46rem);padding:14px 16px;gap:10px}
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
@@ -820,23 +820,23 @@ function pFrame(white){const a=artFrame(white);if(a)return{c:a,sc:.5,dy:2,h:16};
 const CHARS=[
   {id:'doloris',name:'Doloris',real:'三角初华',role:'Guitar & Vocal',motto:'吾、勿畏悲伤',hp:100,spd:1,col:'#e9c46a',
    st:{生命:3,速度:3,近战:3,远程:4},
-   ab:[['近战','吉他横扫：大范围弧形斩击，可斩落敌弹'],['远程','歌声音符：穿透一名敌人'],['技能','悲叹之星：群星坠落，轰击敌人'],['被动','悲叹之歌：远程额外穿透；悲伤会化作歌声——受伤后 5 秒内，远程伤害 +35%、远程攻速 +15%']],
+   ab:[['近战','吉他横扫：大范围弧形斩击，可斩落敌弹'],['远程','歌声音符：穿透一名敌人'],['技能','悲叹之星：群星坠落，轰击敌人'],['被动','悲叹之歌：远程额外穿透；悲伤会化作歌声——受伤后 5 秒内，远程伤害 +35%、远程攻速 +15%'],['狂热','群星独唱：Fever 期间每一拍，都有一颗悲叹之星坠向随机敌人']],
    melee:{dmg:12,range:27,arc:2.5,cd:.42,col:'#f6dc8a'},ranged:{dmg:8,spd:180,cd:.38,pierce:1},skillCd:11},
   {id:'mortis',name:'Mortis',real:'若叶睦',role:'Guitar',motto:'吾、勿畏死亡',hp:90,spd:1.1,col:'#cdd3c3',
    st:{生命:2,速度:4,近战:4,远程:3},
-   ab:[['近战','连斩：快速挥击，第三段伤害翻倍'],['远程','粉色速弹：三连发失真音弹'],['技能','死之舞：5 秒狂乱，攻速与移速大增并吸血'],['被动','死之舞：移速 +12%；近战命中生命低于 20% 的普通敌人时，直接将其送葬']],
+   ab:[['近战','连斩：快速挥击，第三段伤害翻倍'],['远程','粉色速弹：三连发失真音弹'],['技能','死之舞：5 秒狂乱，攻速与移速大增并吸血'],['被动','死之舞：移速 +12%；近战命中生命低于 20% 的普通敌人时，直接将其送葬'],['狂热','终曲之舞：Fever 期间送葬线提高到 40%，每次送葬回复 3 生命与 5 护盾']],
    melee:{dmg:9,range:24,arc:2.1,cd:.27,col:'#ff6fae'},ranged:{dmg:4.5,spd:230,cd:.5,pierce:0},skillCd:14},
   {id:'timoris',name:'Timoris',real:'八幡海铃',role:'Bass',motto:'吾、勿畏恐惧本身',hp:135,spd:.92,col:'#4ccac2',
    st:{生命:5,速度:2,近战:4,远程:3},
-   ab:[['近战','低音重击：大范围击退'],['远程','低频脉冲：缓慢但穿透三名敌人'],['技能','恐惧低频：震荡全场，眩晕并消除敌弹'],['被动','恐惧低频：受到伤害 -20%；身边的普通敌人会陷入恐惧，移动速度 -35%']],
+   ab:[['近战','低音重击：大范围击退'],['远程','低频脉冲：缓慢但穿透三名敌人'],['技能','恐惧低频：震荡全场，眩晕并消除敌弹'],['被动','恐惧低频：受到伤害 -20%；身边的普通敌人会陷入恐惧，移动速度 -35%'],['狂热','恐惧共振：Fever 期间每一拍释放更大的低频冲击，击退并震慑周围敌人']],
    melee:{dmg:18,range:30,arc:2.8,cd:.6,col:'#9ad8ff'},ranged:{dmg:11,spd:125,cd:.7,pierce:3},skillCd:12},
   {id:'amoris',name:'Amoris',real:'祐天寺若麦',role:'Drums',motto:'吾、勿畏爱',hp:100,spd:1.05,col:'#c08aff',
    st:{生命:3,速度:3,近战:3,远程:4},
-   ab:[['近战','双击：鼓槌两连打'],['远程','飞鼓槌：撞墙反弹一次'],['技能','爱之节拍：三轮爱心环形弹幕'],['被动','爱的节拍：每第 4 次攻击必定暴击，暴击时回复生命；身边每有一名能行动的同伴，伤害 +6%']],
+   ab:[['近战','双击：鼓槌两连打'],['远程','飞鼓槌：撞墙反弹一次'],['技能','爱之节拍：三轮爱心环形弹幕'],['被动','爱的节拍：每第 4 次攻击必定暴击，暴击时回复生命；身边每有一名能行动的同伴，伤害 +6%'],['狂热','爱的大合唱：Fever 期间每第 2 次攻击必定暴击，同伴带来的伤害加成翻倍']],
    melee:{dmg:7,range:24,arc:2.2,cd:.32,col:'#ff8ac0'},ranged:{dmg:7,spd:195,cd:.36,pierce:0},skillCd:12},
   {id:'oblivionis',name:'Oblivionis',real:'丰川祥子',role:'Keyboard',motto:'吾、勿畏忘却',hp:85,spd:1,col:'#8d93dd',
    st:{生命:2,速度:3,近战:4,远程:5},
-   ab:[['近战','荆棘指挥：玫瑰花瓣横扫'],['远程','琴键：自动追踪敌人'],['技能','忘却之时：时间停止 3.5 秒，清除敌弹，敌人受伤 +50%'],['被动','忘却：技能冷却 -20%；15% 几率忘却受到的伤害；释放技能时忘却伤痛，回复 10% 生命']],
+   ab:[['近战','荆棘指挥：玫瑰花瓣横扫'],['远程','琴键：自动追踪敌人'],['技能','忘却之时：时间停止 3.5 秒，清除敌弹，敌人受伤 +50%'],['被动','忘却：技能冷却 -20%；15% 几率忘却受到的伤害；释放技能时忘却伤痛，回复 10% 生命'],['狂热','忘却终章：Fever 期间每一拍抹去身边的敌弹，忘却伤害的几率提高到 30%']],
    melee:{dmg:14,range:27,arc:2.4,cd:.46,col:'#ff5a78'},ranged:{dmg:9,spd:150,cd:.44,pierce:0},skillCd:15}
 ];
 const EN={
@@ -1453,7 +1453,11 @@ function feverStart(){G.fever=0;G.feverT=FEVER_T;G.feverPrev=MUS.name;setTrack('
 function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.feverT=0;$('game').classList.remove('fv');const p=G.feverPrev;G.feverPrev=null;
   if(G.state==='play')setTrack(p||(fightRoom()&&!G.cleared?(G.boss&&!G.boss.dead?(G.boss.mj?'mj'+G.boss.form:'boss'):'battle'):'calm'),1)}
 function feverReset(){G.fever=0;G.feverT=0;G.feverPrev=null;$('game').classList.remove('fv');$('fever').hidden=true}
-function feverBeat(){G.beatGlow=1;const pow=(G.mods.melee+G.mods.ranged)/2,col=FVC[G.fbeat%FVC.length];aoe(P.x,P.y-6,48,8*pow*(1+.35*(G.act-1)),null);G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:6,r1:48,t:0,d:.32,col,w:2});
+function feverPassive(pow){const id=ch().id,sc=pow*(1+.35*(G.act-1));
+  if(id==='doloris'){const live=G.en.filter(e=>!e.dead&&!(e.intro>0));if(live.length){const e=pick(live),x0=e.x,y0=e.y;G.fx.push({k:'starfall',x:x0,y:y0,t:0,d:.3});later(.25,()=>{aoe(x0,y0,18,12*sc,'#ffe9a0');burst(x0,y0,8,['#ffe9a0','#fff'],60,.4)})}}
+  else if(id==='timoris'){G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:10,r1:82,t:0,d:.4,col:'#4ccac2',w:3});for(const e of G.en){if(e.dead||(e.x-P.x)**2+(e.y-P.y)**2>82*82)continue;hurtEnemy(e,6*sc,{kb:140,ang:Math.atan2(e.y-P.y,e.x-P.x)});if(!e.boss)e.stun=Math.max(e.stun||0,.4)}}
+  else if(id==='oblivionis'){let n=0;for(const b of G.eb)if(!b.dead&&(b.x-P.x)**2+(b.y-P.y+8)**2<70*70){b.dead=1;n++;if(n<12)burst(b.x,b.y,2,['#babef6','#fff'],20,.3)}G.fx.push({k:'ring',x:P.x,y:P.y-6,r0:70,r1:20,t:0,d:.3,col:'#babef6',w:2})}}
+function feverBeat(){G.beatGlow=1;const pow=(G.mods.melee+G.mods.ranged)/2,col=FVC[G.fbeat%FVC.length];if(!P.down)feverPassive(pow);aoe(P.x,P.y-6,48,8*pow*(1+.35*(G.act-1)),null);G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:6,r1:48,t:0,d:.32,col,w:2});
   for(let i=0;i<6;i++){const a=rnd(TAU);G.parts.push({x:P.x,y:P.y-10,vx:Math.cos(a)*70,vy:Math.sin(a)*70-20,life:.5,max:.5,col,sz:1.5})}}
 const FVC=['#ff4fa8','#f6dc8a','#4ccac2','#c08aff','#ff6a5a'];
 function updRhythm(dt){const bi=Math.floor(beatPos());
@@ -1509,7 +1513,7 @@ function doMelee(){const c=ch(),m=c.melee,id=c.id,M=G.mods;P.meleeCd=m.cd*cdMul(
     if(M.wave>0)for(let i=0;i<M.wave;i++){const aa=a+(i-(M.wave-1)/2)*.25;shoot({x:P.x,y:P.y-6,a:aa,spd:200,dmg:dmg*.5,k:'wave',pierce:3,col:m.col,life:.45,r:5})}};
   if(tgt){const gap=Math.sqrt(d2(tgt,P))-(tgt.r+range*.55);if(gap>4){const L=Math.min(gap,60);P.lvx=Math.cos(a)*L/.09;P.lvy=Math.sin(a)*L/.09;P.lungeT=.09;P.inv=Math.max(P.inv,.15);later(.09,go);return}}
   go()}
-function beat(){if(ch().id!=='amoris')return false;P.beat=(P.beat||0)+1;if(P.beat%4===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
+function beat(){if(ch().id!=='amoris')return false;P.beat=(P.beat||0)+1;if(P.beat%(G.feverT>0?2:4)===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
 function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*cdMul()/m.raspd*(id==='doloris'&&P.sorrowT>0?.87:1);if(!P.act||P.act.n!=='melee')setAct('ranged',.3);const a=aimAng(220);P.atkAng=a;P.atkT=.12;const crit=beat(),pf=onBeat();if(pf)perfectFx();
   const n=1+m.proj,sp=id==='mortis'?.1:.14;const sh=o=>{o.spd*=m.pspd;o.r*=m.psize;o.bounce=(o.bounce||0)+m.bounce;o.pierce=(o.pierce||0)+(G.feverT>0?1:0);o.pf=pf;return shoot(o)};
   const volley=(base,mult)=>{const dmg=rg.dmg*m.ranged*mult*(pf?1.15:1)*(id==='doloris'&&P.sorrowT>0?1.35:1),pos={x:P.x+Math.cos(base)*6,y:P.y-8+Math.sin(base)*6,crit};
@@ -1543,8 +1547,8 @@ function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0)||e.trans)return;const m=G.
   let crit=o.crit||(mod&&!o.dot&&Math.random()<m.crit);
   if(mod){if(m.first&&e.hp>=e.mhp-.01)dmg*=1+.4*m.first;if(m.exec&&e.hp<e.mhp*.3)dmg*=1+.5*m.exec;if(m.boss&&(e.boss||e.elite))dmg*=1+.3*m.boss;if(m.low&&P.hp<P.maxHp*.3)dmg*=1+.35*m.low;
     if(m.shFull&&P.shMax>0&&P.sh>=P.shMax-.5)dmg*=1+.2*m.shFull;if(m.cresc)dmg*=1+Math.min(.3,.03*(G.roomKills||0)*m.cresc);if(P.inLight)dmg*=1.3}
-  if(mod&&o.melee&&ch().id==='mortis'&&!e.boss&&e.hp-dmg<e.mhp*.2&&e.hp-dmg>0){dmg=e.hp+1;G.nums.push({x:e.x,y:e.y-(e.d.h||16)-6,v:'送葬',t:0,say:1});burst(e.x,e.y-8,12,['#ff6fae','#cdd3c3','#1a0a10'],70,.5)}
-  if(crit){dmg*=mod?m.critMul:2;if(mod&&(G.bonds.amoris||ch().id==='amoris'))P.hp=Math.min(P.maxHp,P.hp+(ch().id==='amoris'?1:.6))}if(mod&&ch().id==='amoris')dmg*=1+.06*G.allies.filter(a=>!a.down).length;if(G.timeStop>0)dmg*=1.5;
+  if(mod&&o.melee&&ch().id==='mortis'&&!e.boss&&e.hp-dmg<e.mhp*(G.feverT>0?.4:.2)&&e.hp-dmg>0){dmg=e.hp+1;if(G.feverT>0){P.hp=Math.min(P.maxHp,P.hp+3);P.sh=Math.min(P.shMax,P.sh+5)}G.nums.push({x:e.x,y:e.y-(e.d.h||16)-6,v:'送葬',t:0,say:1});burst(e.x,e.y-8,12,['#ff6fae','#cdd3c3','#1a0a10'],70,.5)}
+  if(crit){dmg*=mod?m.critMul:2;if(mod&&(G.bonds.amoris||ch().id==='amoris'))P.hp=Math.min(P.maxHp,P.hp+(ch().id==='amoris'?1:.6))}if(mod&&ch().id==='amoris')dmg*=1+(G.feverT>0?.12:.06)*G.allies.filter(a=>!a.down).length;if(G.timeStop>0)dmg*=1.5;
   e.hp-=dmg;e.fl=o.dot?Math.max(e.fl,.04):.1;if(!e.boss&&o.kb){const k=o.kb*(e.elite?.4:1);e.kx+=Math.cos(o.ang)*k;e.ky+=Math.sin(o.ang)*k}
   G.nums.push({x:e.x+rnd(-4,4),y:e.y-(e.d.h||16),v:Math.round(dmg),t:0,crit,burn:o.dot,ally:o.noMod&&!o.dot});if(G.nums.length>40)G.nums.shift();
   if(!o.dot){burst(e.x,e.y-6,crit?6:3,crit?['#fff','#ffe9a0']:['#fff','#e0d0c0'],50,.3);S.p(crit?'crit':'hit')}
@@ -1569,7 +1573,7 @@ function killEnemy(e){e.dead=1;G.kills++;if(e.boss)G.bossK=(G.bossK||0)+1;if(!e.
   if(e.boss&&G.cage){G.cage.broken=1;burst(G.cage.x,G.cage.y-14,30,[GOLD,'#fff'],110,.8)}
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.down||P.inv>0||P.dashT>0||G.state!=='play')return;const m=G.mods;
-  if(ch().id==='oblivionis'&&Math.random()<.15){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'忘却',t:0,say:1});return}
+  if(ch().id==='oblivionis'&&Math.random()<(G.feverT>0?.3:.15)){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'忘却',t:0,say:1});return}
   if(m.evade&&Math.random()<.15*m.evade){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'MISS',t:0,heal:1});return}
   dmg*=DF().dmg;if(G.feverT>0)dmg*=.5;dmg*=(ch().id==='timoris'?.8:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
   if(P.sh>0){const ab=Math.min(P.sh,dmg);P.sh-=ab;dmg-=ab;burst(P.x,P.y-14,8,['#9fd4ff','#fff'],60,.35);
