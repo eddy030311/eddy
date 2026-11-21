@@ -3,7 +3,9 @@ package com.avemujica.masque;
 import android.app.Activity;
 import android.graphics.Color;
 import android.hardware.input.InputManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -42,6 +44,7 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         setContentView(web);
         if (state != null) web.restoreState(state);
         else web.loadUrl("file:///android_asset/www/index.html");
+        preferHighRefresh();
         hideBars();
     }
 
@@ -170,5 +173,19 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         ((InputManager) getSystemService(INPUT_SERVICE)).unregisterInputDeviceListener(this);
         web.destroy();
         super.onDestroy();
+    }
+
+    /** Ask for the display's fastest mode at the current resolution, so the game's 120 FPS option can take effect. */
+    private void preferHighRefresh() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        try {
+            Display d = getWindowManager().getDefaultDisplay();
+            Display.Mode cur = d.getMode(), best = cur;
+            for (Display.Mode m : d.getSupportedModes())
+                if (m.getPhysicalWidth() == cur.getPhysicalWidth() && m.getPhysicalHeight() == cur.getPhysicalHeight() && m.getRefreshRate() > best.getRefreshRate()) best = m;
+            WindowManager.LayoutParams lp = getWindow().getAttributes();
+            lp.preferredDisplayModeId = best.getModeId();
+            getWindow().setAttributes(lp);
+        } catch (Exception ignored) { }
     }
 }
