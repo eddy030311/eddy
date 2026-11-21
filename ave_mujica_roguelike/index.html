@@ -820,11 +820,11 @@ const BOSSES=[
   {name:'Mujica',sub:'假面之主',spr:'mujica',hp:1550,r:15,spd:24,pats:['spiral','spikes','dash','rain','fanRing','summon','stream'],sum:['mari','mask','crow'],h:40,float:1}
 ];
 const MINIB=[
-  {name:'灰烬引座人',sub:"L'Ouvreuse des Cendres · 精英",spr:'mari',sc:2.2,hp:250,r:10,spd:30,pats:['fan','summon','ring','fanRing'],sum:['mari'],h:42,line:'「您的座位，在火里。请随我来。」'},
-  {name:'黑羽信使',sub:'Le Messager Noir · 精英',spr:'crow',sc:2.4,hp:360,r:10,spd:40,pats:['dash','feather','fan','summon'],sum:['crow'],h:38,float:1,line:'「我带来一封信。收信人那一栏，写着你的名字。」'},
-  {name:'溺水的假面',sub:'Le Masque Noyé · 精英',spr:'mask',sc:2.3,hp:470,r:10,spd:24,pats:['spiral','rain','ring','summon'],sum:['mask'],h:46,float:1,line:'「水底很安静。安静到，能听见你在害怕。」'},
-  {name:'荆棘骑士',sub:"Le Chevalier d'Épines · 精英",spr:'knight',sc:2,hp:600,r:12,spd:22,pats:['spikes','fanRing','dash','summon'],sum:['rose','mari'],h:50,line:'「这座庭园不欢迎客人。尤其是，还会流泪的客人。」'},
-  {name:'帷幕守夜人',sub:'Le Veilleur du Rideau · 精英',spr:'knight',sc:2.4,hp:800,r:13,spd:20,pats:['stream','spiral','fanRing','summon','rain'],sum:['mari','mask','crow'],h:60,line:'「开演之前，任何人都不许看见舞台。」'}];
+  {name:'灰烬引座人',sub:"L'Ouvreuse des Cendres · 精英",spr:'mari',sc:2.2,hp:250,r:10,spd:30,pats:['fan','summon','ring','fanRing'],sum:['mari'],h:42,end:'「……您的座位，我替您留着。就在第一排，火烧得最旺的地方。」',after:'提灯滚落在地。灯芯里只剩一点红，迟迟不肯熄灭。',line:'「您的座位，在火里。请随我来。」'},
+  {name:'黑羽信使',sub:'Le Messager Noir · 精英',spr:'crow',sc:2.4,hp:360,r:10,spd:40,pats:['dash','feather','fan','summon'],sum:['crow'],h:38,float:1,end:'「信……送到了。你却连拆都没拆。……也好。有些告别，还是不读为好。」',after:'黑羽四散。半空中只留下一枚火漆，印着一张没有五官的脸。',line:'「我带来一封信。收信人那一栏，写着你的名字。」'},
+  {name:'溺水的假面',sub:'Le Masque Noyé · 精英',spr:'mask',sc:2.3,hp:470,r:10,spd:24,pats:['spiral','rain','ring','summon'],sum:['mask'],h:46,float:1,end:'「原来水面上……这么亮啊。」',after:'假面浮上水面，安静地转了半圈，又沉回它熟悉的黑暗里。',line:'「水底很安静。安静到，能听见你在害怕。」'},
+  {name:'荆棘骑士',sub:"Le Chevalier d'Épines · 精英",spr:'knight',sc:2,hp:600,r:12,spd:22,pats:['spikes','fanRing','dash','summon'],sum:['rose','mari'],h:50,end:'「去吧。庭园的主人等你很久了。……替我，看一眼外面的花。」',after:'铠甲里空无一物。本该是心脏的位置，插着一支干枯的玫瑰。',line:'「这座庭园不欢迎客人。尤其是，还会流泪的客人。」'},
+  {name:'帷幕守夜人',sub:'Le Veilleur du Rideau · 精英',spr:'knight',sc:2.4,hp:800,r:13,spd:20,pats:['stream','spiral','fanRing','summon','rain'],sum:['mari','mask','crow'],h:60,end:'「灯……要亮了。我守了一辈子的幕布，终于要拉开了。」',after:'守夜人倒在幕布前，像一具终于被允许休息的人偶。远处，响起第一声定音鼓。',line:'「开演之前，任何人都不许看见舞台。」'}];
 function spawnMini(b){const hm=1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length);G.pending=Math.max(0,G.pending-1);
   const e={t:'boss',mini:1,phase:1,maxPh:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:10+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.2,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:b.sc,pi:0,intro:.25,amb:2};
   G.en.push(e);G.boss=e;S.p('boss');shake(5);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;hudCache.bf=null;later(1.4,()=>toast(b.line))}
@@ -1250,7 +1250,7 @@ function enterRoom(type,noCount){
     setTrack('calm');
     if(type==='rest'){G.deco.push({k:'piano',x:RW/2,y:RH/2-30});startOts('rest')}
     else if(type==='shop'){G.deco.push({k:'mannequin',x:RW/2,y:RH/2-30});startOts('shop')}
-    else if(type==='treasure'){G.picks.push({k:'chest',x:RW/2,y:RH/2-20,t:0})}
+    else if(type==='treasure'){G.picks.push({k:'chest',x:RW/2,y:RH/2-20,t:0});startOts('treasure')}
     else if(type==='event'){G.npc={x:RW/2,y:RH/2-6,ev:pickEvent(),talked:1};startOts('event')}
   }
   allyRefresh(false);placeAllies();updStage();later(.35,showSection);
@@ -1670,8 +1670,7 @@ function updProj(dt,edt){
     if(!b.dead&&G.allies.length)for(const a of G.allies){if(a.down||a.inv>0)continue;if((b.x-a.x)**2+(b.y-(a.y-8))**2<(b.r+3.5)**2){b.dead=1;allyHurt(a,b.dmg*.8);break}}}
   G.eb=G.eb.filter(b=>!b.dead);if(G.eb.length>320)G.eb.splice(0,G.eb.length-320)}
 function updPick(p,dt){p.t+=dt;
-  if(p.k==='chest'){if(!p.open&&d2(p,P)<16*16){p.open=1;S.p('pick');burst(p.x,p.y-6,24,[GOLD,'#fff','#f6dc8a'],80,.7);
-      for(let i=0;i<rint(10,18);i++)G.picks.push({k:'petal',x:p.x,y:p.y-6,vx:rnd(-60,60),vy:rnd(-80,-10),t:0,v:1});dropRelic(p.x+28,p.y+6,.5);later(.6,()=>showReward('treasure'))}return}
+  if(p.k==='chest'){if(!p.open&&!G.ots&&d2(p,P)<16*16)openChest(p);return}
   if(p.k==='relic'){if(d2(p,P)<14*14){p.dead=1;getRelic(p.id)}return}
   p.x+=(p.vx||0)*dt;p.y+=(p.vy||0)*dt;p.vx*=.9;p.vy*=.9;
   const dd=d2(p,P),mr=48*G.mods.magnet;if(p.t>.35&&dd<mr*mr){const d=Math.sqrt(dd)||1,s=170;p.x+=(P.x-p.x)/d*s*dt;p.y+=(P.y-6-p.y)/d*s*dt}
@@ -1691,7 +1690,7 @@ function roomCleared(){G.cleared=true;S.p('door');setTrack('calm');if(G.mods.roo
   if(type==='trial'&&G.trialKind==='shadow'){qProg('trials');G.petals+=30;const own=Object.keys(G.ups).map(id=>UPS.find(u=>u.id===id)).filter(u=>u.rep||(G.ups[u.id]||0)<(u.max||9));
     if(own.length){const u=pick(own);applyUp(u);later(.6,()=>outcome('镜子碎了',`碎片里映出你的一段旋律，它被复制了一份。\n获得「${u.n}」+1 与 ✿30。`))}else later(.6,()=>showReward('trial'));return}
   if(type==='trial'){dropRelic(RW/2,RH/2,.5);qProg('trials');G.petals+=G.trialKind==='duel'?0:40;if(G.trialKind==='duel')P.hp=P.maxHp;later(.6,()=>showReward('trial'));return}
-  if(type==='elite')dropRelic(RW/2,RH/2+20,.35);
+  if(type==='elite'){dropRelic(RW/2,RH/2+20,.35);const mb=MINIB[G.act-1];later(1.2,()=>playCut(cutMiniEnd(mb),()=>showReward('elite')));return}
   if(type==='boss'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.4);
     if(G.act>=5){
       if(G.reflOn){later(1.6,()=>playCut(cutEndingC(),()=>winGame('c')));return}
@@ -1715,6 +1714,7 @@ function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qRew
 function takeDoor(d){if(G.trans)return;G.trans=1;S.p('door');$('fade').classList.add('on');releaseInputs();
   setTimeout(()=>{G.trans=0;if(d.t==='next'){G.act++;allyRefresh(true);if(G.act>=3)unlock('timoris');if(G.act===5&&G.route!=='b')preloadTracks(['mj1','mj2','mj3','mj4','mj5']);G.room=0;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);best.act=Math.max(best.act,G.act);store.set('amj_best',best);
       G.zones=[];G.bg=buildBg();$('fade').classList.remove('on');playCut(cutChapter(G.act),()=>showActCard(G.act,()=>enterRoom('combat')))}
+    else if(G.room===2&&!(G.inter||{})[G.act]&&d.t!=='boss'){(G.inter=G.inter||{})[G.act]=1;$('fade').classList.remove('on');playCut(cutInter(G.act),()=>enterRoom(d.t))}
     else{enterRoom(d.t);$('fade').classList.remove('on')}},300)}
 
 /* =================================================================== UI */
@@ -1896,7 +1896,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   const lk=!isUnl(c.id);if(lk){$('sAbil').innerHTML=`<li class="lockrow"><b>未解锁</b><span>解锁条件：${UNLOCKREQ[c.id]}</span></li>`;$('sMotto').textContent='「……」'}
   $('go').disabled=lk;$('go').textContent=lk?'未 解 锁':'登 台';
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
-function startRun(i){auInit();G.charIdx=i;G.diff=DIFF;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i){auInit();G.charIdx=i;G.diff=DIFF;const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   Object.assign(P,{hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.rareGot=null;G.score=0;
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=!isTouch||!!GP.seen;$('stickZone').hidden=!isTouch||!!GP.seen;$('gpBar').hidden=!GP.seen;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
@@ -2019,6 +2019,31 @@ function cutChapter(n){const rb=n===5&&G.route==='b',me=ch().id,cx=VW/2,fy=VH*.7
    :{d:3.4,bg:'room',z0:1,z1:1.1,actors:[{k:'mj',x:cx,y:VH*.52,sc:.3,alpha:0,a1:.6,dur:1.6},...party.map((id,i)=>({k:'ch',id,...at(i),face:1,sc:1.3}))],sub:{who:'Mujica',text:CHTAUNT[n-1]}},
   rb?{d:3.8,bg:'room',fadeOut:1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.7,alpha:0,a1:1,dur:1.8}],sub:{who:'空白假面',text:'「剧本早就写好了。最后一行是：她们走散了。」'}}:cap?{d:3.6,bg:'room',fadeOut:1,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.7,breakAt:999}],sub:{text:`${pl[1]||''}传闻 ${cname(cap)} 被囚禁在这一章的尽头。`}}
      :{d:3.8,bg:'room',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.8}],sub:{who:'Mujica',text:'「五张面具，都在等它们的主人。来吧，终幕开演。」'}}]}
+const INTER=[
+  {t:'幕间 I · Ignis',a:'烛火燃尽的间隙，黑暗里传来一段哼唱。嗓子快要哑了，却还在唱同一句。',mj:'「多动听啊。人偶为了不被丢弃而歌唱——这就是你们生来的意义。」',z:'帷幕后面，有人轻轻翻过一页乐谱。火光照不到的地方，丝线正在一寸寸收紧。'},
+  {t:'幕间 II · Aer',a:'风停了一瞬。所有黑羽同时悬在半空，像一封封还没落款的信。',mj:'「羽毛会落地，信会被拆开，告别迟早会来。你又何必逆着风走？」',z:'风重新吹起来。这一次，它吹向你要去的方向。'},
+  {t:'幕间 III · Aqua',a:'水面下有人在说话。每一个字浮上来，都碎成一个小小的气泡。',mj:'「眼泪流到最后，就成了海。在海底，人偶终于不必再假装自己是人。」',z:'你把手伸进水里。很冷。可是有另一只手，轻轻回握了一下。'},
+  {t:'幕间 IV · Terra',a:'荆棘在你脚下缓缓分开，让出一条只容一个人通过的小路。',mj:'「爱是最锋利的刺。你们越想靠近彼此，就越是血流不止。」',z:'玫瑰在身后一朵朵合拢。前方的花，开得比血还红。'},
+  {t:'幕间 V · Quinta Essentia',a:'火、风、水、地。四个乐章在行囊里低声共鸣，等待第五个音落下。',mj:'「人偶聚在一起，也还是人偶。丝线的另一头，始终握在我的手里。」',b:'「你们以为，是自己走到这里的？翻到这一页，也写在剧本里。」',z:'五道影子在舞台上并排站好。灯还没有亮，可她们都知道——开演的时刻到了。'}];
+const CAPL={doloris:'「悲伤也是一种歌声。只要我还在唱，就说明……我还没有被丢掉。」',mortis:'「坏掉的人偶会被收进箱子里。……我不想进箱子。至少，在你来之前不想。」',
+  timoris:'「我、我才不怕。只是丝线勒得有点紧，手在发抖而已。……你会来的，对吧？」',amoris:'「被爱着的人偶，才不会被扔掉哦。所以快点来，把我从这里爱出去吧♪」',
+  oblivionis:'「我正在忘记。舞台、掌声，还有你的名字。……所以，请在我全部忘光之前。」'};
+const RESPL={doloris:'「我听见了。悲伤的歌，我也会唱。等我，我们一起把它唱完。」',mortis:'「谁也别想把你收进箱子。真要进，也是我先进去。」',
+  timoris:'「害怕的话，就抓紧丝线。线的另一头，我会接住你。」',amoris:'「真拿你没办法。……嗯，我这就来，带着全世界最多的爱。」',oblivionis:'「就算你忘了，我也会一遍一遍告诉你。你是谁，我们又是谁。」'};
+const PARTYL={doloris:'「这一次，我们一起唱到最后。」',mortis:'「谁敢抢走这个舞台，我就让它谢幕。」',timoris:'「……我还是会怕。但我不会再逃了。」',amoris:'「五个人，一个都不能少哦。」',oblivionis:'「我想起来了。我们是 Ave Mujica。」'};
+function cutInter(n){const I=INTER[n-1],me=ch().id,cx=VW/2,fy=VH*.76,rb=n===5&&G.route==='b',party=[me,...G.allies.map(a=>a.id)],cap=n<5&&G.caps?G.caps[n-1]:null;
+  const row=o=>party.map((id,i)=>({k:'ch',id,x:cx+(i-(party.length-1)/2)*46,y:fy+(i%2)*6,face:i<party.length/2?1:-1,sc:1.25,...o}));
+  const sh=[{d:3.6,bg:'void',fadeIn:1,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4,alpha:0,a1:1,dur:1.2}],sub:{who:I.t,text:I.a}}];
+  if(cap){sh.push({d:3.8,bg:'stage',z0:1.15,z1:1,actors:[{k:'ch',id:cap,x:cx,y:VH*.5,face:-1,sc:1.3,anim:'hurt',strings:1,alpha:.2,a1:.85,dur:1.6}],sub:{who:cname(cap)+'（远处）',text:CAPL[cap]}},
+    {d:3.4,bg:'stage',z0:1,z1:1.18,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.5}],sub:{who:cname(me),text:RESPL[me]}})}
+  else party.slice(0,5).forEach((id,i)=>sh.push({d:2.6,bg:'stage',z0:1.05,z1:1.12,actors:row({}).map(a=>a.id===id?{...a,sc:1.45}:{...a,alpha:.45}),sub:{who:cname(id),text:PARTYL[id]}}));
+  sh.push(rb?{d:3.6,bg:'void',z0:1,z1:1.1,actors:[{k:'spr',name:'blank',x:cx,y:VH*.84,sc:1.6,alpha:0,a1:.8,dur:1.6}],sub:{who:'空白假面',text:I.b}}
+           :{d:3.6,bg:'void',z0:1,z1:1.1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.42,alpha:0,a1:.85,dur:1.6}],sub:{who:'Mujica',text:I.mj}},
+    {d:3.6,bg:'stage',fadeOut:1,actors:cap?[{k:'ch',id:me,x:cx,x1:cx+120,y:fy,face:1,anim:'run',sc:1.4}]:row({}),sub:{text:I.z}});
+  return sh}
+function cutMiniEnd(b){const cx=VW/2,fy=VH*.78;return[
+  {d:3.2,bg:'room',fadeIn:1,shake:.8,actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:b.sc*1.1,a1:0,sink:12,shake:1}],sub:{who:b.name,text:b.end}},
+  {d:3.2,bg:'room',fadeOut:1,actors:[],sub:{text:b.after}}]}
 function cutRoute(){const cx=VW/2,fy=VH*.78,me=ch().id;return[
   {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「Mujica 也只是人偶而已。牵着她的那根线，一直通到舞台的背面去。」'}},
   {d:3.8,bg:'void',z0:1,z1:1.15,actors:[{k:'spr',name:'blank',x:cx,y:VH*.82,sc:1.6,alpha:0,a1:.75,dur:2}],sub:{who:'后台的老人偶师',text:'「那里坐着没有脸的那一位。是它写下剧本，让你们一次次戴上面具，一次次失去彼此。」'}},
@@ -2059,21 +2084,25 @@ function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(
 /* =================================================================== encounter: intro + over-the-shoulder view */
 const ease=v=>{v=clamp(v,0,1);return v<.5?2*v*v:1-Math.pow(-2*v+2,2)/2};
 const OTSK={shop:{tag:'— 后 台 商 店 —',name:'无面的人台',mood:'它没有脸，却记得每一位客人的尺寸。',col:'#ffd27a',K:.95},
+  treasure:{tag:'— 衣 柜 —',name:'上锁的衣柜',mood:'柜门的缝隙里漏出一线光，像有谁正屏住呼吸。',col:'#9ad8ff',K:1.3},
   rest:{tag:'— 化 妆 间 —',name:'镜前的烛光',mood:'镜子里的你，比你先一步卸下了假面。',col:'#ffcf9a',K:.85}};
 function startOts(kind){const o={kind,ph:'intro',t:0,k:0,lb:0,shk:0,fl:0};
   if(kind==='event'){const n=G.npc;Object.assign(o,{tx:n.x,ty:n.y,stop:n.y+32,tag:'— 邂 逅 —',name:npcName(n.ev),mood:EVMOOD[G.act-1],col:n.ev.stranger&&n.ev.stranger.quest?'#ffd27a':'#d8c0ff'})}
   else if(kind==='elite'){const b=MINIB[G.act-1];Object.assign(o,{b,tx:RW/2,ty:TOP+70,stop:TOP+70+88,tag:'— 精 英 —',name:'不速之客',mood:'有什么挡在了路中央。它不打算让开。',col:'#c9a45c',K:.8})}
   else if(kind==='boss'){const b=G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-1],mj=b.spr==='mujica';
     Object.assign(o,{b,tx:RW/2,ty:mj?TOP+124:b.spr==='blank'?TOP+92:b.spr==='audience'?TOP+86:TOP+70,tag:'— 终 幕 —',name:`第${CN[G.act-1]}章 · ${ACTS[G.act-1].name}`,mood:'帷幕后面，有什么一直在等你。',col:mj?'#ff3a50':'#e0283c',K:mj?.36:b.spr==='blank'?.5:b.spr==='audience'?.55:.95});o.stop=Math.min(RH-34,o.ty+(mj?120:84))}
+  else if(kind==='treasure'){const c=G.picks.find(x=>x.k==='chest');o.chest=c;Object.assign(o,{tx:c.x,ty:c.y,stop:c.y+38},OTSK[kind])}
   else{const d=G.deco.find(x=>x.k===(kind==='shop'?'mannequin':'piano'))||G.deco[0];o.dk=d;Object.assign(o,{tx:d.x,ty:d.y,stop:d.y+40},OTSK[kind])}
   G.ots=o;$('game').classList.add('ots')}
+function openChest(p,ots){p.open=1;S.p('pick');burst(p.x,p.y-6,24,[GOLD,'#fff','#f6dc8a'],80,.7);
+  for(let i=0;i<rint(10,18);i++)G.picks.push({k:'petal',x:p.x,y:p.y-6,vx:rnd(-60,60),vy:rnd(-80,-10),t:0,v:1});dropRelic(p.x+28,p.y+6,.5);if(!ots)later(.6,()=>showReward('treasure'))}
 function otsEnd(){G.ots=null;$('game').classList.remove('ots')}
 function updOts(dt){const o=G.ots;o.t+=dt;o.shk=Math.max(0,o.shk-dt*10);o.fl=Math.max(0,o.fl-dt*2.2);
   if(o.ph==='intro'){o.lb=Math.min(1,o.t/.5);if(o.t>2.1){o.ph='swoop';o.t=0}}
   else if(o.ph==='swoop'){o.k=ease(o.t/1.2);if(o.t>=1.2){o.k=1;o.ph='walk';o.t=0;o.y0=P.y}}
   else if(o.ph==='walk'){const p=Math.min(1,o.t/1.5);P.y=o.y0+(o.stop-o.y0)*ease(p);P.moving=p<1&&o.stop<o.y0-1;P.walk=(P.walk||0)+dt;P.animT=(P.animT||0)+dt;P.face=1;
-    if(p>=1){P.moving=false;o.t=0;if(o.kind==='boss'||o.kind==='elite')o.ph='reveal';else{o.ph='talk';o.kind==='event'?openTalk():o.kind==='shop'?showShop():showRest()}}}
-  else if(o.ph==='talk'){P.animT=(P.animT||0)+dt;const done=o.kind==='event'?G.npc&&G.npc.done:G.cleared;if(done&&$('modal').hidden){o.ph='return';o.t=0}}
+    if(p>=1){P.moving=false;o.t=0;if(o.kind==='boss'||o.kind==='elite')o.ph='reveal';else{o.ph='talk';if(o.kind==='treasure'){openChest(o.chest,1);o.fl=.6}else o.kind==='event'?openTalk():o.kind==='shop'?showShop():showRest()}}}
+  else if(o.ph==='talk'){P.animT=(P.animT||0)+dt;if(o.kind==='treasure'&&!o.rw&&o.t>.9){o.rw=1;showReward('treasure')}const done=o.kind==='event'?G.npc&&G.npc.done:G.cleared;if(done&&$('modal').hidden){o.ph='return';o.t=0}}
   else if(o.ph==='reveal'){P.animT=(P.animT||0)+dt;if(!o.hit&&o.t>.95){o.hit=1;o.shk=7;o.fl=1;S.p('slam')}
     if(o.t>3.3){if(o.b.spr==='mujica'){otsEnd();spawnBoss();return}if(o.kind==='elite')spawnMini(o.b);else spawnBoss();if(G.boss)G.boss.intro=.25;o.ph='return';o.t=0}}
   else if(o.ph==='return'){o.k=1-ease(o.t/1);o.lb=1-Math.min(1,o.t/1);if(o.t>=1)otsEnd()}}
@@ -2083,7 +2112,7 @@ function otsDrawTarget(o,t,al){if(o.b){const b=o.b;
     else{const sp=SPR[b.spr];if(!sp)return;const fi=sp.f.length>1?Math.floor(t*8)%2:0,fl=b.float?Math.sin(t*3)*2-4:0,sc=b.sc||(b.spr==='blank'?1.3:b.spr==='audience'?1.5:1),c=sp.f[fi];
       ctx.globalAlpha=al*.35;ctx.strokeStyle='#e6dcd2';ctx.lineWidth=.4;ctx.beginPath();for(const dx of[-.3,0,.3]){ctx.moveTo(o.tx+dx*c.width*sc,o.ty-c.height*sc*.8+fl);ctx.lineTo(o.tx+dx*c.width*sc*.4,o.ty-260)}ctx.stroke();
       ctx.globalAlpha=al;drawSpr(c,o.tx,o.ty+fl,1,null,sc)}}
-  else{ctx.globalAlpha=al;if(o.dk)drawDeco(o.dk,t)}
+  else{ctx.globalAlpha=al;if(o.dk)drawDeco(o.dk,t);if(o.chest){const c=o.chest;drawSpr((c.open?SPR.chestOpen:SPR.chest).f[0],c.x,c.y+5,1);if(!c.open){ctx.globalAlpha=al*(.3+.2*Math.sin(t*4));ctx.fillStyle=GOLD;ctx.fillRect(c.x-1,c.y-22+Math.sin(t*3)*2,2,4)}}}
   ctx.globalAlpha=1}
 let OC=null,OX=null;
 function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(cv.width,cv.height);OX=OC.getContext('2d')}const x=OX,n=G.npc;
