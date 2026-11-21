@@ -866,11 +866,11 @@ const BOSSES=[
   {name:'Mujica',sub:'假面之主',spr:'mujica',hp:1550,r:15,spd:24,pats:['spiral','spikes','dash','rain','fanRing','summon','stream'],sum:['mari','mask','crow'],h:40,float:1}
 ];
 const MINIB=[
-  {name:'灰烬引座人',sub:"L'Ouvreuse des Cendres · 精英",spr:'mari',sc:2.2,hp:250,r:10,spd:30,pats:['fan','summon','ring','fanRing'],sum:['mari'],h:42,end:'「……您的座位，我替您留着。就在第一排，火烧得最旺的地方。」',after:'提灯滚落在地。灯芯里只剩一点红，迟迟不肯熄灭。',line:'「您的座位，在火里。请随我来。」'},
-  {name:'黑羽信使',sub:'Le Messager Noir · 精英',spr:'crow',sc:2.4,hp:360,r:10,spd:40,pats:['dash','feather','fan','summon'],sum:['crow'],h:38,float:1,end:'「信……送到了。你却连拆都没拆。……也好。有些告别，还是不读为好。」',after:'黑羽四散。半空中只留下一枚火漆，印着一张没有五官的脸。',line:'「我带来一封信。收信人那一栏，写着你的名字。」'},
-  {name:'溺水的假面',sub:'Le Masque Noyé · 精英',spr:'mask',sc:2.3,hp:470,r:10,spd:24,pats:['spiral','rain','ring','summon'],sum:['mask'],h:46,float:1,end:'「原来水面上……这么亮啊。」',after:'假面浮上水面，安静地转了半圈，又沉回它熟悉的黑暗里。',line:'「水底很安静。安静到，能听见你在害怕。」'},
-  {name:'荆棘骑士',sub:"Le Chevalier d'Épines · 精英",spr:'knight',sc:2,hp:600,r:12,spd:22,pats:['spikes','fanRing','dash','summon'],sum:['rose','mari'],h:50,end:'「去吧。庭园的主人等你很久了。……替我，看一眼外面的花。」',after:'铠甲里空无一物。本该是心脏的位置，插着一支干枯的玫瑰。',line:'「这座庭园不欢迎客人。尤其是，还会流泪的客人。」'},
-  {name:'帷幕守夜人',sub:'Le Veilleur du Rideau · 精英',spr:'knight',sc:2.4,hp:800,r:13,spd:20,pats:['stream','spiral','fanRing','summon','rain'],sum:['mari','mask','crow'],h:60,end:'「灯……要亮了。我守了一辈子的幕布，终于要拉开了。」',after:'守夜人倒在幕布前，像一具终于被允许休息的人偶。远处，响起第一声定音鼓。',line:'「开演之前，任何人都不许看见舞台。」'}];
+  {name:'灰烬引座人',sub:"L'Ouvreuse des Cendres · 精英",spr:'w1m_1',sc:1.25,hp:250,r:10,spd:30,pats:['fan','summon','ring','fanRing'],sum:['mari'],h:34,end:'「……您的座位，我替您留着。就在第一排，火烧得最旺的地方。」',after:'提灯滚落在地。灯芯里只剩一点红，迟迟不肯熄灭。',line:'「您的座位，在火里。请随我来。」'},
+  {name:'黑羽信使',sub:'Le Messager Noir · 精英',spr:'w1m_2',sc:1.3,hp:360,r:10,spd:40,pats:['dash','feather','fan','summon'],sum:['crow'],h:32,float:1,end:'「信……送到了。你却连拆都没拆。……也好。有些告别，还是不读为好。」',after:'黑羽四散。半空中只留下一枚火漆，印着一张没有五官的脸。',line:'「我带来一封信。收信人那一栏，写着你的名字。」'},
+  {name:'溺水的假面',sub:'Le Masque Noyé · 精英',spr:'w1m_3',sc:1.35,hp:470,r:10,spd:24,pats:['spiral','rain','ring','summon'],sum:['mask'],h:30,float:1,end:'「原来水面上……这么亮啊。」',after:'假面浮上水面，安静地转了半圈，又沉回它熟悉的黑暗里。',line:'「水底很安静。安静到，能听见你在害怕。」'},
+  {name:'荆棘骑士',sub:"Le Chevalier d'Épines · 精英",spr:'w1m_4',sc:1.25,hp:600,r:12,spd:22,pats:['spikes','fanRing','dash','summon'],sum:['rose','mari'],h:34,end:'「去吧。庭园的主人等你很久了。……替我，看一眼外面的花。」',after:'铠甲里空无一物。本该是心脏的位置，插着一支干枯的玫瑰。',line:'「这座庭园不欢迎客人。尤其是，还会流泪的客人。」'},
+  {name:'帷幕守夜人',sub:'Le Veilleur du Rideau · 精英',spr:'w1m_5',sc:1.3,hp:800,r:13,spd:20,pats:['stream','spiral','fanRing','summon','rain'],sum:['mari','mask','crow'],h:40,end:'「灯……要亮了。我守了一辈子的幕布，终于要拉开了。」',after:'守夜人倒在幕布前，像一具终于被允许休息的人偶。远处，响起第一声定音鼓。',line:'「开演之前，任何人都不许看见舞台。」'}];
 function spawnMini(b){const hm=1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length);G.pending=Math.max(0,G.pending-1);
   const e={t:'boss',mini:1,phase:1,maxPh:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:10+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.2,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:b.sc,pi:0,intro:.25,amb:2};
   G.en.push(e);G.boss=e;S.p('boss');shake(5);setTrack('elite'+G.act);$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;hudCache.bf=null;later(1.4,()=>toast(b.line))}
@@ -1807,7 +1807,7 @@ function pickEvent(){if(relicN()>=3&&!G.route)return{stranger:PUPPETEER};const g
   const fresh=STRANGERS.filter(x=>!G.seenEv[x.id]),base=fresh.length?fresh:STRANGERS;
   const st=pick(base.concat(givers));if(st.quest)G.offered[st.quest]=1;else G.seenEv[st.id]=1;return{stranger:st}}
 function npcImg(ev){if(ev.member){const f=ART.fr[ev.member];if(f)return{c:f.idle[0],sx:18,sy:0,sw:72,sh:72,sc:.5,dy:2};const s=SPR['ch_'+ev.member].f[0];return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc:1,dy:1}}
-  const s=SPR[ev.stranger.spr].f[0],sc={mask:1.6,crow:1.5,knight:1.25,doll:.7,rose:1.3,mari:1.2,ghost:1.3,mirror:1.2,musicbox:1.2,maestro:1.2,puppeteer:1.2}[ev.stranger.spr]||1;return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc,dy:1}}
+  const s0=SPR[ev.stranger.spr],s=s0.f[0],sc=(1/(s0.hd||1))*({mask:1.6,crow:1.5,knight:1.25,doll:.7,rose:1.3,mari:1.2,ghost:1.3,mirror:1.2,musicbox:1.2,maestro:1.2,puppeteer:1.2}[ev.stranger.spr]||1);return{c:s,sx:0,sy:0,sw:s.width,sh:s.height,sc,dy:1}}
 function npcName(ev){return ev.member?CHARS.find(c=>c.id===ev.member).name:ev.stranger.name}
 function talkHtml(ev,text,state){const pt=ev.member&&UI.port;return `<div class="talk">${pt?`<i class="port big" style="background-position:${CHARS.findIndex(c=>c.id===ev.member)*25}% 0"></i>`:`<canvas id="tkCv" width="72" height="72"></canvas>`}<div class="tk"><b>${npcName(ev)}</b>${state?`<small>${state}</small>`:''}<p>${text}</p></div></div>`}
 function drawPortrait(ev){const c=$('tkCv');if(!c)return;const x=c.getContext('2d'),im=npcImg(ev),k=Math.min(64/im.sw,64/im.sh);x.imageSmoothingEnabled=false;
@@ -2554,6 +2554,125 @@ function cutOpening(){const cx=VW/2,fy=VH*.76,TH=['悲伤','死亡','恐惧','�
   {d:3.8,bg:'void',flash:.45,sfx:'boss',actors:[{k:'mj',f:1,x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.6}],sub:{who:'Mujica',text:'「Welcome to the world of Ave Mujica.」'}},
   {d:4,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'—— 假面回廊，开演 ——'}}]}
 function playOpening(){G.state='title';show(null);setTrack('title');playCut(cutOpening(),()=>toTitle())}
+/* =================================================================== first world: hi-res gothic models (replace the old pixel sprites; Mujica untouched) */
+function buildW1Sprites(){const D=WD,GD='#c9a45c',PO=['#fffaf2','#ece4d8','#b8a894'],WINE=['#9b1b30','#6e0f1e','#3a0810'];
+ const porc=(x,cx,cy,rx,ry)=>D.E(x,cx,cy,rx,ry,D.rg(x,cx-rx*.35,cy-ry*.4,Math.max(rx,ry)*1.3,PO));
+ /* 人偶 marionette: hands at (3,8)/(11,8) and head top for the string overlay */
+ w2reg('mari',14,20,(x,k)=>{
+  D.L(x,[[5.4,14],[5-(k?.7:0),19.6]],'#c79a6a',1.1);D.L(x,[[8.6,14],[9+(k?.7:0),19.6]],'#c79a6a',1.1);D.E(x,5.2,16.6,.6,.6,'#8a6a40',0);D.E(x,8.8,16.6,.6,.6,'#8a6a40',0);
+  D.P(x,[[4,8],[10,8],[11.6,15],[2.4,15]],D.lg(x,0,8,0,15,WINE));for(let i=0;i<5;i++)D.P(x,[[2.6+i*1.9,15],[3.5+i*1.9,13.8],[4.4+i*1.9,15]],'#ece4d8',0);
+  D.R(x,6.2,9,1.6,4.4,.4,GD,0);D.P(x,[[4.4,8],[9.6,8],[8.4,9.6],[5.6,9.6]],'#f4eee4',0);
+  D.L(x,[[4.2,8.6],[3,8]],'#c79a6a',.9);D.L(x,[[9.8,8.6],[11,8]],'#c79a6a',.9);D.E(x,3,8,.6,.6,'#ece4d8',0);D.E(x,11,8,.6,.6,'#ece4d8',0);
+  D.E(x,7,4.4,3.6,3.8,D.lg(x,0,0,0,8,['#4a2236','#2a0a1a']));porc(x,7,4.8,2.7,2.9);D.R(x,3.6,1,6.8,2.4,1.2,'#3a1a2a');
+  D.E(x,5.9,4.6,.55,.75,'#16101a',0);D.E(x,8.1,4.6,.55,.75,'#16101a',0);D.E(x,5.8,4.3,.2,.2,'#fff',0);D.E(x,8,4.3,.2,.2,'#fff',0);D.E(x,5.2,5.8,.6,.35,'rgba(224,138,144,.7)',0);D.E(x,8.8,5.8,.6,.35,'rgba(224,138,144,.7)',0);
+  D.L(x,[[7,2],[7,3.4]],'rgba(70,50,40,.5)',.25);D.L(x,[[4.2,6.4],[4.2,7.4]],'rgba(70,50,40,.5)',.25)});
+ /* 假面 venetian mask (floating, ranged) */
+ w2reg('mask',16,12,(x,k)=>{
+  for(const s of[-1,1])x.strokeStyle=s<0?'#9b1b30':'#6a3a7a',x.lineWidth=.8,x.beginPath(),x.moveTo(8+s*6,6),x.quadraticCurveTo(8+s*8,9+(k?1:0),8+s*7.4,11.6),x.stroke();
+  x.beginPath();x.moveTo(1,4);x.quadraticCurveTo(8,-1.4,15,4);x.quadraticCurveTo(14,9,9.4,9);x.lineTo(8,7.6);x.lineTo(6.6,9);x.quadraticCurveTo(2,9,1,4);x.closePath();WD.fs(x,D.lg(x,0,0,0,9,PO));
+  for(const s of[-1,1]){x.beginPath();x.ellipse(8+s*3.4,5,2,1.25,s*.25,0,TAU);WD.fs(x,'#0b080d',0)}D.eye(x,4.6,5,.55,'#e0283c',.5);D.eye(x,11.4,5,.55,'#e0283c',.5);
+  for(const s of[-1,1]){x.strokeStyle=GD;x.lineWidth=.35;x.beginPath();x.moveTo(8+s*1.2,2.2);x.quadraticCurveTo(8+s*4.4,.8,8+s*6.6,3.4);x.stroke();x.beginPath();x.ellipse(8+s*3.4,5,2.5,1.7,s*.25,0,TAU);x.stroke()}
+  D.P(x,[[8,2.6],[8.9,3.8],[8,5],[7.1,3.8]],'#9b1b30','#6a4a18',.3);D.P(x,[[12,1.6],[15.4,-1],[13.6,2.8]],'#6a3a7a',0);D.hl(x,5,2.6,1.6,.5,.5)});
+ /* 荆棘玫瑰 rose turret: bloom with an eye */
+ w2reg('rose',14,18,(x,k)=>{
+  D.L(x,[[7,8],[7,18]],'#2f6a34',1.4);for(const [yy,s] of[[11,-1],[14,1],[16.5,-1]]){D.P(x,[[7,yy],[7+s*4,yy-2],[7+s*4.6,yy+.4]],D.lg(x,7,yy-2,7,yy+1,['#6aa050','#2f6a34']));D.P(x,[[7+s*.5,yy+1.4],[7+s*1.8,yy+.8],[7+s*1,yy+2]],'#c8c8a0',0)}
+  const o=k?1:.85;D.E(x,7,6,5.6*o+.4,5.2*o,D.rg(x,6,5,6,['#ff5a70','#c8203a','#6e0f1e']));for(let i=0;i<6;i++){const a=i/6*TAU+.3;D.E(x,7+Math.cos(a)*3.4*o,6+Math.sin(a)*3.2*o,2.2,1.6,'rgba(110,15,30,.45)',0)}
+  D.E(x,7,6,2.6,2.3,'#3a0810',0);D.eye(x,7,6,1.1,'#ffd27a',.5);D.L(x,[[4,3],[5.4,4.6]],'rgba(255,200,210,.5)',.3)});
+ /* 鸦 crow */
+ w2reg('crow',16,11,(x,k)=>{
+  const up=k?-3.4:1.2;D.P(x,[[7,5],[1,3+up],[2.6,6+up*.3],[4,6.4],[7.4,7]],D.lg(x,0,0,8,0,['#2a2232','#0b080d']));D.P(x,[[9,5],[15,3+up],[13.4,6+up*.3],[12,6.4],[8.6,7]],D.lg(x,8,0,16,0,['#0b080d','#2a2232']));
+  D.E(x,8,6.6,3.6,2.4,D.lg(x,0,4,0,9,['#3a3444','#0b080d']));D.P(x,[[4.6,7.4],[1.6,9],[5,8.6]],'#0b080d',0);D.E(x,11,5.4,2,1.8,'#1a1622');D.P(x,[[12.6,5],[15.6,5.8],[12.6,6.3]],'#c9a45c','#5a4018',.3);
+  D.eye(x,11.6,5,.45,'#e0283c',.5);D.L(x,[[7,10],[6.6,11]],'#c9a45c',.4);D.L(x,[[9,10],[9.4,11]],'#c9a45c',.4);D.hl(x,9,5.6,1.4,.4,.35)});
+ /* 骑士 knight */
+ w2reg('knight',18,26,(x,k)=>{
+  D.P(x,[[4,9],[14,9],[15.6,23],[2.4,23]],D.lg(x,0,9,0,23,['#7a1424','#3a0810']));D.L(x,[[5,22],[6,23.6],[8,22],[10,23.6],[12,22]],'#3a0810',.5);
+  D.R(x,6,19.4,2.6,6.4,.6,'#3a3a48');D.R(x,9.4,19.4,2.6,6.4,.6,'#3a3a48');D.R(x,5.6,24.6,3.2,1.4,.4,'#1a1a22');D.R(x,9.2,24.6,3.2,1.4,.4,'#1a1a22');
+  D.R(x,5,9.6,8,10.6,1.4,D.lg(x,5,0,13,0,['#a8acc0','#6a6e80','#3a3e4c']));D.L(x,[[9,10],[9,20]],'rgba(20,20,30,.5)',.4);D.R(x,5.4,15,7.2,1.1,.4,GD,0);D.E(x,9,12.6,1,1,'#9b1b30',0);
+  D.E(x,4.4,10.6,1.8,1.4,'#8a8ea0');D.E(x,13.6,10.6,1.8,1.4,'#8a8ea0');
+  x.save();x.translate(14.6,13);x.rotate(k?-.12:.05);D.R(x,-.6,-12,1.4,13,.3,D.lg(x,-.6,0,.8,0,['#f0f2f8','#9a9eb0']));D.R(x,-1.8,.2,3.8,1,.3,GD,0);D.R(x,-.5,1.2,1.2,2.6,.3,'#3a2a1a',0);x.restore();
+  D.R(x,5.6,2.4,6.8,7.4,2,D.lg(x,5.6,0,12.4,0,['#b8bcd0','#6a6e80','#3a3e4c']));D.R(x,6.4,5.4,5.2,1,.4,'#0b080d',0);D.eye(x,7.8,5.9,.4,'#e0283c',.5);D.eye(x,10.2,5.9,.4,'#e0283c',.5);
+  D.P(x,[[9,2.6],[10.6,-.2],[11.4,.2],[9.6,2.6]],'#9b1b30',0);D.hl(x,7,4,.8,1.6,.35)});
+ /* 烛台伯爵 Count: candle wicks under the flame overlay at (7,1)/(13,-1)/(19,1) */
+ w2reg('count',26,36,(x,k)=>{
+  D.P(x,[[6,16],[20,16],[23,35],[3,35]],D.lg(x,0,16,0,35,['#2a1c24','#120a10']));D.P(x,[[10,16],[16,16],[13,26]],'#f4eee4',0);D.P(x,[[12,16.6],[14,16.6],[13.4,24],[12.6,24]],'#9b1b30',0);
+  D.P(x,[[3,35],[1,33],[4,29],[6,16]],'#1a1018',0);D.P(x,[[23,35],[25,33],[22,29],[20,16]],'#1a1018',0);for(const yy of[20,23,26])D.E(x,13,yy,.5,.5,GD,0);
+  D.R(x,2,20,3,9,1.2,'#2a1c24');D.R(x,21,20,3,9,1.2,'#2a1c24');D.E(x,3.5,29.6,1.4,1.2,'#ece4d8');D.E(x,22.5,29.6,1.4,1.2,'#ece4d8');
+  D.L(x,[[13,15],[13,8]],GD,1.4);D.L(x,[[7,8],[19,8]],GD,1.2);D.L(x,[[7,8],[7,5]],GD,1);D.L(x,[[19,8],[19,5]],GD,1);for(const cx of[7,13,19])D.E(x,cx,cx===13?4:5,1.8,.7,GD,'#6a4a18',.3);
+  for(const [cx,top] of[[7,1.6],[13,.2],[19,1.6]]){D.R(x,cx-1,top+.6,2,(cx===13?3.6:3),.4,D.lg(x,cx-1,0,cx+1,0,['#fffaf0','#d8ccb4']),'#8a7a60',.25);D.P(x,[[cx+.6,top+1.6],[cx+1.1,top+3],[cx+.6,top+3.4]],'#fffaf0',0)}
+  porc(x,13,12.4,4.4,4);D.E(x,11.2,12,.9,1.2,'#0b080d',0);D.E(x,14.8,12,.9,1.2,'#0b080d',0);D.eye(x,11.2,12.2,.4,'#ff8a3a',.6);D.eye(x,14.8,12.2,.4,'#ff8a3a',.6);
+  D.L(x,[[11.4,14.6],[14.6,14.6]],'#6e0f1e',.5);for(const [dx,dy,L] of[[9.6,11,3],[16.4,13,2.4],[12,8.8,2]])D.L(x,[[dx,dy],[dx,dy+L]],'rgba(240,230,210,.9)',.6);D.hl(x,11.6,10.6,1.2,.6,.6)});
+ /* 鸦羽之后 Queen of crows */
+ w2reg('queen',32,34,(x,k)=>{
+  const up=k?-3:0;for(const s of[-1,1]){D.P(x,[[16+s*5,10],[16+s*15,4+up],[16+s*16,14+up*.5],[16+s*14,20],[16+s*7,22]],D.lg(x,16,0,16+s*16,0,['#1a1622','#0b080d']));
+   for(let i=0;i<5;i++)D.P(x,[[16+s*(8+i*1.6),18-i],[16+s*(9.4+i*1.6),23-i+up*.3],[16+s*(10.2+i*1.6),18-i]],'#2a2232',0)}
+  D.P(x,[[12,14],[20,14],[24,33],[8,33]],D.lg(x,0,14,0,33,['#2a1c2a','#0b080d']));for(let i=0;i<8;i++)D.P(x,[[8.6+i*2,33],[9.6+i*2,28.6],[10.6+i*2,33]],'#1a1622',0);D.P(x,[[14.6,14],[17.4,14],[16.6,31],[15.4,31]],'#9b1b30',0);
+  D.E(x,16,9.6,4.2,4.6,D.lg(x,0,5,0,14,['#2a1c2a','#0b080d']));porc(x,16,10.2,3,3.2);D.P(x,[[12.6,9],[19.4,9],[19,10.6],[13,10.6]],'rgba(11,8,13,.75)',0);
+  D.eye(x,14.6,9.8,.5,'#e0283c',.6);D.eye(x,17.4,9.8,.5,'#e0283c',.6);D.L(x,[[14.8,12.4],[17.2,12.4]],'#6e0f1e',.5);
+  D.P(x,[[12.4,6.2],[13,3],[14.4,5],[16,2],[17.6,5],[19,3],[19.6,6.2]],D.lg(x,0,2,0,6,['#ffe9a0',GD,'#8a5a10']),'#5a3a10',.3);D.E(x,16,4.2,.7,.7,'#e0283c',0)});
+ /* 泣泪人偶 Weeping doll */
+ w2reg('doll',28,34,(x,k)=>{
+  D.P(x,[[8,15],[20,15],[25,33],[3,33]],D.lg(x,0,15,0,33,['#4a7ac8','#2a4a8a','#16285a']));D.P(x,[[10,16],[18,16],[19.5,31],[8.5,31]],D.lg(x,0,16,0,31,['#ffffff','#e4e8f0']));
+  for(let i=0;i<9;i++)D.E(x,4.6+i*2.35,33,1.3,.9,'#f4f4fa',0);D.R(x,4,18,3,8,1.4,'#e4e8f0');D.R(x,21,18,3,8,1.4,'#e4e8f0');D.E(x,5.5,26.4,1.4,1.2,'#f4ece0');D.E(x,22.5,26.4,1.4,1.2,'#f4ece0');
+  D.E(x,14,10,8.4,8,D.lg(x,0,2,0,18,['#f8e8c0','#c8a870']));porc(x,14,11,5.6,5.8);
+  D.P(x,[[6,6],[14,3.4],[22,6],[22,4],[14,1.2],[6,4]],'#2a4a8a',0);D.P(x,[[3,6.6],[8,4.8],[9,7.4]],'#2a4a8a',0);D.P(x,[[25,6.6],[20,4.8],[19,7.4]],'#2a4a8a',0);
+  D.E(x,11.6,10.6,1.3,1.6,'#2a3a6a',0);D.E(x,16.4,10.6,1.3,1.6,'#2a3a6a',0);D.E(x,11.4,10.2,.45,.5,'#fff',0);D.E(x,16.2,10.2,.45,.5,'#fff',0);
+  for(const ex of[11.6,16.4]){x.save();x.globalCompositeOperation='source-over';x.fillStyle=D.lg(x,0,12,0,17,['rgba(90,170,255,.9)','rgba(90,170,255,.2)']);x.fillRect(ex-.45,12,.9,4.4+(k?1:0));x.restore()}
+  D.L(x,[[13,13.4],[14,14],[15,13.4]],'#a0606a',.45);D.L(x,[[14,5.4],[13.2,8],[14.2,9]],'rgba(60,40,40,.6)',.3);
+  for(const [dx,dy] of[[7,20],[21,23]])D.E(x,dx,dy+(k?1.2:0),.5,.8,'rgba(120,190,255,.85)',0)});
+ /* 荆棘王座 Throne of thorns */
+ w2reg('throne',36,36,(x,k)=>{
+  D.P(x,[[4,36],[4,4],[8,1],[18,4],[28,1],[32,4],[32,36]],D.lg(x,0,0,36,0,['#1e3a22','#16301a','#0e2012']),'#081008',.6);
+  D.R(x,8,8,20,20,1,'#2a0a14');D.R(x,6,26,24,4,1,D.lg(x,0,26,0,30,['#3a5a3a','#1e3a22']));D.R(x,4,30,28,6,.6,'#16301a');
+  x.strokeStyle='#2f6a34';x.lineWidth=1;for(const s of[-1,1]){x.beginPath();for(let t2=0;t2<=1;t2+=.05){const yy=35-t2*33,xx=18+s*(14+Math.sin(t2*12)*2.4);t2?x.lineTo(xx,yy):x.moveTo(xx,yy)}x.stroke();
+   for(let i=0;i<10;i++){const t2=i/10,yy=35-t2*33,xx=18+s*(14+Math.sin(t2*12)*2.4);D.P(x,[[xx,yy],[xx+s*1.8,yy-1],[xx+s*.6,yy+.8]],'#c8c8a0',0)}}
+  for(const [rx,ry] of[[5,10],[31,16],[4,24],[32,29],[18,3.6]])D.E(x,rx,ry,1.6,1.4,D.rg(x,rx-.4,ry-.4,1.8,['#ff5a70','#9b1b30']));
+  D.P(x,[[13,26],[23,26],[24,18],[12,18]],D.lg(x,0,18,0,26,['#2a1a2a','#0b080d']));D.E(x,18,14,3.4,3.6,D.lg(x,0,10,0,18,['#c8d8b0','#7a9a70']));
+  D.eye(x,16.6,14,.6,'#7aff5a',.6);D.eye(x,19.4,14,.6,'#7aff5a',.6);D.P(x,[[14.4,11.6],[15,8.6],[16.4,10.4],[18,8],[19.6,10.4],[21,8.6],[21.6,11.6]],D.lg(x,0,8,0,12,['#ffe9a0',GD]),'#5a3a10',.3);
+  for(let i=0;i<4;i++)D.L(x,[[14+i*2.6,26],[13+i*2.6+(k?1:0),29]],'#2f6a34',.6)});
+ /* 空白假面 Blank Mask: eye area around (18,24)/(32,24) for the phase-2 overlay */
+ w2reg('blank',50,62,(x,k)=>{
+  D.P(x,[[13,44],[37,44],[40,62],[10,62]],D.lg(x,0,44,0,62,['#1a1018','#0b080d']));D.R(x,9,46,32,6,1,D.lg(x,0,46,0,52,['#b81a30','#6e0f1e']));D.R(x,23,50,4,12,1,'#f4f0ea');
+  for(let i=0;i<5;i++){const px=6+i*9.5,py=44+((i*7)%5)+(k?-1:1);x.save();x.translate(px,py);x.rotate((i%2?.3:-.25)+(k?.1:0));D.R(x,-2.4,-3,4.8,6,.3,'#f4f0e4','#8a8070',.25);for(let j=0;j<3;j++)D.L(x,[[-1.6,-1.6+j*1.4],[1.6,-1.6+j*1.4]],'rgba(60,50,40,.5)',.2);x.restore()}
+  D.E(x,25,24,17,22,D.rg(x,19,15,26,['#ffffff','#ece8f2','#a8a4b8']),'#5a5468',.8);D.L(x,[[30,8],[28,14],[31,18],[29,23]],'rgba(70,60,80,.6)',.5);
+  for(const [lx,ly] of[[18,1],[25,-.4],[32,1]])D.L(x,[[lx,ly+3],[lx,ly]],'#8a8494',.6);D.hl(x,18,14,4,7,.5)});
+ /* 无尽的观众 Endless audience: rows of faceless spectators, clapping */
+ w2reg('audience',62,46,(x,k)=>{
+  D.R(x,0,30,62,16,1,D.lg(x,0,30,0,46,['#7a1424','#3a0810']));D.R(x,0,29,62,2,.4,GD,0);
+  for(let r=0;r<3;r++)for(let c=0;c<8-(r%2);c++){const cx=5+c*7.4+(r%2)*3.7,cy=6+r*8.2;D.P(x,[[cx-3.2,cy+7],[cx-2.6,cy+3.4],[cx+2.6,cy+3.4],[cx+3.2,cy+7]],'#1a1018',0);porc(x,cx,cy+.6,2.2,2.6);D.E(x,cx-.8,cy+.4,.42,.5,'#0b080d',0);D.E(x,cx+.8,cy+.4,.42,.5,'#0b080d',0);if((r+c)%3===0){D.eye(x,cx-.8,cy+.4,.25,'#e0283c',.4);D.eye(x,cx+.8,cy+.4,.25,'#e0283c',.4)}}
+  for(const hx of[19,43]){const o=k?2:0;D.E(x,hx-3+o,34,3,4,D.lg(x,0,30,0,38,PO));D.E(x,hx+3-o,34,3,4,D.lg(x,0,30,0,38,PO));for(let i=0;i<3;i++){D.L(x,[[hx-3+o-1+i,30.6],[hx-3+o-1+i,32]],'rgba(80,60,50,.4)',.3)}}
+  for(let i=0;i<9;i++)D.R(x,2+i*6.8,40,5,4,.6,'#5a0a18',0)});
+ /* 精英小 Boss (first world) */
+ w2reg('w1m_1',22,34,(x,k)=>{   // 灰烬引座人
+  D.P(x,[[6,13],[16,13],[18,33],[4,33]],D.lg(x,0,13,0,33,['#5a5a62','#2a2a32']));for(const yy of[16,19,22])D.E(x,11,yy,.5,.5,GD,0);D.R(x,5.4,13,11.2,1.6,.4,'#9b1b30',0);
+  D.R(x,7.6,30,2.8,4,.6,'#14141a');D.R(x,11.6,30,2.8,4,.6,'#14141a');D.E(x,11,8,4,4.4,'#d8d0c8');D.R(x,6.4,3,9.2,3,.8,'#2a2a32');D.R(x,8,1.6,6,2,.6,'#9b1b30');
+  D.E(x,9.4,8.4,.6,.6,'#0b080d',0);D.E(x,12.6,8.4,.6,.6,'#0b080d',0);D.L(x,[[17,16],[19.6,19+(k?1:0)]],'#2a2a32',1.2);
+  x.save();x.globalCompositeOperation='lighter';D.E(x,20,24,4,4,D.rg(x,20,24,4,['rgba(255,170,80,.8)','rgba(255,120,40,0)']),0);x.restore();D.R(x,18.6,20.6,2.8,5,.6,'rgba(255,200,120,.35)',GD,.4);D.E(x,20,23,.8,1.2,'#ffd27a',0);
+  for(const [dx,dy] of[[3,26],[19,30],[5,31]])D.E(x,dx,dy-(k?1:0),.4,.4,'rgba(200,190,180,.7)',0)});
+ w2reg('w1m_2',24,32,(x,k)=>{   // 黑羽信使
+  const up=k?-2:1;for(const s of[-1,1])D.P(x,[[12+s*4,12],[12+s*12,8+up],[12+s*11,18],[12+s*5,20]],D.lg(x,12,0,12+s*12,0,['#1a1622','#0b080d']));
+  D.P(x,[[8,12],[16,12],[18,32],[6,32]],D.lg(x,0,12,0,32,['#2a2232','#0b080d']));D.R(x,9,24,6,4.4,.4,'#f4ead4','#5a4a30',.3);D.E(x,12,26.2,1.2,1.2,'#9b1b30',0);
+  D.E(x,12,7,4,4.4,D.lg(x,0,3,0,11,['#2a2232','#0b080d']));D.P(x,[[14.6,6.4],[20.4,8],[14.6,9]],'#c9a45c','#5a4018',.3);D.eye(x,13.6,6.2,.6,'#e0283c',.6);
+  D.R(x,8,1.2,8,3,.6,'#0b080d');D.R(x,6.6,3.6,10.8,.9,.4,'#0b080d')});
+ w2reg('w1m_3',26,30,(x,k)=>{   // 溺水的假面
+  for(let i=0;i<7;i++){x.strokeStyle=i%2?'#2e5a40':'#3e7a52';x.lineWidth=1.1;x.beginPath();x.moveTo(5+i*2.6,11);x.quadraticCurveTo(3+i*2.8+(k?2:-1),20,6+i*2.4,29);x.stroke()}
+  x.beginPath();x.moveTo(2,10);x.quadraticCurveTo(13,1,24,10);x.quadraticCurveTo(22,20,13,21);x.quadraticCurveTo(4,20,2,10);x.closePath();WD.fs(x,D.lg(x,0,3,0,21,['#e8f4ff','#a8c8e0','#5a7a9a']));
+  for(const s of[-1,1]){x.beginPath();x.ellipse(13+s*5,10,2.8,2,s*.2,0,TAU);WD.fs(x,'#0a1220',0);D.eye(x,13+s*5,10,.7,'#6ac8ff',.6)}
+  D.L(x,[[16,4],[14,9],[17,13],[15,18]],'rgba(20,40,60,.7)',.4);for(const [dx,dy] of[[8,14],[18,15]])D.L(x,[[dx,dy],[dx,dy+5+(k?1.4:0)]],'rgba(120,190,255,.85)',.6);
+  for(const [bx,by,r] of[[3,4,1],[22,2,.8],[25,6,.6]])D.E(x,bx,by-(k?1:0),r,r,0,'rgba(160,210,255,.8)',.3)});
+ w2reg('w1m_4',24,34,(x,k)=>{   // 荆棘骑士
+  D.P(x,[[5,12],[19,12],[21,31],[3,31]],D.lg(x,0,12,0,31,['#2a3a2a','#0e1a10']));D.R(x,6,13,12,12,1.6,D.lg(x,6,0,18,0,['#6a7a6a','#3a4a3a','#1e2a1e']));
+  D.E(x,12,18,2.4,2.2,D.rg(x,11.4,17.4,2.6,['#ff5a70','#9b1b30']));D.R(x,7.6,29,3.4,5,.6,'#1a2418');D.R(x,13,29,3.4,5,.6,'#1a2418');
+  x.strokeStyle='#2f6a34';x.lineWidth=.9;x.beginPath();for(let t2=0;t2<=1;t2+=.04){const yy=31-t2*28,xx=12+Math.sin(t2*16)*6.6;t2?x.lineTo(xx,yy):x.moveTo(xx,yy)}x.stroke();
+  for(let i=0;i<12;i++){const t2=i/12,yy=31-t2*28,xx=12+Math.sin(t2*16)*6.6;D.P(x,[[xx,yy],[xx+1.4,yy-.8],[xx+.4,yy+.6]],'#c8c8a0',0)}
+  x.save();x.translate(20,16);x.rotate(k?-.15:.05);D.R(x,-.7,-14,1.6,16,.3,D.lg(x,-.7,0,.9,0,['#5a8a4a','#2f5a2a']));for(let j=0;j<6;j++)D.P(x,[[.9,-12+j*2.4],[2.4,-11+j*2.4],[.9,-10.4+j*2.4]],'#c8c8a0',0);D.R(x,-2,1.6,4,1,.3,GD,0);x.restore();
+  D.R(x,7.4,3,9.2,9,2.4,D.lg(x,7.4,0,16.6,0,['#7a8a7a','#3a4a3a']));D.R(x,8.6,6.6,6.8,1.2,.4,'#0b080d',0);D.eye(x,10.4,7.2,.45,'#7aff5a',.6);D.eye(x,13.6,7.2,.45,'#7aff5a',.6);
+  for(let i=0;i<5;i++)D.P(x,[[8+i*2,3.2],[9+i*2,.6+(i%2)],[10+i*2,3.2]],'#2f6a34',0)});
+ w2reg('w1m_5',26,40,(x,k)=>{   // 帷幕守夜人
+  D.P(x,[[8,10],[18,10],[24,40],[2,40]],D.lg(x,0,10,26,0,['#9b1b30','#6e0f1e','#3a0810']));for(let i=0;i<6;i++)D.L(x,[[9+i*1.8,12],[4+i*3.6,39.4]],'rgba(20,0,6,.55)',.5);
+  D.R(x,1,38,24,2,.6,GD,0);D.E(x,13,7.4,4.6,5,D.lg(x,0,2,0,12,['#2a0a14','#0b080d']));D.E(x,13,8,2.6,3,'#0b080d',0);D.eye(x,12,8,.55,'#ffd27a',.6);D.eye(x,14,8,.55,'#ffd27a',.6);
+  D.L(x,[[22,4],[22,38]],'#3a2a1a',1);x.save();x.globalCompositeOperation='lighter';D.E(x,22,6,5,5,D.rg(x,22,6,5,['rgba(255,190,100,.8)','rgba(255,120,40,0)']),0);x.restore();D.R(x,20.4,3,3.2,5,.6,'rgba(255,210,140,.4)',GD,.4);D.E(x,22,5.6,.7,1.1,k?'#ffe9a0':'#ffd27a',0);
+  D.E(x,4.6,24,2,2,0,GD,.6);D.R(x,4,25.6,1.2,6,.3,GD,0);D.R(x,5.2,29,2,1,.3,GD,0);D.R(x,5.2,31,1.4,1,.3,GD,0)});
+ ['mari','mask','rose','crow','knight','count','queen','doll','throne','blank','audience','w1m_1','w1m_2','w1m_3','w1m_4','w1m_5'].forEach(n=>SPR[n].w1=1)}
 function cutRoute(){const cx=VW/2,fy=VH*.78,me=ch().id;return[
   {d:3.4,bg:'void',fadeIn:1,actors:[{k:'spr',name:'puppeteer',x:cx-40,y:fy,sc:2.4},{k:'ch',id:me,x:cx+50,y:fy,face:-1,sc:1.4}],sub:{who:'后台的老人偶师',text:'「Mujica 也只是人偶而已。牵着她的那根线，一直通到舞台的背面去。」'}},
   {d:3.8,bg:'void',z0:1,z1:1.15,actors:[{k:'spr',name:'blank',x:cx,y:VH*.82,sc:1.6,alpha:0,a1:.75,dur:2}],sub:{who:'后台的老人偶师',text:'「那里坐着没有脸的那一位。是它写下剧本，让你们一次次戴上面具，一次次失去彼此。」'}},
@@ -2738,12 +2857,12 @@ function drawEnemy(e,t){if(e.mj){drawMj(e,t);return}
   const d=e.d,sp=SPR[d.spr];if(!sp)return;let fi=0;if(sp.f.length>1)fi=Math.floor(t*(e.t==='crow'||e.t==='boss'?8:5)+e.an)%2;
   const fl=d.float?Math.round(Math.sin(t*3+e.an)*2)-4:0;shadow(e.x,e.y,e.r*(e.boss?1:.9));
   if(e.elite){ctx.globalAlpha=.25+.1*Math.sin(t*5);ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(e.x,e.y-8*e.sc,e.r+6,0,TAU);ctx.fill();ctx.globalAlpha=1}
-  if(e.t==='mari'&&!sp.hd){ctx.strokeStyle='rgba(220,210,200,.35)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(e.x-4*e.sc,e.y-12*e.sc);ctx.lineTo(e.x-4,e.y-60);ctx.moveTo(e.x+4*e.sc,e.y-12*e.sc);ctx.lineTo(e.x+4,e.y-60);ctx.moveTo(e.x,e.y-19*e.sc);ctx.lineTo(e.x,e.y-60);ctx.stroke()}
-  if(e.t==='mask'&&!sp.hd){ctx.fillStyle='rgba(120,90,150,.35)';for(let i=0;i<4;i++)ctx.fillRect(Math.round(e.x-3+Math.sin(t*4+i)*2),Math.round(e.y-6+fl+i*2),6-i,2)}
+  if(e.t==='mari'&&(!sp.hd||sp.w1)){ctx.strokeStyle='rgba(220,210,200,.35)';ctx.lineWidth=.5;ctx.beginPath();ctx.moveTo(e.x-4*e.sc,e.y-12*e.sc);ctx.lineTo(e.x-4,e.y-60);ctx.moveTo(e.x+4*e.sc,e.y-12*e.sc);ctx.lineTo(e.x+4,e.y-60);ctx.moveTo(e.x,e.y-19*e.sc);ctx.lineTo(e.x,e.y-60);ctx.stroke()}
+  if(e.t==='mask'&&(!sp.hd||sp.w1)){ctx.fillStyle='rgba(120,90,150,.35)';for(let i=0;i<4;i++)ctx.fillRect(Math.round(e.x-3+Math.sin(t*4+i)*2),Math.round(e.y-6+fl+i*2),6-i,2)}
   let sh=0;if(e.st==='wind')sh=Math.round(rnd(-1,1));
   if(e.intro>0){ctx.globalAlpha=1-e.intro/1.6}
   if(e.boss&&e.ph2&&!e.mj){ctx.save();ctx.globalCompositeOperation='lighter';const col=p2col(e);ctx.globalAlpha=.75+.25*Math.sin(t*8);const r=(d.h||30)*1.4;ctx.drawImage(glow(col),e.x-r,e.y-(d.h||30)*.55-r,r*2,r*2);ctx.drawImage(glow(col),e.x-r,e.y-(d.h||30)*.55-r,r*2,r*2);ctx.strokeStyle=col;ctx.lineWidth=1.2;ctx.globalAlpha=.6;ctx.beginPath();ctx.ellipse(e.x,e.y,e.r*2+Math.sin(t*6)*2,e.r*.7,0,0,TAU);ctx.stroke();ctx.restore()}
-  drawSpr(e.fl>0?sp.w[fi]:sp.f[fi],e.x+sh,e.y+fl,e.t==='boss'||sp.hd?1:e.face,null,e.sc/(sp.hd||1));ctx.globalAlpha=1;
+  drawSpr(e.fl>0?sp.w[fi]:sp.f[fi],e.x+sh,e.y+fl,e.t==='boss'||(sp.hd&&!sp.w1)?1:e.face,null,e.sc/(sp.hd||1));ctx.globalAlpha=1;
   if(e.t==='mask'&&!sp.hd){ctx.fillStyle=ACTS[G.act-1].pal.eb;ctx.fillRect(Math.round(e.x-3*e.sc),Math.round(e.y+fl-7*e.sc),1,1);ctx.fillRect(Math.round(e.x+2*e.sc),Math.round(e.y+fl-7*e.sc),1,1)}
   if(e.boss&&e.boss.spr==='blank'&&e.ph2){const S2=e.sc,fy=e.y+fl-38*S2;for(const s2 of[-1,1]){const ex=e.x+s2*7*S2;ctx.fillStyle='#0b080d';ctx.beginPath();ctx.ellipse(ex,fy,3.5*S2,2.5*S2,0,0,TAU);ctx.fill();ctx.fillStyle='#e0283c';ctx.fillRect(Math.round(ex-.5),Math.round(fy-.5),1.5,1.5);ctx.fillStyle='rgba(155,27,48,.8)';ctx.fillRect(Math.round(ex),Math.round(fy+2*S2),1,(6+Math.sin(t*3)*2)*S2)}}
   if(e.boss&&e.boss.spr==='count'){for(const [cx,cy] of [[-6,-35],[0,-37],[6,-35]]){const f=Math.sin(t*14+cx)>0;ctx.fillStyle=f?'#ffd27a':'#ff7a2a';ctx.fillRect(Math.round(e.x+cx),Math.round(e.y+cy-(f?1:0)),2,3)}
@@ -2826,7 +2945,7 @@ function drawSel(){const c=$('selCv'),x=c.getContext('2d');x.clearRect(0,0,c.wid
 
 /* =================================================================== boot */
 $('cut').addEventListener('click',()=>cutNext());$('cutSkip').addEventListener('click',e=>{e.stopPropagation();endCut()});
-function boot(){resize();buildSprites();buildW2Sprites();loadArt();buildTabs();selChar(0);if(location.hash==='#skip')toTitle();else playOpening();if(!isTouch)$('kbdHint').textContent='键盘：WASD 移动 · J 近战 · K 远程 · L 闪避 · 空格 技能 · Esc 暂停';requestAnimationFrame(frame)}
+function boot(){resize();buildSprites();buildW1Sprites();buildW2Sprites();loadArt();buildTabs();selChar(0);if(location.hash==='#skip')toTitle();else playOpening();if(!isTouch)$('kbdHint').textContent='键盘：WASD 移动 · J 近战 · K 远程 · L 闪避 · 空格 技能 · Esc 暂停';requestAnimationFrame(frame)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(G.state==='play'&&!CUT.on&&modal.hidden&&$('actCard').hidden)showPause();if(A.ctx)A.ctx.suspend()}else if(A.ctx)A.ctx.resume()});
 boot();
 </script>
