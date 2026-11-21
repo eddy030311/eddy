@@ -109,7 +109,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
   <div id="foeList"></div>
 </section>
 <section id="mujica">
-  <h2>七、Mujica 动作 <small>生成时请务必上传你给我的那张 Mujica 原图作参考。分三张：本体（不含双手）、单只骨手、退场。手只画观众左边那只，右手我在游戏里镜像。面具破碎和发光眼睛由游戏代码处理，图里保持五张面具完整、无发光。</small></h2>
+  <h2>七、Mujica 动作 <small>生成时请务必上传你给我的那张 Mujica 原图作参考。M1–M3 是动作：本体（不含双手）、单只骨手、退场；M4-1 到 M4-5 是五张面具各自的破碎过程。手只画观众左边那只，右手我在游戏里镜像。面具破碎和发光眼睛由游戏代码处理，图里保持五张面具完整、无发光。</small></h2>
   <div id="mjList"></div>
 </section>
 <section id="rooms">
@@ -272,6 +272,17 @@ const MJS=[
   rows:[['第1行','垮塌 4 帧：双手无力垂下、丝带失去张力'],['第2行','坠落 4 帧：链子松开、面具团整体下坠并散开']],
   prompt:"Sprite sheet of the COMPLETE boss from the reference (the mask cluster together with both skeletal hands). Exact grid of 4 columns by 2 rows of equal cells (each 256x192 pixels, whole sheet 1024x384, or an exact integer upscale), same scale in every frame, centered, nothing crosses a cell edge.\nRow 1 — COLLAPSE, 4 frames: as if the puppet strings were cut, both hands drop limply, the ribbons lose their tension and droop, the cluster sags.\nRow 2 — FALL, 4 frames: the chains come loose, the cluster tips forward and falls apart, ribbons and ruby drops scattering, the last frame almost empty."}];
 document.getElementById('mjList').innerHTML=MJS.map(m=>ticket({id:m.id,stub:'Mujica',title:m.n,what:m.what,chips:m.chips,rows:m.rows,prompt:`${MJSTYLE}\n\n${m.prompt}`})).join('');
+
+const MJMASKS=[
+ {id:'M4-1',n:'悲伤之面（Doloris）',k:'the sequined cat-eye masquerade mask at the TOP LEFT of the reference: black lace covered in small silver sequins and pearl beads, two almond eye holes, pointed upswept corners'},
+ {id:'M4-2',n:'死之面（Mortis）',k:'the tall crescent-shaped mask at the TOP CENTER of the reference: black lace with silver filigree, one single eye hole, sweeping into a long curved crescent point'},
+ {id:'M4-3',n:'恐惧之面（Timoris）',k:'the lace mouth mask at the CENTER LEFT of the reference: a half-mask covering only the nose and mouth, black lace with large silver floral patterns, no eye holes'},
+ {id:'M4-4',n:'爱之面（Amoris）',k:'the small cat-ear mask at the TOP RIGHT of the reference: black lace with silver filigree, two oval eye holes, two pointed cat-ear tips on top'},
+ {id:'M4-5',n:'忘却之面（Oblivionis）',k:'the small filigree eye mask at the CENTER RIGHT of the reference: black lace with fine silver filigree, two eye holes, softly pointed outer corners'}];
+const SHATTER="Exact grid of 3 columns by 2 rows of equal cells (each 192x160 pixels, whole sheet 576x320, or an exact integer upscale such as 2304x1280). Front view, the mask the same size and position in every frame, centered in each cell. Nothing crosses a cell edge.\nFrame 1 (row 1, left) — INTACT: the mask whole and pristine.\nFrame 2 (row 1, middle) — FIRST CRACK: a single thin bone-white hairline crack runs across the mask.\nFrame 3 (row 1, right) — SPREADING: a web of jagged cracks spreads over the whole mask, small chips flaking off the edges.\nFrame 4 (row 2, left) — BREAKING: the mask splits into 6 to 9 large jagged pieces with thin gaps between them, still roughly in shape, the lace pattern continuing across each piece.\nFrame 5 (row 2, middle) — BURSTING: the pieces fly outward in all directions and rotate, smaller shards and tiny lace threads in between.\nFrame 6 (row 2, right) — REMNANT: only the jagged broken outer rim remains where the mask was (a thin irregular ring of broken lace edge with a hollow center), a few last tiny fragments falling.";
+document.getElementById('mjList').innerHTML+=MJMASKS.map(m=>ticket({id:m.id,stub:'破碎',title:'面具破碎 · '+m.n,what:'6 帧：完好 → 第一道裂纹 → 裂纹蔓延 → 碎成大块 → 碎片飞散 → 只剩破碎的边缘。第 6 帧会留在 Mujica 身上，作为这张面具被打碎后的样子。',
+  chips:[['必需','must'],['3×2 格'],['576×320'],['--ar 9:5']],rows:[['第1行','完好 · 第一道裂纹 · 裂纹蔓延'],['第2行','碎成大块 · 碎片飞散 · 残留的破碎边缘']],
+  prompt:`${MJSTYLE}\n\nSprite sheet showing ONLY ONE mask from the reference breaking apart: ${m.k}. Draw this mask alone, detached from the rest of the boss, with no ribbons, chains or hands.\n\n${SHATTER}`})).join('');
 document.getElementById('roomList').innerHTML=ROOMS.map(r=>ticket({id:r.id,stub:'场景',title:r.n,what:'整张房间图。顶部 15% 是后墙，左右和底部是细墙，中间一条红地毯，其余是空地板。',chips:[['必需','must'],['1024×576'],['--ar 16:9']],
   prompt:`${ROOMSTYLE}\n\nSetting: ${r.d}.\nPalette anchored on deep wine red #9b1b30, black, antique gold #c9a45c and bone white, adapted to this setting.`})).join('');
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
