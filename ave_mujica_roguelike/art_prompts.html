@@ -63,7 +63,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
     <li><b>背景统一用纯品红 #FF00FF</b>：我靠这个颜色抠图。如果你用的工具能直接导出透明 PNG，那样也可以。</li>
     <li><b>发回来时注明编号</b>：比如「C1-A」「I3」。上传后文件名会变，我靠编号对应。一张图对应一个编号。</li>
   </ol>
-  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#rules">规格与负面词</a></nav>
+  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#foes">五、敌人与 Boss</a><a href="#rooms">六、场景背景</a><a href="#rules">规格与负面词</a></nav>
 </header>
 
 <section id="rules">
@@ -104,7 +104,16 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
   <div id="upList"></div>
 </section>
 
-<footer>人物、技能图标、HUD 已经完成；强化图标共 6 张（U1–U6）。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
+<section id="foes">
+  <h2>五、敌人与 Boss <small>替换现在的小像素敌人。小怪每张 6 列 × 4 行（每格 64×64），Boss 每张 4 列 × 3 行（每格 128×128）。全部面朝右，背景用纯品红。</small></h2>
+  <div id="foeList"></div>
+</section>
+<section id="rooms">
+  <h2>六、场景背景 <small>每章一张完整的房间俯视图，直接当地板和墙壁使用。我会在上面叠加光影、门、障碍物和角色。不要品红背景，画满整张图。</small></h2>
+  <div id="roomList"></div>
+</section>
+
+<footer>人物、技能图标、HUD、强化图标已经完成。新增：敌人 5 张（E1–E5）、Boss 4 张（B1–B4）、场景 5 张（R1–R5）。建议先做 R1 和 E1，我先接进一章给你看效果。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
 </div>
 
 <script>
@@ -208,6 +217,46 @@ for(let s=0;s<UPICONS.length;s+=12){const part=UPICONS.slice(s,s+12),cols=part.l
     chips:[['必需','must'],[`${cols}×${rows} 格`],[`${W}×${H}`],['--ar '+(cols===rows?'1:1':cols+':'+rows)]],
     rows:part.map(u=>[String(u.i),`<b>${u.n}</b>（${RART[u.r]}）${u.d}`]),
     prompt:`${STYLE}\n\nGame UI icon sheet: ${part.length} upgrade icons in an exact grid of ${cols} columns by ${rows} rows of equal square cells (each 32x32 pixels, whole image ${W}x${H}, or an exact integer upscale such as ${W*8}x${H*8}). Each icon is one bold centered symbol filling about 80% of its cell and readable at small size. ${ICONSTYLE}\nOrder left to right, top to bottom:\n${part.map((u,k)=>`${k+1}) ${u.v}${RARC[u.r]}`).join('\n')}.`})}
+
+const FOESHEET="Strict sprite sheet: an exact grid of 6 columns by 4 rows of equal square cells (64x64 game pixels per cell, whole sheet 384x256, or an exact integer upscale such as 1536x1024). Side view, facing RIGHT in every frame, same scale and lighting in every frame, feet or lowest point on the same baseline 4 pixels above the cell bottom, centered in each cell. Nothing crosses a cell edge. No grid lines, no labels, no effects outside the body. Highly detailed pixel art with rich shading, rim light from the upper left, deep crimson and antique gold accents.";
+const BOSSSHEET="Strict sprite sheet: an exact grid of 4 columns by 3 rows of equal square cells (128x128 game pixels per cell, whole sheet 512x384, or an exact integer upscale such as 2048x1536). Front three-quarter view, the same scale in every frame, centered with the lowest point on a shared baseline 6 pixels above the cell bottom. Nothing crosses a cell edge. No grid lines, no labels. Very highly detailed pixel art boss, dramatic rim lighting, ornate gothic details, deep crimson, black and antique gold.";
+const FOES=[
+ {id:'E1',n:'提线人偶',d:'a small wooden marionette doll with a cracked porcelain face, painted rosy cheeks, a tattered dark crimson dress with gold trim, jointed wooden limbs, and three silver puppet strings rising from its head and hands',
+  rows:[['第1行','待机 4 帧：被丝线吊着轻轻摇晃'],['第2行','行走 6 帧：关节僵硬地蹒跚前进'],['第3行','攻击 4 帧：猛扑向前，双臂伸出'],['第4行','死亡 5 帧：丝线断裂，散成木块和瓷片']],
+  r:"Row 1 — IDLE, 4 frames: dangling and swaying gently on its strings. Row 2 — WALK, 6 frames: a stiff jerky puppet walk. Row 3 — ATTACK, 4 frames: lunges forward with both arms outstretched. Row 4 — DEATH, 5 frames: the strings snap and it collapses into wooden pieces and porcelain shards."},
+ {id:'E2',n:'假面幽灵',d:'a floating white porcelain masquerade mask with gold filigree, empty eye holes glowing with violet light, trailing a wispy translucent violet ghost cloak and lace ribbons',
+  rows:[['第1行','漂浮 4 帧'],['第2行','移动 6 帧：斗篷飘动'],['第3行','施法 4 帧：眼洞亮起并射出光球'],['第4行','死亡 5 帧：面具碎裂、烟雾散去']],
+  r:"Row 1 — FLOAT, 4 frames: bobbing in the air. Row 2 — MOVE, 6 frames: drifting with the cloak streaming behind. Row 3 — CAST, 4 frames: the eyes flare and release an orb of violet light. Row 4 — DEATH, 5 frames: the mask cracks and shatters as the ghostly cloak dissolves into smoke."},
+ {id:'E3',n:'荆棘玫瑰',d:'a carnivorous blood-red rose plant rooted in cracked stone, with a huge layered bloom that hides a ring of tiny teeth, thorny dark green stems and leaves',
+  rows:[['第1行','待机 4 帧：摇曳'],['第2行','蓄力 6 帧：花苞收紧'],['第3行','爆发 4 帧：花瓣张开、喷出花刺'],['第4行','死亡 5 帧：枯萎凋零']],
+  r:"Row 1 — IDLE, 4 frames: swaying slowly. Row 2 — CHARGE, 6 frames: the bloom closes tightly and trembles. Row 3 — BURST, 4 frames: the petals snap open wide revealing teeth, spraying thorns outward. Row 4 — DEATH, 5 frames: it wilts, blackens and crumbles."},
+ {id:'E4',n:'乌鸦',d:'a large black raven with glossy blue-black feathers, a single glowing red eye, a small gold ring on its leg, and ragged wing tips',
+  rows:[['第1行','飞行 4 帧'],['第2行','盘旋 6 帧'],['第3行','俯冲 4 帧：收翼急冲'],['第4行','死亡 5 帧：羽毛四散坠落']],
+  r:"Row 1 — FLY, 4 frames: a full wing-flap cycle. Row 2 — CIRCLE, 6 frames: gliding and banking. Row 3 — DIVE, 4 frames: wings tucked, beak first, a fast dive. Row 4 — DEATH, 5 frames: it bursts into falling black feathers."},
+ {id:'E5',n:'无头骑士',d:'a towering headless knight in dented blackened plate armor with gold edging, a tattered crimson cape, crimson light glowing from the empty neck hole, wielding a huge two-handed greatsword',
+  rows:[['第1行','行走 4 帧：沉重地前进'],['第2行','蓄力 6 帧：高举巨剑'],['第3行','砸击 4 帧：巨剑劈向地面'],['第4行','死亡 5 帧：盔甲散落、红光熄灭']],
+  r:"Row 1 — WALK, 4 frames: a heavy slow march. Row 2 — WIND-UP, 6 frames: raising the greatsword high overhead. Row 3 — SLAM, 4 frames: the sword crashes down into the ground with impact. Row 4 — DEATH, 5 frames: the armor falls apart piece by piece and the crimson glow fades."}];
+const BOSSES2=[
+ {id:'B1',n:'烛台伯爵（第一章）',d:'a gaunt skeletal aristocrat in a long black tailcoat with a crimson waistcoat and gold buttons, a white porcelain skull face, and a tall golden three-armed candelabra growing from his head like a crown, with burning candles dripping wax down his shoulders',
+  r:"Row 1 — IDLE, 4 frames: candle flames flickering, coat tails swaying. Row 2 — ATTACK, 4 frames: sweeps an arm and the candles flare, flinging fire. Row 3 — HURT 1 frame, then DEATH 3 frames: the candles go out one by one and he crumbles into wax and ash."},
+ {id:'B2',n:'鸦羽之后（第二章）',d:'a tall regal crow queen with an enormous pair of tattered black feathered wings, a black feather gown, a pale porcelain face with a red eye-shadow mask, long black hair and a small gold crown with a red gem',
+  r:"Row 1 — IDLE, 4 frames: wings slowly opening and closing. Row 2 — ATTACK, 4 frames: wings thrust forward, launching a storm of feathers. Row 3 — HURT 1 frame, then DEATH 3 frames: she collapses into a swirl of black feathers."},
+ {id:'B3',n:'泣泪人偶（第三章）',d:'a giant porcelain doll in a navy blue dress with white lace, dark blue hair in a bonnet, huge glassy blue eyes, endless blue tears streaming down her cracked cheeks and pooling at her feet',
+  r:"Row 1 — IDLE, 4 frames: sobbing, tears flowing. Row 2 — ATTACK, 4 frames: she wails and a spiral of tear drops bursts outward. Row 3 — HURT 1 frame, then DEATH 3 frames: cracks spread over her porcelain face and she shatters."},
+ {id:'B4',n:'荆棘王座（第四章）',d:'a faceless king made of black thorny vines seated on a massive throne of twisted thorns and blood-red roses, wearing a tarnished gold crown, two small glowing green eyes in the dark where the face should be',
+  r:"Row 1 — IDLE, 4 frames: vines writhing, roses breathing. Row 2 — ATTACK, 4 frames: raises a vine-hand and thorn spikes erupt from the ground. Row 3 — HURT 1 frame, then DEATH 3 frames: the thorns wither, the roses fall and the throne collapses."}];
+const ROOMSTYLE="Top-down three-quarter view pixel art game room background, highly detailed, crisp pixels, no anti-aliasing, cinematic moody lighting with deep shadows. Exact composition (game layout, keep it): the image is 1024x576; the TOP 15% of the image is the back wall seen from the front (stained-glass gothic windows, columns and wall sconces along it, a gold-trimmed baseboard at its bottom edge); thin side walls 24 pixels wide on the left and right edges; a thin wall strip 24 pixels tall along the bottom edge; everything else is an EMPTY open floor. A narrow vertical red carpet runner with gold borders runs down the exact center from the back wall to the bottom. Keep the floor open and clear: no furniture, no pillars, no characters, no creatures, no text, no UI. Only flat floor details such as tiles, cracks, small debris.";
+const ROOMS=[
+ {id:'R1',n:'第一章 · 烛火之厅',d:'a candlelit gothic hall: warm red-brown stone floor slabs with scorch marks, melted candle wax puddles and ash, back wall of dark brick with tall red and amber stained-glass windows and burning candle sconces, warm orange light pools'},
+ {id:'R2',n:'第二章 · 鸦羽回廊',d:'a cold moonlit gallery: blue-grey slate tiles scattered with black feathers, back wall with pale blue and lavender stained glass, empty iron birdcages hanging from the wall, cold silver light'},
+ {id:'R3',n:'第三章 · 泪之水底',d:'a flooded underwater crypt: wet deep-blue stone floor with shallow shimmering puddles and caustic light ripples, back wall with blue and teal stained glass, dripping stalactite stains, cold aquatic glow'},
+ {id:'R4',n:'第四章 · 荆棘庭园',d:'an overgrown gothic garden courtyard: mossy green flagstones with grass in the cracks, creeping thorny vines and fallen red rose petals, back wall of crumbling stone with green and gold stained glass half covered by vines'},
+ {id:'R5',n:'第五章 · 假面舞台',d:'a grand theater stage seen from above: polished dark wooden stage boards, scattered red rose petals, a row of footlights along the back, back wall of heavy crimson velvet curtains with gold tassels and gold masquerade-mask ornaments, a dramatic spotlight glow'}];
+document.getElementById('foeList').innerHTML=FOES.map(f=>ticket({id:f.id,stub:'敌人',title:f.n,chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],rows:f.rows,
+  prompt:`${STYLE}\n\nSprite sheet of ${f.d}.\n\n${FOESHEET}\n\n${f.r}`})).join('')+BOSSES2.map(f=>ticket({id:f.id,stub:'Boss',title:f.n,chips:[['必需','must'],['4×3 格'],['512×384'],['--ar 4:3']],
+  rows:[['第1行','待机 4 帧'],['第2行','攻击 4 帧'],['第3行','受击 1 帧 + 死亡 3 帧']],prompt:`${STYLE}\n\nBoss sprite sheet of ${f.d}.\n\n${BOSSSHEET}\n\n${f.r}`})).join('');
+document.getElementById('roomList').innerHTML=ROOMS.map(r=>ticket({id:r.id,stub:'场景',title:r.n,what:'整张房间图。顶部 15% 是后墙，左右和底部是细墙，中间一条红地毯，其余是空地板。',chips:[['必需','must'],['1024×576'],['--ar 16:9']],
+  prompt:`${ROOMSTYLE}\n\nSetting: ${r.d}.\nPalette anchored on deep wine red #9b1b30, black, antique gold #c9a45c and bone white, adapted to this setting.`})).join('');
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
   const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent='已选中，请长按复制';ok.hidden=false};
   const done=()=>{ok.textContent='已复制';ok.hidden=false;setTimeout(()=>ok.hidden=true,1600)};
