@@ -614,8 +614,19 @@ function buildSprites(){
 /* =================================================================== drawn art (sprite sheets from assets/) */
 const ANIMS=['idle','run','dash','hurt','melee','ranged','skill','death'],FW=108,FH=72;
 const ART={meta:{"doloris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 5, "ranged": 4, "skill": 6, "death": 6}, "mortis": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}, "timoris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 4, "skill": 6, "death": 6}, "amoris": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 6, "skill": 6, "death": 6}, "oblivionis": {"idle": 4, "run": 6, "dash": 3, "hurt": 2, "melee": 6, "ranged": 6, "skill": 6, "death": 6}},fr:{},wh:{},icons:{}};
-const MJM=[],MJW=[],MJH=[29,53,34,33,33];{const im=new Image();im.onload=()=>{for(let i=0;i<5;i++){const h=MJH[i],t=mk(68,h);t.getContext('2d').drawImage(im,i*68,53-h,68,h,0,0,68,h);MJM[i]=t;MJW[i]=whiteOf(t)}};im.src='assets/mjmasks.png'}
-function mjImg(f,white){return(white?MJW:MJM)[f-1]||(white?SPR.mujica.w[0]:SPR.mujica.f[0])}
+const MJA={};['body','handL','handR','full'].forEach(k=>{const im=new Image();im.onload=()=>{MJA[k]=im;if(k==='body')MJA.bodyW=whiteOf(im)};im.src='assets/mj_'+k+'.png'});
+/* mask positions in the original Mujica artwork (1606x979), order = MJF */
+const MJMK=[{c:[565,300],r:[225,95],e:[[452,308],[662,300]]},{c:[840,180],r:[215,125],e:[[812,182]]},{c:[610,500],r:[185,95],e:[[545,470],[690,465]]},{c:[1040,360],r:[170,85],e:[[990,372],[1100,368]]},{c:[1010,530],r:[170,90],e:[[940,536],[1070,524]]}];
+function hexA(h,a){const n=parseInt(h.slice(1),16);return`rgba(${n>>16},${(n>>8)&255},${n&255},${a})`}
+function mjCrack(cx,cy,rx,ry,L,seed){ctx.strokeStyle='rgba(240,230,220,.85)';ctx.lineWidth=1;for(let k=0;k<5;k++){const an=k*1.26+seed;ctx.beginPath();ctx.moveTo(cx,cy);for(let j=1;j<=3;j++){const w=an+Math.sin(j*3+k+seed)*.4;ctx.lineTo(cx+Math.cos(w)*rx*.3*j*L,cy+Math.sin(w)*ry*.3*j*L)}ctx.stroke()}}
+/* glow + red eyes on the active mask, darkened cracks on defeated ones; screen = (ox + X*k, oy + Y*k) */
+function mjFX(ox,oy,k,form,t,o={}){for(let i=0;i<5;i++){const m=MJMK[i],cx=ox+m.c[0]*k,cy=oy+m.c[1]*k,rx=m.r[0]*k,ry=m.r[1]*k;
+  if(o.all){mjCrack(cx,cy,rx,ry,Math.min(1,o.crack||1),i);continue}
+  if(i<form-1){ctx.globalAlpha=.5;ctx.fillStyle='#0b080d';ctx.beginPath();ctx.ellipse(cx,cy,rx*.85,ry*.8,0,0,TAU);ctx.fill();ctx.globalAlpha=1;mjCrack(cx,cy,rx,ry,1,i)}
+  else if(i===form-1){const pu=.5+.5*Math.sin(t*4);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(cx,cy,1,cx,cy,rx*1.2);g.addColorStop(0,hexA(MJF[i].col,.3*pu+.12));g.addColorStop(1,hexA(MJF[i].col,0));ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(cx,cy,rx*1.2,ry*1.4,0,0,TAU);ctx.fill();
+    for(const [ex,ey] of m.e){const x=ox+ex*k,y=oy+ey*k,r=Math.max(1.6,22*k),g2=ctx.createRadialGradient(x,y,0,x,y,r*2.6);g2.addColorStop(0,'rgba(255,90,100,.9)');g2.addColorStop(1,'rgba(255,40,60,0)');ctx.fillStyle=g2;ctx.beginPath();ctx.arc(x,y,r*2.6,0,TAU);ctx.fill()}ctx.restore();
+    for(const [ex,ey] of m.e){const x=ox+ex*k,y=oy+ey*k,r=Math.max(1.2,16*k);ctx.fillStyle='#ff2a40';ctx.beginPath();ctx.ellipse(x,y,r,r*.7,0,0,TAU);ctx.fill();ctx.fillStyle='#fff0e0';ctx.fillRect(Math.round(x-.5),Math.round(y-.5),1,1)}
+    if(o.crack)mjCrack(cx,cy,rx,ry,Math.min(1,o.crack),i)}}}
 function loadArt(){for(const id in ART.meta){const im=new Image();
     im.onload=()=>{const m=ART.meta[id],fr={},wh={};ANIMS.forEach((a,r)=>{fr[a]=[];for(let i=0;i<m[a];i++){const c=mk(FW,FH);c.getContext('2d').drawImage(im,i*FW,r*FH,FW,FH,0,0,FW,FH);fr[a].push(c)}wh[a]=fr[a].map(whiteOf)});
       ART.fr[id]=fr;ART.wh[id]=wh;buildTabs();selChar(G.charIdx)};im.src='assets/'+id+'.png';
@@ -707,6 +718,9 @@ const MJF=[
   {k:'timoris',name:'恐惧之面',col:'#4ccac2',pats:['quake','pulse','sweep','ring','slam'],crack:'「死亡也拦不住你……」',line:'「那么，你害怕吗？害怕吧。害怕才会留下来。」'},
   {k:'amoris',name:'爱之面',col:'#ff6a9a',pats:['hearts','summon','slam2','fanRing','sweep'],crack:'「你不害怕……为什么？」',line:'「那就让你爱上这里，再也走不出去。」'},
   {k:'oblivionis',name:'忘却之面',col:'#8d93dd',pats:['freeze','spiral','spikes','sweep','rain','slam2','quake'],crack:'「还剩……最后一张。」',line:'「忘了吧。忘掉一切，永远留在我的舞台上。」'}];
+const MJDEB=[{n:'泪雨',d:'护盾无法恢复'},{n:'凋零',d:'每秒失去 2% 最大生命'},{n:'恐惧',d:'视野被黑暗吞没'},{n:'魅惑',d:'同伴停止攻击，移动速度 -25%'},{n:'忘却',d:'技能被封印，闪避恢复减半'}];
+const CHTAUNT=['「第一章。烛火会替我看着你。」','「风会把你的歌声吹散，一个音也不剩。」','「沉下去吧。泪水会温柔地包住你。」','「荆棘会记住你流下的每一滴血。」','「终于走到这里了。舞台已经准备好了。」'];
+function setDeb(f){G.mjDeb=f;$('game').classList.toggle('dark',f===3);if(G.boss&&G.boss.mj)mjBar(G.boss);if(f){const d=MJDEB[f-1];later(.4,()=>toast(`不利机制 · ${d.n}：${d.d}`))}}
 const SKN={doloris:'悲叹之星',mortis:'死之舞',timoris:'恐惧低频',amoris:'爱之节拍',oblivionis:'忘却之时'};
 const cname=id=>CHARS.find(c=>c.id===id).name;
 const UPS=[
@@ -905,14 +919,14 @@ function buildBg(){const pal=ACTS[G.act-1].pal,c=mk(RW,RH),x=c.getContext('2d');
   const gr=x.createLinearGradient(0,TOP,0,TOP+30);gr.addColorStop(0,'rgba(0,0,0,.55)');gr.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=gr;x.fillRect(SIDE,TOP,RW-SIDE*2,30);
   drawZonesBg(x);return c}
 function enterRoom(type,noCount){
-  G.type=type;if(!noCount)G.room++;G.roomsDone++;G.turrets=[];G.vortex=null;G.wind=null;G.hzT=3;G.roomKills=0;G.cage=null;makeZones();G.npc=null;G.evFight=0;G.hard=1;G.surviveT=0;G.timedT=0;G.espd=1;$('game').classList.remove('dark');G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
+  G.type=type;if(!noCount)G.room++;G.roomsDone++;G.turrets=[];G.vortex=null;G.wind=null;G.hzT=3;G.roomKills=0;G.cage=null;makeZones();G.npc=null;G.evFight=0;G.hard=1;G.surviveT=0;G.timedT=0;G.espd=1;G.mjDeb=0;$('game').classList.remove('dark');G.en=[];G.pb=[];G.eb=[];G.fx=[];G.picks=[];G.nums=[];G.ghosts=[];G.timers=[];G.etimers=[];G.obs=[];G.doors=[];G.deco=[];G.waves=[];G.pending=0;
   G.cleared=false;G.boss=null;G.bossSpawned=0;G.waveWait=0;G.timeStop=0;G.bg=buildBg();
   P.x=RW/2;P.y=RH-34;P.vx=P.vy=0;P.dashT=0;P.inv=.8;stats();P.sh=P.shMax;P.shT=9;
   if(type==='combat'||type==='elite'||type==='trial'){
     const n=rint(2,5);for(let i=0;i<n*6&&G.obs.length<n;i++){const ox=rint(3,RW/16-4)*16,oy=rint(5,RH/16-6)*16;
       if(Math.abs(ox+8-RW/2)<30)continue;if(G.obs.some(o=>Math.abs(o.x-ox)<40&&Math.abs(o.y-oy)<40))continue;G.obs.push({x:ox+1,y:oy+2,w:14,h:10})}
-    const budget=3.5+G.act*1.9+G.room*.8;
-    if(type==='combat'){G.waves=[genWave(budget),genWave(budget*1.15)];if(G.act>=3)G.waves.push(genWave(budget*.9))}
+    const budget=(3.5+G.act*1.9+G.room*.8)*(G.act===5?2.3:1);
+    if(type==='combat'){G.waves=[genWave(budget),genWave(budget*1.15)];if(G.act>=3)G.waves.push(genWave(budget*.9));if(G.act===5)G.waves.push(genWave(budget*1.2))}
     else if(type==='elite'){G.waves=[genWave(budget*.6,true),genWave(budget*.8)]}
     else{const k=G.trialKind;toast('试炼 · '+TRIALS[k]);
       if(k==='gauntlet'){G.hard=1.3;G.waves=[0,1,2,3].map(i=>genWave(budget*(.7+i*.15),true))}
@@ -947,31 +961,32 @@ function spawnBoss(){const b=BOSSES[G.act-1],hm=1.2*[1,1,1.1,1.2,1.3][G.act-1]*(
   if(G.act===5)return spawnMujica(hm);
   const e={t:'boss',boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   G.en.push(e);G.boss=e;S.p('boss');shake(6);setTrack('boss');$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}<small>${b.sub}</small>`;toast(b.name);later(1.6,()=>toast(BTAUNT[G.act-1]))}
-function mjHp(f,hm){return BOSSES[4].hp*.45*hm*(1+.15*(f-1))}
-function mjBar(e){const f=MJF[e.form-1];$('bossName').innerHTML=`Mujica · ${f.name}<small>形态 ${e.form} / 5</small>`;hudCache.bf=null}
+function mjHp(f,hm){return BOSSES[4].hp*.45*hm*(1+.15*(f-1))*20}
+function mjBar(e){const f=MJF[e.form-1],d=G.mjDeb?MJDEB[G.mjDeb-1]:null;$('bossName').innerHTML=`Mujica · ${f.name}<small>形态 ${e.form} / 5${d?` · ${d.n}：${d.d}`:''}</small>`;hudCache.bf=null}
 function spawnMujica(hm){const b=BOSSES[4],hp=mjHp(1,hm);G.espd=1;
-  const e={t:'boss',boss:{...b,pats:MJF[0].pats},mj:1,form:1,hm,x:RW/2,y:TOP+78,r:18,hp,mhp:hp,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:'mujica',h:40,float:1},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.2,
-    hands:[-1,1].map(sd=>({s:sd,x:RW/2+sd*46,y:TOP+72,tx:0,ty:0,sp:4,fr:0,act:0,sw:0}))};
+  const e={t:'boss',boss:{...b,pats:MJF[0].pats},mj:1,form:1,hm,x:RW/2,y:TOP+124,r:26,hp,mhp:hp,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:'mujica',h:90,float:1},amb:2,st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.2,
+    hands:[-1,1].map(sd=>({s:sd,x:RW/2+(sd<0?-59:53),y:TOP+124,tx:0,ty:0,sp:4,fr:0,act:0,sw:0}))};
   G.en.push(e);G.boss=e;$('bossBar').hidden=false;mjBar(e);setTrack('mj1');renderTrack('mj2');
-  playCut(cutMjIntro(),()=>{shake(6);S.p('boss');toast('终幕 · Mujica')})}
-function mjNext(e){e.trans=1;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
+  playCut(cutMjIntro(),()=>{shake(6);S.p('boss');toast('终幕 · Mujica');setDeb(1)})}
+function mjNext(e){e.trans=1;setDeb(0);G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);for(const o of G.en)if(o!==e&&!o.dead){o.dead=1;burst(o.x,o.y-8,8,['#fff'],50,.4)}
   e.hands.forEach(h=>{h.act=0;h.sw=0});e.dashT=0;e.busy=0;shake(8);S.p('bossdie');G.flash=.4;
-  later(.9,()=>playCut(cutMjForm(e.form),()=>{e.form++;const f=MJF[e.form-1];e.mhp=e.hp=mjHp(e.form,e.hm);e.boss={...e.boss,pats:f.pats};e.pi=0;e.stT=1;e.trans=0;e.ph2=0;G.espd=1+.08*(e.form-1);mjBar(e);if(e.form<5)renderTrack('mj'+(e.form+1));toast(f.name)}))}
-function handSlam(e,h,x,y,dly=0){laterE(dly,()=>{h.act=1;h.tx=x;h.ty=y-34;h.sp=7;G.fx.push({k:'warnC',x,y,r:24,t:0,d:.8,en:1});S.p('warn')});
-  laterE(dly+.72,()=>{h.ty=y+2;h.sp=30;h.fr=1});
+  later(.9,()=>playCut(cutMjForm(e.form),()=>{e.form++;const f=MJF[e.form-1];e.mhp=e.hp=mjHp(e.form,e.hm);e.boss={...e.boss,pats:f.pats};e.pi=0;e.stT=1;e.trans=0;e.ph2=0;G.espd=1+.08*(e.form-1);setDeb(e.form);if(e.form<5)renderTrack('mj'+(e.form+1));toast(f.name)}))}
+function handSlam(e,h,x,y,dly=0){laterE(dly,()=>{h.act=1;h.tx=x;h.ty=y-30;h.sp=7;G.fx.push({k:'warnC',x,y,r:24,t:0,d:.8,en:1});S.p('warn')});
+  laterE(dly+.72,()=>{h.ty=y+6;h.sp=30;h.fr=1});
   laterE(dly+.82,()=>{if((P.x-x)**2+(P.y-y)**2<(24+P.r)**2)hurtPlayer(10+G.act*3);shake(4);S.p('slam');burst(x,y,16,['#cfc3b6','#9b1b30','#3a2030'],80,.5);G.fx.push({k:'ring',x,y,r0:4,r1:26,t:0,d:.25,col:'#e0283c'});
     if(e.form>=3)for(let i=0;i<10;i++)eshoot(x,y-4,i/10*TAU+rnd(.3),70,{dmg:6+G.act*2.6})});
   laterE(dly+1.3,()=>{h.act=0;h.fr=0;h.sp=4})}
-function handSweep(e,h){const y=clamp(P.y,TOP+20,RH-24),from=h.s<0?SIDE+6:RW-SIDE-6;h.act=1;h.tx=from;h.ty=y;h.sp=6;G.fx.push({k:'warnR',x:SIDE,y:y-13,w:RW-SIDE*2,h:26,t:0,d:.9,en:1});S.p('warn');
+function handSweep(e,h){const y=clamp(P.y,TOP+20,RH-24),from=h.s<0?SIDE+6:RW-SIDE-6;h.act=1;h.tx=from;h.ty=y+16;h.sp=6;G.fx.push({k:'warnR',x:SIDE,y:y-13,w:RW-SIDE*2,h:26,t:0,d:.9,en:1});S.p('warn');
   laterE(.9,()=>{h.sw=-h.s*330;h.sp=0;h.fr=1;S.p('dash')});laterE(2.3,()=>{h.sw=0;h.act=0;h.fr=0;h.sp=4})}
-function updHands(e,dt){for(const h of e.hands){if(h.sw){h.x+=h.sw*dt;if(h.x<SIDE||h.x>RW-SIDE){h.sw=0}if((P.x-h.x)**2+(P.y-h.y)**2<(16+P.r)**2)hurtPlayer(10+G.act*3);continue}
-    if(!h.act){h.tx=e.x+h.s*46;h.ty=e.y-2+Math.sin(G.time*2+h.s)*4}h.x+=(h.tx-h.x)*Math.min(1,dt*h.sp);h.y+=(h.ty-h.y)*Math.min(1,dt*h.sp)}}
-function drawMj(e,t){const f=MJF[e.form-1],im=mjImg(e.form,false),fl=Math.round(Math.sin(t*2)*2)-6,cy=e.y+fl;
-  ctx.strokeStyle='rgba(230,220,210,.3)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(e.x,cy-im.height);ctx.lineTo(e.x,TOP-40);for(const h of e.hands){ctx.moveTo(h.x,h.y-30);ctx.lineTo(h.x+h.s*10,TOP-40)}ctx.stroke();
-  shadow(e.x,e.y+6,22);ctx.globalAlpha=.22+.08*Math.sin(t*3);ctx.fillStyle=f.col;ctx.beginPath();ctx.ellipse(e.x,cy-im.height/2,46,30,0,0,TAU);ctx.fill();ctx.globalAlpha=1;
-  const sx=e.trans?rnd(-1.5,1.5):0;drawSpr(im,e.x+sx,cy,1);if(e.fl>0){ctx.globalAlpha=.4;drawSpr(mjImg(e.form,true),e.x+sx,cy,1);ctx.globalAlpha=1}
-  if(f.k==='timoris'){const g=.6+.4*Math.sin(t*6);ctx.fillStyle=`rgba(255,60,80,${g})`;ctx.fillRect(Math.round(e.x-14),Math.round(cy-im.height-6),5,3);ctx.fillRect(Math.round(e.x+9),Math.round(cy-im.height-6),5,3);ctx.fillStyle='#fff0e0';ctx.fillRect(Math.round(e.x-12),Math.round(cy-im.height-5),1,1);ctx.fillRect(Math.round(e.x+11),Math.round(cy-im.height-5),1,1)}
-  for(const h of e.hands){shadow(h.x,h.y+18,9);drawSpr(SPR.mjhand.f[h.fr],h.x,h.y+16,h.s<0?-1:1,null,1.15)}}
+function updHands(e,dt){for(const h of e.hands){if(h.sw){h.x+=h.sw*dt;if(h.x<SIDE||h.x>RW-SIDE){h.sw=0}if((P.x-h.x)**2+(P.y-(h.y-18))**2<(24+P.r)**2)hurtPlayer(10+G.act*3);continue}
+    if(!h.act){h.tx=e.x+(h.s<0?-59:53);h.ty=e.y+Math.sin(G.time*2+h.s)*3}h.x+=(h.tx-h.x)*Math.min(1,dt*h.sp);h.y+=(h.ty-h.y)*Math.min(1,dt*h.sp)}}
+function drawMj(e,t){const B=MJA.body;if(!B)return;const fl=Math.round(Math.sin(t*2)*2),by=e.y+fl,bw=B.width*.5,bh=B.height*.5,left=e.x-bw/2,top=by-bh,sx=e.trans?rnd(-1.5,1.5):0;
+  ctx.strokeStyle='rgba(230,220,210,.28)';ctx.lineWidth=.6;ctx.beginPath();for(const dx of[-40,0,40]){ctx.moveTo(e.x+dx,top+12);ctx.lineTo(e.x+dx*.6,TOP-40)}for(const h of e.hands){ctx.moveTo(h.x,h.y-40);ctx.lineTo(h.x,TOP-40)}ctx.stroke();
+  shadow(e.x,e.y+4,50);ctx.drawImage(B,Math.round(left+sx),Math.round(top),bw,bh);
+  if(e.fl>.06&&MJA.bodyW){ctx.globalAlpha=.14;ctx.drawImage(MJA.bodyW,Math.round(left+sx),Math.round(top),bw,bh);ctx.globalAlpha=1}
+  const k=.11;mjFX(left+sx-215*k,top-29*k,k,e.form,t);
+  for(const h of e.hands){const im=h.s<0?MJA.handL:MJA.handR;if(!im)continue;shadow(h.x,h.y,22);ctx.drawImage(im,Math.round(h.x-im.width*.25),Math.round(h.y-im.height*.5),im.width*.5,im.height*.5)}}
+function mjEye(e){const B=MJA.body,m=MJMK[e.form-1],k=.11;return{x:e.x-(B?B.width*.25:68)+(m.c[0]-215)*k,y:e.y-(B?B.height*.5:101)+(m.c[1]-29)*k}}
 function burst(x,y,n,cols,spd=60,life=.5,sz=1,g=0){for(let i=0;i<n;i++){const a=rnd(TAU),v=rnd(spd*.3,spd);G.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(life*.5,life),max:life,col:pick(cols),sz,g})}}
 function shake(v){G.shake=Math.max(G.shake,v)}
 function later(t,fn){G.timers.push({t:G.time+t,fn})}
@@ -1007,7 +1022,7 @@ function placeAllies(){G.allies.forEach((a,i)=>{const o=ALLYOFF[i%4];a.x=clamp(P
 function updAllies(dt){const sc=1+.35*(G.act-1);G.allies.forEach((a,i)=>{const c=CHARS.find(x=>x.id===a.id);a.animT+=dt;for(const k of['mCd','rCd','sCd','frz'])a[k]=Math.max(0,a[k]-dt);if(a.act){a.act.t+=dt;if(a.act.t>=a.act.d)a.act=null}
   const o=ALLYOFF[i%4],tx=P.x+o[0],ty=P.y+o[1],dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
   if(d>160){a.x=tx;a.y=ty}else if(d>5){const v=Math.min(105,d*4);a.x+=dx/d*v*dt;a.y+=dy/d*v*dt;a.walk+=dt;a.moving=true;a.face=dx<0?-1:1}else a.moving=false;bound(a);
-  const t=nearest(170,a);if(!t||t.intro>0)return;const td=Math.sqrt(d2(t,a)),ang=Math.atan2(t.y-a.y,t.x-a.x),fz=a.frz>0?.5:1;a.face=t.x<a.x?-1:1;
+  if(G.mjDeb===4)return;const t=nearest(170,a);if(!t||t.intro>0)return;const td=Math.sqrt(d2(t,a)),ang=Math.atan2(t.y-a.y,t.x-a.x),fz=a.frz>0?.5:1;a.face=t.x<a.x?-1:1;
   if(a.sCd<=0&&td<130){allySkill(a,c,sc);a.sCd=c.skillCd*1.6;a.act={n:'skill',t:0,d:.85}}
   else if(td<28+t.r&&a.mCd<=0){allyMelee(a,c,ang,sc);a.mCd=c.melee.cd*1.6*fz;a.act={n:'melee',t:0,d:.3}}
   else if(a.rCd<=0){allyRanged(a,c,ang,sc);a.rCd=c.ranged.cd*1.8*fz;if(!a.act)a.act={n:'ranged',t:0,d:.3}}})}
@@ -1028,7 +1043,7 @@ function allySkill(a,c,sc){G.nums.push({x:a.x,y:a.y-38,v:SKN[a.id],t:0,say:1});S
 function allyFrame(a){const fr=ART.fr[a.id];if(!fr)return{c:SPR['ch_'+a.id].f[0],sc:1,dy:1};let an,i;
   if(a.act){an=a.act.n;i=Math.min(fr[an].length-1,Math.floor(a.act.t/a.act.d*fr[an].length))}else if(a.moving){an='run';i=Math.floor(a.walk*12)%fr.run.length}else{an='idle';i=Math.floor(a.animT*5)%fr.idle.length}
   return{c:fr[an][i],sc:.5,dy:2}}
-function drawAlly(a,t){const col=CHARS.find(c=>c.id===a.id).col;ctx.globalAlpha=.35;ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(a.x,a.y,8,3,0,0,TAU);ctx.stroke();ctx.globalAlpha=1;shadow(a.x,a.y,6);
+function drawAlly(a,t){if(G.mjDeb===4){const hy=a.y-42+Math.sin(t*4)*2;ctx.drawImage(SPR.heart,Math.round(a.x-3),Math.round(hy))}const col=CHARS.find(c=>c.id===a.id).col;ctx.globalAlpha=.35;ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(a.x,a.y,8,3,0,0,TAU);ctx.stroke();ctx.globalAlpha=1;shadow(a.x,a.y,6);
   if(a.frz>0){ctx.globalAlpha=.25;ctx.fillStyle='#ff4fa8';ctx.beginPath();ctx.arc(a.x,a.y-14,13,0,TAU);ctx.fill();ctx.globalAlpha=1}const f=allyFrame(a);drawSpr(f.c,a.x,a.y+f.dy,a.face,null,f.sc)}
 function drawCage(c,t){const fr=ART.fr[c.id];shadow(c.x,c.y,12);if(fr)drawSpr(fr.idle[Math.floor(t*3)%fr.idle.length],c.x,c.y+2,-1,null,.5);else drawSpr(SPR['ch_'+c.id].f[0],c.x,c.y+1,-1);
   if(c.broken)return;ctx.strokeStyle=GOLD;ctx.lineWidth=1;for(let i=-12;i<=12;i+=4){ctx.beginPath();ctx.moveTo(c.x+i+.5,c.y-30);ctx.lineTo(c.x+i+.5,c.y+2);ctx.stroke()}
@@ -1120,11 +1135,12 @@ function killEnemy(e){e.dead=1;G.kills++;G.roomKills=(G.roomKills||0)+1;{const m
   if(G.mods.lifesteal)P.hp=Math.min(P.maxHp,P.hp+G.mods.lifesteal);
   if(G.mods.star)for(let i=0;i<3*G.mods.star;i++)shoot({x:e.x,y:e.y-6,a:rnd(TAU),spd:120,dmg:8*G.mods.ranged,k:'star',pierce:0,col:'#ffe9a0',life:1.4,r:3,homing:1});
   if(e.elite)qProg('elites');
+  if(e.boss&&e.mj)setDeb(0);
   if(e.boss&&G.cage){G.cage.broken=1;burst(G.cage.x,G.cage.y-14,30,[GOLD,'#fff'],110,.8)}
   if(e.boss){G.hitstop=.35;shake(10);S.p('bossdie');G.flash=.5;$('bossBar').hidden=true;G.eb.forEach(b=>b.dead=1);G.etimers=[];G.pending=0;G.fx=G.fx.filter(f=>!f.en);G.en.forEach(o=>{if(!o.dead&&o!==e){o.dead=1;burst(o.x,o.y,8,['#fff'],50,.4)}})}}
 function hurtPlayer(dmg,src){if(P.inv>0||P.dashT>0||G.state!=='play')return;const m=G.mods;
   if(m.evade&&Math.random()<.15*m.evade){P.inv=.3;G.nums.push({x:P.x,y:P.y-30,v:'MISS',t:0,heal:1});return}
-  dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
+  if(G.boss&&G.boss.mj&&!G.boss.dead)dmg*=3;dmg*=(ch().id==='timoris'?.85:1)*(G.bonds.timoris?.85:1)*(1-Math.min(.5,m.dr));P.shT=0;
   if(P.sh>0){const ab=Math.min(P.sh,dmg);P.sh-=ab;dmg-=ab;burst(P.x,P.y-14,8,['#9fd4ff','#fff'],60,.35);
     if(P.sh<=.01){P.sh=0;S.p('shbreak');G.nums.push({x:P.x,y:P.y-34,v:'BREAK',t:0,shb:1});if(m.shBreak){aoe(P.x,P.y-6,52,40*m.shBreak,'#9fd4ff');for(const e of G.en)if(!e.dead&&!e.boss&&d2(e,P)<52*52){const a=Math.atan2(e.y-P.y,e.x-P.x);e.kx+=Math.cos(a)*160;e.ky+=Math.sin(a)*160}}}
     if(dmg<=.01){P.inv=.45*m.inv;P.hurtT=.1;S.p('shield');return}}
@@ -1169,18 +1185,19 @@ function updPlayer(dt){const c=ch(),m=G.mods;
   const wasDash=P.dashT>0;
   for(const n of['meleeCd','rangedCd','dashCd','skillCd','inv','dashT','frenzy','comboT','atkT','hurtT','blink'])P[n]=Math.max(0,(P[n]||0)-dt);
   if(wasDash&&P.dashT<=0&&m.dashBlast){aoe(P.x,P.y-4,30,20*m.dashBlast*m.melee,'#ffe9a0');burst(P.x,P.y-4,12,['#ffe9a0','#fff'],70,.4)}
-  if(P.dch<m.dashCh)P.dch=Math.min(m.dashCh,P.dch+dt/(.85*m.dashCd));
-  P.shT=(P.shT||0)+dt;if(P.sh<P.shMax&&(m.aegis||P.shT>3*m.shDelay))P.sh=Math.min(P.shMax,P.sh+10*m.shRegen*dt);
+  if(P.dch<m.dashCh)P.dch=Math.min(m.dashCh,P.dch+dt/(.85*m.dashCd)*(G.mjDeb===5?.5:1));
+  P.shT=(P.shT||0)+dt;if(P.sh<P.shMax&&G.mjDeb!==1&&(m.aegis||P.shT>3*m.shDelay))P.sh=Math.min(P.shMax,P.sh+10*m.shRegen*dt);
   if(m.regen)P.hp=Math.min(P.maxHp,P.hp+.6*m.regen*dt);
+  if(G.mjDeb===2)P.hp=Math.max(1,P.hp-P.maxHp*.02*dt);
   if(P.dashT>0){P.x+=P.vx*dt;P.y+=P.vy*dt;if(!P.gt||G.time-P.gt>.03){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
-  else{const sp=70*c.spd*m.move*(c.id==='mortis'?1.1:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
+  else{const sp=70*c.spd*m.move*(c.id==='mortis'?1.1:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(G.mjDeb===4?.75:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
   if(l>.15){P.dx=mx/l;P.dy=my/l;if(Math.abs(mx)>.15&&P.atkT<=0)P.face=mx<0?-1:1;P.walk=(P.walk||0)+dt*l;P.frame=[1,0,2,0][Math.floor(P.walk*9)%4]}else P.frame=0;
   P.moving=l>.15;P.animT=(P.animT||0)+dt;if(P.act){P.act.t+=dt;if(P.act.t>=P.act.d)P.act=null}
   bound(P);
   if((IN.melee||IN.kMelee)&&P.meleeCd<=0)doMelee();
   if((IN.ranged||IN.kRanged)&&P.rangedCd<=0)doRanged();
   if(IN.dashQ){IN.dashQ=false;if(P.dch>=1)doDash()}
-  if(IN.skillQ){IN.skillQ=false;if(P.skillCd<=0)doSkill();else S.p('tick')}
+  if(IN.skillQ){IN.skillQ=false;if(P.skillCd<=0&&G.mjDeb!==5)doSkill();else{S.p('tick');if(G.mjDeb===5)toast('技能被封印')}}
   if(m.orbit){P.orA=(P.orA||0)+dt*3.2;for(let i=0;i<m.orbit;i++){const a=P.orA+i/m.orbit*TAU,ox=P.x+Math.cos(a)*24,oy=P.y-6+Math.sin(a)*24;
     for(const e of G.en){if(e.dead)continue;if((e.x-ox)**2+(e.y-oy)**2<(e.r+4)**2){const lt=e.hitCd.get('o'+i)||0;if(G.time-lt>.35){e.hitCd.set('o'+i,G.time);hurtEnemy(e,7*m.melee,{kb:40,ang:a})}}}
     for(const b of G.eb)if((b.x-ox)**2+(b.y-oy)**2<36)b.dead=1}}
@@ -1214,15 +1231,16 @@ function updEnemy(e,dt){if(e.boss)return updBoss(e,dt);
 function eshoot(x,y,a,spd,o={}){spd*=((G.mods&&G.mods.ebSlow)||1)*(G.espd||1);G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||(6+G.act*2.6),t:0,k:o.k||'orb',life:o.life||6,col:o.col,split:o.split});S.p('eshot')}
 function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;if(e.mj)updHands(e,dt);
   if(e.intro>0){e.intro-=dt;return}if(e.trans)return;
+  if(e.mj&&!CUT.on){e.amb-=dt;if(e.amb<=0){e.amb=Math.max(.3,1.05-.15*e.form);const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:6+G.act*2.9,col:MJF[e.form-1].col})}}
   const ph2=e.mj?(e.form>=3||e.hp<e.mhp*.5):e.hp<e.mhp*.5;if(ph2&&!e.ph2){e.ph2=1;if(!e.mj)toast('—— 第二乐章 ——');shake(6);G.eb.forEach(x=>x.dead=1)}
   if(e.dashT>0){e.dashT-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(b.spr==='queen'&&Math.random()<dt*20)eshoot(e.x,e.y-10,rnd(TAU),30,{k:'feather'});bound(e)}
   else if(e.busy>0){e.busy-=dt}
   else{const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1;
-    if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62)}
-    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2);e.stT=e.mj?Math.max(.25,.9-.15*(e.form-1)):ph2?.5:1}}
-  bound(e);e.face=P.x<e.x?-1:1;
+    if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62);if(e.mj)e.y=Math.max(e.y,TOP+118)}
+    e.stT-=dt;if(e.stT<=0){const p=b.pats[e.pi++%b.pats.length];e.busy=pattern(e,p,ph2)*(e.mj?.55:1);e.stT=e.mj?.12:ph2?.5:1}}
+  bound(e);if(e.mj)e.y=Math.max(e.y,TOP+118);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
-function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-12;
+function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-(e.mj?55:12);
   const fan=(n,spr,spd,k)=>{const a=aim();for(let i=0;i<n;i++)eshoot(ox(),oy(),a+(i-(n-1)/2)*spr/(n-1||1),spd,{dmg:bs,k})};
   const ring=(n,spd,off=0,k)=>{for(let i=0;i<n;i++)eshoot(ox(),oy(),off+i/n*TAU,spd,{dmg:bs,k})};
   const hand=()=>pick(e.hands.filter(h=>!h.act&&!h.sw))||e.hands[0];
@@ -1301,7 +1319,7 @@ function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qRew
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
 function takeDoor(d){if(G.trans)return;G.trans=1;S.p('door');$('fade').classList.add('on');releaseInputs();
   setTimeout(()=>{G.trans=0;if(d.t==='next'){G.act++;G.room=0;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);best.act=Math.max(best.act,G.act);store.set('amj_best',best);
-      showActCard(G.act,()=>{enterRoom('combat');$('fade').classList.remove('on')})}
+      G.zones=[];G.bg=buildBg();$('fade').classList.remove('on');playCut(cutChapter(G.act),()=>showActCard(G.act,()=>enterRoom('combat')))}
     else{enterRoom(d.t);$('fade').classList.remove('on')}},300)}
 
 /* =================================================================== UI */
@@ -1425,7 +1443,7 @@ function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).m
   $('tSfx').onclick=()=>{settings.sfx=!settings.sfx;store.set('amj_settings',settings);if(A.sfx)A.sfx.gain.value=settings.sfx?.6:0;$('tSfx').textContent=settings.sfx?'开':'关'};
   $('quit').onclick=()=>{closeModal();toTitle()}}
 function summaryHtml(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60);return `<div class="summary"><div><b>${G.act}</b>到达章节</div><div><b>${G.roomsDone}</b>经过房间</div><div><b>${G.kills}</b>击倒敌人</div><div><b>${m}:${String(s).padStart(2,'0')}</b>演出时长</div></div>`}
-function gameOver(){G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
+function gameOver(){G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
   setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线断了。<br>「${ch().motto}」</p>${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
     $('again').onclick=()=>{closeModal();startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
@@ -1466,7 +1484,7 @@ function startRun(i){auInit();G.charIdx=i;const c=CHARS[i];G.mods=baseMods();G.u
   G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=c.name;hudCache={};
   $('pad').hidden=$('stickZone').hidden=!isTouch;$('hint').hidden=isTouch;if(!isTouch)setTimeout(()=>$('hint').hidden=true,9000);
   best.act=Math.max(best.act||0,1);store.set('amj_best',best);
-  G.bg=null;playCut(cutPrologue(),()=>showActCard(1,()=>enterRoom('combat')))}
+  G.zones=[];G.bg=buildBg();playCut(cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>enterRoom('combat')))}
 $('start').onclick=()=>{auInit();goLandscape();S.p('door');toSelect()};
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
@@ -1508,16 +1526,12 @@ function cutActor(a,t,sh){const dl=a.delay||0,dur=Math.max(.01,(a.dur||sh.d)-dl)
     drawSpr(fr?fr.idle[Math.floor(t*4)%fr.idle.length]:SPR['ch_'+a.id].f[0],x,y+2*sc,-1,null,(fr?.5:1)*sc);
     if(!broken){const w=14*sc,h=34*sc,sh2=t>a.breakAt-.6?rnd(-1,1):0;ctx.strokeStyle=GOLD;ctx.lineWidth=1.2;for(let i=-w;i<=w+.1;i+=4*sc){ctx.beginPath();ctx.moveTo(x+i+sh2,y-h);ctx.lineTo(x+i+sh2,y+2);ctx.stroke()}
       ctx.beginPath();ctx.ellipse(x+sh2,y-h,w,8*sc,0,Math.PI,0);ctx.stroke();ctx.fillStyle=GOLD;ctx.fillRect(x-w-2,y+1,w*2+4,3)}}
-  else if(a.k==='mj'){const im=mjImg(a.f),h=im.height*sc,bob=Math.sin(t*2)*3;
-    if(a.shatter){const w=im.width,sw=w/5;for(let i=0;i<5;i++){const dir=i-2;ctx.save();ctx.translate(x+dir*sw*sc+dir*t*40,y-h/2+t*t*40+Math.abs(dir)*t*8);ctx.rotate(dir*t*.8);ctx.globalAlpha=al*Math.max(0,1-t/2);ctx.drawImage(im,i*sw,0,sw,im.height,-sw*sc/2,-h/2,sw*sc,h);ctx.restore()}}
-    else{const sx=a.crack?rnd(-1,1)*1.5:0;ctx.globalAlpha=al*.25;ctx.fillStyle=MJF[a.f-1].col;ctx.beginPath();ctx.ellipse(x,y-h/2+bob,im.width*sc*.75,h*.9,0,0,TAU);ctx.fill();ctx.globalAlpha=al;
-      drawSpr(im,x+sx,y+bob,1,null,sc);
-      if(a.crack){ctx.strokeStyle='#f0e6dc';ctx.lineWidth=1;const L=Math.min(1,t/1.6),c0=y+bob-h*.5;for(let k=0;k<6;k++){const an=k*1.05+.4;ctx.beginPath();ctx.moveTo(x,c0);for(let j=1;j<=4;j++){const r=j*8*sc*L,w=an+Math.sin(j*3+k)*.35;ctx.lineTo(x+Math.cos(w)*r,c0+Math.sin(w)*r*.55)}ctx.stroke()}}}
-    if(!a.shatter){const spread=a.spread?Math.min(1,t/1.2):0;for(const s2 of[-1,1]){const hx=x+s2*(im.width*sc*.62+spread*30),hy=y+bob+6-spread*20;drawSpr(SPR.mjhand.f[spread>.5?0:1],hx,hy,s2,null,sc*.9)}}}
+  else if(a.k==='mj'){const F=MJA.full;if(!F){ctx.globalAlpha=1;return}const w=F.width*sc,h=F.height*sc,bob=a.shatter?0:Math.sin(t*2)*3,left=x-w/2,top=y-h+bob,k=.33*sc;
+    if(a.shatter){const sw=F.width/5;for(let i=0;i<5;i++){const dir=i-2;ctx.save();ctx.translate(left+(i+.5)*sw*sc+dir*t*40,top+h/2+t*t*40+Math.abs(dir)*t*8);ctx.rotate(dir*t*.8);ctx.globalAlpha=al*Math.max(0,1-t/2);ctx.drawImage(F,i*sw,0,sw,F.height,-sw*sc/2,-h/2,sw*sc,h);ctx.restore()}}
+    else{const sx=a.crack?rnd(-1,1)*1.5:0;if(a.f){ctx.globalAlpha=al*.22;ctx.fillStyle=MJF[a.f-1].col;ctx.beginPath();ctx.ellipse(x,top+h*.45,w*.5,h*.55,0,0,TAU);ctx.fill();ctx.globalAlpha=al}
+      ctx.drawImage(F,Math.round(left+sx),Math.round(top),w,h);mjFX(left+sx-23*k,top-29*k,k,a.f||0,t,{crack:a.crack?t/1.6:0,all:a.crackAll})}}
   else if(a.k==='frag'){const yy=y-Math.min(22,t*9),g=ctx.createRadialGradient(x,yy,1,x,yy,24);g.addColorStop(0,'rgba(255,233,160,.85)');g.addColorStop(1,'rgba(255,233,160,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,yy,24,0,TAU);ctx.fill();
     const n=SPR.note;ctx.drawImage(n,Math.round(x-n.width*1.5),Math.round(yy-n.height*1.5),n.width*3,n.height*3)}
-  else if(a.k==='shards'){const im=SPR.mujica.f[0],w=im.width,h=im.height,sw=w/5;for(let i=0;i<5;i++){const dir=i-2;ctx.save();ctx.translate(x+dir*sw*sc+dir*t*34,y-h*sc/2+t*t*36+Math.abs(dir)*t*6);ctx.rotate(dir*t*.7);ctx.globalAlpha=al*Math.max(0,1-t/2.6);
-      ctx.drawImage(im,i*sw,0,sw,h,-sw*sc/2,-h*sc/2,sw*sc,h*sc);ctx.restore()}}
   else if(a.k==='curtain'){const hh=VH*clamp((t-.8)/2.6,0,1);for(let i=-VW;i<VW*2;i+=8){ctx.fillStyle=(i+VW)%16?'#5a0e1c':'#420a14';ctx.fillRect(i,-VH,8,hh+VH)}ctx.fillStyle=GOLD;ctx.fillRect(-VW,hh-2,VW*3,2)}
   ctx.globalAlpha=1}
 function renderCut(){const sh=CUT.shots[CUT.i];if(!sh)return;const t=CUT.t;ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#000';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
@@ -1531,7 +1545,7 @@ function renderCut(){const sh=CUT.shots[CUT.i];if(!sh)return;const t=CUT.t;ctx.s
   const bh=VH*.14*CUT.lb;ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh)}
 function cutPrologue(){const me=ch().id,cx=VW/2,fy=VH*.72;return[
   {d:3.2,bg:'stage',fadeIn:1,music:'title',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'黑暗里，有个声音在轻笑。'}},
-  {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'spr',name:'mujica',x:cx,y:VH*.56,sc:2.2,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「欢迎来到假面回廊，我的人偶。」'}},
+  {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'mj',x:cx,y:VH*.62,sc:.36,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「欢迎来到假面回廊，我的人偶。」'}},
   {d:4.4,bg:'stage',actors:[...G.caps.map((id,i)=>({k:'ch',id,x:cx+(i-1.5)*48,y:fy-6,y1:fy-170,face:i<2?1:-1,anim:'hurt',sc:1.1,a1:0,strings:1,delay:1.2})),{k:'ch',id:me,x:cx,y:fy+12,face:1,sc:1.4}],
     sub:{who:'Mujica',text:'「你的同伴，还有你们的乐章，都被我藏在了回廊的尽头。」'}},
   {d:3,bg:'stage',z0:1.2,z1:1.4,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:cname(me),text:'「……」'}},
@@ -1542,19 +1556,25 @@ function cutRescue(act,cap){const me=ch().id,b=BOSSES[act-1],cx=VW/2,fy=VH*.74,m
     {d:3.6,bg:'room',actors:[{k:'ch',id:me,x:cx-70,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+90,x1:cx+40,y:fy,face:-1,anim:'run',animEnd:'idle',sc:1.5,dur:1.6}],sub:{who:cname(cap),text:RESCUE[cap]}},
     {d:3.8,bg:'room',fadeOut:act<4,sfx:'pick',actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+40,y:fy,face:-1,sc:1.5},{k:'frag',x:cx,y:fy-60}],
       sub:{text:`取回第${CN[act-1]}乐章「${mq.frag}」。${cname(cap)} 加入了队伍，带来羁绊「${bd.n}」。`}})}
-  if(act===4&&lines[1])sh.push({d:3.6,bg:'void',fadeOut:1,actors:[{k:'spr',name:'mujica',x:cx,y:VH*.6,sc:2,alpha:0,a1:.8}],sub:{who:'Mujica',text:lines[1].replace(/^.*?「/,'「')}});
+  if(act===4&&lines[1])sh.push({d:3.6,bg:'void',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.8,sc:.45,alpha:0,a1:.9}],sub:{who:'Mujica',text:lines[1].replace(/^.*?「/,'「')}});
   return sh}
-function cutMjIntro(){const cx=VW/2,y=VH*.62;return[
-  {d:3.2,bg:'void',fadeIn:1,actors:[{k:'mj',f:1,x:cx,y:VH*.2,y1:y,sc:2,alpha:0,a1:1,dur:2}],sub:{who:'Mujica',text:'「终于来了，我的人偶。」'}},
-  {d:3.4,bg:'void',z0:1,z1:1.15,actors:[{k:'mj',f:1,x:cx,y,sc:2,spread:1}],sub:{who:'Mujica',text:'「这五张面具，是你们弄丢的东西。想要回去，就一张一张地，从我脸上撕下来吧。」'}},
-  {d:2.6,bg:'void',fadeOut:1,music:'mj1',actors:[{k:'mj',f:1,x:cx,y,sc:2.2}],sub:{who:'Mujica · 悲伤之面',text:MJF[0].line}}]}
-function cutMjForm(f){const cx=VW/2,y=VH*.62,n=MJF[f];return[
-  {d:2.6,bg:'void',shake:1.4,actors:[{k:'mj',f,x:cx,y,sc:2.2,crack:1}],sub:{who:'Mujica',text:MJF[f-1].crack}},
-  {d:2.2,bg:'void',flash:.5,init:()=>cutBurst(VW/2,y-30,50,['#fff',MJF[f-1].col,GOLD],110),actors:[{k:'mj',f,x:cx,y,sc:2.2,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎裂了。丝线把下一张面具拉了下来。`}},
-  {d:3.4,bg:'void',music:'mj'+(f+1),z0:1.25,z1:1,actors:[{k:'mj',f:f+1,x:cx,y:VH*.1,y1:y,sc:2.2,alpha:0,a1:1,dur:1.4,spread:1}],sub:{who:`Mujica · ${n.name}（形态 ${f+1} / 5）`,text:n.line}}]}
+function cutMjIntro(){const cx=VW/2,y=VH*.84;return[
+  {d:3.2,bg:'void',fadeIn:1,actors:[{k:'mj',f:1,x:cx,y:VH*.35,y1:y,sc:.45,alpha:0,a1:1,dur:2}],sub:{who:'Mujica',text:'「终于来了，我的人偶。」'}},
+  {d:3.4,bg:'void',z0:1,z1:1.15,actors:[{k:'mj',f:1,x:cx,y,sc:.45,spread:1}],sub:{who:'Mujica',text:'「这五张面具，是你们弄丢的东西。想要回去，就一张一张地，从我脸上撕下来吧。」'}},
+  {d:2.6,bg:'void',fadeOut:1,music:'mj1',actors:[{k:'mj',f:1,x:cx,y,sc:.45}],sub:{who:'Mujica · 悲伤之面',text:MJF[0].line}}]}
+function cutMjForm(f){const cx=VW/2,y=VH*.84,n=MJF[f];return[
+  {d:2.6,bg:'void',shake:1.4,actors:[{k:'mj',f,x:cx,y,sc:.45,crack:1}],sub:{who:'Mujica',text:MJF[f-1].crack}},
+  {d:2.2,bg:'void',flash:.5,init:()=>cutBurst(VW/2,y-70,50,['#fff',MJF[f-1].col,GOLD],110),actors:[{k:'mj',f,x:cx,y,sc:.45,shatter:1}],sub:{text:`「${MJF[f-1].name}」碎裂了。丝线把下一张面具拉了下来。`}},
+  {d:3.4,bg:'void',music:'mj'+(f+1),z0:1.25,z1:1,actors:[{k:'mj',f:f+1,x:cx,y:VH*.3,y1:y,sc:.45,alpha:0,a1:1,dur:1.4,spread:1}],sub:{who:`Mujica · ${n.name}（形态 ${f+1} / 5）`,text:n.line}}]}
+function cutChapter(n){const me=ch().id,cx=VW/2,fy=VH*.76,a=ACTS[n-1],party=[me,...G.allies.map(x=>x.id)],cap=n<5&&G.caps?G.caps[n-1]:null,pl=a.poem.split('\n');
+  const at=(i)=>({x:cx+40-i*34,y:fy+(i%2)*8});return[
+  {d:3.6,bg:'room',fadeIn:1,actors:party.map((id,i)=>({k:'ch',id,x:-30-i*34,x1:at(i).x,y:at(i).y,face:1,anim:'run',animEnd:'idle',sc:1.3,dur:2.6})),sub:{who:`第${CN[n-1]}章 · ${a.name}`,text:pl[0]}},
+  {d:3.4,bg:'room',z0:1,z1:1.1,actors:[{k:'mj',x:cx,y:VH*.52,sc:.3,alpha:0,a1:.6,dur:1.6},...party.map((id,i)=>({k:'ch',id,...at(i),face:1,sc:1.3}))],sub:{who:'Mujica',text:CHTAUNT[n-1]}},
+  cap?{d:3.6,bg:'room',fadeOut:1,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.7,breakAt:999}],sub:{text:`${pl[1]||''}传闻 ${cname(cap)} 被囚禁在这一章的尽头。`}}
+     :{d:3.8,bg:'room',fadeOut:1,actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,alpha:0,a1:1,dur:1.8}],sub:{who:'Mujica',text:'「所有的面具都在等你。来吧，终幕开演。」'}}]}
 function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(a=>a.id)],row=a=>all.map((id,i)=>({k:'ch',id,x:cx+(i-(all.length-1)/2)*44,y:fy,face:i<all.length/2?1:-1,sc:1.25,...a}));return[
-  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'spr',name:'mujica',x:cx,y:VH*.66,sc:2.6,crack:1,shake:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
-  {d:3.8,bg:'stage',flash:.7,init:()=>cutBurst(cx,VH*.4,60,['#fff','#f0e8dc',GOLD],120),actors:[{k:'shards',x:cx,y:VH*.66,sc:2.6},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:2}],sub:{text:'面具碎成了五片。后面站着的，是一个小小的、被丝线牵着的人偶。'}},
+  {d:3.4,bg:'stage',fadeIn:1,shake:1.2,sfx:'bossdie',actors:[{k:'mj',f:5,x:cx,y:VH*.84,sc:.45,crack:1,crackAll:1}],sub:{who:'Mujica',text:'「不……演出……还不能结束……」'}},
+  {d:3.8,bg:'stage',flash:.7,init:()=>cutBurst(cx,VH*.4,60,['#fff','#f0e8dc',GOLD],120),actors:[{k:'mj',x:cx,y:VH*.84,sc:.45,shatter:1},{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,alpha:0,a1:1,strings:1,dur:2}],sub:{text:'面具碎成了五片。后面站着的，是一个小小的、被丝线牵着的人偶。'}},
   {d:3.6,bg:'stage',z0:1.15,z1:1.3,actors:[{k:'spr',name:'mari',x:cx,y:fy,sc:2.2,strings:1,cutStrings:1.3}],sub:{text:'你们剪断了她的线。'}},
   {d:4.4,bg:'stage',music:'title',init:()=>{CUT.petals=1},actors:row({}),sub:{text:'四个乐章合而为一。五个人的声音，终于完整。'}},
   {d:4.6,bg:'stage',fadeOut:1,actors:[...row({}),{k:'curtain'}],sub:{text:'掌声如潮水涌来，帷幕缓缓落下。'}}]}
@@ -1576,7 +1596,7 @@ function frame(now){requestAnimationFrame(frame);if(now-lastDraw<15)return;lastD
 function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fillRect(0,0,cv.width,cv.height);ctx.imageSmoothingEnabled=false;
   if(G.state==='title'||G.state==='select'){drawTitleScene();return}
   if(!G.bg)return;
-  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-P.y)*.5:0);cam.x=RW>VW?clamp(tx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty,-20,RH-VH+20):(RH-VH)/2;
+  const cam=G.cam;const fb=G.boss&&!G.boss.dead?G.boss:null,tx=P.x-VW/2+(fb?(fb.x-P.x)*.3:0),ty=P.y-VH*.5+(fb?(fb.y-(fb.mj?50:0)-P.y)*(fb.mj?.68:.5):0);cam.x=RW>VW?clamp(tx,0,RW-VW):(RW-VW)/2;cam.y=RH>VH?clamp(ty,-20,RH-VH+20):(RH-VH)/2;
   const sx=G.shake?rnd(-G.shake,G.shake)*.3:0,sy=G.shake?rnd(-G.shake,G.shake)*.3:0;
   ctx.setTransform(SC,0,0,SC,Math.round((-cam.x+sx)*SC),Math.round((-cam.y+sy)*SC));
   ctx.drawImage(G.bg,0,0);
