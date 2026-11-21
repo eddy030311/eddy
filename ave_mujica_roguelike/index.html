@@ -1359,7 +1359,7 @@ function updAllies(dt){const sc=1+.35*(G.act-1),live=G.en.filter(e=>!e.dead&&!(e
 const ALLY_REV=2.6;
 function allyMelee(a,c,ang,sc){const m=c.melee;for(const e of G.en){if(e.dead)continue;const dd=Math.sqrt(d2(e,a));if(dd>m.range+e.r)continue;if(dd>e.r+4&&Math.abs(angDiff(Math.atan2(e.y-a.y,e.x-a.x),ang))>m.arc/2)continue;hurtEnemy(e,m.dmg*sc,{kb:60,ang,noMod:1})}
   G.fx.push({k:'slash',x:a.x,y:a.y-6,a:ang,range:m.range,arc:m.arc,t:0,d:.18,col:m.col});S.p('aswing')}
-function allyRanged(a,c,ang,sc){const r=c.ranged,dmg=r.dmg*sc,b={x:a.x,y:a.y-8,spd:r.spd,dmg,noMod:1};
+function allyRanged(a,c,ang,sc){const r=c.ranged,dmg=r.dmg*sc,b={x:a.x,y:a.y-8,spd:r.spd,dmg,noMod:1,ally:1};
   if(a.id==='doloris')shoot({...b,a:ang,k:'note',pierce:1,col:'#f6dc8a',life:1.2,r:3});
   else if(a.id==='mortis'){for(const s2 of[-.05,.05])shoot({...b,a:ang+s2,k:'riff',pierce:0,col:'#ff4fa8',life:.9,r:2.5})}
   else if(a.id==='timoris')shoot({...b,a:ang,k:'pulse',pierce:2,col:'#4ccac2',life:1.3,r:6,kb:80});
@@ -1658,7 +1658,7 @@ function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2
 function updProj(dt,edt){
   for(const b of G.pb){b.t+=dt;if(b.homing){const t=nearest(160,b);if(t){const a=Math.atan2(t.y-b.y,t.x-b.x),cur=Math.atan2(b.vy,b.vx),na=cur+clamp(angDiff(a,cur),-6*dt,6*dt);b.vx=Math.cos(na)*b.spd;b.vy=Math.sin(na)*b.spd}}
     b.x+=b.vx*dt;b.y+=b.vy*dt;if(b.t>b.life){b.dead=1;continue}
-    let wall=b.x<SIDE||b.x>RW-SIDE||b.y<TOP-6||b.y>RH-SIDE;const ob=G.obs.find(o=>b.x>o.x&&b.x<o.x+o.w&&b.y+8>o.y&&b.y+8<o.y+o.h);
+    let wall=b.x<SIDE||b.x>RW-SIDE||b.y<TOP-6||b.y>RH-SIDE;const ob=!b.ally&&G.obs.find(o=>b.x>o.x&&b.x<o.x+o.w&&b.y+8>o.y&&b.y+8<o.y+o.h);
     if(wall||ob){if(b.bounce>0){b.bounce--;if(b.x<SIDE||b.x>RW-SIDE)b.vx*=-1;else b.vy*=-1;b.x=clamp(b.x,SIDE,RW-SIDE);b.y=clamp(b.y,TOP-6,RH-SIDE);b.hit.clear()}else{b.dead=1;burst(b.x,b.y,3,[b.col],30,.2);continue}}
     for(const e of G.en){if(e.dead||b.hit.has(e))continue;const hy=e.y-(e.d.h||16)*.45;if((e.x-b.x)**2+(hy-b.y)**2<(e.r+b.r+2)**2){b.hit.add(e);hurtEnemy(e,b.dmg,{kb:(b.kb||40)*(b.noMod?1:G.mods.knock),ang:Math.atan2(b.vy,b.vx),crit:b.crit,noMod:b.noMod});if(!b.noMod)onProjHit(b,e);if(--b.pierce<0){b.dead=1;break}}}}
   G.pb=G.pb.filter(b=>!b.dead);
@@ -1710,6 +1710,7 @@ function openDoors(){if(G.qQueue&&G.qQueue.length){const k=G.qQueue.shift();qRew
     const ch=[];const n=Math.random()<.5?3:2;while(ch.length<n){let tot=0;for(const k in w)if(!ch.includes(k))tot+=w[k];let r=rnd(tot);for(const k in w){if(ch.includes(k))continue;r-=w[k];if(r<=0){ch.push(k);break}}if(tot<=0)break}
     if(relicN()>=3&&!G.route&&!ch.includes('event'))ch[ch.length-1]='event';
     const xs=n===3?[RW/2-80,RW/2,RW/2+80]:[RW/2-56,RW/2+56];G.doors=ch.map((t,i)=>({x:xs[i],t}))}
+  if(G.type==='boss'&&G.act<5&&G.state==='play'){G.doors.forEach(d=>d.open=1);startOts('exit');return}
   G.doors.forEach(d=>{d.open=0;later(.05,()=>d.open=1)});toast('门已开启 · 向上前行')}
 function takeDoor(d){if(G.trans)return;G.trans=1;S.p('door');$('fade').classList.add('on');releaseInputs();
   setTimeout(()=>{G.trans=0;if(d.t==='next'){G.act++;allyRefresh(true);if(G.act>=3)unlock('timoris');if(G.act===5&&G.route!=='b')preloadTracks(['mj1','mj2','mj3','mj4','mj5']);G.room=0;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);best.act=Math.max(best.act,G.act);store.set('amj_best',best);
@@ -1996,8 +1997,13 @@ function cutPrologue(){const me=ch().id,cx=VW/2,fy=VH*.72;return[
     sub:{who:'Mujica',text:'「你的同伴，你们的歌，我都替你们收好了。在火、风、水、地的尽头，一处一处地。」'}},
   {d:3,bg:'stage',z0:1.2,z1:1.4,actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:cname(me),text:`「……${ch().motto}。」`}},
   {d:3.6,bg:'stage',fadeOut:1,actors:[{k:'ch',id:me,x:cx,x1:cx+150,y:fy,face:1,anim:'run',sc:1.4}],sub:{who:'Mujica',text:'「想再站上舞台，就去把她们带回来吧。如果你们还记得，那首歌该怎么唱。」'}}]}
+const BOSSEND=['伯爵手中的烛台一盏接一盏熄灭。最后一缕烟升起来，在半空写下一个谁也读不懂的名字。',
+  '王冠落地，黑羽像退潮一样从回廊里撤走。风终于不再念那个名字了。',
+  '人偶的眼泪流干了。她低头看着空空的手心，好像第一次发现——原来自己也可以不哭。',
+  '王座上的荆棘一根根松开，露出底下早已枯萎的玫瑰。它守了这么久的，只是一个回不来的春天。'];
 function cutRescue(act,cap){const me=ch().id,b=BOSSES[act-1],cx=VW/2,fy=VH*.74,mq=MAINQ[act-1],lines=mq.after.split('\n'),bd=cap&&BONDS[cap],sh=[
-  {d:3.4,bg:'room',fadeIn:1,shake:1.2,init:()=>cutBurst(cx,fy-36,50,['#fff',GOLD,'#e0283c'],100),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.2,a1:0,sink:14,shake:1}],sub:{who:b.name,text:lines[0]}}];
+  {d:3.4,bg:'room',fadeIn:1,shake:1.2,init:()=>cutBurst(cx,fy-36,50,['#fff',GOLD,'#e0283c'],100),actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.2,a1:0,sink:14,shake:1}],sub:{who:b.name,text:lines[0]}},
+  {d:3.6,bg:'void',flash:.5,sfx:'shbreak',init:()=>{for(let i=0;i<60;i++)CUT.parts.push({x:cx+rnd(-50,50),y:fy-30+rnd(-30,20),vx:rnd(-40,40),vy:rnd(-50,10),life:rnd(1.5,3),max:3,col:pick([GOLD,'#fff','#e0283c']),sz:2,g:20})},actors:[{k:'spr',name:b.spr,x:cx,y:fy,sc:2.2,alpha:.7,a1:0,dur:2.4}],sub:{who:`第${CN[act-1]}乐章 · 终`,text:BOSSEND[act-1]}}];
   if(cap){sh.push({d:3.4,bg:'room',z0:1.05,z1:1.2,actors:[{k:'cage',id:cap,x:cx,y:fy,sc:1.9,breakAt:1.4}],sub:{text:lines[1]&&act<4?lines[1]:'笼门应声而开。'}},
     {d:3.6,bg:'room',actors:[{k:'ch',id:me,x:cx-70,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+90,x1:cx+40,y:fy,face:-1,anim:'run',animEnd:'idle',sc:1.5,dur:1.6}],sub:{who:cname(cap),text:RESCUE[cap]}},
     {d:3.8,bg:'room',fadeOut:act<4,sfx:'pick',actors:[{k:'ch',id:me,x:cx-40,y:fy,face:1,sc:1.5},{k:'ch',id:cap,x:cx+40,y:fy,face:-1,sc:1.5},{k:'frag',x:cx,y:fy-60}],
@@ -2083,6 +2089,7 @@ function cutEnding(){const me=ch().id,cx=VW/2,fy=VH*.72,all=[me,...G.allies.map(
 
 /* =================================================================== encounter: intro + over-the-shoulder view */
 const ease=v=>{v=clamp(v,0,1);return v<.5?2*v*v:1-Math.pow(-2*v+2,2)/2};
+const EXITL=['烛火熄了，余温还在。下一段旋律，在风里等你。','羽毛落定。前方传来水声，像有人在很远的地方哭。','潮水退去，脚下的泥土开始发芽，长出带刺的东西。','玫瑰谢了。最后的舞台已经搭好，只差你们登场。'];
 const OTSK={shop:{tag:'— 后 台 商 店 —',name:'无面的人台',mood:'它没有脸，却记得每一位客人的尺寸。',col:'#ffd27a',K:.95},
   treasure:{tag:'— 衣 柜 —',name:'上锁的衣柜',mood:'柜门的缝隙里漏出一线光，像有谁正屏住呼吸。',col:'#9ad8ff',K:1.3},
   rest:{tag:'— 化 妆 间 —',name:'镜前的烛光',mood:'镜子里的你，比你先一步卸下了假面。',col:'#ffcf9a',K:.85}};
@@ -2091,6 +2098,7 @@ function startOts(kind){const o={kind,ph:'intro',t:0,k:0,lb:0,shk:0,fl:0};
   else if(kind==='elite'){const b=MINIB[G.act-1];Object.assign(o,{b,tx:RW/2,ty:TOP+70,stop:TOP+70+88,tag:'— 精 英 —',name:'不速之客',mood:'有什么挡在了路中央。它不打算让开。',col:'#c9a45c',K:.8})}
   else if(kind==='boss'){const b=G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-1],mj=b.spr==='mujica';
     Object.assign(o,{b,tx:RW/2,ty:mj?TOP+124:b.spr==='blank'?TOP+92:b.spr==='audience'?TOP+86:TOP+70,tag:'— 终 幕 —',name:`第${CN[G.act-1]}章 · ${ACTS[G.act-1].name}`,mood:'帷幕后面，有什么一直在等你。',col:mj?'#ff3a50':'#e0283c',K:mj?.36:b.spr==='blank'?.5:b.spr==='audience'?.55:.95});o.stop=Math.min(RH-34,o.ty+(mj?120:84))}
+  else if(kind==='exit'){const d=G.doors[0];Object.assign(o,{door:d,tx:d.x,ty:TOP+1,stop:TOP+48,tag:'— 谢 幕 —',name:`第${CN[G.act-1]}章 · ${ACTS[G.act-1].name}`,mood:EXITL[G.act-1],col:GOLD,K:1})}
   else if(kind==='treasure'){const c=G.picks.find(x=>x.k==='chest');o.chest=c;Object.assign(o,{tx:c.x,ty:c.y,stop:c.y+38},OTSK[kind])}
   else{const d=G.deco.find(x=>x.k===(kind==='shop'?'mannequin':'piano'))||G.deco[0];o.dk=d;Object.assign(o,{tx:d.x,ty:d.y,stop:d.y+40},OTSK[kind])}
   G.ots=o;$('game').classList.add('ots')}
@@ -2100,11 +2108,12 @@ function otsEnd(){G.ots=null;$('game').classList.remove('ots')}
 function updOts(dt){const o=G.ots;o.t+=dt;o.shk=Math.max(0,o.shk-dt*10);o.fl=Math.max(0,o.fl-dt*2.2);
   if(o.ph==='intro'){o.lb=Math.min(1,o.t/.5);if(o.t>2.1){o.ph='swoop';o.t=0}}
   else if(o.ph==='swoop'){o.k=ease(o.t/1.2);if(o.t>=1.2){o.k=1;o.ph='walk';o.t=0;o.y0=P.y}}
-  else if(o.ph==='walk'){const p=Math.min(1,o.t/1.5);P.y=o.y0+(o.stop-o.y0)*ease(p);P.moving=p<1&&o.stop<o.y0-1;P.walk=(P.walk||0)+dt;P.animT=(P.animT||0)+dt;P.face=1;
-    if(p>=1){P.moving=false;o.t=0;if(o.kind==='boss'||o.kind==='elite')o.ph='reveal';else{o.ph='talk';if(o.kind==='treasure'){openChest(o.chest,1);o.fl=.6}else o.kind==='event'?openTalk():o.kind==='shop'?showShop():showRest()}}}
+  else if(o.ph==='walk'){const p=Math.min(1,o.t/1.5);if(o.x0==null)o.x0=P.x;P.x=o.x0+(o.tx-o.x0)*ease(p);P.y=o.y0+(o.stop-o.y0)*ease(p);P.moving=p<1&&o.stop<o.y0-1;P.walk=(P.walk||0)+dt;P.animT=(P.animT||0)+dt;P.face=1;
+    if(p>=1){P.moving=false;o.t=0;if(o.kind==='exit'){o.ph='curtain';S.p('door')}else if(o.kind==='boss'||o.kind==='elite')o.ph='reveal';else{o.ph='talk';if(o.kind==='treasure'){openChest(o.chest,1);o.fl=.6}else o.kind==='event'?openTalk():o.kind==='shop'?showShop():showRest()}}}
   else if(o.ph==='talk'){P.animT=(P.animT||0)+dt;if(o.kind==='treasure'&&!o.rw&&o.t>.9){o.rw=1;showReward('treasure')}const done=o.kind==='event'?G.npc&&G.npc.done:G.cleared;if(done&&$('modal').hidden){o.ph='return';o.t=0}}
   else if(o.ph==='reveal'){P.animT=(P.animT||0)+dt;if(!o.hit&&o.t>.95){o.hit=1;o.shk=7;o.fl=1;S.p('slam')}
     if(o.t>3.3){if(o.b.spr==='mujica'){otsEnd();spawnBoss();return}if(o.kind==='elite')spawnMini(o.b);else spawnBoss();if(G.boss)G.boss.intro=.25;o.ph='return';o.t=0}}
+  else if(o.ph==='curtain'){if(o.t>3.4&&!o.went){o.went=1;const d=o.door;otsEnd();takeDoor(d)}}
   else if(o.ph==='return'){o.k=1-ease(o.t/1);o.lb=1-Math.min(1,o.t/1);if(o.t>=1)otsEnd()}}
 function otsReveal(o){return o.kind!=='boss'&&o.kind!=='elite'?1:o.ph==='reveal'?clamp((o.t-.15)/.8,0,1):o.ph==='return'?1:0}
 function otsDrawTarget(o,t,al){if(o.b){const b=o.b;
@@ -2112,7 +2121,7 @@ function otsDrawTarget(o,t,al){if(o.b){const b=o.b;
     else{const sp=SPR[b.spr];if(!sp)return;const fi=sp.f.length>1?Math.floor(t*8)%2:0,fl=b.float?Math.sin(t*3)*2-4:0,sc=b.sc||(b.spr==='blank'?1.3:b.spr==='audience'?1.5:1),c=sp.f[fi];
       ctx.globalAlpha=al*.35;ctx.strokeStyle='#e6dcd2';ctx.lineWidth=.4;ctx.beginPath();for(const dx of[-.3,0,.3]){ctx.moveTo(o.tx+dx*c.width*sc,o.ty-c.height*sc*.8+fl);ctx.lineTo(o.tx+dx*c.width*sc*.4,o.ty-260)}ctx.stroke();
       ctx.globalAlpha=al;drawSpr(c,o.tx,o.ty+fl,1,null,sc)}}
-  else{ctx.globalAlpha=al;if(o.dk)drawDeco(o.dk,t);if(o.chest){const c=o.chest;drawSpr((c.open?SPR.chestOpen:SPR.chest).f[0],c.x,c.y+5,1);if(!c.open){ctx.globalAlpha=al*(.3+.2*Math.sin(t*4));ctx.fillStyle=GOLD;ctx.fillRect(c.x-1,c.y-22+Math.sin(t*3)*2,2,4)}}}
+  else{ctx.globalAlpha=al;if(o.door)drawDoors(t);if(o.dk)drawDeco(o.dk,t);if(o.chest){const c=o.chest;drawSpr((c.open?SPR.chestOpen:SPR.chest).f[0],c.x,c.y+5,1);if(!c.open){ctx.globalAlpha=al*(.3+.2*Math.sin(t*4));ctx.fillStyle=GOLD;ctx.fillRect(c.x-1,c.y-22+Math.sin(t*3)*2,2,4)}}}
   ctx.globalAlpha=1}
 let OC=null,OX=null;
 function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(cv.width,cv.height);OX=OC.getContext('2d')}const x=OX,n=G.npc;
@@ -2125,7 +2134,7 @@ function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(c
   const o=G.ots;if(o&&o.kind!=='event'){const q=proj(o.tx,o.ty);if(q){const al=otsReveal(o),K=q.s*(o.K||.9),hh=(o.b?(o.b.spr==='mujica'?110:o.b.h||48):30)*K;
       x.save();x.globalCompositeOperation='lighter';x.globalAlpha=(.35+.6*al)*(.8+.2*Math.sin(t*2));const r=hh*1.1;x.drawImage(glow(o.col),q.X-r,q.Y-hh*.55-r,r*2,r*2);x.globalAlpha=.28;const cone=x.createLinearGradient(0,0,0,q.Y);cone.addColorStop(0,'rgba(255,243,220,0)');cone.addColorStop(1,'rgba(255,243,220,.55)');x.fillStyle=cone;x.beginPath();x.moveTo(q.X-6,0);x.lineTo(q.X+6,0);x.lineTo(q.X+hh*.6,q.Y);x.lineTo(q.X-hh*.6,q.Y);x.fill();x.restore();
       x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.ellipse(q.X,q.Y,hh*.38,hh*.08,0,0,TAU);x.fill();
-      if(al>0){const rs=.86+.14*ease(al),k2=K*rs;x.save();x.translate(q.X,q.Y);x.scale(k2,k2);x.translate(-o.tx,-o.ty);const sv=ctx;ctx=x;try{otsDrawTarget(o,t,al)}finally{ctx=sv}x.restore()}
+      if(al>0){const rs=.86+.14*ease(al),k2=K*rs;x.save();x.translate(q.X,q.Y);x.scale(k2,k2*(o.door?1.7:1));x.translate(-o.tx,-o.ty);const sv=ctx;ctx=x;try{otsDrawTarget(o,t,al)}finally{ctx=sv}x.restore()}
       if(o.fl>0){x.save();x.globalCompositeOperation='lighter';x.globalAlpha=o.fl;const r2=hh*2.2;x.drawImage(glow('#ffffff'),q.X-r2,q.Y-hh*.6-r2,r2*2,r2*2);x.restore()}}}
   if(n&&(!o||o.kind==='event')){const q=proj(n.x,n.y);if(q){const im=npcImg(n.ev),w=im.sw*im.sc*q.s*.55,h=im.sh*im.sc*q.s*.55,col=n.ev.stranger&&n.ev.stranger.quest?'#ffd27a':'#d8c0ff';
       x.save();x.globalCompositeOperation='lighter';x.globalAlpha=.55+.15*Math.sin(t*2);const r=h*1.3;x.drawImage(glow(col),q.X-r,q.Y-h*.6-r,r*2,r*2);x.globalAlpha=.25;const cone=x.createLinearGradient(0,0,0,q.Y);cone.addColorStop(0,'rgba(255,243,220,.0)');cone.addColorStop(1,'rgba(255,243,220,.5)');x.fillStyle=cone;x.beginPath();x.moveTo(q.X-6,0);x.lineTo(q.X+6,0);x.lineTo(q.X+w*.9,q.Y);x.lineTo(q.X-w*.9,q.Y);x.fill();x.restore();
@@ -2142,6 +2151,9 @@ function otsOverlay(t){const o=G.ots;if(!o)return;
   if(o.ph==='intro'||o.ph==='swoop')card(o.ph==='intro'?Math.min(1,Math.max(0,(o.t-.4)/.6)):1-Math.min(1,o.t/.6),o.tag,o.name,o.mood,VH*.66);
   if(o.ph==='reveal'){const b=o.b;card(Math.min(1,Math.max(0,(o.t-1.1)/.5))*(1-Math.max(0,(o.t-2.9)/.4)),o.kind==='elite'?'— 拦 路 者 —':'— 登 场 —',b.name,b.sub,VH*.7,o.kind==='elite'?'#ffe6b0':'#ffd8d0')}
   if(o.fl>0){ctx.globalAlpha=o.fl*.55;ctx.fillStyle='#fff';ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
+  if(o.ph==='curtain'){const c=ease(o.t/1.8),hh=VH*c;for(let i=0;i<VW;i+=8){const sw=Math.sin(i*.7+o.t*2)*3*(1-c);ctx.fillStyle=i%16?'#5a0e1c':'#420a14';ctx.fillRect(i,0,8,hh+sw)}
+    const g=ctx.createLinearGradient(0,hh-30,0,hh);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.45)');ctx.fillStyle=g;ctx.fillRect(0,Math.max(0,hh-30),VW,30);ctx.fillStyle=GOLD;ctx.fillRect(0,hh-2,VW,2);
+    card(Math.min(1,Math.max(0,(o.t-1.7)/.6)),'— 谢 幕 —',`第${CN[G.act-1]}章 · 终`,'幕布落下。掌声像雨，落在看不见的地方。',VH*.42,'#ffe6b0')}
   ctx.restore()}
 function otsSpot(t){const o=G.ots;if(!o||o.ph!=='intro')return;const n={x:o.tx,y:o.ty},a=Math.min(1,o.t/.8);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35*a;const cone=ctx.createLinearGradient(0,TOP-30,0,n.y);cone.addColorStop(0,'rgba(255,243,220,0)');cone.addColorStop(1,'rgba(255,243,220,.6)');ctx.fillStyle=cone;
   ctx.beginPath();ctx.moveTo(n.x-5,TOP-40);ctx.lineTo(n.x+5,TOP-40);ctx.lineTo(n.x+22,n.y);ctx.lineTo(n.x-22,n.y);ctx.fill();ctx.globalAlpha=.6*a;ctx.drawImage(glow('#fff3dc'),n.x-26,n.y-14,52,28);ctx.restore()}
@@ -2251,7 +2263,7 @@ function drawDoors(t){const wall=ACTS[G.act-1].pal.wall;for(const d of G.doors){
     ctx.fillStyle='#050305';ctx.beginPath();ctx.arc(x,TOP-20,10,Math.PI,0);ctx.lineTo(x+10,TOP);ctx.lineTo(x-10,TOP);ctx.fill();
     ctx.globalAlpha=.3+.25*Math.sin(t*3);ctx.fillStyle=info.c;ctx.beginPath();ctx.arc(x,TOP-18,7,Math.PI,0);ctx.lineTo(x+7,TOP);ctx.lineTo(x-7,TOP);ctx.fill();ctx.globalAlpha=1;
     ctx.textAlign='center';if(UI.doors&&DIDX[d.t]!==undefined)ctx.drawImage(DOORIMG,DIDX[d.t]*64,0,64,64,x-9,TOP-27,18,18);else{ctx.font='10px "Noto Serif SC",serif';ctx.fillStyle='#000';ctx.fillText(info.ic,x+.5,TOP-8.5);ctx.fillStyle='#fff';ctx.fillText(info.ic,x,TOP-9)}
-    ctx.font='bold 7px "Noto Serif SC",serif';const ly=TOP+11+Math.sin(t*3);ctx.fillStyle='rgba(0,0,0,.75)';const tw=ctx.measureText(info.n).width;ctx.fillRect(x-tw/2-3,ly-7,tw+6,10);ctx.fillStyle=info.c;ctx.fillText(info.n,x,ly)}}
+    if(G.ots)continue;ctx.font='bold 7px "Noto Serif SC",serif';const ly=TOP+11+Math.sin(t*3);ctx.fillStyle='rgba(0,0,0,.75)';const tw=ctx.measureText(info.n).width;ctx.fillRect(x-tw/2-3,ly-7,tw+6,10);ctx.fillStyle=info.c;ctx.fillText(info.n,x,ly)}}
 function drawPick(p,t){if(p.k==='relic'){const y=p.y-8+Math.sin(t*3)*2,r=RELICS.find(q=>q.id===p.id);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5+.3*Math.sin(t*5);ctx.drawImage(glow('#e8e4f0'),p.x-14,y-14,28,28);ctx.restore();
     ctx.fillStyle='#0b080d';ctx.fillRect(p.x-5,y-5,10,10);ctx.fillStyle='#e8e4f0';ctx.fillRect(p.x-4,y-4,8,8);ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='#3a2a40';ctx.fillText(r.ic,p.x,y+2.5);return}
 if(p.k==='chest'){drawSpr((p.open?SPR.chestOpen:SPR.chest).f[0],p.x,p.y+5,1);if(!p.open){ctx.globalAlpha=.3+.2*Math.sin(t*4);ctx.fillStyle=GOLD;ctx.fillRect(p.x-1,p.y-22+Math.sin(t*3)*2,2,4);ctx.globalAlpha=1}return}
