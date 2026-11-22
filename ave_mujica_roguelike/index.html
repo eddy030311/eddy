@@ -1582,7 +1582,7 @@ function enterRoom(type,noCount){
     if(type==='combat')setTrack('battle');
   }else if(type==='boss'){
     [[90,TOP+46],[RW-106,TOP+46],[90,RH-72],[RW-106,RH-72]].forEach(([ox,oy])=>G.obs.push({x:ox+1,y:oy+2,w:14,h:10}));
-    setTrack(null);{const bd=curBoss();renderTrack(bd.spr==='mujica'?'mj1':(bd.mus||'boss'),1)}startOts('boss');if(G.act<5&&G.world!==2)G.cage={id:G.caps[G.act-1],x:RW-56,y:TOP+30};
+    setTrack(null);{const bd=curBoss();renderTrack(bd.spr==='mujica'?'mj1':(bd.mus||'boss'),1)}startOts('boss');if(G.act<5&&G.world!==2)G.cage={id:G.caps[G.act-1],x:96,y:TOP+86};
   }else{
     setTrack('calm');
     if(type==='rest'){G.deco.push({k:'piano',x:RW/2,y:RH/2-30});startOts('rest')}
@@ -1828,10 +1828,56 @@ function drawAlly(a,t){if(fx('charm')){const hy=a.y-42+Math.sin(t*4)*2;ctx.drawI
   if(a.down){drawDownRing(a.x,a.y,a.revT/ALLY_REV,t,'✚ 救治');return}
   const bw=16,bx=Math.round(a.x-bw/2),by=Math.round(a.y-31);ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(bx-1,by-1,bw+2,a.shMax?5:3);ctx.fillStyle=a.hp<a.mhp*.3?'#e0283c':'#7ad08a';ctx.fillRect(bx,by,Math.max(0,Math.round(bw*a.hp/a.mhp)),1.5);
   if(a.shMax){ctx.fillStyle='#8fc8ff';ctx.fillRect(bx,by+2,Math.max(0,Math.round(bw*a.sh/a.shMax)),1.5)}}
-function drawCage(c,t){const fr=ART.fr[c.id];shadow(c.x,c.y,12);if(fr)drawSpr(fr.idle[Math.floor(t*3)%fr.idle.length],c.x,c.y+2,-1,null,.5);else drawSpr(SPR['ch_'+c.id].f[0],c.x,c.y+1,-1);
-  if(c.broken)return;ctx.strokeStyle=GOLD;ctx.lineWidth=1;for(let i=-12;i<=12;i+=4){ctx.beginPath();ctx.moveTo(c.x+i+.5,c.y-30);ctx.lineTo(c.x+i+.5,c.y+2);ctx.stroke()}
-  ctx.beginPath();ctx.ellipse(c.x+.5,c.y-30,12.5,7,0,Math.PI,0);ctx.stroke();ctx.fillStyle=GOLD;ctx.fillRect(c.x-14,c.y+1,28,2);ctx.fillRect(c.x-1,c.y-41,2,4);
-  ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm='被囚禁的 '+cname(c.id),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(c.x-tw/2-2,c.y+5,tw+4,8);ctx.fillStyle='#ece2d2';ctx.fillText(nm,c.x,c.y+11)}
+/* the cage that holds the next doll in first-world boss rooms: a gothic birdcage drawn as vector art at 4x,
+   then reduced to the game's pixel palette like every other prop. Back layer (behind her), front layer (in front), and an opened version. */
+const CAGE={W:44,H:72};
+function cageArt(){if(CAGE.back)return CAGE;const K=4,W=CAGE.W,H=CAGE.H,cw=W*K,chh=H*K,cx=cw/2,top=7*K,domeB=24*K,midB=43*K,baseB=60*K,R=16.5*K,ry=R*.3;
+  const layer=()=>{const c=mk(cw,chh),x=c.getContext('2d');x.lineCap='round';x.lineJoin='round';return[c,x]};
+  const goldG=(x,a,b,dark)=>{const g=x.createLinearGradient(a,0,b,0);if(dark){g.addColorStop(0,'#3a2810');g.addColorStop(.5,'#7a5a24');g.addColorStop(1,'#3a2810')}else{g.addColorStop(0,'#6a4a18');g.addColorStop(.35,'#ffe7a0');g.addColorStop(.6,'#c9a45c');g.addColorStop(1,'#5a3c14')}return g};
+  const prof=(y)=>{const t=clamp((y-domeB)/(baseB-domeB),0,1);return .9+.1*Math.sin(Math.PI*t)};
+  const bar=(x,th,front,open)=>{const s=Math.sin(th);if(open&&front&&Math.abs(s)<.42)return;const x0=cx+R*s*prof(domeB),x1=cx+R*s,x2=cx+R*s*prof(baseB);
+    x.strokeStyle=goldG(x,cx-R,cx+R,!front);x.lineWidth=front?(.75+.3*Math.cos(th))*K:.6*K;x.beginPath();x.moveTo(x0,domeB);x.quadraticCurveTo(x1+(x1-cx)*.06,midB,x2,baseB);x.stroke();
+    // dome rib up to the finial
+    x.lineWidth=front?.8*K:.55*K;x.beginPath();x.moveTo(x0,domeB);x.bezierCurveTo(cx+R*s*1.02,domeB-6*K,cx+R*s*.55,top+5*K,cx,top+2.5*K);x.stroke()};
+  const ring=(x,y,r,w,front)=>{x.strokeStyle=goldG(x,cx-r,cx+r,!front);x.lineWidth=w;x.beginPath();x.ellipse(cx,y,r,r*.3,0,front?0:Math.PI,front?Math.PI:TAU);x.stroke()};
+  const rivets=(x,y,r)=>{x.fillStyle='#fff3c8';for(let i=-3;i<=3;i++){const a=Math.PI/2+i*.38;x.beginPath();x.arc(cx+Math.cos(a)*r,y+Math.sin(a)*r*.3,.55*K,0,TAU);x.fill()}};
+  const rose=(x,px,py,s)=>{x.fillStyle='#2f6a34';x.beginPath();x.ellipse(px-2.2*s,py+1.4*s,1.8*s,.9*s,-.6,0,TAU);x.fill();x.beginPath();x.ellipse(px+2*s,py+1.6*s,1.6*s,.8*s,.6,0,TAU);x.fill();
+    const g=x.createRadialGradient(px-.5*s,py-.6*s,.2*s,px,py,2.2*s);g.addColorStop(0,'#ff6a7a');g.addColorStop(.5,'#c8203a');g.addColorStop(1,'#5a0a18');x.fillStyle=g;x.beginPath();x.arc(px,py,2.1*s,0,TAU);x.fill();
+    x.strokeStyle='rgba(40,0,10,.7)';x.lineWidth=.35*s;x.beginPath();x.arc(px,py,1.2*s,.5,4.2);x.stroke()};
+  const vine=(x,pts)=>{x.strokeStyle='#244a22';x.lineWidth=.7*K;x.beginPath();x.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)x.lineTo(pts[i][0],pts[i][1]);x.stroke()};
+  const lock=(x,px,py,s)=>{x.strokeStyle='#d8dce8';x.lineWidth=.8*s;x.beginPath();x.arc(px,py-1.6*s,1.5*s,Math.PI,0);x.stroke();const g=x.createLinearGradient(px-2*s,0,px+2*s,0);g.addColorStop(0,'#7a5a24');g.addColorStop(.4,'#ffe7a0');g.addColorStop(1,'#5a3c14');
+    x.fillStyle=g;x.beginPath();if(x.roundRect)x.roundRect(px-2.2*s,py-1.6*s,4.4*s,3.8*s,.8*s);else x.rect(px-2.2*s,py-1.6*s,4.4*s,3.8*s);x.fill();x.fillStyle='#1a1018';x.beginPath();x.arc(px,py,.55*s,0,TAU);x.fill();x.fillRect(px-.25*s,py,.5*s,1.2*s)};
+  const build=(open)=>{
+    const[b,bx]=layer(),[f,fx2]=layer();
+    // back: velvet cushion, back bars and rib halves, back halves of the rings
+    {const g=bx.createRadialGradient(cx,baseB-1*K,2*K,cx,baseB,R);g.addColorStop(0,'#8a1a34');g.addColorStop(1,'#2a0610');bx.fillStyle=g;bx.beginPath();bx.ellipse(cx,baseB,R*.98,ry*.98,0,0,TAU);bx.fill();
+      bx.fillStyle='rgba(255,200,210,.25)';bx.beginPath();bx.ellipse(cx-R*.25,baseB-ry*.35,R*.35,ry*.25,0,0,TAU);bx.fill()}
+    for(let i=0;i<7;i++){const th=Math.PI/2+(i+.5)/7*Math.PI;bar(bx,th,false)}
+    ring(bx,domeB,R*prof(domeB),1.6*K,false);ring(bx,midB,R,1*K,false);ring(bx,baseB,R*prof(baseB),1.8*K,false);
+    // front: bars, ribs, ring fronts, pedestal, finial, roses, padlock
+    for(let i=0;i<7;i++){const th=-Math.PI/2+(i+.5)/7*Math.PI;bar(fx2,th,true,open)}
+    ring(fx2,domeB,R*prof(domeB),2.2*K,true);rivets(fx2,domeB,R*prof(domeB));ring(fx2,midB,R,1.2*K,true);ring(fx2,baseB,R*prof(baseB),2.4*K,true);rivets(fx2,baseB,R*prof(baseB));
+    {const g=goldG(fx2,cx-R,cx+R);fx2.fillStyle=g;fx2.beginPath();fx2.moveTo(cx-R*.95,baseB+.8*K);fx2.quadraticCurveTo(cx,baseB+ry*1.25,cx+R*.95,baseB+.8*K);fx2.lineTo(cx+R*.62,baseB+8*K);fx2.quadraticCurveTo(cx,baseB+9.5*K,cx-R*.62,baseB+8*K);fx2.closePath();fx2.fill();
+      fx2.fillStyle='#2a1a10';fx2.fillRect(cx-R*.5,baseB+5.2*K,R,.7*K);for(const sgn of[-1,1]){fx2.strokeStyle=g;fx2.lineWidth=1.3*K;fx2.beginPath();fx2.arc(cx+sgn*R*.68,baseB+8.6*K,1.8*K,sgn>0?Math.PI:0,sgn>0?TAU*.75+Math.PI/2:Math.PI*1.5);fx2.stroke()}}
+    {const g=goldG(fx2,cx-4*K,cx+4*K);fx2.fillStyle=g;fx2.beginPath();fx2.ellipse(cx,top+1*K,3.4*K,2.6*K,0,0,TAU);fx2.fill();fx2.fillStyle='#1a1018';for(const sgn of[-1,1]){fx2.beginPath();fx2.ellipse(cx+sgn*1.3*K,top+.6*K,.8*K,.45*K,sgn*.3,0,TAU);fx2.fill()}
+      fx2.strokeStyle=g;fx2.lineWidth=1*K;fx2.beginPath();fx2.arc(cx,top-3.4*K,1.6*K,0,TAU);fx2.stroke();fx2.fillStyle='#e0283c';fx2.beginPath();fx2.arc(cx,top+2.6*K,.7*K,0,TAU);fx2.fill()}
+    vine(fx2,[[cx-R*.85,baseB-2*K],[cx-R*.7,midB+6*K],[cx-R*.92,midB],[cx-R*.75,midB-7*K]]);rose(fx2,cx-R*.78,midB-1.5*K,K*1.05);rose(fx2,cx-R*.6,baseB-4*K,K*.9);
+    vine(fx2,[[cx+R*.9,domeB+1*K],[cx+R*.78,domeB+8*K],[cx+R*.95,domeB+14*K]]);rose(fx2,cx+R*.86,domeB+5*K,K*.95);
+    if(!open)lock(fx2,cx+R*.18,midB+2.6*K,K*1.1);
+    else{// the door swung open to the right, a bent bar, and the padlock on the cushion
+      fx2.strokeStyle=goldG(fx2,cx+R*.4,cx+R*1.3);fx2.lineWidth=1.3*K;fx2.beginPath();fx2.moveTo(cx+R*.42,midB-8*K);fx2.lineTo(cx+R*1.22,midB-5*K);fx2.lineTo(cx+R*1.22,baseB-1*K);fx2.lineTo(cx+R*.42,baseB);fx2.stroke();
+      for(let i=1;i<3;i++){const u=i/3;fx2.beginPath();fx2.moveTo(cx+R*(.42+.8*u),midB-8*K+3*K*u);fx2.lineTo(cx+R*(.42+.8*u),baseB-1*K*u);fx2.stroke()}
+      fx2.lineWidth=1.1*K;fx2.beginPath();fx2.moveTo(cx-R*.32,domeB+2*K);fx2.quadraticCurveTo(cx-R*.62,midB,cx-R*.38,baseB);fx2.stroke();lock(fx2,cx-R*.1,baseB+1.2*K,K*.95)}
+    return{back:pixArt(b,W,H,{dith:5,sat:.95,con:1.12}),front:pixArt(f,W,H,{dith:5,sat:.95,con:1.12})}};
+  const c=build(false),o=build(true);CAGE.back=c.back;CAGE.front=c.front;CAGE.backO=o.back;CAGE.frontO=o.front;CAGE.baseY=60;return CAGE}
+function drawCage(c,t){const A=cageArt(),W=CAGE.W,H=CAGE.H,ox=Math.round(c.x-W/2),oy=Math.round(c.y+2-A.baseY),sw=Math.sin(t*.9)*.6;
+  // chain up into the dark above the stage
+  ctx.fillStyle='#5a4220';for(let y=oy+3;y>-40;y-=4){ctx.fillRect(Math.round(c.x+sw)-1,y-3,2,3)}ctx.fillStyle='#c9a45c';for(let y=oy+1;y>-40;y-=4)ctx.fillRect(Math.round(c.x+sw),y-1,1,1);
+  shadow(c.x,c.y+2,15);ctx.drawImage(c.broken?A.backO:A.back,ox,oy);
+  const fr=ART.fr[c.id];if(fr)drawSpr(fr.idle[Math.floor(t*3)%fr.idle.length],c.x,c.y+1,-1,null,.5);else drawSpr(SPR['ch_'+c.id].f[0],c.x,c.y,-1);
+  ctx.drawImage(c.broken?A.frontO:A.front,ox,oy);
+  if(c.broken)return;ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm='被囚禁的 '+cname(c.id),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(c.x-tw/2-2,c.y+12,tw+4,8);ctx.fillStyle='#ece2d2';ctx.fillText(nm,c.x,c.y+18)}
+
 function updExtras(dt){const m=G.mods;
   if(m.turret&&G.en.length){P.turT-=dt;if(P.turT<=0){P.turT=9/m.turret;G.turrets.push({x:clamp(P.x+rnd(-16,16),20,RW-20),y:clamp(P.y+rnd(-12,12),TOP+10,RH-16),t:6,cd:.3});S.p('summon')}}
   for(const tu of G.turrets){tu.t-=dt;tu.cd-=dt;if(tu.cd<=0){const e=nearest(170,tu);if(e){tu.cd=.5;shoot({x:tu.x,y:tu.y-8,a:Math.atan2(e.y-tu.y,e.x-tu.x),spd:190,dmg:7*m.ranged,k:'note',pierce:0,col:'#f6dc8a',life:1,r:3})}}}
