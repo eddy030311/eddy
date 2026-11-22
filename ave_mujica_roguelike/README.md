@@ -94,6 +94,7 @@
 生成的怪物精灵、房间、图标会存入 IndexedDB，之后启动直接读取；战斗中不再进行任何 3D 构建，首次进入某个世界前会显示「调音中」进度条一次。手机端关闭全屏柔光与胶片颗粒。
 
 ## 宣传短片
+- 「假面之下」短片：`dist/AveMujica_SousLeMasque.mp4`（1280×720 · 30fps · 约 87 秒，封面 `dist/AveMujica_SousLeMasque_cover.jpg`），全程游戏内实录：标题页 → 三条支线的分岔页 → 祥子的夜（雨夜城市、战斗、戴着假面的她们自己）→ 星之约（初华同行、夏日祭、「完美的笑容」）→ 镜中的睦（镜中人偶 Fever、「说错话的我」）。重录：`DIRECTOR=director_masque.js DIRFN=__directMasque MASQUE=1 node tools/promo/rec.js <输出目录>`，再用 `build.py` 合成。
 - `dist/AveMujica_promo.mp4`（1280×720 · 30fps · 约 70 秒），封面 `dist/AveMujica_promo_cover.jpg`。
 - 全部为游戏内实时录制（画面 + 游戏实际合成的音乐与音效），文字为录制时叠加的字幕；Boss 段落会特写新版的金色鸟笼与笼门打开。
 - 重录：`node tools/promo/rec.js <输出目录>`，再 `python3 tools/promo/build.py <输出目录> out.mp4`。分镜在 `tools/promo/director.js`。
