@@ -78,10 +78,10 @@ window.__direct = async function (opts) {
     pilot.on = true; pilot.fill = true; await W(700);
     /* ============ 3. rhythm combat ============ */
     mark('combat'); cardOff(); await W(300); black(false);
-    await cap('Le rythme est une arme', '踩着节拍战斗', '按在拍点上 · PERFECT 伤害 ×1.3'); await W(4800);
+    await cap('Le rythme est une arme', '踩着节拍战斗', '按在拍点上 · PERFECT 伤害 ×1.5'); await W(4800);
     /* ============ 4. fever ============ */
-    mark('fever'); G.fever = fCap(); await cap('Fever', '攒满 Fever · 发动专属技能', '五名人偶 · 五种独奏'); await W(1300);
-    await onBeat(); IN.skillQ = true; await W(3900);
+    mark('fever'); await cap('Fever', '攒满 Fever · 自动发动专属技能', '五名人偶 · 五种独奏'); await W(900);
+    await onBeat(); G.fever = fCap(); await W(4300);
     /* ============ 5. perfect dodge ============ */
     mark('dodge'); await cap('Esquive parfaite', '踩拍闪避', '在拍点上躲开攻击 · 慢动作反击');
     for (let k = 0; k < 2; k++) {
@@ -93,11 +93,12 @@ window.__direct = async function (opts) {
     pilot.fill = false; G.en.length = 0; G.eb.length = 0; G.act = 3; enterRoom('boss'); if (G.ots) { G.ots.ph = 'swoop'; G.ots.t = 0; G.ots.lb = 1 } await W(600); cutB(); black(false);
     for (let i = 0; i < 90 && (G.ots || CUT.on); i++) { await W(100); if (CUT.on) endCut() }
     await cap('Le boss danse avec la musique', 'Boss 随节拍出招', '每一招都落在拍点上'); await W(3600);
-    /* ============ 7. duet ============ */
-    mark('duet'); await cap('Duo', '与同伴打出二重奏', '回应同伴的呼应 · 判定越准越强');
-    if (G.boss && !G.boss.dead) { await onBeat(); G.lastJ = { k: 'P', mul: 1.3, t: G.time }; duet(G.allies[0], G.boss, true) }
-    await W(1700); if (G.boss && !G.boss.dead && G.allies[1]) { await onBeat(); G.lastJ = { k: 'P', mul: 1.3, t: G.time }; duet(G.allies[1], G.boss, true) }
-    await W(2000);
+    /* ============ 7. the cage ============ */
+    mark('cage'); pilot.goal = null; pilot.on = false; IN.sx = IN.sy = 0; IN.melee = IN.ranged = false; P.inv = 9; P.hp = P.maxHp; G.eb.length = 0; await cap('Libère-la', '击败 Boss · 救出被囚禁的同伴', '她就在舞台一角的金色鸟笼里');
+    if (G.cage) { G.cage.y = Math.max(G.cage.y, TOP + 70); P.x = G.cage.x + 46; P.y = G.cage.y + 6 }
+    await W(2600);
+    if (G.cage) { G.cage.broken = 1; burst(G.cage.x, G.cage.y - 20, 30, ['#ffe9a0', '#fff', '#c9a45c'], 90, .7); S.p('shbreak') }
+    await W(1600);
     /* ============ 8. doors ============ */
     mark('doors'); capOff(); black(true); await W(750); cutA(); pilot.on = false; pilot.fill = false;
     G.act = 2; enterRoom('combat'); otsEnd(); G.boss = null; G.en.length = 0; G.eb.length = 0; G.waves = []; G.pending = 0; G.cleared = true;
@@ -106,11 +107,11 @@ window.__direct = async function (opts) {
     await cap('Sept portes', '每一扇门，都是一次选择', '演出 · 精英 · 化妆间 · 商店 · 衣柜 · 邂逅 · 终幕'); await W(3600);
     /* ============ 9. melodies ============ */
     mark('ups'); pilot.on = false; IN.sx = IN.sy = 0; capOff(); pilot.modal = true; $('modal').classList.add('pvR');
-    const cs = ['fvExt', 'kiss', 'maestro', 'symbol'].map(id => UPS.find(u => u.id === id));
+    const cs = ['fvExt', 'kiss', 'maestro', 'symbol'].map(id => UPS.find(u => u.id === id)).filter(Boolean);
     openModal('reward', `<h3>选择一段旋律</h3><p class="sub">节拍 · 狂热 · 演奏 · 舞台</p><div class="cards">${cs.map((u, i) => upCard(u, i)).join('')}</div>`);
-    await cap('69 mélodies', '四个流派 · 69 段旋律', '每一局都是不同的构筑'); await W(3300);
+    await cap(UPS.length + ' mélodies', '四个流派 · ' + UPS.length + ' 段旋律', '每一局都是不同的构筑'); await W(3300);
     /* ============ 10. grade ============ */
-    mark('grade'); capOff(); closeModal(); G.jcA = { P: 0, G: 0, B: 0, M: 0 }; G.jc = { P: 61, G: 2, B: 0, M: 0 }; G.rcA = 63; G.act = 2;
+    mark('grade'); capOff(); closeModal(); G.jcA = { P: 0, GR: 0, G: 0, B: 0, M: 0 }; G.jc = { P: 58, GR: 4, G: 1, B: 0, M: 0 }; G.rcA = 63; G.act = 2;
     showJRes(() => { }); $('fade').classList.remove('on');
     await cap('Évaluation', '每一章都有演出评价', 'S+ 评价奖励稀有旋律与回忆'); await W(3300);
     /* ============ 11. memories ============ */
