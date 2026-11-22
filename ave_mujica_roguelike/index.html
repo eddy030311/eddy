@@ -1887,7 +1887,7 @@ function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.f
   if(G.state==='play')setTrack(p||(fightRoom()&&!G.cleared?(G.boss&&!G.boss.dead?(G.boss.mj?'mj'+G.boss.form:'boss'):'battle'):'calm'),1)}
 /* clearing the room ends Fever at once; the unused time goes back into the gauge (up to 80%) so the next Fever comes sooner */
 function feverCashOut(){if(!(G.feverT>0))return;const frac=Math.min(1,G.feverT/(G.feverMax||8));P.twinT=0;G.barrier=null;P.bsk=null;G.fvPause=1;feverEnd();G.fvPause=0;
-  const v=Math.min(fCap()*.8,fCap()*frac+(G.mods.fvKeep?fCap()*.3:0));G.fever=Math.max(G.fever||0,v);toast(`Fever 结束 · 保留 ${Math.round(v/fCap()*100)}% 进度`)}
+  const v=Math.min(fCap()*.8,fCap()*frac+(G.mods.fvKeep?fCap()*.3:0));G.fever=Math.max(G.fever||0,v)}
 function feverReset(){G.fever=0;G.feverT=0;G.feverPrev=null;$('game').classList.remove('fv');$('fever').hidden=true}
 function feverPassive(pow){const id=ch().id,sc=pow*(1+.35*(G.act-1));
   if(id==='doloris'){const live=G.en.filter(e=>!e.dead&&!(e.intro>0));if(live.length){const e=pick(live),x0=e.x,y0=e.y;G.fx.push({k:'starfall',x:x0,y:y0,t:0,d:.3});later(.25,()=>{aoe(x0,y0,18,12*sc,'#ffe9a0');burst(x0,y0,8,['#ffe9a0','#fff'],60,.4)})}}
