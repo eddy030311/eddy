@@ -63,7 +63,7 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
     <li><b>背景统一用纯品红 #FF00FF</b>：我靠这个颜色抠图。如果你用的工具能直接导出透明 PNG，那样也可以。</li>
     <li><b>发回来时注明编号</b>：比如「C1-A」「I3」。上传后文件名会变，我靠编号对应。一张图对应一个编号。</li>
   </ol>
-  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#foes">五、敌人与 Boss</a><a href="#rooms">六、场景背景</a><a href="#mujica">七、Mujica 动作</a><a href="#rules">规格与负面词</a></nav>
+  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#foes">五、敌人与 Boss</a><a href="#rooms">六、场景背景</a><a href="#mujica">七、Mujica 动作</a><a href="#casual">八、便服人物</a><a href="#rules">规格与负面词</a></nav>
 </header>
 
 <section id="rules">
@@ -117,6 +117,10 @@ footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(
   <div id="roomList"></div>
 </section>
 
+<section id="casual">
+  <h2>八、便服人物 <small>三角初华、若叶睦、丰川祥子的日常便服版，用于「星之约」与「镜中的睦」。格式和第一节一样：每人 A、B 两张精灵图。生成时请上传对应的设定资料图作参考。</small></h2>
+  <div id="casualList"></div>
+</section>
 <footer>人物、技能图标、HUD、强化图标已经完成。新增：敌人 5 张（E1–E5）、Boss 4 张（B1–B4）、场景 5 张（R1–R5）。建议先做 R1 和 E1，我先接进一章给你看效果。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
 </div>
 
@@ -288,6 +292,39 @@ document.getElementById('mjList').innerHTML+=MJMASKS.map(m=>ticket({id:m.id,stub
   prompt:`${MJSTYLE}\n\nSprite sheet showing ONLY ONE mask from the reference breaking apart: ${m.k}. Draw this mask alone, detached from the rest of the boss, with no ribbons, chains or hands.\n\n${SHATTER}`})).join('');
 document.getElementById('roomList').innerHTML=ROOMS.map(r=>ticket({id:r.id,stub:'场景',title:r.n,what:'整张房间图。顶部 15% 是后墙，左右和底部是细墙，中间一条红地毯，其余是空地板。',chips:[['必需','must'],['1024×576'],['--ar 16:9']],
   prompt:`${ROOMSTYLE}\n\nSetting: ${r.d}.\nPalette anchored on deep wine red #9b1b30, black, antique gold #c9a45c and bone white, adapted to this setting.`})).join('');
+
+/* ---- 八、便服人物 ---- */
+const STYLE_CASUAL="Pixel art game asset in crisp 16-bit SNES/GBA style: hard pixel edges, no anti-aliasing, no blur, no smooth gradients, limited palette of about 32 colors, clean 1-pixel dark outline (#120c10), soft cel shading with 2 to 3 tones per material. Theme: everyday slice-of-life, a high-school girl in her own casual clothes (no mask, no stage costume), soft natural colors that still sit well next to deep wine red #9b1b30, antique gold #c9a45c and bone white #ece2d2. Background: flat solid pure magenta #FF00FF everywhere outside the subject, no floor, no cast shadow on the background, no gradient. No text, no letters, no numbers, no watermark, no signature, no border around the image.";
+const DEATH_CASUAL="DEATH, 5 frames: she staggers, drops to her knees, slumps forward and lies still on her side, the item she was holding slipping from her hand in the last frame";
+const CS=[
+ {id:'S1',name:'三角初华 · 便服',
+  desc:"Uika Misumi in casual clothes, a girl with shoulder-length straight platinum-blonde hair fading to soft pink at the tips, side-swept bangs, violet eyes and a gentle smile. Outfit: a black baseball cap, a plain white short-sleeve T-shirt tucked into a long beige A-line denim maxi skirt with front pockets, white ankle socks, black canvas high-top sneakers with white soles. Instrument: a wooden acoustic guitar on a black strap.",
+  idle:"holds the acoustic guitar at her hip, gentle breathing, cap brim bobbing slightly, long skirt swaying",
+  run:"guitar slung on her back, one hand holding her cap down, long skirt fluttering",
+  melee:"MELEE, 5 frames: grips the acoustic guitar neck with both hands and swings the guitar body horizontally in a wide arc: wind-up behind her, mid-swing, impact pose with the guitar fully extended in front, follow-through, recover",
+  ranged:"RANGED, 4 frames: strums the acoustic guitar once and sings, head slightly raised, mouth open, then lowers the guitar",
+  skill:"SKILL, 6 frames: raises one arm straight toward the sky with the head tilted up and eyes closed, singing happily; hair and long skirt lift as if caught in a breeze, the cap tips back, then she lowers her arm"},
+ {id:'S2',name:'若叶睦 · 便服',
+  desc:"Mutsumi Wakaba in casual clothes, a girl with very long straight pale sage-silver hair past the waist with blunt bangs, amber eyes and a calm, nearly expressionless face. Outfit: a black velvet choker, a navy-blue tartan plaid long-sleeve dress with a ruffled hem just below the knee, a cream lace bib collar with a small navy ribbon bow, a belt at the waist, cream cuffs with buttons, white frilled ankle socks, dark brown Mary-Jane heels. Instrument: a pale cream electric guitar on a strap.",
+  idle:"stands very still, guitar held loosely at her side, only her long hair moving, blinks once, one hand tucks hair behind her ear",
+  run:"guitar on her back, small quiet steps, long hair and plaid skirt flowing behind",
+  melee:"MELEE, 5 frames: a quick three-hit combo using the cream guitar like a sword: upward slash, downward slash, then a heavy spinning strike with the guitar fully extended, then recover",
+  ranged:"RANGED, 4 frames: leans forward and picks the guitar strings with quick precise strokes, hair swinging",
+  skill:"SKILL, 6 frames: closes her eyes and holds the guitar to her chest; a faint second silhouette of herself steps out beside her, then she opens her eyes and settles into a low ready stance"},
+ {id:'S3',name:'丰川祥子 · 便服',
+  desc:"Sakiko Togawa in casual clothes, a girl with long wavy blue-lavender hair with two small side braids tied with black ribbons, side-swept bangs, amber eyes and an elegant gentle smile. Outfit: a pale pink long-sleeve blouse with a pleated front, buttoned cuffs and a thin black ribbon bow tie, a high-waisted grey tartan plaid A-line midi skirt with a black waistband, white frilled ankle socks, black Mary-Jane shoes. Held item: a black leather sheet-music folder.",
+  idle:"stands gracefully with hands clasped in front holding the sheet-music folder, gentle breathing, wavy hair swaying",
+  run:"the folder held to her chest with one arm, the other hand lifting her skirt slightly, ribbons fluttering",
+  melee:"MELEE, 5 frames: snaps the closed sheet-music folder forward in a sharp horizontal sweep like a fan: wind-up, mid-swing, impact pose with the arm fully extended, follow-through, recover",
+  ranged:"RANGED, 4 frames: opens the sheet-music folder and thrusts it forward with one hand, the other hand raised like a pianist about to play, then closes it",
+  skill:"SKILL, 6 frames: raises one hand like a conductor giving the downbeat, eyes closed, skirt and hair lifting slightly, holds the pose, then lowers her hand with a composed smile"}];
+document.getElementById('casualList').innerHTML=CS.map(c=>
+  ticket({id:c.id+'-A',stub:'便服',title:c.name+' · A 张',what:'待机、跑步、闪避、受击。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','待机 4 帧'],['第2行','跑步 6 帧'],['第3行','闪避 3 帧'],['第4行','受击 2 帧']],
+    prompt:`${STYLE_CASUAL}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — IDLE, 4 frames: ${c.idle}.\nRow 2 — RUN, 6 frames: a full running cycle, ${c.run}.\nRow 3 — ${DASH}.\nRow 4 — ${HURT}.`})+
+  ticket({id:c.id+'-B',stub:'便服',title:c.name+' · B 张',what:'近战、远程、技能、倒下。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','近战 5 帧'],['第2行','远程 4 帧'],['第3行','技能 6 帧'],['第4行','倒下 5 帧']],
+    prompt:`${STYLE_CASUAL}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — ${c.melee}.\nRow 2 — ${c.ranged}.\nRow 3 — ${c.skill}.\nRow 4 — ${DEATH_CASUAL}.`})).join('');
 document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
   const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent='已选中，请长按复制';ok.hidden=false};
   const done=()=>{ok.textContent='已复制';ok.hidden=false;setTimeout(()=>ok.hidden=true,1600)};
