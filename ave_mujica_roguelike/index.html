@@ -423,6 +423,18 @@ body.onbeat #bMelee,body.onbeat #bRanged,body.onbeat #gsMelee,body.onbeat #gsRan
 .calpad{display:block;margin:8px auto 2px;width:92px;height:92px;border-radius:50%;border:2px solid var(--gold);background:rgba(255,224,122,.06);color:var(--gold);font-size:30px;touch-action:manipulation;transition:background .08s}
 .calpad.hit{background:rgba(255,224,122,.38)}
 .calpad:disabled{opacity:.45}
+
+/* skill key = Fever charge: a ring outside the key in the Fever colours; the key stays dim until the gauge is full */
+#bSkill,#gsSkill{--fp:0;overflow:visible}
+#bSkill::after,#gsSkill::after{display:none}
+body:not(.gp) #bSkill::before,#gsSkill::before{content:"";position:absolute;inset:-7px;border-radius:50%;pointer-events:none;z-index:2;
+  background:conic-gradient(#ff4fa8 0deg,#f6dc8a calc(var(--fp)*360deg),rgba(70,50,64,.55) calc(var(--fp)*360deg));
+  -webkit-mask:radial-gradient(circle,transparent 60%,#000 62%,#000 74%,transparent 76%);mask:radial-gradient(circle,transparent 60%,#000 62%,#000 74%,transparent 76%)}
+body:not(.gp) #bSkill.ready::before,#gsSkill.ready::before,body:not(.gp) #bSkill.fvOn::before,#gsSkill.fvOn::before{background:conic-gradient(#ff4fa8,#f6dc8a,#4ccac2,#c08aff,#ff4fa8);animation:skRing 1.2s linear infinite;filter:drop-shadow(0 0 4px rgba(255,79,168,.9))}
+@keyframes skRing{to{transform:rotate(360deg)}}
+#bSkill:not(.ready):not(.fvOn),#gsSkill:not(.ready):not(.fvOn){border-color:rgba(201,164,92,.28);box-shadow:none}
+#bSkill:not(.ready):not(.fvOn) svg,#bSkill:not(.ready):not(.fvOn) .ico,#gsSkill:not(.ready):not(.fvOn) svg,#gsSkill:not(.ready):not(.fvOn) .ico{filter:brightness(.38) saturate(.35);opacity:.8}
+#bSkill.ready,#gsSkill.ready{border-color:#ffe07a;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 16px rgba(255,79,168,.7)}
 </style>
 
 <div id="game">
@@ -1757,7 +1769,7 @@ function beatPos(){if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.curre
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 /* rhythm judgement (light): every attack press is judged against the beat */
 const JUD={P:{t:'PERFECT',c:'#ffe07a',mul:1.3,fv:8},G:{t:'GOOD',c:'#ff9ad0',mul:1.1,fv:4},B:{t:'BAD',c:'#9ab0d0',mul:.9,fv:0},M:{t:'MISS',c:'#ff4a5a',mul:.75,fv:-3}};
-function jWin(){const lv=NL(),k=lv-1,a=(settings.assist?1.35:1)*(1+.15*((G.mods&&G.mods.metro)||0))*(lv>=6?.92:1);return[(.13-.005*k)*a,(.23-.008*k)*a,(.35-.01*k)*a]}
+function jWin(){const lv=NL(),k=lv-1,a=(settings.assist?1.35:1)*(1+.15*((G.mods&&G.mods.metro)||0))*(lv>=6?.92:1);return[Math.min(.3,(.17-.006*k)*a),Math.min(.4,(.28-.008*k)*a),Math.min(.47,(.4-.009*k)*a)]}
 function judgeHit(ch0){const b=beatNow(),f=b-Math.floor(b),o=Math.min(f,1-f),w=jWin();
  const nb=Math.round(b);G.jNB=G.jNB||{};const dup=G.jNB[ch0||'x']===nb;G.jNB[ch0||'x']=nb;
   let k=dup?'M':o<=w[0]?'P':o<=w[1]?'G':o<=w[2]?'B':'M';if(k==='B'&&G.mods.maestro)k='G';const J=JUD[k];G.jc=G.jc||{P:0,G:0,B:0,M:0};G.jc[k]++;
@@ -1788,7 +1800,7 @@ function dodgeJudge(){const b=beatNow(),f=b-Math.floor(b),o=Math.min(f,1-f),w=jW
 const JGRADE=[['S+',.95,'#ffe07a',60,1],['S',.88,'#ffd27a',40,0],['A',.76,'#ff9ad0',25,-1],['B',.6,'#9ab0d0',10,-1],['C',0,'#8a8090',0,-1]];
 function jresReset(){G.jcA={...(G.jc||{P:0,G:0,B:0,M:0})};G.rcA=G.rc||0}
 function chapRes(){const c=G.jc||{P:0,G:0,B:0,M:0},a=G.jcA||{P:0,G:0,B:0,M:0},r={P:c.P-a.P,G:c.G-a.G,B:c.B-a.B,M:c.M-a.M};r.n=r.P+r.G+r.B+r.M;r.acc=r.n?(r.P+.7*r.G+.3*r.B)/r.n:0;r.mx=G.rcA||0;r.g=JGRADE.find(g=>r.acc>=g[1]);return r}
-function showJRes(done){const r=chapRes(),act=G.act;jresReset();if(r.n<8){done();return}const g=r.g;G.petals+=g[3];(G.grades=G.grades||[]).push(g[0]);
+function showJRes(done0){const r=chapRes(),act=G.act;jresReset();if(r.n<8){done0();return}$('fade').classList.remove('on');const done=()=>{$('fade').classList.add('on');setTimeout(done0,300)};const g=r.g;G.petals+=g[3];(G.grades=G.grades||[]).push(g[0]);
   const rw=[g[3]?`✿${g[3]}`:'',g[4]===1?'一段稀有旋律':g[4]===0?'一段旋律':''].filter(Boolean).join(' + ');
   openModal('jres',`<h3>第${act}章 · 演出评价</h3><div class="jgrade" style="color:${g[2]}">${g[0]}</div><div class="jres"><span style="color:#ffe07a">PERFECT ${r.P}</span><span style="color:#ff9ad0">GOOD ${r.G}</span><span style="color:#9ab0d0">BAD ${r.B}</span><span style="color:#ff4a5a">MISS ${r.M}</span></div>
     <p class="sub">准确率 ${(r.acc*100).toFixed(1)}% · 最大连击 ${r.mx}</p><p class="sub">${rw?'评价奖励：'+rw:'评价达到 B 以上可获得奖励'}</p><div class="row"><button class="cta" id="jrOk">${g[4]>=0?'挑选旋律':'继续'}</button></div>`);
@@ -2329,7 +2341,7 @@ let hudCache={};function setH(id,v,prop='textContent'){if(hudCache[id+prop]===v)
 function updHud(){{const c=G.rc||0,k=c>=5?String(c):'';if(hudCache.rc!==k){hudCache.rc=k;const el=$('combo');el.classList.toggle('on',!!k);el.querySelector('b').textContent=k;el.classList.remove('pop');void el.offsetWidth;if(k)el.classList.add('pop')}}setH('hpTxt',`${Math.ceil(P.hp)}/${P.maxHp}`);const f=$('hpFill'),fr=(P.hp/P.maxHp).toFixed(3);if(hudCache.hpf!==fr){hudCache.hpf=fr;f.style.transform=`scaleX(${fr})`}
   setH('petN',String(Math.floor(G.petals)));{const ql=`<div class="q main">◆ ${mainLine()}</div>`+Object.keys(G.quests).filter(k=>!G.quests[k].done).map(k=>`<div class="q">◇ ${SQ[k].n} ${G.quests[k].p}/${SQ[k].goal}</div>`).join('');setH('quests',ql,'innerHTML')}{const fv=G.feverT>0,full=(G.fever||0)>=fCap(),fr=fv?Math.min(1,G.feverT/(G.feverMax||8)):(G.fever||0)/fCap(),k=fr.toFixed(3);if(hudCache.fvf!==k){hudCache.fvf=k;$('fvFill').style.transform=`scaleX(${k})`}setH('fvTxt',fv?`FEVER ${G.feverT.toFixed(1)}s`:full?'FEVER READY':`FEVER ${Math.floor(G.fever||0)}/${fCap()}`);$('fvBar').style.transform=`scale(${1+.06*(G.beatGlow||0)})`;$('fvBar').classList.toggle('on',fv||full)}
   {const r=P.shMax?(P.sh/P.shMax).toFixed(3):'0';if(hudCache.shf!==r){hudCache.shf=r;$('shFill').style.transform=`scaleX(${r})`}setH('shTxt',P.shMax?`护盾 ${Math.ceil(P.sh)}`:'')}
-  const sc=G.feverT>0?'0':(1-Math.min(1,(G.fever||0)/fCap())).toFixed(2);if(hudCache.sk!==sc+(G.feverT>0)){hudCache.sk=sc+(G.feverT>0);for(const id of['bSkill','gsSkill']){$(id).style.setProperty('--cd',sc);$(id).classList.toggle('ready',sc==='0'&&!(G.feverT>0));$(id).classList.toggle('fvOn',G.feverT>0)}}
+  const sc=G.feverT>0?'0':(1-Math.min(1,(G.fever||0)/fCap())).toFixed(2);if(hudCache.sk!==sc+(G.feverT>0)){hudCache.sk=sc+(G.feverT>0);for(const id of['bSkill','gsSkill']){$(id).style.setProperty('--cd',sc);$(id).style.setProperty('--fp',(1-sc).toFixed(2));$(id).classList.toggle('ready',+sc===0&&!(G.feverT>0));$(id).classList.toggle('fvOn',G.feverT>0)}}
   const dc=P.dch>=1?'0':(1-P.dch).toFixed(2);if(hudCache.dc!==dc){hudCache.dc=dc;$('bDash').style.setProperty('--cd',dc);$('gsDash').style.setProperty('--cd',dc)}
   if(G.boss&&!G.boss.dead){const bf=(Math.max(0,G.boss.hp)/G.boss.mhp).toFixed(3);if(hudCache.bf!==bf){hudCache.bf=bf;$('bossFill').style.transform=`scaleX(${bf})`}}}
 function updStage(){const a=ACTS[G.act-1];setH('stage',`${NL()>1?'【'+DF().n+'】':''}第${CN[G.act-1]}章 · ${a.name} · ${G.type==='trial'?'试炼':'第'+CN[(G.type==='boss'?5:G.room)-1]+'节'}`)}
