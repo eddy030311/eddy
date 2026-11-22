@@ -85,3 +85,8 @@
 ## 性能
 
 生成的怪物精灵、房间、图标会存入 IndexedDB，之后启动直接读取；战斗中不再进行任何 3D 构建，首次进入某个世界前会显示「调音中」进度条一次。手机端关闭全屏柔光与胶片颗粒。
+
+## 宣传短片
+- `dist/AveMujica_promo.mp4`（1280×720 · 30fps · 约 67 秒），封面 `dist/AveMujica_promo_cover.jpg`。
+- 全部为游戏内实时录制（画面 + 游戏实际合成的音乐与音效），文字为录制时叠加的字幕。
+- 重录：`node tools/promo/rec.js <输出目录>`，再 `python3 tools/promo/build.py <输出目录> out.mp4`。分镜在 `tools/promo/director.js`。
