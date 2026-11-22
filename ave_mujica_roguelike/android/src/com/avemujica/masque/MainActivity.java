@@ -17,6 +17,15 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.JavascriptInterface;
+import android.content.SharedPreferences;
+import org.json.JSONObject;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.Iterator;
+import java.util.regex.Pattern;
 
 /** Full-screen landscape WebView that runs the bundled game from assets/www. */
 public class MainActivity extends Activity implements InputManager.InputDeviceListener {
@@ -42,8 +51,9 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
         });
         ((InputManager) getSystemService(INPUT_SERVICE)).registerInputDeviceListener(this, null);
         setContentView(web);
+        web.addJavascriptInterface(new Updater(), "AMNative");
         if (state != null) web.restoreState(state);
-        else web.loadUrl("file:///android_asset/www/index.html");
+        else web.loadUrl(startUrl());
         preferHighRefresh();
         hideBars();
     }
@@ -160,6 +170,125 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
     @Override public void onInputDeviceRemoved(int id) {
         for (int i : InputDevice.getDeviceIds()) if (isPad(InputDevice.getDevice(i))) return;
         notifyPad(null, false);
+    }
+
+    /* ------------------------------------------------------------------ online update
+       The game (window.AMNative) asks for an update; the manifest on the release branch lists every file with its sha256.
+       Unchanged files are copied from the current bundle, changed ones are downloaded and verified, then the new folder
+       replaces the old one and the WebView reloads. Saves live in localStorage (shared by every file:// page), so they stay. */
+    private static final String[] HOSTS = {
+        "https://raw.githubusercontent.com/eddy030311/eddy/release/ave_mujica_roguelike/update/",
+        "https://cdn.jsdelivr.net/gh/eddy030311/eddy@release/ave_mujica_roguelike/update/" };
+    private static final Pattern SAFE = Pattern.compile("^[A-Za-z0-9_\\-][A-Za-z0-9_.\\-]*(/[A-Za-z0-9_\\-][A-Za-z0-9_.\\-]*)*$");
+    private volatile boolean updating = false;
+
+    private SharedPreferences prefs() { return getSharedPreferences("upd", MODE_PRIVATE); }
+
+    private static String readAll(InputStream in) throws IOException {
+        ByteArrayOutputStream o = new ByteArrayOutputStream(); byte[] b = new byte[16384]; int n;
+        while ((n = in.read(b)) > 0) o.write(b, 0, n); in.close(); return o.toString("UTF-8");
+    }
+
+    private JSONObject bundledManifest() {
+        try { return new JSONObject(readAll(getAssets().open("www/manifest.json"))); } catch (Exception e) { return null; }
+    }
+
+    /** the downloaded bundle, if it is newer than the one inside the APK */
+    private File liveDir() {
+        String d = prefs().getString("dir", null); int v = prefs().getInt("v", 0);
+        JSONObject b = bundledManifest(); int bv = b == null ? 0 : b.optInt("v", 0);
+        if (d == null || v <= bv) return null;
+        File f = new File(d);
+        return new File(f, "index.html").isFile() && new File(f, "manifest.json").isFile() ? f : null;
+    }
+
+    private String startUrl() {
+        File d = liveDir();
+        return d != null ? "file://" + new File(d, "index.html").getAbsolutePath() : "file:///android_asset/www/index.html";
+    }
+
+    private JSONObject currentManifest() {
+        File d = liveDir();
+        if (d == null) return bundledManifest();
+        try { return new JSONObject(readAll(new FileInputStream(new File(d, "manifest.json")))); } catch (Exception e) { return bundledManifest(); }
+    }
+
+    private InputStream openCurrent(String path) throws IOException {
+        File d = liveDir();
+        return d != null ? new FileInputStream(new File(d, path)) : getAssets().open("www/" + path);
+    }
+
+    private static byte[] fetch(String url) throws IOException {
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(15000); c.setReadTimeout(30000); c.setUseCaches(false);
+        try {
+            if (c.getResponseCode() != 200) throw new IOException("HTTP " + c.getResponseCode());
+            InputStream in = c.getInputStream(); ByteArrayOutputStream o = new ByteArrayOutputStream(); byte[] b = new byte[32768]; int n;
+            while ((n = in.read(b)) > 0) o.write(b, 0, n); in.close(); return o.toByteArray();
+        } finally { c.disconnect(); }
+    }
+
+    private static String sha(byte[] d) throws Exception {
+        byte[] h = MessageDigest.getInstance("SHA-256").digest(d); StringBuilder s = new StringBuilder();
+        for (byte x : h) s.append(String.format("%02x", x)); return s.toString();
+    }
+
+    private static byte[] readBytes(InputStream in) throws IOException {
+        ByteArrayOutputStream o = new ByteArrayOutputStream(); byte[] b = new byte[32768]; int n;
+        while ((n = in.read(b)) > 0) o.write(b, 0, n); in.close(); return o.toByteArray();
+    }
+
+    private static void wipe(File f) {
+        if (f.isDirectory()) { File[] k = f.listFiles(); if (k != null) for (File c : k) wipe(c); }
+        f.delete();
+    }
+
+    private void js(final String code) { runOnUiThread(new Runnable() { public void run() { web.evaluateJavascript(code, null); } }); }
+
+    private void doUpdate(int hi) {
+        String host = HOSTS[Math.max(0, Math.min(HOSTS.length - 1, hi))];
+        File tmp = new File(getFilesDir(), "www_tmp");
+        try {
+            JSONObject m = new JSONObject(new String(fetch(host + "manifest.json?t=" + System.currentTimeMillis()), "UTF-8"));
+            JSONObject cur = currentManifest(); int v = m.getInt("v");
+            if (cur != null && v <= cur.optInt("v", 0)) throw new IOException("已经是最新版本");
+            JSONObject files = m.getJSONObject("files"), have = cur == null ? new JSONObject() : cur.optJSONObject("files");
+            if (have == null) have = new JSONObject();
+            wipe(tmp); tmp.mkdirs();
+            int total = files.length(), done = 0;
+            for (Iterator<String> it = files.keys(); it.hasNext(); ) {
+                String p = it.next();
+                if (!SAFE.matcher(p).matches() || p.contains("..")) throw new IOException("bad path " + p);
+                String want = files.getJSONObject(p).getString("sha256"); byte[] data = null;
+                JSONObject h = have.optJSONObject(p);
+                if (h != null && want.equals(h.optString("sha256"))) { try { data = readBytes(openCurrent(p)); if (!want.equals(sha(data))) data = null; } catch (Exception e) { data = null; } }
+                if (data == null) { data = fetch(host + "www/" + p); if (!want.equals(sha(data))) throw new IOException("校验失败 " + p); }
+                File out = new File(tmp, p); out.getParentFile().mkdirs();
+                FileOutputStream fo = new FileOutputStream(out); fo.write(data); fo.close();
+                done++; if (done % 4 == 0 || done == total) js("window.updProg&&updProg(" + done + "," + total + ")");
+            }
+            FileOutputStream fo = new FileOutputStream(new File(tmp, "manifest.json")); fo.write(m.toString().getBytes("UTF-8")); fo.close();
+            File dst = new File(getFilesDir(), "www_" + v); wipe(dst);
+            if (!tmp.renameTo(dst)) throw new IOException("无法写入更新");
+            String old = prefs().getString("dir", null);
+            prefs().edit().putString("dir", dst.getAbsolutePath()).putInt("v", v).apply();
+            if (old != null && !old.equals(dst.getAbsolutePath())) wipe(new File(old));
+            js("window.updDone&&updDone(true)");
+            runOnUiThread(new Runnable() { public void run() { web.postDelayed(new Runnable() { public void run() { web.loadUrl(startUrl()); } }, 900); } });
+        } catch (Exception e) {
+            wipe(tmp);
+            String msg = String.valueOf(e.getMessage()).replace("\\", "").replace("'", "");
+            js("window.updDone&&updDone(false,'" + msg + "')");
+        } finally { updating = false; }
+    }
+
+    private class Updater {
+        @JavascriptInterface public String platform() { return "android"; }
+        @JavascriptInterface public String files() { JSONObject c = currentManifest(); JSONObject f = c == null ? null : c.optJSONObject("files"); return f == null ? "{}" : f.toString(); }
+        @JavascriptInterface public void update(final int host) {
+            if (updating) return; updating = true;
+            new Thread(new Runnable() { public void run() { doUpdate(host); } }).start();
+        }
     }
 
     @Override

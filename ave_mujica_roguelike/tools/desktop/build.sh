@@ -16,7 +16,7 @@ unzip -q "$Z" -d "$OUT"
 rm -f "$OUT/resources/default_app.asar"
 mv "$OUT/electron.exe" "$OUT/AveMujica.exe"
 APP="$OUT/resources/app"; mkdir -p "$APP"
-cp main.js package.json "$APP/"
+cp main.js package.json updater.js preload.js "$APP/"
 # same offline bundle as the Android build (local fonts, assets, vendor)
 python3 "$GAME/android/prepare.py" build/bundle >/dev/null
 cp -r build/bundle/assets/www "$APP/game"
