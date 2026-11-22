@@ -2157,7 +2157,7 @@ function judgeHit(ch0){if(!inCombat())return{k:'N',mul:1,t:G.time};const b=beatN
   if(k==='P'||k==='GR'||k==='G')comboUp();
   else if(k==='M'){if(G.mods.breath&&(G.breathN||0)<2*G.mods.breath)G.breathN=(G.breathN||0)+1;else G.rc=0;if(NL()>=6)G.fever=Math.max(0,(G.fever||0)-5)}
   if(J.fv)feverAdd(J.fv*(J.fv>0&&G.rc>=30?1.5:1)*(J.fv>0&&ch().id==='amoris'&&G.rc>=10&&k==='P'?2:1));if(k==='P'){G.beatGlow=1;bsGain(.3);pfExtra()}
-  if(k==='P')perfPassive(ch0);else if(k!=='G'&&k!=='GR')G.pStreak=0;lanePop(k);laneMark(nb,k);
+  if(k==='P')perfPassive(ch0);else if(k!=='G'&&k!=='GR')G.pStreak=0;lanePop(k);if(k==='P'||k==='GR'||k==='G')laneMark(nb,k);
   const cm=1+(G.rc>=100?.2:G.rc>=50?.15:G.rc>=30?.1:G.rc>=10?.05:0)*(1+(G.mods.comboX||0)),r={k,mul:(J.mul+(k==='P'?(G.mods.pfMul||0):0)+(k==='G'?(G.mods.gMul||0):0))*cm*(k==='P'&&G.mods.downbeat&&nb%4===0?1+.4*G.mods.downbeat:1),t:G.time};G.lastJ=r;return r}
 function pfExtra(){const m=G.mods;G.pfT=G.time;if(m.pfShield)P.sh=Math.min(P.shMax,P.sh+m.pfShield);if(m.pfNext)G.pfBoost=1;if(m.cad&&++G.cad>=3){G.cad=0;G.cadReady=1}if(m.comboHeal&&G.rc>=50)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.01);
   if(m.pfShot&&Math.random()<.3*m.pfShot){let t=null,bd=1e9;for(const e of G.en){if(e.dead||(e.intro>0))continue;const d=d2(e,P);if(d<bd){bd=d;t=e}}if(t)shoot({x:P.x,y:P.y-8,a:Math.atan2(t.y-6-P.y+8,t.x-P.x),spd:200,dmg:9*m.ranged,k:'note',pierce:0,col:'#f6dc8a',life:1,r:3})}if(fx('silence'))P.sh=Math.min(P.shMax,P.sh+3);if(fx('wither'))P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.02);if(m.pfHeal)P.hp=Math.min(P.maxHp,P.hp+m.pfHeal);if(m.storm&&Math.random()<.3)P.stT=0;
@@ -2202,7 +2202,7 @@ function perfPassive(){const id=ch().id,l5=G.bsL>=5;
 /* rhythm lane: a slim horizontal track at the top centre; one white key per beat slides left into the judgement line */
 const LANE={pop:null,hit:{}};
 function lanePop(k,label){LANE.pop={label:label||JUD[k].t,c:JUD[k].c,t:performance.now()}}
-function laneMark(nb,k){LANE.hit[nb]=k;for(const q in LANE.hit)if(+q<nb-8)delete LANE.hit[q]}
+function laneMark(nb,k){LANE.hit[nb]={k,t:performance.now()};for(const q in LANE.hit)if(+q<nb-8)delete LANE.hit[q]}
 function laneRR(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
 function drawLane(){if(G.state!=='play'||CUT.on||G.ots||P.down)return;const d=cv.width/innerWidth,z=UIZ*d,w=Math.min(innerWidth*.3,300*UIZ)*d,h=13*z,x=(cv.width-w)/2,y=cv.height-h-Math.max(16*z,cv.height*.16),live=inCombat();
   const b=beatNow(),fv=G.feverT>0,win=jWin(),hx=x+w*.16,sp=(w*.84)/3.4,f=b-Math.floor(b),on=Math.min(f,1-f)<=win[0],fc=FVC[((Math.floor(beatPos())%FVC.length)+FVC.length)%FVC.length];
@@ -2212,7 +2212,7 @@ function drawLane(){if(G.state!=='play'||CUT.on||G.ots||P.down)return;const d=cv
   const pw=win[0]*sp;ctx.globalAlpha=(on&&live?.34:.16)*LA;ctx.fillStyle='#9fd4ff';ctx.fillRect(hx-pw,y,pw*2,h);ctx.globalAlpha=1;
   for(let i=Math.floor(b)-1;i<=Math.floor(b)+5;i++){const nx=hx+(i-b)*sp;if(nx<x-8*z||nx>x+w+8*z)continue;
     if(((i%4)+4)%4===0){ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(nx-.5*z,y,z,h)}
-    if(LANE.hit[i]&&i<=b+.5)continue;
+    const LH=LANE.hit[i];if(LH&&i<=b+.6){const ht=(performance.now()-LH.t)/1000;if(ht<.22){const e=ht/.22,nw=4*z*(1+e*1.4),nh=(h-5*z)*(1+e*.3);ctx.globalAlpha=(1-e)*LA;ctx.fillStyle=JUD[LH.k].c;laneRR(hx-nw/2,y+(h-nh)/2,nw,nh,1.2*z);ctx.fill()}continue}
     const a=(nx<hx?Math.max(0,1-(hx-nx)/(sp*.45)):Math.min(1,(x+w-nx)/(sp*.6)+.15))*(fx('hidden')?clamp((nx-hx-sp*1.1)/(sp*.5),0,1):1),nw=4*z,nh=h-5*z;
     ctx.globalAlpha=a*LA;ctx.fillStyle=fv?FVC[((i%FVC.length)+FVC.length)%FVC.length]:'#f4ece0';laneRR(nx-nw/2,y+(h-nh)/2,nw,nh,1.2*z);ctx.fill()}
   ctx.restore();ctx.globalAlpha=LA;
