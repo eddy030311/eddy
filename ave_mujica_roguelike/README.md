@@ -49,7 +49,7 @@
 
 操作（横屏）：手机左半屏拖动移动，右下按钮 近战 / 远程 / 闪避 / 技能。
 手柄：左摇杆移动 · 右摇杆瞄准 · RT 远程· LT 近战 · A 闪避 · Y 技能 · Start 暂停（RB / X / B / LB 为备用键位；PlayStation 手柄自动显示 ✕○□△ 图标）。
-键盘：WASD 移动 · J 近战 · K 远程 · L 闪避 · 空格 技能 · Esc 暂停。
+键鼠（电脑）：WASD 移动 · 鼠标瞄准 · 左键 远程 · 右键 近战 · 空格 / Shift 闪避 · E / Q 技能 · Esc 暂停（J / K / L / I 仍可用）。
 
 ## 安卓安装包
 
@@ -90,3 +90,7 @@
 - `dist/AveMujica_promo.mp4`（1280×720 · 30fps · 约 67 秒），封面 `dist/AveMujica_promo_cover.jpg`。
 - 全部为游戏内实时录制（画面 + 游戏实际合成的音乐与音效），文字为录制时叠加的字幕。
 - 重录：`node tools/promo/rec.js <输出目录>`，再 `python3 tools/promo/build.py <输出目录> out.mp4`。分镜在 `tools/promo/director.js`。
+
+## 电脑版
+- 网页版在电脑浏览器里会自动切换为电脑界面：整套界面按窗口大小等比放大（沿用横屏排版），右下角显示带键帽的操作栏（含 Fever 充能环），鼠标瞄准并显示随节拍收缩的准星，菜单有悬停效果，设置里可切换窗口 / 全屏。手机端不受影响。
+- Windows 便携版：`bash tools/desktop/build.sh` 生成 `dist/AveMujica-Windows-x64.zip`（Electron 33，约 130MB，超过 GitHub 单文件上限，不随仓库提交）。解压后运行 `AveMujica.exe`，F11 或 Alt+Enter 切换全屏，存档保存在本机。
