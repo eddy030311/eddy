@@ -367,7 +367,7 @@ body.lang-en #title .tm b{font-size:clamp(15px,calc(3.6*var(--vh,1vh)),23px)}
 body.lang-en .t-sub span{letter-spacing:.12em!important}
 
 /* ---- ensemble ---- */
-#duet{position:absolute;left:50%;bottom:15%;transform:translate(-50%,-6px);text-align:center;pointer-events:none;opacity:0;z-index:6;white-space:nowrap}
+#duet{position:absolute;left:50%;bottom:30%;transform:translate(-50%,-6px);text-align:center;pointer-events:none;opacity:0;z-index:6;white-space:nowrap}
 #duet.on{animation:duetIn 1.7s ease both}
 #duet small{display:block;font-family:var(--f-display);font-size:13px;color:var(--gold);letter-spacing:.06em;text-shadow:0 2px 4px #000}
 #duet b{display:block;font-size:22px;font-weight:900;letter-spacing:.3em;color:#f4e6cc;text-shadow:0 0 16px rgba(201,164,92,.7),0 2px 0 #000}
@@ -1830,7 +1830,8 @@ function jConvert(k){const m=G.mods,r=Math.random;
   if(k==='M'&&((m.maestro&&r()<.3)||(m.mGood&&r()<m.mGood)))k='G';
   if(k==='B'&&(m.maestro||(m.bGood&&r()<.5)))k='G';
   if((k==='G'||k==='GR')&&(m.absP||(m.synco&&r()<m.synco)))k='P';return k}
-function judgeHit(ch0){const b=beatNow(),f=b-Math.floor(b),o=Math.min(f,1-f),w=jWin();
+const inCombat=()=>G.state==='play'&&!G.ots&&!G.cleared&&G.time-(G.foeT??-9)<1;
+function judgeHit(ch0){if(!inCombat())return{k:'N',mul:1,t:G.time};const b=beatNow(),f=b-Math.floor(b),o=Math.min(f,1-f),w=jWin();
  const nb=Math.round(b);G.jNB=G.jNB||{};const dup=G.jNB[ch0||'x']===nb;G.jNB[ch0||'x']=nb;
   let k=dup?'M':o<=w[0]?'P':o<=w[1]?'GR':o<=w[2]?'G':o<=w[3]?'B':'M';if(!dup)k=jConvert(k);const J=JUD[k];G.jc=G.jc||{P:0,GR:0,G:0,B:0,M:0};G.jc[k]=(G.jc[k]||0)+1;
   if(k==='P'||k==='GR'||k==='G')comboUp();
@@ -1882,26 +1883,26 @@ const LANE={pop:null,hit:{}};
 function lanePop(k,label){LANE.pop={label:label||JUD[k].t,c:JUD[k].c,t:performance.now()}}
 function laneMark(nb,k){LANE.hit[nb]=k;for(const q in LANE.hit)if(+q<nb-8)delete LANE.hit[q]}
 function laneRR(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
-function drawLane(){if(G.state!=='play'||CUT.on||G.ots||P.down)return;const d=cv.width/innerWidth,z=UIZ*d,w=Math.min(innerWidth*.3,300*UIZ)*d,h=13*z,x=(cv.width-w)/2,y=cv.height-h-16*z;
+function drawLane(){if(G.state!=='play'||CUT.on||G.ots||P.down)return;const d=cv.width/innerWidth,z=UIZ*d,w=Math.min(innerWidth*.3,300*UIZ)*d,h=13*z,x=(cv.width-w)/2,y=cv.height-h-Math.max(16*z,cv.height*.16),live=inCombat();
   const b=beatNow(),fv=G.feverT>0,win=jWin(),hx=x+w*.16,sp=(w*.84)/3.4,f=b-Math.floor(b),on=Math.min(f,1-f)<=win[0],fc=FVC[((Math.floor(beatPos())%FVC.length)+FVC.length)%FVC.length];
-  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=.72;ctx.fillStyle='#0b080d';laneRR(x,y,w,h,h/2);ctx.fill();ctx.globalAlpha=1;
+  ctx.setTransform(1,0,0,1,0,0);ctx.save();if(!live)ctx.globalAlpha=.4;const LA=ctx.globalAlpha;ctx.globalAlpha=.72*LA;ctx.fillStyle='#0b080d';laneRR(x,y,w,h,h/2);ctx.fill();ctx.globalAlpha=LA;
   ctx.lineWidth=Math.max(1,.8*z);ctx.strokeStyle=fv?fc:'rgba(201,164,92,.6)';laneRR(x,y,w,h,h/2);ctx.stroke();
   ctx.save();laneRR(x,y,w,h,h/2);ctx.clip();
-  const pw=win[0]*sp;ctx.globalAlpha=on?.34:.16;ctx.fillStyle='#9fd4ff';ctx.fillRect(hx-pw,y,pw*2,h);ctx.globalAlpha=1;
+  const pw=win[0]*sp;ctx.globalAlpha=(on&&live?.34:.16)*LA;ctx.fillStyle='#9fd4ff';ctx.fillRect(hx-pw,y,pw*2,h);ctx.globalAlpha=1;
   for(let i=Math.floor(b)-1;i<=Math.floor(b)+5;i++){const nx=hx+(i-b)*sp;if(nx<x-8*z||nx>x+w+8*z)continue;
     if(((i%4)+4)%4===0){ctx.fillStyle='rgba(255,255,255,.1)';ctx.fillRect(nx-.5*z,y,z,h)}
     if(LANE.hit[i]&&i<=b+.5)continue;
     const a=nx<hx?Math.max(0,1-(hx-nx)/(sp*.45)):Math.min(1,(x+w-nx)/(sp*.6)+.15),nw=4*z,nh=h-5*z;
-    ctx.globalAlpha=a;ctx.fillStyle=fv?FVC[((i%FVC.length)+FVC.length)%FVC.length]:'#f4ece0';laneRR(nx-nw/2,y+(h-nh)/2,nw,nh,1.2*z);ctx.fill()}
-  ctx.restore();ctx.globalAlpha=1;
-  ctx.fillStyle=on?'#9fd4ff':'rgba(244,236,224,.75)';ctx.fillRect(hx-z,y-2*z,2*z,h+4*z);
+    ctx.globalAlpha=a*LA;ctx.fillStyle=fv?FVC[((i%FVC.length)+FVC.length)%FVC.length]:'#f4ece0';laneRR(nx-nw/2,y+(h-nh)/2,nw,nh,1.2*z);ctx.fill()}
+  ctx.restore();ctx.globalAlpha=LA;
+  ctx.fillStyle=on&&live?'#9fd4ff':'rgba(244,236,224,.75)';ctx.fillRect(hx-z,y-2*z,2*z,h+4*z);ctx.restore();
   const q=LANE.pop;if(q){const t=(performance.now()-q.t)/1000;if(t>.75)LANE.pop=null;else{
     ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.max(0,.85-t*2.6);ctx.drawImage(glow(q.c),hx-h*1.2,y+h/2-h*1.2,h*2.4,h*2.4);ctx.globalCompositeOperation='source-over';
     const s=1+.3*Math.max(0,1-t*7);ctx.globalAlpha=Math.min(1,(.75-t)*4);ctx.font=`${Math.round(9.5*z*s)}px Silkscreen,monospace`;ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillStyle='#000';ctx.fillText(q.label,hx+.8*z,y-3.2*z);ctx.fillStyle=q.c;ctx.fillText(q.label,hx,y-4*z);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1}}}
 function drawBeatRing(){if(P.down||G.state!=='play')return;const b=beatNow(),f=b-Math.floor(b),win=Math.min(f,1-f)<=jWin()[0];if(win!==G.bWin){G.bWin=win;document.body.classList.toggle('onbeat',win)}}
 function perfectFx(){if(G.time-(G.pfT||0)<.35)return;G.pfT=G.time;bsGain(.3);lanePop('P');G.beatGlow=1}
-function feverAdd(n){if(G.feverT>0||G.state!=='play')return;const was=(G.fever||0)>=fCap();G.fever=Math.max(0,Math.min(fCap(),(G.fever||0)+(n>0?n*(G.bsL>=4?1.15:1)/(G.mods.skillCd||1):n)));if(!was&&G.fever>=fCap()){S.p('pick');toast('Fever 已就绪 · 按技能发动')}}
+function feverAdd(n){if(G.feverT>0||G.state!=='play'||!inCombat())return;const was=(G.fever||0)>=fCap();G.fever=Math.max(0,Math.min(fCap(),(G.fever||0)+(n>0?n*(G.bsL>=4?1.15:1)/(G.mods.skillCd||1):n)));if(!was&&G.fever>=fCap()){S.p('pick');toast('Fever 已就绪 · 按技能发动')}}
 function feverStart(){bsGain(10);G.fvN=(G.fvN||0)+1;G.fever=0;G.feverT=G.feverMax=(FDUR[ch().id]||8)+(G.mods.fvDur||0);G.fvExtU=0;G.feverPrev=MUS.name;setTrack('fever',1);P.sh=P.shMax;G.flash=.45;doSkill();shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
   const el=$('fever');el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');clearTimeout(feverStart.t);feverStart.t=setTimeout(()=>el.hidden=true,1700);$('game').classList.add('fv')}
 function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.feverT=0;if(G.mods&&G.mods.fvKeep&&G.state==='play'&&!G.fvPause)G.fever=fCap()*.3;$('game').classList.remove('fv');const p=G.feverPrev;G.feverPrev=null;
@@ -2067,6 +2068,7 @@ function update(dt){G.time+=dt;G.runT+=dt;{const bp=beatPos(),b1=Math.floor(bp),
   for(let i=G.etimers.length-1;i>=0;i--){if(G.etimers[i].t<=G.etime){const tm=G.etimers[i];G.etimers.splice(i,1);const pb=G.bossShot;G.bossShot=tm.bs||0;try{tm.fn()}finally{G.bossShot=pb}}}
   if(G.state!=='play')return;
   if(ch().id==='oblivionis'&&P.dashT>0&&!P.grazed){for(const b of G.eb){if(b.dead)continue;const dd=(b.x-P.x)**2+(b.y-P.y+8)**2;if(dd<16*16){P.grazed=1;feverAdd(8);G.nums.push({x:P.x,y:P.y-34,v:'GRAZE',t:0,say:1,jc:'#babef6'});break}}}if(!(P.dashT>0))P.grazed=0;
+  if(!G.cleared&&!G.ots&&G.en.some(e=>!e.dead&&!(e.intro>0)))G.foeT=G.time;
   updPlayer(dt);bskTick();updRhythm(dt);updHaz(dt,edt);updAllies(dt);updEnsemble(dt);updExtras(dt);
   for(const e of G.en)if(!e.dead){tickStatus(e,edt);if(!e.dead)updEnemy(e,edt)}
   G.en=G.en.filter(e=>!e.dead);
@@ -2441,7 +2443,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
 function runThemes(){const sa=G.act,ks=[];for(let a=1;a<=5;a++){G.act=a;try{ks.push(themeK())}catch(e){}}G.act=sa;return ks}
 function prepRooms(){if(!r3ok())return;const ks=runThemes();for(const k of Object.keys(R3.cache))if(!ks.includes(+k))delete R3.cache[k];for(const K of ks){if(R3.cache[K]||!R3T[K])continue;idbGet('room:'+K+':'+RW*3).then(b=>b&&blobCv(b)).then(c=>{if(c&&!R3.cache[K])R3.cache[K]=c})}}
-function startRun(i){auInit();G.charIdx=i;G.world=WORLD;if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i){auInit();G.charIdx=i;G.world=WORLD;if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.foeT=-9;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CHARS.map(c=>c.id).filter(id=>id!==CHARS[i].id));G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   applyWorld();try{prepRooms()}catch(e){}
   Object.assign(P,{down:0,downT:0,revT:0,hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});G.bsx=0;G.bsRun=0;bsApply();memPerkApply();stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.rareGot=null;G.score=0;
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=cname(c.id);hudCache={};
