@@ -12,6 +12,12 @@ import json,sys,datetime
 f=sys.argv[1];v=json.load(open(f,encoding='utf-8'))
 v={'v':v['v']+1,'name':sys.argv[2],'date':datetime.date.today().isoformat(),'notes':sys.argv[3:]}
 json.dump(v,open(f,'w',encoding='utf-8'),ensure_ascii=False);print('version ->',v['v'],v['name'])
+# the in-game changelog (CHANGELOG in index.html) gets the same entry, newest first
+import os
+h=os.path.join(os.path.dirname(os.path.dirname(f)),'index.html');src=open(h,encoding='utf-8').read();key='const CHANGELOG=[\n'
+if "{name:'%s'," % v['name'] not in src:
+    ent=" {name:%s,date:%s,notes:%s},\n" % (json.dumps(v['name'],ensure_ascii=False).replace('"',"'"),json.dumps(v['date']).replace('"',"'"),json.dumps(v['notes'],ensure_ascii=False))
+    assert key in src;src=src.replace(key,key+ent,1);open(h,'w',encoding='utf-8').write(src);print('changelog +',v['name'])
 P
 fi
 TMP="$(mktemp -d)"; trap 'git -C "$REPO" worktree remove --force "$TMP/wt" 2>/dev/null || true; rm -rf "$TMP"' EXIT
