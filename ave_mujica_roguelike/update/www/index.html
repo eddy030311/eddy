@@ -235,6 +235,9 @@ body.gp.gpmenu #gpHint{display:block}#gpHint .k{display:inline-block;width:17px;
 body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 14px rgba(201,164,92,.7)}
 #cutSkip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);border:1px solid #5a4520;background:rgba(0,0,0,.6);color:var(--gold);font-size:13px;padding:6px 12px;letter-spacing:.1em}
 #cutSub{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 3%);transform:translateX(-50%);width:min(calc(88*var(--vw,1vw)),46rem);text-align:center;display:flex;flex-direction:column;gap:3px;text-shadow:0 2px 0 #000;pointer-events:none}
+#otsCard{position:fixed;left:0;right:0;text-align:center;pointer-events:none;z-index:6;display:flex;flex-direction:column;align-items:center;font-family:"Noto Serif SC",serif;text-shadow:0 1px 0 #000,0 0 8px rgba(0,0,0,.8)}
+#otsCard[hidden]{display:none}#otsCard small{font-size:calc(var(--u)*7);line-height:1.15;color:var(--gold);letter-spacing:.1em}
+#otsCard b{font-size:calc(var(--u)*15);line-height:1.2;font-weight:700;margin-top:calc(var(--u)*3)}#otsCard span{font-size:calc(var(--u)*7);line-height:1.2;color:#bdb3bf;margin-top:calc(var(--u)*2.5)}
 #cutWho{font-size:13px;color:var(--gold);letter-spacing:.25em;min-height:1em}
 #cutTxt{font-size:16px;line-height:1.7;color:#f0e6dc;min-height:1.7em}
 #game.cut #hud,#game.cut #pad,#game.cut #stickZone,#game.cut #bossBar,#game.cut #vig,#game.cut #tint,#game.cut #secBanner,#game.cut #toast{display:none!important}
@@ -713,12 +716,12 @@ body.pc #hint{display:none!important}
 <div id="gpHint"><b class="k ka">A</b>确认　<b class="k kb">B</b>返回　十字键 / 左摇杆 选择</div>
 <div id="veil" hidden><div><b>调音中</b><i><s></s></i><small></small></div></div>
 <div id="gate" hidden><div class="g-in"><div class="g-eye">Welcome to the world of</div><div class="g-logo">Ave Mujica</div><div class="g-tap">轻触屏幕开始</div><div class="g-sub">Touch to begin · タップしてスタート</div></div></div>
-<div id="cut" hidden><button id="cutSkip" type="button">跳过 ››</button><div id="cutSub"><b id="cutWho"></b><span id="cutTxt" data-noi18n></span></div></div>
+<div id="otsCard" hidden></div><div id="cut" hidden><button id="cutSkip" type="button">跳过 ››</button><div id="cutSub"><b id="cutWho"></b><span id="cutTxt" data-noi18n></span></div></div>
 <div id="rotate"><svg viewBox="0 0 64 64"><rect x="20" y="8" width="24" height="44" rx="4"/><path d="M29 46h6"/><path d="M10 40a24 24 0 0 0 14 16M54 24A24 24 0 0 0 40 8"/><path d="M40 4l0 6 6 0"/></svg>
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 1, "name": "1.0"};</script>
+<script>window.GAME_VER={"v": 2, "name": "1.1"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -5651,7 +5654,7 @@ function startOts(kind){const o={kind,ph:'intro',t:0,k:0,lb:0,shk:0,fl:0};
   G.ots=o;$('game').classList.add('ots')}
 function openChest(p,ots){p.open=1;S.p('pick');burst(p.x,p.y-6,24,[GOLD,'#fff','#f6dc8a'],80,.7);
   for(let i=0;i<rint(10,18);i++)G.picks.push({k:'petal',x:p.x,y:p.y-6,vx:rnd(-60,60),vy:rnd(-80,-10),t:0,v:1});dropRelic(p.x+28,p.y+6,.5);if(Math.random()<.3)memDrop(p.x-28,p.y+6);if(!ots)later(.6,()=>showReward('treasure'))}
-function otsEnd(){G.ots=null;$('game').classList.remove('ots')}
+function otsEnd(){G.ots=null;$('game').classList.remove('ots');OCARD.drawn=0;otsCardEnd()}
 function updOts(dt){const o=G.ots;o.t+=dt;o.shk=Math.max(0,o.shk-dt*10);o.fl=Math.max(0,o.fl-dt*2.2);
   if(o.ph==='intro'){o.lb=Math.min(1,o.t/.5);if(o.t>2.1){o.ph='swoop';o.t=0}}
   else if(o.ph==='swoop'){o.k=ease(o.t/1.2);if(o.t>=1.2){o.k=1;o.ph='walk';o.t=0;o.y0=P.y}}
@@ -5691,17 +5694,23 @@ function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(c
     x.save();x.globalCompositeOperation='lighter';x.globalAlpha=.18;x.drawImage(glow('#ffd8c0'),pq.X-w*.2-40,pq.Y-h*.8-40,80,80);x.restore()}
   g=x.createRadialGradient(VW/2,VH*.45,VH*.25,VW/2,VH*.5,VW*.7);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.75)');x.fillStyle=g;x.fillRect(0,0,VW,VH);
   for(let i=0;i<26;i++){const px=(i*53.7+t*6*(1+i%3))%VW,py=(i*31.3+Math.sin(t*.6+i)*12)%(VH*.8);x.globalAlpha=.25+.2*Math.sin(t*2+i);x.fillStyle='#fff3dc';x.fillRect(px,py,1,1)}x.globalAlpha=1}
-function otsOverlay(t){const o=G.ots;if(!o)return;
+/* the intro title cards are page text, not canvas text: on phones the canvas renders below the screen's resolution (QUAL), which blurred them */
+const OCARD={on:0,key:''};
+function otsCard(a,tag,name,mood,ty,nc){const el=$('otsCard');if(!el)return;OCARD.drawn=1;const u=innerHeight/VH/(UIZ||1);
+  const key=tag+'|'+name+'|'+mood+'|'+(nc||'');if(OCARD.key!==key){OCARD.key=key;el.innerHTML=`<small>${T(tag)}</small><b>${T(name)}</b><span>${T(mood||'')}</span>`;el.querySelector('b').style.color=nc||'#f0e6dc'}
+  el.style.setProperty('--u',u.toFixed(3)+'px');el.style.top=((ty-8)/VH*100).toFixed(2)+'%';el.style.opacity=Math.max(0,Math.min(1,a)).toFixed(3);if(!OCARD.on){OCARD.on=1;el.hidden=false}}
+function otsCardEnd(){if(!OCARD.drawn&&OCARD.on){OCARD.on=0;OCARD.key='';const el=$('otsCard');if(el)el.hidden=true}OCARD.drawn=0}
+function otsOverlay(t){const o=G.ots;if(!o){otsCardEnd();return}
   if(o.k>0.001){otsScene(t);ctx.save();ctx.setTransform(1,0,0,1,0,0);if(o.shk)ctx.translate(rnd(-o.shk,o.shk)*SC*.4,rnd(-o.shk,o.shk)*SC*.4);ctx.globalAlpha=o.k;const z=1+.18*(1-o.k),ox=cv.width/2,oy=cv.height*.65;ctx.translate(ox,oy);ctx.scale(z,z);ctx.translate(-ox,-oy);ctx.drawImage(OC,0,0);ctx.restore()}
   ctx.save();ctx.setTransform(SC,0,0,SC,0,0);const bh=VH*.11*(o.lb||0);ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh);
-  const card=(a,tag,name,mood,ty,nc)=>{if(a<=0)return;ctx.globalAlpha=a;ctx.textAlign='center';ctx.fillStyle=GOLD;ctx.font='7px "Noto Serif SC",serif';ctx.fillText(tag,VW/2,ty);ctx.fillStyle=nc||'#f0e6dc';ctx.font='bold 15px "Noto Serif SC",serif';ctx.fillText(name,VW/2,ty+18);
-    ctx.fillStyle='#bdb3bf';ctx.font='7px "Noto Serif SC",serif';ctx.fillText(mood,VW/2,ty+31);ctx.globalAlpha=1};
+  const card=(a,tag,name,mood,ty,nc)=>{if(a<=0)return;otsCard(a,tag,name,mood,ty,nc)};
   if(o.ph==='intro'||o.ph==='swoop')card(o.ph==='intro'?Math.min(1,Math.max(0,(o.t-.4)/.6)):1-Math.min(1,o.t/.6),o.tag,o.name,o.mood,VH*.66);
   if(o.ph==='reveal'){const b=o.b;card(Math.min(1,Math.max(0,(o.t-1.1)/.5))*(1-Math.max(0,(o.t-2.9)/.4)),o.kind==='elite'?'— 拦 路 者 —':'— 登 场 —',b.name,b.sub,VH*.7,o.kind==='elite'?'#ffe6b0':'#ffd8d0')}
   if(o.fl>0){ctx.globalAlpha=o.fl*.55;ctx.fillStyle='#fff';ctx.fillRect(0,0,VW,VH);ctx.globalAlpha=1}
   if(o.ph==='curtain'){const c=ease(o.t/1.8),hh=VH*c;for(let i=0;i<VW;i+=8){const sw=Math.sin(i*.7+o.t*2)*3*(1-c);ctx.fillStyle=i%16?'#5a0e1c':'#420a14';ctx.fillRect(i,0,8,hh+sw)}
     const g=ctx.createLinearGradient(0,hh-30,0,hh);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.45)');ctx.fillStyle=g;ctx.fillRect(0,Math.max(0,hh-30),VW,30);ctx.fillStyle=GOLD;ctx.fillRect(0,hh-2,VW,2);
     card(Math.min(1,Math.max(0,(o.t-1.7)/.6)),'— 谢 幕 —',`第${CN[G.act-1]}章 · 终`,'幕布落下。掌声像雨，落在看不见的地方。',VH*.42,'#ffe6b0')}
+  otsCardEnd();
   ctx.restore()}
 function otsSpot(t){const o=G.ots;if(!o||o.ph!=='intro')return;const n={x:o.tx,y:o.ty},a=Math.min(1,o.t/.8);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35*a;const cone=ctx.createLinearGradient(0,TOP-30,0,n.y);cone.addColorStop(0,'rgba(255,243,220,0)');cone.addColorStop(1,'rgba(255,243,220,.6)');ctx.fillStyle=cone;
   ctx.beginPath();ctx.moveTo(n.x-5,TOP-40);ctx.lineTo(n.x+5,TOP-40);ctx.lineTo(n.x+22,n.y);ctx.lineTo(n.x-22,n.y);ctx.fill();ctx.globalAlpha=.6*a;ctx.drawImage(glow('#fff3dc'),n.x-26,n.y-14,52,28);ctx.restore()}
