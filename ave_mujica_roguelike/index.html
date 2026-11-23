@@ -757,6 +757,8 @@ const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 const settings=Object.assign({music:true,sfx:true},store.get('amj_settings',{}));
 let best=store.get('amj_best',{act:0,wins:0});
+/* the fourth ending also counts as the second (not the other way round); older saves are brought in line */
+if(best.endings&&best.endings.d&&!best.endings.b){best.endings.b=1;store.set('amj_best',best)}
 
 /* =================================================================== audio */
 const A={ctx:null};
@@ -921,18 +923,38 @@ function renderNow(n){const OAC=window.OfflineAudioContext||window.webkitOffline
 function stopMus(){MUS.playing=null;if(!MUS.src||!A.ctx)return;const g=MUS.g,src=MUS.src,t=A.ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);try{src.stop(t+.65)}catch(e){}MUS.src=MUS.g=null}
 function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.playing=n;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
 function setTrack(n,force){if(G.world>=2&&(n==='battle'||n==='calm'))n+='2';if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
+/* the casual dolls have their own sounds: Uika an acoustic guitar and starlight, Mutsumi a low palm-muted guitar and a mirrored double, Sakiko paper, pen and piano */
+const pno=(m,t,v,d,dest)=>{const f=mtof(m);tone('triangle',f,t,.002,0,d||.6,dest||A.sfxWet,v);tone('sine',f*2,t,.002,0,(d||.6)*.45,dest||A.sfxWet,v*.3);tone('sine',f*3,t,.002,0,(d||.6)*.2,dest||A.sfxWet,v*.12)};
+const NSFX={
+  uika:{swing(t){[52,57,62,66].forEach((m,i)=>{tone('triangle',mtof(m),t+i*.012,.002,0,.32,A.sfx,.16);tone('sine',mtof(m)*2,t+i*.012,.002,0,.12,A.sfx,.05)});tone('sine',110,t,.002,0,.09,A.sfx,.25,0,70);noise(t,.06,A.sfx,.1,'bandpass',2600,1.4)},
+    shot(t){const n=[81,84,88,86,83,88][S.ri++%6];tone('sine',mtof(n),t,.002,0,.28,A.sfxWet,.22,0,mtof(n)*1.02);tone('sine',mtof(n+12),t+.03,.002,0,.18,A.sfxWet,.08);noise(t,.12,A.sfxWet,.05,'highpass',7000)},
+    skill(t){[64,68,71,76,80,83].forEach((m,i)=>I.bell(m,t+i*.07,.09,A.sfxWet));noise(t,1.1,A.sfxWet,.12,'highpass',3000,1,9000);tone('sine',mtof(52),t,.3,.4,.8,A.sfxWet,.08)}},
+  mutsumi:{swing(t){const c=A.ctx,f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(260,t+.16);f.connect(A.sfx);
+      tone('square',mtof(40),t,.002,.02,.14,f,.22);tone('square',mtof(47),t,.002,.02,.12,f,.12,6);noise(t,.07,A.sfx,.2,'lowpass',500);tone('sine',70,t,.002,0,.12,A.sfx,.3,0,45)},
+    shot(t){const n=[64,67,62,64,69,67][S.ri++%6];tone('sine',mtof(n),t,.004,.02,.3,A.sfx,.16);tone('triangle',mtof(n),t,.004,0,.2,A.sfx,.06);tone('sine',mtof(n),t+.14,.004,.02,.26,A.sfxWet,.06)},
+    skill(t){[52,59,64].forEach((m,i)=>{tone('sawtooth',mtof(m),t,.45,.25,.6,A.sfxWet,.075,-9);tone('sawtooth',mtof(m),t,.45,.25,.6,A.sfxWet,.075,9)});tone('sine',mtof(76),t+.5,.002,0,1.2,A.sfxWet,.22);tone('sine',mtof(76)*1.003,t+.62,.002,0,1.1,A.sfxWet,.15)}},
+  sakiko:{swing(t){noise(t,.05,A.sfx,.6,'bandpass',3200,.9);noise(t+.012,.09,A.sfx,.28,'bandpass',1200,.8);tone('sine',140,t,.002,0,.07,A.sfx,.38,0,90)},
+    shot(t){noise(t,.16,A.sfx,.1,'highpass',3500,1,9000);pno([72,75,79,77,74,79][S.ri++%6],t,.13,.45)},
+    skill(t){[48,55,60,63,67].forEach((m,i)=>pno(m,t+i*.035,.24,1.1));noise(t+.25,.35,A.sfxWet,.2,'bandpass',4200,2.5,2600);noise(t+.45,.25,A.sfxWet,.15,'bandpass',3800,2.5,2400)}}};
+Object.assign(NSFX.uika,{hurt(t){tone('triangle',mtof(66),t,.002,0,.2,A.sfx,.14,0,mtof(58));noise(t,.12,A.sfx,.16,'lowpass',1100)},dash(t){noise(t,.16,A.sfx,.12,'highpass',1500,.7,7000);tone('sine',mtof(84),t+.04,.002,0,.15,A.sfxWet,.05)},
+  die(t){[71,69,66,64,59].forEach((m,i)=>tone('triangle',mtof(m),t+i*.22,.002,0,.6,A.sfxWet,.1));noise(t,1.4,A.sfxWet,.05,'highpass',5000)}});
+Object.assign(NSFX.mutsumi,{hurt(t){tone('square',mtof(40),t,.002,0,.18,A.sfx,.12,0,mtof(33));noise(t,.14,A.sfx,.18,'lowpass',600)},dash(t){noise(t,.2,A.sfx,.16,'bandpass',600,.8,1800)},
+  die(t){[52,47,45,40].forEach((m,i)=>tone('sawtooth',mtof(m),t+i*.3,.01,.1,.7,A.sfxWet,.04));tone('sine',mtof(64),t+1.3,.002,0,1.4,A.sfxWet,.06)}});
+Object.assign(NSFX.sakiko,{hurt(t){pno(49,t,.14,.3,A.sfx);pno(50,t,.12,.3,A.sfx);noise(t,.12,A.sfx,.14,'lowpass',900)},dash(t){noise(t,.15,A.sfx,.14,'highpass',2500,.7,8000)},
+  die(t){[67,63,60,55,48].forEach((m,i)=>pno(m,t+i*.25,.11,.9));noise(t+.2,.5,A.sfxWet,.05,'bandpass',4000,2,2200)}});
+const nsfxMe=k=>{try{const id=G.state==='play'||G.state==='dead'||G.state==='win'?ch().id:null;return id&&NSFX[id]&&NSFX[id][k]}catch(e){return null}};
 const RIFF={doloris:[7,9,11,14,11,9,8,9],mortis:[14,13,11,14,16,14,13,11],timoris:[0,0,4,0,3,0,4,6],amoris:[0,0,0,0],oblivionis:[7,11,14,18,16,14,11,13]};
-const S={_l:{},_min:{shot:.07,swing:.08,ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
+const S={_l:{},_min:{ustar:.1,mecho:.08,sscore:.1,mstill:.2,shot:.07,swing:.08,ashot:.09,aswing:.1,eshot:.08,hit:.035,petal:.045,kill:.05,deflect:.05,ehurt:.1},ri:0,
   _q:[],_imp:{clap:1,boss:1,bossdie:1,die:1,win:1,skill:1,pick:1,door:1,hurt:1},
   p(name,...a){if(!A.ctx||!settings.sfx||A.ctx.state!=='running')return;const now=A.ctx.currentTime;if(now-(S._l[name]||0)<(S._min[name]||.02))return;
     if(!S._imp[name]){S._q=S._q.filter(x=>now-x<.1);if(S._q.length>=5)return;S._q.push(now)}S._l[name]=now;try{S[name](now,...a)}catch(e){}},
-  swing(t,id){noise(t,.13,A.sfx,.22,'bandpass',700,1.2,3600);
+  swing(t,id){if(NSFX[id]){NSFX[id].swing(t);return}noise(t,.13,A.sfx,.22,'bandpass',700,1.2,3600);
     if(id==='doloris')I.gtr([50,57,62],t,.18,.1,false,A.sfx);
     else if(id==='mortis')I.gtr([62,69],t,.1,.08,true,A.sfx);
     else if(id==='timoris'){I.bass(38,t,.3,.3,A.sfx);I.kick(t,.5,A.sfx)}
     else if(id==='amoris'){tone('sine',260,t,.002,0,.12,A.sfx,.35,0,120);noise(t,.25,A.sfxWet,.12,'highpass',5000)}
     else I.organ([50,53,56],t,.1,.035,A.sfxWet)},
-  shot(t,id){id=RIFF[id]?id:bid(id);const n=deg(RIFF[id][S.ri++%RIFF[id].length]);
+  shot(t,id){if(NSFX[id]){NSFX[id].shot(t);return}id=RIFF[id]?id:bid(id);const n=deg(RIFF[id][S.ri++%RIFF[id].length]);
     if(id==='doloris'){const c=A.ctx,f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=2;f.connect(A.sfxWet);
       const o=tone('sawtooth',mtof(n),t,.02,.06,.25,f,.4),l=c.createOscillator(),lg=c.createGain();l.frequency.value=6;lg.gain.value=8;l.connect(lg);lg.connect(o.frequency);l.start(t);l.stop(t+.4);
       tone('sine',mtof(n),t,.02,.06,.25,A.sfxWet,.12)}
@@ -944,10 +966,10 @@ const S={_l:{},_min:{shot:.07,swing:.08,ashot:.09,aswing:.1,eshot:.08,hit:.035,p
   hit(t){noise(t,.05,A.sfx,.18,'bandpass',2400,1.5);tone('square',120,t,.001,0,.05,A.sfx,.05)},
   crit(t){tone('square',1400,t,.001,0,.08,A.sfx,.05,0,700);noise(t,.07,A.sfx,.2,'highpass',3000)},
   kill(t){tone('sine',1800,t,.001,0,.18,A.sfxWet,.08,0,500);tone('triangle',2400,t+.02,.001,0,.12,A.sfxWet,.05,0,900);noise(t,.12,A.sfx,.12,'highpass',4000)},
-  hurt(t){tone('sawtooth',220,t,.002,0,.25,A.sfx,.18,0,70);noise(t,.15,A.sfx,.2,'lowpass',900)},
+  hurt(t){const q=nsfxMe('hurt');if(q){q(t);return}tone('sawtooth',220,t,.002,0,.25,A.sfx,.18,0,70);noise(t,.15,A.sfx,.2,'lowpass',900)},
   shbreak(t){tone('square',1800,t,.001,0,.18,A.sfxWet,.06,0,400);noise(t,.25,A.sfxWet,.18,'highpass',3000)},
   shield(t){tone('sine',880,t,.002,0,.3,A.sfxWet,.15,0,1320);tone('sine',1320,t,.002,0,.3,A.sfxWet,.08)},
-  dash(t){noise(t,.18,A.sfx,.18,'highpass',800,.7,5000)},
+  dash(t){const q=nsfxMe('dash');if(q){q(t);return}noise(t,.18,A.sfx,.18,'highpass',800,.7,5000)},
   petal(t){tone('sine',1600+Math.random()*600,t,.002,0,.08,A.sfx,.05)},
   heal(t){[74,78,81].forEach((m,i)=>I.box(m,t+i*.06,.1))},
   eshot(t){tone('triangle',500,t,.002,0,.08,A.sfx,.04,0,260)},
@@ -958,10 +980,15 @@ const S={_l:{},_min:{shot:.07,swing:.08,ashot:.09,aswing:.1,eshot:.08,hit:.035,p
   summon(t){tone('sine',200,t,.05,.1,.3,A.sfxWet,.05,0,500)},
   slam(t){I.kick(t,.8,A.sfx);noise(t,.4,A.sfxWet,.25,'lowpass',600)},
   warn(t){tone('square',660,t,.002,.05,.08,A.sfx,.03);tone('square',660,t+.14,.002,.05,.08,A.sfx,.03)},
-  skill(t,id){I.organ([38,50,57,62],t,.5,.05,A.sfxWet);I.bell(74,t,.15,A.sfxWet);noise(t,1,A.sfxWet,.18,'highpass',4500);if(id==='oblivionis')I.bell(62,t+.15,.15,A.sfxWet)},
+  ustar(t){const n=[88,91,93,95][S.ri++%4];tone('sine',mtof(n),t,.002,0,.35,A.sfxWet,.1,0,mtof(n-5));tone('sine',mtof(n+7),t+.04,.002,0,.2,A.sfxWet,.04)},
+  usave(t){[76,83,88].forEach((m,i)=>I.bell(m,t+i*.06,.12,A.sfxWet));noise(t,.6,A.sfxWet,.1,'highpass',5000)},
+  mecho(t){tone('sine',mtof(64),t,.004,0,.25,A.sfxWet,.07,12);tone('triangle',mtof(71),t+.05,.004,0,.2,A.sfxWet,.04,-12)},
+  mstill(t){tone('sine',mtof(91),t,.002,0,.12,A.sfx,.05);noise(t,.04,A.sfx,.05,'highpass',8000)},
+  sscore(t){pno([60,63,67,70,72,70,67,63][S.ri++%8]+12,t,.11,.5);noise(t,.12,A.sfx,.07,'bandpass',4500,3,2800)},
+  skill(t,id){if(NSFX[id]){NSFX[id].skill(t);return}I.organ([38,50,57,62],t,.5,.05,A.sfxWet);I.bell(74,t,.15,A.sfxWet);noise(t,1,A.sfxWet,.18,'highpass',4500);if(id==='oblivionis')I.bell(62,t+.15,.15,A.sfxWet)},
   boss(t){I.bell(38,t,.3,A.sfxWet);I.bell(45,t+.9,.25,A.sfxWet);I.organ([26,38,45,50],t,1.6,.06,A.sfxWet)},
   bossdie(t){for(let i=0;i<6;i++){noise(t+i*.12,.5,A.sfxWet,.25,'lowpass',1200);I.kick(t+i*.12,.6,A.sfx)}I.organ([38,50,54,57],t+.8,1.8,.06,A.sfxWet)},
-  die(t){I.organ([38,41,45,50],t,1.6,.06,A.sfxWet);tone('sawtooth',300,t,.01,.2,1.2,A.sfx,.12,0,60)},
+  die(t){const q=nsfxMe('die');if(q){q(t);return}I.organ([38,41,45,50],t,1.6,.06,A.sfxWet);tone('sawtooth',300,t,.01,.2,1.2,A.sfx,.12,0,60)},
   win(t){[[50,54,57],[47,50,55],[45,49,52],[50,54,57,62]].forEach((c,i)=>I.organ(c.map(m=>m+12),t+i*.6,.5,.05,A.sfxWet));I.bell(74,t+1.8,.2,A.sfxWet)},
   ashot(t){tone('triangle',900+Math.random()*300,t,.002,0,.06,A.sfx,.03)},
   aswing(t){noise(t,.08,A.sfx,.07,'bandpass',1200,1.2,3000)},
@@ -2315,11 +2342,11 @@ function doRanged(){const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*c
       else if(id==='sakiko')sh({...pos,a:aa,spd:rg.spd,dmg,k:'key',pierce:m.pierce,col:'#f4f0ff',life:1.4,r:3,slow:1});
       else sh({...pos,a:aa,spd:rg.spd,dmg,k:'key',pierce:m.pierce,col:'#fff',life:1.6,r:3,homing:1})}};
   volley(a,1);if(m.back)volley(a+Math.PI,1);if(m.echo)later(.15,()=>volley(a,.5));novaTick();
-  if(P.twinT>0&&id==='mutsumi')later(.12,()=>{const gx=P.x-(P.face||1)*16;shoot({x:gx,y:P.y-10,a,spd:rg.spd,dmg:rg.dmg*m.ranged*.8,k:'riff',pierce:2,col:'#ff6fae',life:1.1,r:3,noMod:1})});
+  if(P.twinT>0&&id==='mutsumi')later(.12,()=>{S.p('mecho');const gx=P.x-(P.face||1)*16;shoot({x:gx,y:P.y-10,a,spd:rg.spd,dmg:rg.dmg*m.ranged*.8,k:'riff',pierce:2,col:'#ff6fae',life:1.1,r:3,noMod:1})});
   S.p('shot',id)}
 /* Mutsumi watches before she moves: standing still for a moment makes the next attack a sure crit */
 function stillNeed(){return G.perk==='mutsumi'?.35:.6}
-function stillCrit(){if(ch().id!=='mutsumi'||(P.stillT||0)<stillNeed())return false;P.stillT=0;G.nums.push({x:P.x,y:P.y-34,v:'……',t:0,say:1});burst(P.x,P.y-14,6,['#fff','#e8e4c8'],40,.3);return true}
+function stillCrit(){if(ch().id!=='mutsumi'||(P.stillT||0)<stillNeed())return false;P.stillT=0;G.nums.push({x:P.x,y:P.y-34,v:'……',t:0,say:1});S.p('mstill');burst(P.x,P.y-14,6,['#fff','#e8e4c8'],40,.3);return true}
 function shoot(o){o.vx=Math.cos(o.a)*o.spd;o.vy=Math.sin(o.a)*o.spd;o.t=0;o.hit=new Set();G.pb.push(o);return o}
 function doDash(){const m=G.mods;dodgeJudge();if(m.dashShield)P.sh=Math.min(P.shMax,P.sh+m.dashShield);if(m.dashDR)G.dashDRT=G.time+1;P.dch-=1;P.dashCd=.85*m.dashCd;P.dashT=.16;if(m.dashShot)for(let i=0;i<6;i++)shoot({x:P.x,y:P.y-8,a:i/6*TAU,spd:170,dmg:7*m.dashShot*m.ranged,k:'note',pierce:1,col:'#f6dc8a',life:.7,r:3});P.dashHit=new Set();P.inv=Math.max(P.inv,.3);let dx=IN.mvx,dy=IN.mvy;if(Math.hypot(dx,dy)<.1){dx=P.dx;dy=P.dy}const l=Math.hypot(dx,dy)||1;
   P.vx=dx/l*240;P.vy=dy/l*240;S.p('dash')}
@@ -2328,13 +2355,13 @@ function bskTick(){if(ch().id==='mutsumi'){const mv=Math.hypot(IN.mvx||0,IN.mvy|
   const O=P.orb;if(O){O.t-=1/60;O.a+=TAU*1.15/60;for(let q=0;q<2;q++){const oa=O.a+q*Math.PI,x=P.x+Math.cos(oa)*30,y=P.y-6+Math.sin(oa)*18;
       for(const e of G.en){if(e.dead||(e.intro>0))continue;if((e.x-x)**2+(e.y-8-y)**2<(e.r+7)**2&&(e.orbCd||0)<G.time){e.orbCd=G.time+.35;hurtEnemy(e,10*O.pow,{kb:120,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1})}}
       for(const b of G.eb)if(!b.dead&&(b.x-x)**2+(b.y-y)**2<70){b.dead=1;burst(b.x,b.y,2,['#ffe9a0','#fff'],20,.2)}}
-    const bi=Math.floor(beatPos());if(bi>O.lb){O.lb=bi;const t=nearest(230);if(t){shoot({x:P.x,y:P.y-12,a:Math.atan2(t.y-8-(P.y-12),t.x-P.x),spd:260,dmg:14*O.pow,k:'note',pierce:1,col:'#ffe9a0',life:.9,r:4,noMod:1});G.fx.push({k:'ring',x:P.x,y:P.y-12,r0:2,r1:12,t:0,d:.2,col:'#ffe9a0'})}}
+    const bi=Math.floor(beatPos());if(bi>O.lb){O.lb=bi;const t=nearest(230);if(t){shoot({x:P.x,y:P.y-12,a:Math.atan2(t.y-8-(P.y-12),t.x-P.x),spd:260,dmg:14*O.pow,k:'note',pierce:1,col:'#ffe9a0',life:.9,r:4,noMod:1});G.fx.push({k:'ring',x:P.x,y:P.y-12,r0:2,r1:12,t:0,d:.2,col:'#ffe9a0'});S.p('ustar')}}
     if(O.t<=0||!(G.feverT>0))P.orb=null}
   const k=P.bsk;if(k){const bi=Math.floor(beatPos());if(bi>k.lb){k.lb=bi;k.left--;const pw=k.pow;
     if(k.id==='doloris'){const big=k.left<=0,tg=G.en.filter(e=>!e.dead&&!(e.intro>0)).sort((a,b)=>d2(a,P)-d2(b,P)),ps=(big?tg.slice(0,1):tg.slice(0,3)).map(e=>({x:e.x,y:e.y}));if(!ps.length)ps.push({x:P.x+rnd(-60,60),y:P.y+rnd(-50,30)});
       for(const p of ps){G.fx.push({k:'starfall',x:p.x,y:p.y,t:0,d:.3});later(.26,()=>{aoe(p.x,p.y,big?42:20,(big?80:24)*pw,'#ffe9a0');burst(p.x,p.y,big?28:10,['#ffe9a0','#fff','#f6dc8a'],big?110:70,.5);S.p('hit');if(big)shake(5)})}}
     else if(k.id==='sakiko'){const tg=G.en.filter(e=>!e.dead&&!(e.intro>0)).sort((a,b)=>d2(a,P)-d2(b,P)).slice(0,3);
-      for(const e of tg){e.noteT=G.time+2.4;G.fx.push({k:'link',x:P.x,y:P.y-8,x2:e.x,y2:e.y-8,t:0,d:.3,col:'#c8b8f0'});later(.12,()=>{if(!e.dead){hurtEnemy(e,16*pw,{noMod:1});burst(e.x,e.y-10,6,['#c8b8f0','#fff'],50,.4)}})}if(tg.length)S.p('shot','oblivionis')}
+      for(const e of tg){e.noteT=G.time+2.4;G.fx.push({k:'link',x:P.x,y:P.y-8,x2:e.x,y2:e.y-8,t:0,d:.3,col:'#c8b8f0'});later(.12,()=>{if(!e.dead){hurtEnemy(e,16*pw,{noMod:1});burst(e.x,e.y-10,6,['#c8b8f0','#fff'],50,.4)}})}if(tg.length)S.p('sscore')}
     else{const on=G.lastJ&&G.time-G.lastJ.t<.3&&(G.lastJ.k==='P'||G.lastJ.k==='GR'||G.lastJ.k==='G'),r=on?62:46;G.fx.push({k:'ring',x:P.x,y:P.y,r0:6,r1:r,t:0,d:.3,col:'#ff6a9a',w:on?3:2});
       for(const e of G.en){if(e.dead||(e.x-P.x)**2+(e.y-P.y)**2>r*r)continue;hurtEnemy(e,(on?16:10)*pw,{kb:120,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1})}if(on)P.hp=Math.min(P.maxHp,P.hp+2);burst(P.x,P.y-8,on?10:5,['#ff6a9a','#fff'],70,.35);S.p('shot','amoris')}
     if(k.left<=0)P.bsk=null}}
@@ -2342,7 +2369,7 @@ function bskTick(){if(ch().id==='mutsumi'){const mv=Math.hypot(IN.mvx||0,IN.mvy|
     for(const e of G.en)if(!e.dead&&!e.boss&&(e.x-B.x)**2+(e.y-B.y)**2<B.r*B.r)e.slowT=Math.max(e.slowT||0,.25);
     const bi=Math.floor(beatPos());if(bi>B.lb){B.lb=bi;G.fx.push({k:'ring',x:B.x,y:B.y,r0:B.r*.5,r1:B.r,t:0,d:.3,col:'#4ccac2',w:2});aoe(B.x,B.y,B.r,12*B.pow,null)}if(B.t<=0)G.barrier=null}
   if(G.tsOwn&&G.timeStop<=0){G.tsOwn=0;let any=0;for(const e of G.en){if(e.dead||(e.x-P.x)**2+(e.y-P.y)**2>230*230)continue;any=1;const v=(e.tsAcc||0)*.5+16*(G.tsPow||1);e.tsAcc=0;G.fx.push({k:'ring',x:e.x,y:e.y,r0:2,r1:16,t:0,d:.3,col:'#babef6',w:2});hurtEnemy(e,v,{noMod:1})}if(any){S.p('crit');shake(5)}}}
-function twinStrike(a,dmg,range,arc){const gx=P.x-(P.face||1)*16,gy=P.y-2;G.fx.push({k:'slash',x:gx,y:gy-6,a,range:range*1.1,arc,t:0,d:.2,col:'#cdd3c3'});
+function twinStrike(a,dmg,range,arc){if(ch().id==='mutsumi')S.p('mecho');const gx=P.x-(P.face||1)*16,gy=P.y-2;G.fx.push({k:'slash',x:gx,y:gy-6,a,range:range*1.1,arc,t:0,d:.2,col:'#cdd3c3'});
   for(const e of G.en){if(e.dead)continue;const dd=Math.hypot(e.x-gx,e.y-gy);if(dd>range*1.1+e.r)continue;if(dd>e.r+4&&Math.abs(angDiff(Math.atan2(e.y-gy,e.x-gx),a))>arc/2)continue;
     if(!e.boss&&!e.elite&&e.hp<e.mhp*(G.feverT>0?.4:.2)){hurtEnemy(e,e.hp+1,{noMod:1});continue}hurtEnemy(e,dmg,{kb:50,ang:a,noMod:1})}}
 function drawBarrier(t){const B=G.barrier;if(B){ctx.save();ctx.globalAlpha=.16+.06*Math.sin(t*6);ctx.fillStyle='#4ccac2';ctx.beginPath();ctx.ellipse(B.x,B.y,B.r,B.r*.5,0,0,TAU);ctx.fill();ctx.globalAlpha=.6;ctx.strokeStyle='#9ff0ea';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.lineDashOffset=t*10;ctx.stroke();ctx.setLineDash([]);ctx.restore()}
@@ -2414,7 +2441,7 @@ function hurtPlayer(dmg,src){if(P.down||P.inv>0||P.dashT>0||G.state!=='play')ret
     if(dmg<=.01){P.inv=.45*m.inv;P.hurtT=.1;S.p('shield');return}}
   P.hp-=dmg;if(ch().id==='uika'&&P.hp<=0&&G.uikaAct!==G.act){G.uikaAct=G.act;P.hp=1;G.uikaSave=1}if(m.lastStand&&G.lsAct!==G.act&&P.hp>0&&P.hp<P.maxHp*.25){G.lsAct=G.act;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25);P.inv=3;G.nums.push({x:P.x,y:P.y-34,v:'绝地',t:0,say:1});burst(P.x,P.y-12,30,['#f6dc8a','#fff'],90,.6)}if(ch().id==='doloris')feverAdd(6);P.inv=.9*m.inv;P.hurtT=.3;P.blink=.9*m.inv;if(!P.act||P.act.n!=='skill')setAct('hurt',.3);S.p('hurt');shake(5);G.hurtFlash=.35;
   burst(P.x,P.y-10,10,['#e0283c','#ff8a9a'],70,.4);
-  if(G.uikaSave){G.uikaSave=0;P.inv=Math.max(P.inv,2);P.blink=2;G.nums.push({x:P.x,y:P.y-38,v:'还不能倒下',t:0,say:1});burst(P.x,P.y-12,26,['#ffe9a0','#fff','#f2b6c8'],90,.6);G.flash=.3}
+  if(G.uikaSave){G.uikaSave=0;P.inv=Math.max(P.inv,2);P.blink=2;G.nums.push({x:P.x,y:P.y-38,v:'还不能倒下',t:0,say:1});S.p('usave');burst(P.x,P.y-12,26,['#ffe9a0','#fff','#f2b6c8'],90,.6);G.flash=.3}
   if(m.thorns)for(const e of G.en)if(!e.dead&&d2(e,P)<50*50)hurtEnemy(e,24*m.thorns*(m.melee+m.ranged)/2,{kb:120,ang:Math.atan2(e.y-P.y,e.x-P.x)});
   if(P.hp<=0){
     if(m.phoenix&&!G.phx[G.act]){G.phx[G.act]=1;P.hp=P.maxHp*.3;P.sh=P.shMax;P.inv=2;G.eb.forEach(b=>b.dead=1);G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:130,t:0,d:.6,col:'#ff9a3a',w:3});burst(P.x,P.y-10,40,['#ff9a3a','#ffd27a','#fff'],120,.9);toast('不死鸟 · 浴火重生');S.p('pick')}
@@ -2769,7 +2796,7 @@ function gameOver(){P.down=0;G.ots=null;$('game').classList.remove('ots');feverR
   const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线，在掌声里断了。<br>「${ch().motto}」</p>${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
     $('again').onclick=()=>{closeModal();startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
-function winGame(route){G.nlUp=nlUnlockOnWin();bsGain(150);route=route||'a';G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;best.endings=best.endings||{};best.endings[route]=1;store.set('amj_best',best);
+function winGame(route){G.nlUp=nlUnlockOnWin();bsGain(150);route=route||'a';G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;best.endings=best.endings||{};best.endings[route]=1;if(route==='d')best.endings.b=1;store.set('amj_best',best);
   const got=[];if(unlock('mortis'))got.push('mortis');if((route==='b'||route==='d')&&unlock('oblivionis'))got.push('oblivionis');const apn=award(route);
   const un=got.length?`<div class="bond got">解锁新角色：${got.map(cname).join('、')}</div>`:'';
   const WB={c:'<p class="sub">镜中的你倒下了，她说：我已经没办法替你哭了。<br>你戴上碎片拼成的假面，丝线从指尖垂下，温柔地系上了她们的手腕。<br>掌声响起。这一次没有人会离开，也再没有人能够离开。</p>',
