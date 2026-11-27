@@ -1488,7 +1488,7 @@ const PHC={blank:['#e8e4f0','#c8304a','#6a70be','#ffffff'],audience:['#ffd27a','
 const PHN=['','第二乐章','第三乐章','第四乐章','终章'];
 const BOSSD={name:'无尽的观众',mus:'audience',sub:'Le Public · 永不落幕',spr:'audience',hp:1900,r:22,spd:0,pats:['ring','rain','stream','summon','spiral','fanRing','shades','spikes'],sum:['mari','mask','crow'],h:44};
 const ENDS={a:{t:'第一结局 · 剪断的丝线',h:'击败 Mujica。'},b:{t:'第二结局 · 自己选择的演出',h:'旅途中集齐三件神秘物品，在邂逅里跟随老人偶师。'},
-  c:{t:'第三结局 · 新的假面之主',h:'在旅途中做出至少两次「黑暗的选择」（契约、献祭、饮下泪泉……），再击败 Mujica。'},d:{t:'第四结局 · 帷幕之外（真结局）',h:'在后台商店买下偶尔出现的「失落的第五乐章」，再一次走向舞台背面。'}};
+  c:{t:'第三结局 · 新的假面之主',h:'在旅途中做出至少两次「黑暗的选择」（大地图上的泪之泉、血之祭坛，或乌鸦的契约），再击败 Mujica。'},d:{t:'第四结局 · 帷幕之外（真结局）',h:'在后台商店买下偶尔出现的「失落的第五乐章」，再一次走向舞台背面。'}};
 const OLDMETA={hp:30,sh:30,dmg:45,pet:25,fev:40,shop:35,dash:35,rare:150,pick:220,ave:260,score:300};
 let MT=Object.assign({ap:0,lv:{},inv:{}},store.get('amj_meta',{}));MT.inv=MT.inv||{};
 {let rf=0;for(const k in MT.lv||{}){const c=OLDMETA[k]||0;for(let l=1;l<=MT.lv[k];l++)rf+=c*l}if(rf){MT.ap+=rf;MT.refund=rf}MT.lv={}}
@@ -1705,10 +1705,9 @@ const SQ={
   trials:{n:'试炼之证',goal:2,d:'在邂逅中完成试炼',rew:'复活 1 次 + 回满生命',
     giver:{name:'迷路的瓷娃娃',spr:'doll',line:'「听说完成两场试炼的人偶，倒下以后还能再站起来一次……你想试试看吗？」'}},
   band:{n:'重组乐队',goal:2,d:'救出 2 名被囚禁的人偶',rew:'「五重奏」：每一章开始时，乐章值都是满的',auto:1}};
+/* 泪之泉 and 血之祭坛 moved to the open-world map in 2.1.1 (OWEV.tearfount / OWEV.bloodalt) */
 STRANGERS.push(
   {id:'wheel',name:'命运的轮盘',spr:'wheel',ev:'wheel',line:'一个骷髅荷官倚在轮盘边。「转一转吧，人偶。命运不分贵贱，只认花瓣。」'},
-  {id:'fountain',name:'泪之泉',spr:'fountain',ev:'fountain',line:'泉水是无数人偶流下的眼泪。「投下花瓣吧，」水面低语，「或者，喝下我。」'},
-  {id:'altar',name:'血之祭坛',spr:'altar',ev:'altar',line:'三根红烛在祭坛上燃烧，火焰是倒着长的。一个声音说：「祭品。血，或者花瓣。」'},
   {id:'riddle',name:'吟游的幽灵',spr:'ghost',ev:'quiz',line:'一个抱着小提琴的幽灵飘到你面前。「回答我的问题，人偶。答对了有奖励，答错了……呵呵。」'},
   {id:'mirror',name:'镜中的你',spr:'mirror',ev:'shadow',line:'镜子里的你没有戴假面。她开口说话：「证明你比我更配站在那个舞台上。」'},
   {id:'musicbox',name:'古旧的八音盒',spr:'musicbox',ev:'musicbox',line:'八音盒上的小人偶停在半个转身里。发条还能转一圈，你可以选一首曲子。'},
@@ -7306,11 +7305,20 @@ function owCloneTick(){const cl=crole().clone,o=G.ow;if(!cl||P.down)return;if(o.
 
 /* ------------------------------------------------------------------ world events (each can be solved without fighting) */
 function owEvents(){const o=G.ow,cp=o.P0.camp,used=[cp,o.P0.lair,o.P0.grove,o.P0.town];const kinds=['axe','score','traveler','nest','doll','stall','piano','mirror','telescope','gramophone','costume','cucumber','poster','bench','costume','bench','poster'].concat(OWW*OWH>12000?['score','stall','nest']:[]);if(OWS.unl.anomaly)kinds.push('anomaly');
+  /* 2.1.1: the tear fountain and the blood altar used to be rare encounters inside the theatres; now every world-1 map has one of each, so two dark choices (the third ending) are always within reach */
+  if((G.world||1)<2)kinds.unshift('tearfount','bloodalt');
   for(const kind of kinds){for(let k=0;k<200;k++){const tx=rint(5,OWW-6),ty=rint(5,OWH-6);if(!owFree(tx,ty)||!owFree(tx,ty+1))continue;if(used.some(u=>Math.hypot(u.x-tx,u.y-ty)<14))continue;used.push({x:tx,y:ty});
       for(let y=ty-1;y<=ty+1;y++)for(let x=tx-1;x<=tx+1;x++)if(o.g[owI(x,y)]===TL.TR){o.g[owI(x,y)]=TL.GR;owRepaint(x,y)}
       o.I.push({kind,x:tx*OWT+8,y:ty*OWT+8,arm:1,done:0});break}}
   o.I.push({kind:'grove',x:o.P0.grove.x*OWT+8,y:o.P0.grove.y*OWT+12,arm:1,done:0,hidden:1})}
 const OWEV={
+  tearfount:{n:'泪之泉',line:'泉水是无数人偶流下的眼泪。「投下花瓣吧，」水面低语，「或者，喝下我。」',opts:it=>[
+    {ic:'✿',t:'投入一把花瓣 · ✿20',d:'一半几率得到稀有旋律，否则回复 30% 生命',dis:G.petals<20,fn:()=>{G.petals-=20;if(Math.random()<.5)offerUps('泉水回应了','水面泛起银光。挑选一段稀有旋律。',rollUps(3,1));else{P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.3);S.p('heal');toast('水面只是轻轻荡了一下。回复 30% 生命。')}}},
+    {ic:'✿',r:2,t:'投入满怀的花瓣 · ✿50',d:hard()?'得到一段稀有旋律':'六成几率得到传说旋律，否则得到稀有旋律',dis:G.petals<50,fn:()=>{G.petals-=50;if(!hard()&&Math.random()<.6)offerUps('泉水沸腾了',`金色的光从水底升起。挑选一段${LEGN()}旋律。`,rollUps(3,2));else offerUps('泉水回应了','水面泛起银光。挑选一段稀有旋律。',rollUps(3,1))}},
+    {ic:'☕',r:1,t:'饮下泉水',d:'黑暗的选择 · 生命与护盾全满，但最大生命永久 -8',fn:()=>{darkStep();G.mods.maxHp-=8;stats();P.hp=P.maxHp;P.sh=P.shMax;S.p('heal');toast('泉水是咸的，像眼泪。伤口全部愈合了，心里却空了一小块。')}},owBye]},
+  bloodalt:{n:'血之祭坛',line:'三根红烛在祭坛上燃烧，火焰是倒着长的。一个声音说：「祭品。血，或者花瓣。」',opts:it=>{const pt=Math.floor(G.petals);return[
+    {ic:'❤',r:1,t:'献上鲜血',d:'黑暗的选择 · 失去 25% 最大生命（不会致死），换取一段稀有以上的旋律',fn:()=>{darkStep();P.hp=Math.max(1,P.hp-P.maxHp*.25);S.p('hurt');G.hurtFlash=.3;offerUps('祭品已收下','红烛的火焰变成了正着长的。挑选一段旋律。',rollUps(3,1,.3))}},
+    {ic:'✿',r:2,t:pt>=40?`献上全部花瓣 · ✿${pt}`:'献上全部花瓣',d:pt>=40?`黑暗的选择 · 换取一段${LEGN()}旋律`:'至少需要 ✿40',dis:pt<40,fn:()=>{darkStep();G.petals=0;offerUps('祭品已收下',`花瓣在火里化成了金色的灰。挑选一段${LEGN()}旋律。`,rollUps(3,2))}},owBye]}},
   piano:{n:'野地里的钢琴',line:'一架三角钢琴立在草地中央，琴盖上落满了花瓣。琴凳上放着一张没写完的乐谱，署名只写了一个「祥」字。',opts:it=>[
     {ic:'♪',r:1,t:'弹一段',d:'乐章值 +40%'+(ch().id==='sakiko'||ch().id==='oblivionis'?'（她弹的话：乐章值直接充满）':''),fn:()=>{const full=ch().id==='sakiko'||ch().id==='oblivionis';G.fever=Math.min(fCap(),(G.fever||0)+fCap()*(full?1:.4));S.p('pick');S.p('clap',2);toast(full?'琴声一响，整片草地都安静了下来。':'琴声有点走调，但很好听。')}},
     {ic:'✦',t:'把乐谱带走',d:'一段旋律',fn:()=>offerUps('没写完的乐谱','最后一小节是空的，像在等谁来接着写。',rollUps(3,0))},owBye]},
@@ -7447,7 +7455,7 @@ let owStageT=0;function updStageOW(){if((owStageT-=1/60)>0)return;owStageT=.5;ow
 function owStage(){const o=G.ow;if(!o)return;if(G.owArena){setH('stage',`漫游 · ${o.th.name} · 守护者`);return}setH('stage',`漫游 · ${o.th.name} · 探索 ${owExplorePct()}% · ${owTimeName()}${o.eng?' · 交战中':''}`)}
 
 /* ------------------------------------------------------------------ drawing (world space) */
-const OWPERS=['piano','mirror','telescope','gramophone','costume','cucumber','poster','bench'];
+const OWPERS=['tearfount','bloodalt','piano','mirror','telescope','gramophone','costume','cucumber','poster','bench'];
 function owDrawProp2(it,t){const x=it.x,y=it.y,k=it.kind;if(!it.done){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.22+.1*Math.sin(t*2+y);ctx.drawImage(glow('#ffe0a0'),x-16,y-22,32,32);ctx.restore()}
   ctx.fillStyle='rgba(14,10,24,.3)';ctx.beginPath();ctx.ellipse(x+1,y+1,10,3,0,0,TAU);ctx.fill();
   if(k==='piano'){ctx.fillStyle='#141016';ctx.beginPath();ctx.moveTo(x-10,y);ctx.lineTo(x-10,y-7);ctx.quadraticCurveTo(x+2,y-9,x+9,y-4);ctx.lineTo(x+9,y);ctx.closePath();ctx.fill();ctx.strokeStyle='#141016';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-6,y-7);ctx.lineTo(x+4,y-16);ctx.stroke();ctx.fillStyle='#2a2430';ctx.beginPath();ctx.moveTo(x-9,y-7.5);ctx.lineTo(x+4,y-16);ctx.lineTo(x+8,y-5);ctx.closePath();ctx.fill();ctx.fillStyle='#eee8e0';ctx.fillRect(x-10,y-2,8,1.6);ctx.fillStyle='#141016';for(let q=0;q<4;q++)ctx.fillRect(x-9.4+q*2,y-2,.6,1);ctx.fillStyle='#c01e3a';ctx.fillRect(x-3,y-9,1.2,1.2)}
@@ -7457,6 +7465,8 @@ function owDrawProp2(it,t){const x=it.x,y=it.y,k=it.kind;if(!it.done){ctx.save()
   else if(k==='costume'){ctx.fillStyle='#5a3424';ctx.fillRect(x-7,y-6,14,6);ctx.fillStyle='#7a4a30';ctx.fillRect(x-7,y-6,14,1.4);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.moveTo(x-6,y-6);ctx.quadraticCurveTo(x-2,y-11,x+5,y-7);ctx.lineTo(x+7,y-1);ctx.lineTo(x+4,y-6);ctx.fill();ctx.fillStyle='#ece6de';ctx.beginPath();ctx.ellipse(x-3,y-8,2,1.4,0,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.fillRect(x-.6,y-4,1.2,1.4)}
   else if(k==='cucumber'){ctx.fillStyle='rgba(180,220,230,.35)';ctx.fillRect(x-9,y-12,18,12);ctx.strokeStyle='#d8dcd4';ctx.lineWidth=.6;ctx.strokeRect(x-9,y-12,18,12);ctx.beginPath();ctx.moveTo(x-9,y-12);ctx.lineTo(x,y-16);ctx.lineTo(x+9,y-12);ctx.moveTo(x,y-16);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#3a6a2a';for(let q=0;q<6;q++)ctx.fillRect(x-7+q*2.6,y-9+(q%2)*2,1.4,6);ctx.fillStyle='#6aa03a';for(let q=0;q<4;q++)ctx.fillRect(x-6+q*4,y-5,.9,3)}
   else if(k==='poster'){ctx.fillStyle='#4a3424';ctx.fillRect(x-.6,y-4,1.2,4);ctx.fillRect(x-9,y-16,18,12);ctx.fillStyle='#e8dcc0';ctx.fillRect(x-8,y-15,7,10);ctx.fillStyle='#2a1a22';ctx.fillRect(x+1,y-15,7,10);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.arc(x-4.5,y-11,1.8,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.arc(x+4.5,y-11,1.6,0,TAU);ctx.fill()}
+  else if(k==='tearfount'||k==='bloodalt'){const s=owSprH(k==='tearfount'?'fountain':'altar',k==='tearfount'?20:22);if(s){ctx.save();if(it.done)ctx.filter='brightness(.75) saturate(.6)';drawSpr(s.c,x,y,1,null,s.sc);ctx.restore()}
+    if(!it.done&&k==='bloodalt'){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5+.25*Math.sin(t*7);ctx.drawImage(glow('#ff3040'),x-8,y-26,16,16);ctx.restore()}}
   else if(k==='bench'){ctx.fillStyle='#5a3a22';ctx.fillRect(x-9,y-5,18,2);ctx.fillRect(x-9,y-9,18,1.4);ctx.fillStyle='#3a2416';ctx.fillRect(x-8,y-3,1.2,3);ctx.fillRect(x+7,y-3,1.2,3);ctx.fillRect(x-8,y-9,1,4);ctx.fillRect(x+7,y-9,1,4)}}
 function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();const o=G.ow,cp=o.P0.camp,fx0=cp.x*OWT+8,fy0=cp.y*OWT+8,fl=.6+.4*Math.sin(t*13);
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55+.15*fl;ctx.drawImage(glow('#ff9a40'),fx0-40,fy0-44,80,80);ctx.restore();ctx.fillStyle=fl>.5?'#ffb040':'#ff7a2a';ctx.fillRect(fx0-3,fy0-6-(fl>.7?1:0),6,6);ctx.fillStyle='#fff0b0';ctx.fillRect(fx0-1,fy0-4,2,3);
