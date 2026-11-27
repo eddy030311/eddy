@@ -461,6 +461,7 @@ body:not(.gp) #bSkill.ready::before,#gsSkill.ready::before,body:not(.gp) #bSkill
 .logv ul{margin:0;padding-left:18px;font-size:12px;line-height:1.7;color:#ece2d2}
 #owMap{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);right:calc(env(safe-area-inset-right,0px) + 12px);width:140px;height:105px;image-rendering:pixelated;border:1px solid rgba(201,164,92,.7);box-shadow:0 0 0 2px #000,0 4px 14px rgba(0,0,0,.6);background:#0a080c;opacity:.92;pointer-events:none;z-index:5}
 #game.cut #owMap,#game:not(.playing) #owMap{display:none}
+#owMap{transition:opacity .35s,transform .35s}#owMap.fight{opacity:0;transform:scale(.92);pointer-events:none}
 #game.ow #quests{display:none}
 .updn{text-align:left;margin:6px 0 8px;padding-left:18px;font-size:12.5px;line-height:1.7;color:#ece2d2;max-height:calc(30*var(--vh,1vh));overflow-y:auto}
 .updbar{position:relative;height:6px;margin:6px 0 10px;background:rgba(255,255,255,.08);border:1px solid var(--line,#3a2a34)}.updbar s{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#c9a45c,#ffe9a0);transition:width .2s}.updbar em{position:absolute;right:0;top:9px;font:9px var(--f-pixel);color:var(--gold,#c9a45c);font-style:normal}
@@ -805,7 +806,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 12, "name": "2.0.1"};</script>
+<script>window.GAME_VER={"v": 13, "name": "2.0.2"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -2697,6 +2698,7 @@ function drawBarrier(t){const B=G.barrier;if(B){ctx.save();ctx.globalAlpha=.16+.
       ctx.fillStyle='#fff6d0';ctx.fillRect(Math.round(x)-1,Math.round(y)-3,2,6);ctx.fillRect(Math.round(x)-3,Math.round(y)-1,6,2);ctx.fillStyle='#ffe9a0';ctx.fillRect(Math.round(x)-2,Math.round(y)-2,4,4)}}
   for(const e of G.en)if(e.noteT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.noteT-G.time)*2);ctx.fillStyle='#c8b8f0';ctx.font='8px serif';ctx.textAlign='center';ctx.fillText('♪',e.x,e.y-(e.d.h||16)-4+Math.sin(G.time*6)*1.5);ctx.textAlign='left';ctx.globalAlpha=1}
   if(ch().id==='uika'&&P.ustarN&&!P.down){for(let k=0;k<P.ustarN;k++){const a=-Math.PI/2+(k-(P.ustarN-1)/2)*.42,x=P.x+Math.cos(a)*13,y=P.y-34+Math.sin(a)*5;ctx.globalAlpha=.75+.25*Math.sin(G.time*5+k);ctx.fillStyle='#ffe9a0';ctx.fillRect(Math.round(x)-1,Math.round(y),2,1);ctx.fillRect(Math.round(x)-.5,Math.round(y)-.5,1,2)}ctx.globalAlpha=1}
+  for(const e of G.en)if(e.sleepT>G.time&&!e.dead){ctx.fillStyle='#cfe0ff';ctx.font='7px serif';ctx.textAlign='center';ctx.fillText('z',e.x+5+Math.sin(G.time*2)*2,e.y-(e.d.h||16)-2-(G.time*6%6));ctx.textAlign='left'}
   for(const e of G.en)if(e.starT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.starT-G.time)*2);ctx.fillStyle='#ffe9a0';ctx.font='7px serif';ctx.textAlign='center';ctx.fillText('★',e.x+6,e.y-(e.d.h||16)-2);ctx.textAlign='left';ctx.globalAlpha=1}
   if((P.twinT>0||P.mortT>0)&&!P.down&&ch().id==='mutsumi'&&ART.fr.mortis){const mf=ART.fr.mortis,an=P.act&&mf[P.act.n]?mf[P.act.n]:mf.idle;ctx.globalAlpha=.55;ctx.filter='hue-rotate(-25deg) saturate(.8) brightness(1.15)';drawSpr(an[Math.floor(G.time*7)%an.length],P.x-(P.face||1)*16,P.y,P.face||1,null,.5);ctx.filter='none';ctx.globalAlpha=1}
   else if(P.twinT>0&&!P.down){const fr=pFrame(false);ctx.globalAlpha=.42;ctx.filter='grayscale(.6) brightness(1.2)';drawSpr(fr.c,P.x-(P.face||1)*16,P.y+fr.dy-2,P.face||1,null,fr.sc);ctx.filter='none';ctx.globalAlpha=1}}
@@ -2715,7 +2717,7 @@ function doSkill(s){const c=ch(),id=c.id,m=G.mods;P.skillCd=0;setAct('skill',.85
 }
 function aoe(x,y,r,dmg,col,o={}){for(const e of G.en){if(e.dead)continue;if((e.x-x)**2+(e.y-y)**2<(r+e.r)**2)hurtEnemy(e,dmg,{kb:80,ang:Math.atan2(e.y-y,e.x-x),...o})}if(col)G.fx.push({k:'ring',x,y,r0:2,r1:r,t:0,d:.2,col})}
 const SCL=[1,1.6,2.4,3.4,4.6];
-function hurtEnemy(e,dmg,o={}){if(e.dead||(e.intro>0)||e.trans)return;const m=G.mods,mod=!o.noMod;if(mod&&!o.dot&&!o.inh){G.pTarget=e;if(G.call&&G.call.e===e)ensRespond(e)}
+function hurtEnemy(e,dmg,o={}){if(e.sleepT)e.sleepT=0;if(e.dead||(e.intro>0)||e.trans)return;const m=G.mods,mod=!o.noMod;if(mod&&!o.dot&&!o.inh){G.pTarget=e;if(G.call&&G.call.e===e)ensRespond(e)}
   let crit=o.crit||(mod&&!o.dot&&(Math.random()<m.crit+(G.perk==='amoris'&&G.rc>=30?.15:0)+(m.fvCrit&&G.feverT>0?.25*m.fvCrit:0)+skb('crit')||(m.pfCrit&&G.time-(G.pfT||-9)<.5)));
   if(mod){if(m.first&&e.hp>=e.mhp-.01)dmg*=1+.4*m.first;if(m.exec&&e.hp<e.mhp*.3)dmg*=1+.5*m.exec;if(m.boss&&(e.boss||e.elite))dmg*=1+.3*m.boss;if(m.low&&P.hp<P.maxHp*.3)dmg*=1+.35*m.low;
     if(m.shFull&&P.shMax>0&&P.sh>=P.shMax-.5)dmg*=1+.2*m.shFull;if(m.fvDmg&&G.feverT>0)dmg*=1+.35*m.fvDmg;if(m.cresc)dmg*=1+Math.min(.3,.03*(G.roomKills||0)*m.cresc);if(P.inLight)dmg*=1.3;
@@ -3192,6 +3194,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.0.2',date:'2026-11-27',notes:["修复：在大世界反复碰到 NPC 或同一个物件时，会一直弹出对话", "战斗中小地图会淡出，打完再出现；小地图不再标出剧场", "五座剧场每局随机散落在地图上，终幕剧场离营地很远。要靠剧场上空的光柱和路人的消息去找", "新增 8 种可以互动的东西：野地里的钢琴、路边的穿衣镜、星空望远镜、留声机、戏服箱、小温室、海报墙和长椅", "城镇里有友善的路人走来走去（售票员、化妆师阿姨、舞台监督、粉丝、导览员……），野外偶尔也能碰到黑猫、看星星的人、巫女和船长。跟他们聊天能打听剧场的方向"]},
  {name:'2.0.1',date:'2026-11-27',notes:["技能和 Fever 同步：Fever 有多长，技能就持续多久。攻击技能在 Fever 期间会每 1.6 秒自动再放一次，延长 Fever 的旋律也会一起延长技能", "通往第二结局的三件信物不会再从大世界的宝箱里开出来，改为击败精英、强敌和剧场 Boss（终幕除外），或者完成委托时有一定概率获得", "重做便服的三角初华、若叶睦、丰川祥子：初华的星记与一等星、「sumimi 的笑容」；睦的温室之藤、「Mortis 在看着」；祥子的指挥棒与未完成的乐谱、「把人生交给我」", "大世界的人物和事件按 Ave Mujica 的世界改写：戴面具的引座员、一个人的乐队、提灯的观众、走失的小人偶、提线的人，还有断了线的人偶骑士、空荡的观众席和被撕碎的乐谱", "同伴更聪明了：平时不会一直贴着你，会自己在附近走动；打起来会先护住受伤的你、救倒下的队友、收掉残血的敌人，被围攻时会退回你身边，彼此也不会挤成一团", "大世界可以游泳过河了：游泳时变慢、不能攻击和冲刺，怪物不会下水", "野外藏着一把斧子，拿到后对着树攻击就能砍出一条路", "修复：同一次游戏里开第二局时，乐章值和连击要过一阵子才开始累积"]},
  {name:'2.0',date:'2026-11-27',notes:["「假面回廊」变成一整片开放世界：每局随机进入血色森林、沉没海岸、金麦谷、雾都旧城之一。地图很大，有河流湖泊或大海、林中小村、农庄、渔村、带城墙的城镇、废墟和藏起来的石圈", "五座剧场就是五个章节，按什么顺序演都可以：全部演完把同伴都救出来，只演几座，或者直接去终幕碰碰运气。剧场里只显示剧场的名字", "越靠近终幕剧场，周围越哥特、越荒诞：枯树和黑红色的树、墓碑、紫火路灯、半埋在土里的巨大假面、野地里的一排剧院座椅和棋盘地板，连湖水都变成了酒红色", "地图上有战争迷雾、小地图和昼夜变化；怪物会巡逻，听到动静会过来查看；有会记住你的 NPC、能不打架就解决的事件、宝箱、埋藏宝物和可以卖钱的战利品", "画面大幅升级：地面、道路、河流、树林、房屋都画得很细，角色可以走到树和房子后面；夜里窗户和路灯会亮；走进剧场时大幕合上，演完出来时大幕拉开", "踩拍判定取消了，普通攻击想怎么打就怎么打。打怪、击倒敌人、受伤都会攒「乐章值」，攒满后按技能键打开技能菜单（游戏会暂停），每个人偶有 3 个技能", "选好技能后打一段四键下落式短谱面（D F J K，手机直接点轨道），判定比以前严格。越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25：增益技能持续更久，攻击技能伤害更高。也可以跳过，直接以 ×1.0 释放", "「强音」：连击每满 8 下，或在谱面里打出 PERFECT，都算一次强音。原来靠 PERFECT 触发的人偶被动和旋律，现在都靠强音触发。「假面之下」的战斗也换成了这套系统", "五名人偶按定位重新设计：Doloris 擅长交涉，Mortis 能召出分身、更容易拿到高级物资，Timoris 灵活又安静，Amoris 皮厚还能找到藏起来的东西，Oblivionis 擅长远程和讨价还价；取消 N 难度等级", "加入存档：标题画面可以「继续演出」。在地图上和剧场里都会自动存档，退出游戏时也会存"]},
  {name:'1.3.3',date:'2026-11-27',notes:["重写了约 330 句剧情、过场和开场幕的文字，旁白更自然，每个角色说话更像她自己"]},
@@ -6600,16 +6603,19 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
   for(let y=0;y<OWH;y++)for(let x=0;x<OWW;x++){const m=nM(x,y),i=I(x,y);bio[i]=m>.64?BIO.MEADOW:m<(th.id==='vale'?.42:.3)?BIO.DRY:BIO.GRASS}
   /* --- key-place clearings */
   const clear=(cx,cy,r)=>disc(cx,cy,r,(x,y)=>{const i=I(x,y);if(g[i]===TL.WA)g[i]=TL.BR;else if(g[i]!==TL.SA)g[i]=TL.GR;res[i]=1});
-  clear(P0.camp.x,P0.camp.y,6);clear(P0.shrine.x,P0.shrine.y,4);clear(P0.lair.x,P0.lair.y+2,6);
+  clear(P0.camp.x,P0.camp.y,6);clear(P0.shrine.x,P0.shrine.y,4);
   /* --- theatres: five buildings along a line from the camp to the north-east, footprint solid, a forecourt in front */
-  const thSites=[];{const a=P0.camp,b=P0.lair;for(let k=1;k<=5;k++){const big=k===5,w=big?7:5,h=big?4:3;let best=null;
-      for(let t=0;t<1500&&!best;t++){const f=k/5,j=k===5?1.5:3+t*.03,cx=Math.round(k===5?b.x:a.x+(b.x-a.x)*f+rnd(-j,j)),dy=Math.round(k===5?b.y+3:a.y+(b.y-a.y)*f+rnd(-j,j));
-        const x0=cx-(w>>1),y0=dy-h;if(x0<3||y0<3||x0+w>OWW-3||dy+3>OWH-3)continue;
-        if(!area(x0-1,y0-1,w+2,h+4,(t,i)=>t===TL.GR&&(k===5||!res[i])))continue;if(thSites.some(s=>Math.hypot(s.x-cx,s.y-dy)<12))continue;if(th.settle==='town'&&Math.abs(cx-P0.town.x)<=24&&Math.abs(dy-P0.town.y)<=18)continue;if([P0.town,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-cx,p.y-dy)<9))continue;best={k,x:cx,y:dy,w,h,x0,y0}}
-      if(!best){const cx=Math.round(a.x+(b.x-a.x)*k/5),dy=Math.round(a.y+(b.y-a.y)*k/5);best={k,x:cx,y:dy,w,h,x0:cx-(w>>1),y0:dy-h};disc(cx,dy-1,4,(x,y)=>{const i=I(x,y);if(g[i]===TL.WA)g[i]=TL.BR;else g[i]=TL.GR})}
+  const thSites=[];{const a=P0.camp,diag=Math.hypot(OWW,OWH);
+    const site=(cx,dy,w,h,k,strict)=>{const x0=cx-(w>>1),y0=dy-h;if(x0<4||y0<4||x0+w>OWW-4||dy+3>OWH-4)return null;
+      if(!area(x0-1,y0-1,w+2,h+4,(t,i)=>t===TL.GR&&!res[i]))return null;if(thSites.some(s=>Math.hypot(s.x-cx,s.y-dy)<(strict?18:12)))return null;
+      if(th.settle==='town'&&Math.abs(cx-P0.town.x)<=24&&Math.abs(dy-P0.town.y)<=18)return null;if([P0.town,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-cx,p.y-dy)<10))return null;
+      if(Math.hypot(a.x-cx,a.y-dy)<(k===5?diag*(strict?.5:.38):14))return null;return{k,x:cx,y:dy,w,h,x0,y0}};
+    for(const k of[5,1,2,3,4]){const big=k===5,w=big?7:5,h=big?4:3;let best=null;for(let t=0;t<4000&&!best;t++)best=site(rint(6,OWW-7),rint(8,OWH-6),w,h,k,t<2500);
+      if(!best){for(let t=0;t<400&&!best;t++){const cx=rint(8,OWW-9),dy=rint(10,OWH-8);if(Math.hypot(a.x-cx,a.y-dy)<(k===5?diag*.38:14)||thSites.some(s=>Math.hypot(s.x-cx,s.y-dy)<12))continue;best={k,x:cx,y:dy,w,h,x0:cx-(w>>1),y0:dy-h};disc(cx,dy-1,4.5,(x,y)=>{const i=I(x,y);if(g[i]===TL.WA)g[i]=TL.BR;else g[i]=TL.GR;res[i]=0})}}
       fillA(best.x0,best.y0,w,h,TL.HS);for(let y=best.y;y<best.y+2;y++)for(let x=best.x-2;x<=best.x+2;x++)if(inb(x,y)){g[I(x,y)]=TL.PL;res[I(x,y)]=1}
       for(let y=best.y0-2;y<best.y+3;y++)for(let x=best.x0-2;x<best.x0+w+2;x++)if(inb(x,y))res[I(x,y)]=1;
-      thSites.push(best);bld.push({kind:'theatre',k,x:best.x0,y:best.y0,w,h,door:{x:best.x,y:best.y}})}}
+      thSites.push(best);bld.push({kind:'theatre',k,x:best.x0,y:best.y0,w,h,door:{x:best.x,y:best.y}})}
+    thSites.sort((p,q)=>p.k-q.k)}
   P0.th=thSites.map(s=>({k:s.k,x:s.x,y:s.y}));P0.lair={x:thSites[4].x,y:thSites[4].y-3};
   /* --- settlements */
   const houses=[];let hid=0;
@@ -6681,8 +6687,7 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
         for(let ty=Math.floor((y-r)/OWT);ty<=Math.floor((y+r)/OWT);ty++)for(let tx=Math.floor((x-r)/OWT);tx<=Math.floor((x+r)/OWT);tx++){if(!inb(tx,ty))continue;const cx=tx*OWT+8,cy=ty*OWT+8;if((cx-x)**2+(cy-y)**2>(r+4)**2)continue;const i2=I(tx,ty),t=g[i2];
           if(t===TL.WA)g[i2]=TL.BR;else if(t===TL.GR||t===TL.SA||t===TL.FD&&!main)g[i2]=TL.RD;if(t!==TL.HS)res[i2]=Math.max(res[i2],1)}}}};
   const doorOf=k=>({x:thSites[k-1].x,y:thSites[k-1].y+1});
-  route(P0.camp,doorOf(1),22,1);for(let k=1;k<5;k++)route(doorOf(k),doorOf(k+1),k%2?18:20,1);
-  {let best=1,bd=1e9;for(let k=1;k<=5;k++){const d=Math.hypot(doorOf(k).x-T.x,doorOf(k).y-T.y);if(d<bd){bd=d;best=k}}route(doorOf(best),{x:T.x,y:T.y+3},18,1)}
+  {const nodes=[{x:T.x,y:T.y+3},...[1,2,3,4,5].map(doorOf)],con=[P0.camp];while(nodes.length){let bi=0,bj=0,bd=1e9;for(let i=0;i<nodes.length;i++)for(let j=0;j<con.length;j++){const d=Math.hypot(nodes[i].x-con[j].x,nodes[i].y-con[j].y);if(d<bd){bd=d;bi=i;bj=j}}route(con[bj],nodes[bi],con.length<3?22:19,1);con.push(nodes.splice(bi,1)[0])}}
   route(P0.camp,{x:T.x-3,y:T.y+2},14,0);route({x:T.x,y:T.y-3},{x:P0.shrine.x,y:P0.shrine.y+2},12,0);route(P0.camp,{x:G0.x+1,y:G0.y+8},10,0);
   if(th.settle==='fishing'&&docks.length)route({x:T.x+3,y:T.y},{x:docks[1].x-1,y:docks[1].y},14,0);
   if(th.settle!=='town')for(const b of bld)if(b.kind!=='theatre'&&Math.random()<.7){const d=b.door;if(Math.hypot(d.x-T.x,d.y-T.y)>3.5)route({x:d.x,y:d.y},{x:T.x,y:T.y+(d.y>T.y?2:-2)},8,0)}
@@ -7082,7 +7087,7 @@ function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res
   if(!res){owPopulate();owCaches()}owTheatres();if(!res)for(let k=1;k<=5;k++)owGuards(k);G.bg=owPaint();owFogInit();const m=$('owMap');if(m)m.hidden=false;$('game').classList.add('ow');
   setTrack('calm');updStage();$('hud').hidden=false;
   if(res){if(res.th){owEnterTheatre(res.th,res);return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
-  playCut(cutPrologue(),()=>{later(.4,()=>toast(th.name+' · '+th.fr));later(2.8,()=>toast('五座剧场散落在这片土地上，按什么顺序演都可以。'));later(6.2,()=>toast('最远、亮着红光的那座是终幕。剧场里关着同伴，救出的人越多，终幕越好打。'));later(9.6,()=>toast('也可以直接去终幕碰碰运气。小地图上闪着的就是还没演的剧场。'));if(G.rareGot)later(13,()=>toast('试音 · 获得「'+G.rareGot+'」'))});
+  playCut(cutPrologue(),()=>{later(.4,()=>toast(th.name+' · '+th.fr));later(2.8,()=>toast('五座剧场散落在这片土地上，地图上不会标出来——要自己去找。'));later(6.2,()=>toast('上空有光柱的就是剧场；亮着红光的那座是终幕，按什么顺序演都可以。'));later(9.6,()=>toast('剧场里关着同伴，救出的人越多，终幕越好打。路上遇到的人，也许知道剧场在哪。'));if(G.rareGot)later(13,()=>toast('试音 · 获得「'+G.rareGot+'」'))});
   if(OWS.runs===0)later(10,()=>toast('提示：攻击会发出声音，附近的怪物会过来查看。'))}
 
 /* ------------------------------------------------------------------ population */
@@ -7108,7 +7113,33 @@ function owNpcs(){const o=G.ow,P0=o.P0,tp=p=>({x:p.x*OWT+8,y:p.y*OWT+8}),camp=tp
   N('musician','一个人的乐队','maestro',{x:town.x,y:town.y-8},{work:{x:town.x,y:town.y-8},night:{x:camp.x-30,y:camp.y+6}});
   const route=[camp,town,shrine,tp({x:P0.lair.x,y:P0.lair.y+8}),town];N('wanderer','提灯的观众','ghost',{...route[1]},{route,ri:1});
   const h=o.houses[rint(0,o.houses.length-1)];N('refugee','走失的小人偶','doll',tp(h),{hide:tp(h)});
-  if(OWS.unl.mystic)N('mystic','提线的人','puppeteer',{x:shrine.x,y:shrine.y-6},{night:1})}
+  if(OWS.unl.mystic)N('mystic','提线的人','puppeteer',{x:shrine.x,y:shrine.y-6},{night:1});
+  /* friendly folk wander the town and, now and then, the roads */
+  const TOWNF=['clerk','makeup','director','fan','guide','junior','child','agent','fan','child'],WILDF=['cat','astro','captain','miko'],nT={town:10,farm:6,fishing:6,hamlet:4}[o.th.settle]||5;
+  const put=(k,cx,cy,rad,wild)=>{const F=FOLK[k];if(!F||!SPR[F.spr])return;const q=owRandFree(cx,cy,rad,1);if(!q)return;N('folk',F.n,F.spr,q,{fk:k,rad:wild?6:rad,wild:wild?1:0,h:F.h||26,night:F.night||0,gift:F.gift||null})};
+  for(let i=0;i<nT;i++)put(TOWNF[i%TOWNF.length],P0.town.x,P0.town.y,o.th.settle==='town'?16:8);
+  for(const k of WILDF){if(k==='captain'&&o.th.id!=='coast')continue;for(let t=0;t<60;t++){const x=rint(6,OWW-7),y=rint(6,OWH-7);if(!owFree(x,y)||Math.hypot(x-P0.camp.x,y-P0.camp.y)<20||Math.hypot(x-P0.town.x,y-P0.town.y)<20)continue;put(k,x,y,3,1);break}}}
+const FOLK={
+  clerk:{n:'售票员',spr:'w3n_clerk',lines:['「今晚的票早就卖完了。……不过，你看起来不像是来看戏的。」','「五座剧场的门都开着。终幕那座，没人敢买票。」'],gift:'rumor'},
+  makeup:{n:'化妆师阿姨',spr:'w4n_makeup',lines:['「面具戴久了，脸会忘记自己原来的样子。偶尔要摘下来透透气呀。」','「来，坐一下。妆花了，我帮你补补。」'],gift:'heal'},
+  director:{n:'舞台监督',spr:'w4n_director',lines:['「灯光、布景、音响都准备好了，演员却一个都没来。」','「有座剧场的后台，谁都找不到入口。我已经找了三天了。」'],gift:'rumor'},
+  fan:{n:'戴着应援毛巾的粉丝',spr:'w3n_fan',lines:['「你也是来看 Ave Mujica 的吗？我在每一座剧场门口都排过队！」','「Doloris 的歌声、Mortis 的吉他……啊，说着说着又想哭了。」'],gift:'rumor'},
+  guide:{n:'导览员',spr:'w3n_guide',lines:['「欢迎来到这座城。左手边是钟楼，右手边是……啊，那是上个月的地图。」','「迷路了吗？剧场的光柱，晚上看得最清楚。」'],gift:'rumor'},
+  junior:{n:'背着吉他的少女',spr:'w3n_junior',lines:['「我想组一支乐队。可是，要去哪里找愿意把人生交出来的人呢？」','「听说五个人戴上面具以后，就再也不用说真心话了。……那样真的好吗？」'],gift:'petal'},
+  child:{n:'追着鸽子的孩子',spr:'w4n_child',h:20,lines:['「姐姐，你的面具好漂亮！我长大了也要戴。」','「妈妈说，晚上不要去有光柱的地方。」'],gift:null},
+  agent:{n:'经纪人',spr:'w4n_agent',lines:['「我在找一个失踪的演员。她最后一次登台，就在这片土地上。」','「这一行，没有面具是活不下去的。」'],gift:'petal'},
+  cat:{n:'黑猫',spr:'w3n_cat',h:12,lines:['「喵。」','「……喵？」'],gift:'petal'},
+  astro:{n:'看星星的人',spr:'w3n_astro',night:1,lines:['「今晚的一等星特别亮。有人说，那是某个人为另一个人点的灯。」'],gift:'rumor'},
+  captain:{n:'退休的船长',spr:'w3n_captain',lines:['「海底有一座沉下去的剧场。退潮时的钟声，就是从那里来的。」'],gift:'rumor'},
+  miko:{n:'打扫神社的巫女',spr:'w3n_miko',lines:['「神社附近的石头会唱歌，只有安静的人听得见。」'],gift:'grove'}};
+function owFolkTalk(n){const F=FOLK[n.fk]||FOLK.fan,line=F.lines[Math.min(n.talkN,F.lines.length-1)],opts=[],o=G.ow;
+  if(n.gift&&!n.gave){const left=o.I.filter(q=>q.kind==='theatre'&&!owIsDone(q.k));
+    if(n.gift==='rumor'&&left.length)opts.push({ic:'?',r:1,t:'向他打听剧场的事',d:'也许知道哪里有剧场',fn:()=>{n.gave=1;const it=pick(left);toast(`「${ACTS[it.k-1].name}？在${owDirTo(it.x,it.y)}。」`)}});
+    else if(n.gift==='heal')opts.push({ic:'✚',r:1,t:'坐下来歇一会儿',d:'回复 20% 生命',fn:()=>{n.gave=1;P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.2*cr('heal'));S.p('heal')}});
+    else if(n.gift==='petal')opts.push({ic:'✿',t:'收下花瓣',d:'对方硬要塞给你',fn:()=>{n.gave=1;G.petals+=owCoin(12);S.p('pick');toast('收下了 ✿'+owCoin(12))}});
+    else if(n.gift==='grove'&&!o.groveOpen)opts.push({ic:'?',r:1,t:'问问会唱歌的石头',d:'',fn:()=>{n.gave=1;const g=o.P0.grove;owMark('grove');toast('「石圈在'+owDirTo(g.x*16+8,g.y*16+8)+'。」')}})}
+  opts.push(owBye);owTalkModal(n,line,opts)}
+
 function owNpcVisible(n){return !n.night||owNight()>.55}
 function owUpdNpcs(dt){const o=G.ow,nf=owNight();
   for(const n of o.npcs){n.t+=dt;let tx=null,ty=null,sp=34;
@@ -7118,17 +7149,18 @@ function owUpdNpcs(dt){const o=G.ow,nf=owNight();
     else if(n.id==='refugee'){if(n.follow&&!n.done){const d=Math.hypot(P.x-n.x,P.y-n.y);if(d>22){tx=P.x-(P.face||1)*14;ty=P.y+6;sp=58}const cp=o.P0.camp;if(Math.hypot(n.x-(cp.x*OWT+8),n.y-(cp.y*OWT+8))<46)owRefugeeSafe(n);
         if(threat&&d2(threat,n)<14*14&&(n.hitT||0)<G.time){n.hitT=G.time+1.2;n.hits=(n.hits||0)+1;burst(n.x,n.y-10,6,['#e0283c'],40,.3);if(n.hits>=3){n.follow=0;n.fail=1;toast('小人偶吓坏了，跑回了废墟里。');}}}
       else{tx=n.hide.x;ty=n.hide.y}}
+    else if(n.id==='folk'){if(!n.tgt||n.t>(n.wait||0)){n.t=0;n.wait=rnd(3,9);const q=Math.random()<.35?null:owRandFree(n.home.x/OWT,n.home.y/OWT,n.rad,0);n.tgt=q||{x:n.x,y:n.y}}if(d2(n,n.tgt)>9){tx=n.tgt.x;ty=n.tgt.y;sp=n.fk==='cat'?26:18}}
     else if(n.id==='merchant'){if(n.t>6){n.t=0;n.tgt={x:n.home.x+rnd(-14,14),y:n.home.y+rnd(-6,6)}}if(n.tgt){tx=n.tgt.x;ty=n.tgt.y;sp=16}}
     if(threat&&n.id!=='merchant'&&!(n.id==='refugee'&&n.follow)){const a=Math.atan2(n.y-threat.y,n.x-threat.x);tx=n.x+Math.cos(a)*40;ty=n.y+Math.sin(a)*40;sp=60}
     if(tx!=null){const dx=tx-n.x,dy=ty-n.y,d=Math.hypot(dx,dy);if(d>2){n.x+=dx/d*Math.min(d,sp*dt);n.y+=dy/d*Math.min(d,sp*dt);n.face=dx<0?-1:1;n.walk=(n.walk||0)+dt}}
     n.r=4;owBound(n);
-    if(!owNpcVisible(n))continue;const dd=d2(n,P);if(dd>34*34)n.arm=1;if(n.arm&&dd<18*18&&modal.hidden&&!CUT.on){n.arm=0;owTalk(n)}}}
+    if(!owNpcVisible(n))continue;const dd=d2(n,P);if(dd>46*46)n.arm=1;if(n.arm&&dd<18*18&&modal.hidden&&!CUT.on&&G.time>(n.cool||0)){n.arm=0;n.cool=G.time+(n.id==='folk'?10:6);owTalk(n)}}}
 function owRefugeeSafe(n){n.done=1;n.follow=0;S.p('win');toast('她到营地了。');later(.6,()=>offerUps('谢谢你送我回来','小人偶把一直攥在手里的东西塞给你：「这是我从戏服上掉下来的纽扣……送你。」',rollUps(3,1)));G.ow.mem.refugee='saved'}
 function owTalkModal(n,line,opts){n.talkN++;openModal('owtalk',`<h3>${n.name}</h3><p class="sub">${line}</p><div class="cards">${opts.map((o,i)=>`<button class="card r${o.r||0}" data-i="${i}" ${o.dis?'disabled':''}><span class="ic">${o.ic||'…'}</span><b>${o.t}</b><span class="d">${o.d||''}</span></button>`).join('')}</div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.i];if(o.dis)return;closeModal();S.p('tick');o.fn&&o.fn()})}
 const owBye={ic:'…',t:'告辞',d:'点点头，继续赶路'};
 function owPrice(r){return Math.round([45,90,160][r]*cr('buy')*(G.ow.mem.discount?.8:1)*(G.ow.mem.bargain?.75:1))}
-function owTalk(n){const o=G.ow,m=o.mem,nf=owNight(),tk=cr('talk')>1;
+function owTalk(n){const o=G.ow,m=o.mem,nf=owNight(),tk=cr('talk')>1;if(n.id==='folk'){owFolkTalk(n);return}
   if(n.id==='merchant'){const goods=n.goods||(n.goods=rollUps(3,0));const line=m.prepaid?'「有位客人在售票亭替你留了花瓣。这一场，剧场请客。」':m.traveler==='helped'?'「断了线的那位骑士说，你替他接上了线。给你便宜点。」':n.talkN?'「还想看看？节目单上就这几首，但都是好曲子。」':nf>.5?'「散场之后还在走动的人偶……买点什么吧，夜里的舞台上用得着。」':'「欢迎来到 Ave Mujica 的世界。要买旋律吗？在这里，它们比刀管用。」';
     if(m.traveler==='helped')m.discount=1;const inv=owInvValue(),opts=[];
     for(const u of goods.filter(u=>!u.sold)){const p=m.prepaid?0:owPrice(u.r);opts.push({ic:u.ic,r:u.r,t:`${u.n} · ✿${p}`,d:u.d,dis:G.petals<p,fn:()=>{G.petals-=p;m.prepaid=0;m.bargain=0;u.sold=1;applyUp(u);toast('买下了「'+u.n+'」')}})}
@@ -7156,7 +7188,8 @@ function owTalk(n){const o=G.ow,m=o.mem,nf=owNight(),tk=cr('talk')>1;
     const ng=owNeg(.3),buy=(f)=>{m.mystic=1;G.mods.hpPct-=f;stats();P.hp=Math.min(P.hp,P.maxHp);offerUps('交易成立','提线的人剪下了你身上的一截线。你突然觉得身体轻了一点。',rollUps(3,2))};
     owTalkModal(n,'「夜里还在走动的人偶……真稀奇。Mujica 不在的时候，线由我来牵。我这里有一段不该存在的旋律。代价嘛，是你线上的一截。」',[{ic:'♥',r:2,t:'交出最大生命的 20%',d:'换一段传说旋律',fn:()=>buy(.2)},
       ...(!n.haggled?[{ic:'☏',t:`讨价还价（成功率 ${ng.pct}%）`,d:'成功的话只要 10%，失败了它就不跟你谈了',fn:()=>{n.haggled=1;if(ng.roll()){toast('「……有意思。那就一成。」');buy(.1)}else{m.mystic=1;toast('「不识趣。」丝线一收，它消失在了雾里。')}}}]:[]),owBye])}}
-function owMark(k){const p=G.ow.marks||(G.ow.marks={});p[k]=1;toast('地图上标出了'+({lair:'终幕剧场',grove:'石头圈子',camp:'营地'}[k]||'一个地方'))}
+function owDirTo(x,y){const dx=x-P.x,dy=y-P.y,a=Math.atan2(dy,dx),d=Math.round(Math.hypot(dx,dy)/16),N=['东','东南','南','西南','西','西北','北','东北'];return N[((Math.round(a/(Math.PI/4))%8)+8)%8]+'方，大约 '+d+' 步'}
+function owMark(k){const o=G.ow;if(k==='lair'){const it=o.I.find(q=>q.kind==='theatre'&&q.k===5);if(it)toast('终幕剧场在'+owDirTo(it.x,it.y));return}const p=o.marks||(o.marks={});p[k]=1;toast('地图上标出了'+({grove:'石头圈子',camp:'营地'}[k]||'一个地方'))}
 function owMarkAny(){owMark('lair');owMark('grove');for(const it of G.ow.I)it.known=1}
 
 /* ------------------------------------------------------------------ negotiation, loot, money (character passives plug in here) */
@@ -7191,12 +7224,32 @@ function owDrawCaches(t){const o=G.ow;if(!o.caches)return;for(const c of o.cache
 function owCloneTick(){const cl=crole().clone,o=G.ow;if(!cl||P.down)return;if(o.eng>0&&G.time>=(o.cloneCd||0)){o.cloneCd=G.time+cl.cd+(G.mods.owCloneLife?-4:0);spawnMirrors(cl.n,{life:cl.life+((G.mods.owCloneLife||0)*5),dm:cl.dmg,max:cl.max});G.nums.push({x:P.x,y:P.y-40,v:'分身 ×'+cl.n,t:0,say:1,jc:'#cdd3c3'})}}
 
 /* ------------------------------------------------------------------ world events (each can be solved without fighting) */
-function owEvents(){const o=G.ow,cp=o.P0.camp,used=[cp,o.P0.lair,o.P0.grove,o.P0.town];const kinds=['axe','score','traveler','nest','doll','stall'].concat(OWW*OWH>12000?['score','stall','nest']:[]);if(OWS.unl.anomaly)kinds.push('anomaly');
+function owEvents(){const o=G.ow,cp=o.P0.camp,used=[cp,o.P0.lair,o.P0.grove,o.P0.town];const kinds=['axe','score','traveler','nest','doll','stall','piano','mirror','telescope','gramophone','costume','cucumber','poster','bench','costume','bench','poster'].concat(OWW*OWH>12000?['score','stall','nest']:[]);if(OWS.unl.anomaly)kinds.push('anomaly');
   for(const kind of kinds){for(let k=0;k<200;k++){const tx=rint(5,OWW-6),ty=rint(5,OWH-6);if(!owFree(tx,ty)||!owFree(tx,ty+1))continue;if(used.some(u=>Math.hypot(u.x-tx,u.y-ty)<14))continue;used.push({x:tx,y:ty});
       for(let y=ty-1;y<=ty+1;y++)for(let x=tx-1;x<=tx+1;x++)if(o.g[owI(x,y)]===TL.TR){o.g[owI(x,y)]=TL.GR;owRepaint(x,y)}
       o.I.push({kind,x:tx*OWT+8,y:ty*OWT+8,arm:1,done:0});break}}
   o.I.push({kind:'grove',x:o.P0.grove.x*OWT+8,y:o.P0.grove.y*OWT+12,arm:1,done:0,hidden:1})}
 const OWEV={
+  piano:{n:'野地里的钢琴',line:'一架三角钢琴立在草地中央，琴盖上落满了花瓣。琴凳上放着一张没写完的乐谱，署名只写了一个「祥」字。',opts:it=>[
+    {ic:'♪',r:1,t:'弹一段',d:'乐章值 +40%'+(ch().id==='sakiko'||ch().id==='oblivionis'?'（她弹的话：乐章值直接充满）':''),fn:()=>{const full=ch().id==='sakiko'||ch().id==='oblivionis';G.fever=Math.min(fCap(),(G.fever||0)+fCap()*(full?1:.4));S.p('pick');S.p('clap',2);toast(full?'琴声一响，整片草地都安静了下来。':'琴声有点走调，但很好听。')}},
+    {ic:'✦',t:'把乐谱带走',d:'一段旋律',fn:()=>offerUps('没写完的乐谱','最后一小节是空的，像在等谁来接着写。',rollUps(3,0))},owBye]},
+  mirror:{n:'路边的穿衣镜',line:'一面金框的穿衣镜立在路边。镜子里的你没有戴面具，正在等你开口。',opts:it=>[
+    {ic:'◐',r:1,t:'对着镜子说说话',d:'回复 25% 生命，镜子里会落下一块结晶',fn:()=>{P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.25*cr('heal'));S.p('heal');owDrop('crys',it.x,it.y+10);toast(ch().id==='mutsumi'||ch().id==='mortis'?'镜子里的她小声说：「……我一直都在。」':'镜子里的你点了点头。')}},
+    {ic:'✕',r:2,t:'打碎它',d:'一段稀有旋律，但镜中的东西会爬出来',fn:()=>{S.p('shbreak');offerUps('镜子的碎片','碎片里映出好多个你。',rollUps(3,1));owSpawnNear(it,'mask',3)}},owBye]},
+  telescope:{n:'星空望远镜',line:it=>owNight()>.45?'望远镜对着一颗特别亮的星。旁边的小牌子上写着：「一等星，送给最重要的人」。':'一架黄铜望远镜对着天空。白天什么都看不见——晚上再来吧。',opts:it=>owNight()>.45?[
+    {ic:'✦',r:1,t:'看一会儿星星',d:'周围很大一片地图会被照亮'+(ch().id==='uika'||ch().id==='doloris'?'（她看的话：范围更大）':''),fn:()=>{const o=G.ow,R=ch().id==='uika'||ch().id==='doloris'?40:28,cx=Math.floor(it.x/OWT),cy=Math.floor(it.y/OWT);for(let y=cy-R;y<=cy+R;y++)for(let x=cx-R;x<=cx+R;x++){if(x<0||y<0||x>=OWW||y>=OWH||(x-cx)**2+(y-cy)**2>R*R)continue;const i=owI(x,y);if(!o.exp[i]){o.exp[i]=1;o.expN=(o.expN||0)+1}}S.p('ustar');toast('星光把周围的路都照亮了。')}},owBye]:[{ic:'…',t:'晚上再来',d:'',keep:1,fn:()=>{}}]},
+  gramophone:{n:'留声机',line:'一台留声机摆在树桩上，唱片还在转，放的是一首很老的摇篮曲。',opts:it=>[
+    {ic:'♫',r:1,t:'把音量调大',d:'附近的怪物会睡着 12 秒（被打会醒）',fn:()=>{let n=0;for(const e of G.en)if(!e.dead&&e.ow&&d2(e,it)<240*240){e.sleepT=G.time+12;n++}S.p('pick');toast(n?`${n} 个怪物在摇篮曲里睡着了。`:'附近没有谁需要哄睡。')}},
+    {ic:'✦',t:'取下唱片',d:'一段旋律',fn:()=>offerUps('老唱片','唱片背面写着：「给睡不着的人偶」。',rollUps(3,0))},owBye]},
+  costume:{n:'戏服箱',line:'一只皮箱半开着，里面塞满了戏服：天鹅绒披风、蕾丝手套、一副断了绳的面具。',opts:it=>[
+    {ic:'?',t:'翻一翻',d:'花瓣、丝线，运气好还有别的',fn:()=>{G.petals+=owCoin(15);owDrop('silk',it.x,it.y+8);owDrop('silk',it.x+6,it.y+8);if(Math.random()<.3){owDrop('mask',it.x-6,it.y+8);toast('翻到了一块假面碎片。')}else toast('翻到了一点花瓣和丝线。')}},owBye]},
+  cucumber:{n:'小温室',line:'一间小小的玻璃温室，藤上结满了黄瓜。门口的牌子上写着：「请随便摘。——若叶」',opts:it=>[
+    {ic:'✚',r:1,t:'摘一根吃',d:'回复 30% 生命'+(ch().id==='mutsumi'||ch().id==='mortis'?'（她吃的话：回复 60%，乐章值 +30%）':''),fn:()=>{const mu=ch().id==='mutsumi'||ch().id==='mortis';P.hp=Math.min(P.maxHp,P.hp+P.maxHp*(mu?.6:.3)*cr('heal'));if(mu)G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.3);S.p('heal');toast(mu?'「……好吃。」':'很新鲜，还带着露水。')}},
+    {ic:'✿',t:'摘几根带走',d:'掉出两个回复道具',fn:()=>{for(let k=0;k<2;k++)G.picks.push({k:'hp',x:it.x+rnd(-8,8),y:it.y+12,vx:rnd(-20,20),vy:-30,t:0});toast('你摘了几根放进口袋。')}},owBye]},
+  poster:{n:'海报墙',line:()=>pick(['海报上是五张假面，底下印着一行字：「Welcome to the world of Ave Mujica.」有人在角落用铅笔写了「CRYCHIC」，又涂掉了。','一张褪色的海报：「今夜，黑色生日。」日期被雨水泡开了，看不清是哪一年。','海报被撕掉了一半，剩下的半张上，一只戴着蕾丝手套的手正握着另一只手。','演出预告：「人偶们将在终幕摘下面具。」下面有人写：「骗人的吧。」']),opts:it=>[
+    {ic:'✿',t:'揭下一张',d:'背面夹着一点花瓣',fn:()=>{G.petals+=owCoin(8);S.p('pick')}},owBye]},
+  bench:{n:'路边的长椅',line:'一张掉了漆的长椅，靠背上刻着两个名字，中间画了一颗星。',opts:it=>[
+    {ic:'☾',r:1,t:'坐下歇一会儿',d:'回复 15% 生命，时间往后走一段（每把长椅歇一次要等一会儿）',fn:()=>{P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.15*cr('heal'));G.ow.clock+=OWDAY/6;it.cool=G.time+90;S.p('heal');toast('你靠着椅背闭了一会儿眼睛。')}},owBye]},
   axe:{n:'插在树桩上的斧子',line:'一把旧斧子插在树桩上，斧柄缠着褪色的红丝带。丝带上绣着一行小字：「给想开辟自己道路的人偶」。',opts:it=>[
     {ic:'⚒',r:1,t:'拔出斧子',d:'之后对着树木攻击，就能砍出一条路',fn:()=>{G.ow.mem.axe=1;it.done=1;S.p('pick');owBanner('Hache','拿到了斧子','对着树木攻击就能砍出一条路')}},owBye]},
   score:{n:'被撕碎的乐谱',line:'草丛里夹着半张乐谱，被雨打湿了。标题被人划掉了，只剩一句歌词还看得清：「为什么，要演奏呢？」',opts:it=>[
@@ -7225,7 +7278,7 @@ const OWEV={
     {ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}]},
   grove:{n:'石圈里的祭坛',line:'石头围着一小块空地，中间是一座长满青苔的祭坛。上面放着一段被人藏起来的旋律。',opts:it=>[
     {ic:'✦',r:2,t:'取下旋律',d:'传说旋律',fn:()=>{it.done=1;if(!OWS.unl.treasure){OWS.unl.treasure=1;owSave();later(1.4,()=>toast('解锁新旋律：寻宝直觉（以后的漫游里可能出现）'))}offerUps('藏起来的旋律','祭坛上的青苔底下，刻着一行字：「给下一个找到这里的人偶」。',rollUps(3,2))}},owBye]}};
-function owEventTalk(it){if(it.kind==='theatre'){owTheatreTalk(it);return}const E=OWEV[it.kind];if(!E)return;owTalkModal({name:E.n,talkN:0},E.line,E.opts(it).map(o=>({...o,fn:()=>{if(o!==owBye&&it.kind!=='gate'&&!it.skip)it.done=it.kind==='nest'||it.kind==='anomaly'?it.done:1;o.fn&&o.fn()}})))}
+function owEventTalk(it){if(it.kind==='theatre'){owTheatreTalk(it);return}const E=OWEV[it.kind];if(!E)return;owTalkModal({name:E.n,talkN:0},typeof E.line==='function'?E.line(it):E.line,E.opts(it).map(o=>({...o,fn:()=>{if(o!==owBye&&it.kind!=='gate'&&!it.skip&&!o.keep)it.done=it.kind==='nest'||it.kind==='anomaly'||it.kind==='bench'?it.done:1;o.fn&&o.fn()}})))}
 function owSpawnNear(it,t,n){for(let k=0;k<n;k++){const q=owRandFree(it.x/OWT,it.y/OWT,4,1.5);if(q){const e=owMake(t,q.x,q.y,false,-1);e.ow.s='alert';e.ow.t=.4}}}
 function owNestFight(it){it.fight={wave:0,ids:[]};const wave=()=>{it.fight.wave++;const tr=owTier(it)+1;for(let k=0;k<(it.fight.wave===1?4:5);k++){const q=owRandFree(it.x/OWT,it.y/OWT,4,1);if(q){const sa=G.act;const e=owMake(pick(['mari','crow','mask','knight']),q.x,q.y,k===0&&it.fight.wave===2,-2);G.act=sa;e.ow.s='chase';it.fight.ids.push(e)}}toast(`巢穴 · 第 ${it.fight.wave} 波`)};wave();it.fight.next=wave}
 function owShade(it){it.done=1;const e=makeEnemy('mask',it.x,it.y-20,true);e.shade=1;e.hp*=2.6;e.mhp=e.hp;e.sc=1;e.r=7;e.spd=50;e.d={...EN.mask,h:30,fire:1.15,float:0};e.intro=0;e.ow={s:'chase',t:0,home:{x:it.x,y:it.y},g:-3,lost:0};it.shade=e;S.p('boss');toast('水里的你爬了出来。')}
@@ -7238,7 +7291,7 @@ function owAlert(e){if(e.ow.s==='alert'||e.ow.s==='chase')return;owSetS(e,'alert
 function owNoise(x,y,r){if(!G.ow||G.owArena)return;r*=cr('sound');for(const e of G.en){if(e.dead||!e.ow)continue;const s=e.ow.s;if(s==='chase'||s==='alert'||s==='retreat')continue;if(d2(e,{x,y})<r*r){e.ow.tx=x+rnd(-10,10);e.ow.ty=y+rnd(-10,10);owSetS(e,'investigate',5)}}}
 function owMoveTo(e,tx,ty,sp,dt){const dx=tx-e.x,dy=ty-e.y,d=Math.hypot(dx,dy);if(d<3)return true;const ox=e.x,oy=e.y;e.x+=dx/d*sp*dt;e.y+=dy/d*sp*dt;e.face=dx<0?-1:1;owBound(e);
   if(Math.hypot(e.x-ox,e.y-oy)<sp*dt*.25){const a=Math.atan2(dy,dx)+(e.ow.side||(e.ow.side=Math.random()<.5?1.4:-1.4));e.x+=Math.cos(a)*sp*dt;e.y+=Math.sin(a)*sp*dt;owBound(e)}return false}
-function owEnemy(e,dt){const o=e.ow;if(!o){updEnemy0(e,dt);return}const dp=Math.hypot(P.x-e.x,P.y-e.y);
+function owEnemy(e,dt){if(e.sleepT>G.time){e.kx=e.ky=0;return}const o=e.ow;if(!o){updEnemy0(e,dt);return}const dp=Math.hypot(P.x-e.x,P.y-e.y);
   if(dp>620&&o.s!=='chase'){return}
   e.fl=Math.max(0,e.fl-dt);e.x+=e.kx*dt;e.y+=e.ky*dt;e.kx*=Math.pow(.002,dt);e.ky*=Math.pow(.002,dt);e.an+=dt;
   if(e.stun>0){e.stun-=dt;owBound(e);return}o.t-=dt;const T0=OWTYPE[e.t]||{},det=owDet(e),SP=e.spd*(e.slowT>0?.65:1);
@@ -7282,7 +7335,6 @@ function owMapTick(){const cv2=$('owMap');if(!cv2||cv2.hidden)return;const o=G.o
   const cache=o.rgb||(o.rgb={});for(let i=0;i<OWW*OWH;i++){if(!o.exp[i]){D[i*4]=10;D[i*4+1]=8;D[i*4+2]=12;D[i*4+3]=230;continue}const h=col[o.g[i]]||'#000',c=cache[h]||(cache[h]=rgb(h));const b=o.vis[i]?1.35:1;D[i*4]=Math.min(255,c[0]*b+12);D[i*4+1]=Math.min(255,c[1]*b+10);D[i*4+2]=Math.min(255,c[2]*b+12);D[i*4+3]=255}
   x.putImageData(img,0,0);const dot=(px,py,cl,s=3)=>{x.fillStyle=cl;x.fillRect(Math.round(px/OWT-s/2),Math.round(py/OWT-s/2),s,s)};
   const P0=o.P0,mk2=o.marks||{};dot(P0.camp.x*OWT,P0.camp.y*OWT,'#ffb060',4);
-  for(const it of o.I)if(it.kind==='theatre'){const dn=owIsDone(it.k);if(!dn&&Math.floor(G.time*2)%2)continue;dot(it.x,it.y,dn?'#7a7080':it.k===5?'#ff3050':'#ffd27a',it.k===5?5:4)}
   if(mk2.grove||G.mods.owTreasure)dot(P0.grove.x*OWT,P0.grove.y*OWT,'#ffd27a',3);
   for(const it of o.I)if(it.kind!=='theatre'&&!it.done&&!it.hidden&&(it.known||o.exp[owI(Math.floor(it.x/OWT),Math.floor(it.y/OWT))]))dot(it.x,it.y,'#c8a0ff',3);
   if(G.mods.owTreasure)for(const p of G.picks)if(p.k==='chest'&&!p.open)dot(p.x,p.y,'#ffd27a',2);
@@ -7295,12 +7347,13 @@ function owExplorePct(){const o=G.ow;return Math.min(100,Math.round((o.expN||0)/
 function owUpdate(dt){const o=G.ow;if(!o)return;if(!G.owArena)owSwimTick(dt);else{P.swim=false;for(const a of G.allies)a.swim=false}if(!G.owArena){const gk=owGF(o,P.x/OWT,P.y/OWT);if(gk>.25&&Math.random()<gk*dt*14){const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2};G.parts.push({x:cam.x+rnd(VW),y:cam.y-6,vx:rnd(-14,6),vy:rnd(16,30),life:4,max:4,col:Math.random()<.75?'#a8102e':'#e8e0d8',sz:rnd(1,1.8)})}}if(!G.owArena&&o.bld&&(o.smT=(o.smT||0)-dt)<=0){o.smT=.25;const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2};for(const b of o.bld)if(b.smoke&&b.smoke.x>cam.x-20&&b.smoke.x<cam.x+VW+20&&b.smoke.y>cam.y-20&&b.smoke.y<cam.y+VH+40&&Math.random()<.5)G.parts.push({x:b.smoke.x+rnd(-1,1),y:b.smoke.y,vx:rnd(2,7),vy:rnd(-10,-6),life:2.2,max:2.2,col:'rgba(200,196,206,.35)',sz:rnd(1.5,2.6)})}
   if(G.owArena){o.clock+=dt;if(!G.owTh&&G.boss&&G.boss.dead&&!o.won){o.won=1;later(2.2,()=>owVictory())}return}owAllyLeash();
   o.clock+=dt;o.fogT-=dt;if(o.fogT<=0){o.fogT=.15;owFogTick()}o.mapT-=dt;if(o.mapT<=0){o.mapT=.3;owMapTick()}
+  {const mm=$('owMap');if(mm)mm.classList.toggle('fight',!!o.inFight||modal.hidden===false&&G.modalKind==='chart')}
   const eng=owEngaged();if(eng){o.engT=G.time;if(!o.inFight){o.inFight=1;setTrack('battle')}}else if(o.inFight&&G.time-o.engT>2.5){o.inFight=0;shRestore();if(G.mods.owRest){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.06*G.mods.owRest);S.p('heal')}setTrack('calm')}
   owUpdNpcs(dt);owCacheTick(dt);if(o.eng)owCloneTick();
   G.owTune=0;const mus=o.npcs.find(n=>n.id==='musician');if(mus&&o.mem.tune&&owNight()<.5&&d2(mus,P)<(o.mem.tune>=1?999999:110*110))G.owTune=1;
-  for(const it of o.I){if(it.done&&!it.fight)continue;const dd=d2(it,P);if(dd>40*40&&!it.skip)it.arm=1;if(it.skip&&dd>60*60){it.skip=0;it.arm=1}
+  for(const it of o.I){if(it.done&&!it.fight)continue;const dd=d2(it,P);if(dd>48*48&&!it.skip)it.arm=1;if(it.skip&&dd>60*60){it.skip=0;it.arm=1}
     if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;
-    if(it.arm&&!it.done&&dd<16*16&&modal.hidden&&!CUT.on){it.arm=0;owEventTalk(it)}
+    if(it.arm&&!it.done&&dd<16*16&&modal.hidden&&!CUT.on&&G.time>(it.cool||0)){it.arm=0;it.cool=G.time+5;owEventTalk(it)}
     if(it.kind==='nest'&&!it.done&&!it.fight&&dd<130*130&&(it.spT=(it.spT||4)-dt)<=0){it.spT=7;if(G.en.filter(e=>!e.dead&&e.ow&&e.ow.g===-4&&d2(e,it)<140*140).length<4){const q=owRandFree(it.x/OWT,it.y/OWT,3,1);if(q){const e=owMake(pick(['mari','crow']),q.x,q.y,false,-4);e.ow.home={x:it.x,y:it.y}}}}
     if(it.fight){it.fight.ids=it.fight.ids.filter(e=>!e.dead);if(!it.fight.ids.length){if(it.fight.wave<2)it.fight.next();else{it.fight=null;it.done=1;G.picks.push({k:'chest',x:it.x,y:it.y+12,t:0,ow:1});dropRelic(it.x+20,it.y,.3);toast('巢穴塌了。里面压着一个箱子。');later(.8,()=>offerUps('巢穴深处','黑色的东西散成了灰。底下埋着一段旋律。',rollUps(3,1)))}}}
     if(it.shade&&it.shade.dead){it.shade=null;dropRelic(it.x,it.y,.3);later(.6,()=>offerUps('倒影散了','水面恢复了平静，倒影也变回了你的样子。',rollUps(3,2)))}}
@@ -7313,9 +7366,20 @@ let owStageT=0;function updStageOW(){if((owStageT-=1/60)>0)return;owStageT=.5;ow
 function owStage(){const o=G.ow;if(!o)return;if(G.owArena){setH('stage',`漫游 · ${o.th.name} · 守护者`);return}setH('stage',`漫游 · ${o.th.name} · 探索 ${owExplorePct()}% · ${owTimeName()}${o.eng?' · 交战中':''}`)}
 
 /* ------------------------------------------------------------------ drawing (world space) */
+const OWPERS=['piano','mirror','telescope','gramophone','costume','cucumber','poster','bench'];
+function owDrawProp2(it,t){const x=it.x,y=it.y,k=it.kind;if(!it.done){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.22+.1*Math.sin(t*2+y);ctx.drawImage(glow('#ffe0a0'),x-16,y-22,32,32);ctx.restore()}
+  ctx.fillStyle='rgba(14,10,24,.3)';ctx.beginPath();ctx.ellipse(x+1,y+1,10,3,0,0,TAU);ctx.fill();
+  if(k==='piano'){ctx.fillStyle='#141016';ctx.beginPath();ctx.moveTo(x-10,y);ctx.lineTo(x-10,y-7);ctx.quadraticCurveTo(x+2,y-9,x+9,y-4);ctx.lineTo(x+9,y);ctx.closePath();ctx.fill();ctx.strokeStyle='#141016';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-6,y-7);ctx.lineTo(x+4,y-16);ctx.stroke();ctx.fillStyle='#2a2430';ctx.beginPath();ctx.moveTo(x-9,y-7.5);ctx.lineTo(x+4,y-16);ctx.lineTo(x+8,y-5);ctx.closePath();ctx.fill();ctx.fillStyle='#eee8e0';ctx.fillRect(x-10,y-2,8,1.6);ctx.fillStyle='#141016';for(let q=0;q<4;q++)ctx.fillRect(x-9.4+q*2,y-2,.6,1);ctx.fillStyle='#c01e3a';ctx.fillRect(x-3,y-9,1.2,1.2)}
+  else if(k==='mirror'){ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.ellipse(x,y-10,5.6,9,0,0,TAU);ctx.fill();ctx.fillStyle='#a8c8e0';ctx.beginPath();ctx.ellipse(x,y-10,4.2,7.6,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(x-3,y-15,1,6);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-.6,y-2,1.2,2);ctx.fillRect(x-3,y-.6,6,1.2)}
+  else if(k==='telescope'){ctx.strokeStyle='#3a2a1e';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x-4,y);ctx.moveTo(x,y-7);ctx.lineTo(x+4,y);ctx.moveTo(x,y-7);ctx.lineTo(x,y);ctx.stroke();ctx.save();ctx.translate(x,y-8);ctx.rotate(-.6);ctx.fillStyle='#c9a45c';ctx.fillRect(-6,-1.6,12,3.2);ctx.fillStyle='#8a6a34';ctx.fillRect(4,-2,2.4,4);ctx.restore()}
+  else if(k==='gramophone'){ctx.fillStyle='#4a3020';ctx.fillRect(x-5,y-5,10,5);ctx.fillStyle='#1a1416';ctx.beginPath();ctx.ellipse(x,y-5.5,4,1.4,0,0,TAU);ctx.fill();ctx.strokeStyle='#8a6a34';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+2,y-6);ctx.lineTo(x+3,y-12);ctx.stroke();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.moveTo(x+3,y-12);ctx.lineTo(x+10,y-19);ctx.quadraticCurveTo(x+13,y-13,x+9,y-9);ctx.closePath();ctx.fill();if(!it.done&&Math.sin(t*3)>0){ctx.fillStyle='#ffe9a0';ctx.font='6px serif';ctx.fillText('♪',x+9,y-20-Math.sin(t*2)*2)}}
+  else if(k==='costume'){ctx.fillStyle='#5a3424';ctx.fillRect(x-7,y-6,14,6);ctx.fillStyle='#7a4a30';ctx.fillRect(x-7,y-6,14,1.4);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.moveTo(x-6,y-6);ctx.quadraticCurveTo(x-2,y-11,x+5,y-7);ctx.lineTo(x+7,y-1);ctx.lineTo(x+4,y-6);ctx.fill();ctx.fillStyle='#ece6de';ctx.beginPath();ctx.ellipse(x-3,y-8,2,1.4,0,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.fillRect(x-.6,y-4,1.2,1.4)}
+  else if(k==='cucumber'){ctx.fillStyle='rgba(180,220,230,.35)';ctx.fillRect(x-9,y-12,18,12);ctx.strokeStyle='#d8dcd4';ctx.lineWidth=.6;ctx.strokeRect(x-9,y-12,18,12);ctx.beginPath();ctx.moveTo(x-9,y-12);ctx.lineTo(x,y-16);ctx.lineTo(x+9,y-12);ctx.moveTo(x,y-16);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#3a6a2a';for(let q=0;q<6;q++)ctx.fillRect(x-7+q*2.6,y-9+(q%2)*2,1.4,6);ctx.fillStyle='#6aa03a';for(let q=0;q<4;q++)ctx.fillRect(x-6+q*4,y-5,.9,3)}
+  else if(k==='poster'){ctx.fillStyle='#4a3424';ctx.fillRect(x-.6,y-4,1.2,4);ctx.fillRect(x-9,y-16,18,12);ctx.fillStyle='#e8dcc0';ctx.fillRect(x-8,y-15,7,10);ctx.fillStyle='#2a1a22';ctx.fillRect(x+1,y-15,7,10);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.arc(x-4.5,y-11,1.8,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.arc(x+4.5,y-11,1.6,0,TAU);ctx.fill()}
+  else if(k==='bench'){ctx.fillStyle='#5a3a22';ctx.fillRect(x-9,y-5,18,2);ctx.fillRect(x-9,y-9,18,1.4);ctx.fillStyle='#3a2416';ctx.fillRect(x-8,y-3,1.2,3);ctx.fillRect(x+7,y-3,1.2,3);ctx.fillRect(x-8,y-9,1,4);ctx.fillRect(x+7,y-9,1,4)}}
 function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();const o=G.ow,cp=o.P0.camp,fx0=cp.x*OWT+8,fy0=cp.y*OWT+8,fl=.6+.4*Math.sin(t*13);
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55+.15*fl;ctx.drawImage(glow('#ff9a40'),fx0-40,fy0-44,80,80);ctx.restore();ctx.fillStyle=fl>.5?'#ffb040':'#ff7a2a';ctx.fillRect(fx0-3,fy0-6-(fl>.7?1:0),6,6);ctx.fillStyle='#fff0b0';ctx.fillRect(fx0-1,fy0-4,2,3);
-  for(const it of o.I){if(it.done&&!it.fight||it.kind==='theatre')continue;if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;const x=it.x,y=it.y,b=Math.sin(t*3+x)*1.2;
+  for(const it of o.I){const pers=OWPERS.includes(it.kind);if(it.done&&!it.fight&&!pers||it.kind==='theatre')continue;if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;const x=it.x,y=it.y,b=Math.sin(t*3+x)*1.2;if(pers){owDrawProp2(it,t);continue}
     ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.15*Math.sin(t*2+y);ctx.drawImage(glow(it.kind==='nest'?'#ff4050':it.kind==='gate'?'#ff6080':'#c8a0ff'),x-20,y-26,40,40);ctx.restore();
     if(it.kind==='score'){ctx.fillStyle='#ece4d0';ctx.fillRect(x-5,y-8+b,10,7);ctx.fillStyle='#3a2a30';for(let k=0;k<3;k++)ctx.fillRect(x-4,y-7+b+k*2,8,.6)}
     else if(it.kind==='nest'){ctx.fillStyle='#1a0e14';ctx.beginPath();ctx.ellipse(x,y-4,12,8,0,0,TAU);ctx.fill();ctx.fillStyle='#ff4050';ctx.fillRect(x-4,y-6,1.5,1.5);ctx.fillRect(x+3,y-5,1.5,1.5)}
@@ -7330,14 +7394,14 @@ function owList(list){const o=G.ow;for(const n of o.npcs)if(owNpcVisible(n)&&Mat
 function owSprH(k,h){const s=SPR[k];if(!s)return null;const c=s.f[0];return{c,sc:h/c.height,f:s.f}}
 function owDrawItem(it,t){if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
   if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
-  const n=it,s=owSprH(n.spr,n.id==='refugee'?20:28);if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();
+  const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();
   if(d2(n,P)<40*40){ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';const nm=T(n.name),w=ctx.measureText(nm).width+6;ctx.fillRect(n.x-w/2,n.y-38,w,9);ctx.fillStyle='#ffe6b0';ctx.fillText(nm,n.x,n.y-31);ctx.textAlign='left'}}
 
 
 function owBeacon(cam,t){const o=G.ow;if(CUT.on)return;
   for(const it of o.I){if(it.kind!=='theatre'||owIsDone(it.k))continue;const big=it.k===5,top=it.y-8-(big?96:70);
     if(it.x>cam.x-20&&it.x<cam.x+VW+20&&it.y>cam.y+10&&it.y-70<cam.y+VH){ctx.save();ctx.globalCompositeOperation='lighter';const c=big?'255,120,140':'255,190,110',g=ctx.createLinearGradient(0,top-160,0,top);g.addColorStop(0,`rgba(${c},0)`);g.addColorStop(1,`rgba(${c},${.16+.06*Math.sin(t*2+it.k)})`);ctx.fillStyle=g;ctx.fillRect(it.x-7,top-160,14,160);ctx.fillRect(it.x-2,top-160,4,160);ctx.restore()}}
-  const it=owNearOpen();if(!it)return;if(it.x>cam.x-20&&it.x<cam.x+VW+20&&it.y>cam.y+10&&it.y-70<cam.y+VH)return;
+  const it=null;if(!it)return;
   const cx=cam.x+VW/2,cy=cam.y+VH/2,dx=it.x-cx,dy=it.y-cy,m=16,k=Math.min((VW/2-m)/Math.abs(dx||1e-6),(VH/2-m)/Math.abs(dy||1e-6)),ax=cx+dx*k,ay=cy+dy*k,a=Math.atan2(dy,dx),pul=.7+.3*Math.sin(t*4),big=it.k===5;
   ctx.save();ctx.translate(ax,ay);ctx.globalAlpha=.85*pul;ctx.drawImage(glow(big?'#ff8090':'#ffb070'),-12,-12,24,24);ctx.rotate(a);ctx.fillStyle=big?'#ffb3c0':'#ffe07a';ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(-3,-5);ctx.lineTo(-1,0);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.rotate(-a);
   ctx.globalAlpha=1;ctx.textAlign='center';const nm=ACTS[it.k-1].name,lx=-Math.cos(a)*12,ly=-Math.sin(a)*12;ctx.font='6px "Noto Serif SC",serif';ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillText(nm,lx+.5,ly+.5);ctx.fillStyle=big?'#ffb3c0':'#f4e6cc';ctx.fillText(nm,lx,ly);
