@@ -1020,15 +1020,23 @@ const MUSF={title:'assets/music/menu.mp3',sk_idle:'assets/music/sk_idle.mp3',sk_
 /* 2.1: 祥子之夜 (world 2) has its own recorded score: exploring, Fever, the chapter bosses, and the four phases of the final duel with yourself.
    [bpm, first beat in seconds], measured from the files, so charts and beat-timed skills follow the recording */
 const MUSB={sk_idle:[80,.086],sk_fever:[150,.103],sk_boss:[150,.104],sk_f1:[150,.103],sk_f2:[180,.156],sk_f3:[80,.096],sk_f4:[160,.092]};
-const SKMAP={calm:'sk_idle',calm2:'sk_idle',fever:'sk_fever',boss:'sk_boss',w2final:'sk_f1'};
-const skTrack=n=>G.world===2&&n?(SKMAP[n]||(/^w2_/.test(n)?'sk_boss':n)):n;
+/* 2.1.1: everything that plays inside 祥子之夜 comes from these seven recordings (the title screen keeps the menu theme) */
+const SKMAP={calm:'sk_idle',calm2:'sk_idle',battle:'sk_f1',battle2:'sk_f1',fever:'sk_fever',boss:'sk_boss',w2final:'sk_f1',death:'sk_f3',title:'sk_f4',mj:'sk_boss'};
+const skTrack=n=>{if(G.world!==2||!n||MUSB[n]||!/^(play|dead|win)$/.test(G.state))return n;return SKMAP[n]||(/^(w2_|elite|mj)/.test(n)?'sk_boss':'sk_idle')};
+/* recorded tracks are loaded ahead of time so a switch starts at once instead of after the file has buffered */
+function mfPreload(names){for(const n of names){if(!MUSF[n]||MF.cache[n])continue;try{const el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';el.load();MF.cache[n]=el}catch(e){}}}
 const MF={el:null,name:null,cache:{},want:null,vol:.5,fadeT:null,bpm:0,off:0};
 const mfLive=()=>!!(MF.el&&MF.bpm&&settings.music&&!MF.el.paused&&MF.el.readyState>2);
 const mfVol=()=>settings.music?MF.vol:0;
 function mfFade(el,to,ms,done){clearInterval(el._fi);const from=el.volume,t0=performance.now();el._fi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);try{el.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1){clearInterval(el._fi);done&&done()}},40)}
-function mfPlay(n){if(MF.name===n&&MF.el){if(MF.el.paused){const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=n})}mfFade(MF.el,mfVol(),500);return}mfStop();let el=MF.cache[n];if(!el){el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';MF.cache[n]=el}
-  MF.el=el;MF.name=n;{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),900)}
-function mfStop(){const el=MF.el;MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;if(!el)return;mfFade(el,0,500,()=>{try{el.pause()}catch(e){}})}
+function mfPlay(n){if(n==='sk_f1')setTimeout(()=>mfPreload(['sk_f2','sk_f3','sk_f4']),0);if(MF.name===n&&MF.el){if(MF.el.paused){const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=n})}mfFade(MF.el,mfVol(),500);return}mfStop();let el=MF.cache[n];if(!el){el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';MF.cache[n]=el}
+  MF.el=el;MF.name=n;{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),600)}
+function mfStop(){const el=MF.el;MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;if(!el)return;mfFade(el,0,300,()=>{try{el.pause()}catch(e){}})}
+/* switch without fades: building the world blocks the page for a few seconds, which froze the fade timers and kept the menu theme playing at full volume */
+function mfCut(n){const o=MF.el;if(o){clearInterval(o._fi);try{o.pause()}catch(e){}}MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;MUS.name=null;if(!n)return;stopMus();MUS.name=n;MUS.src=null;mfPlay(n);if(MF.el){clearInterval(MF.el._fi);MF.el.volume=mfVol()}}
+/* start the new world's music first, give it a moment to actually begin, then build the world */
+function musThen(w,fn){if(musThen.busy)return;musThen.busy=1;const want=w===2?'sk_idle':null,t0=performance.now();if(MF.name!==want||!want)mfCut(want);
+  const go=()=>{musThen.busy=0;fn()};if(!want||!settings.music){setTimeout(go,60);return}const chk=()=>{const el=MF.el;if(!el||(!el.paused&&el.currentTime>0)||performance.now()-t0>800)go();else setTimeout(chk,40)};chk()}
 function mfSync(){if(MF.el)mfFade(MF.el,mfVol(),300)}
 addEventListener('pointerdown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
 addEventListener('keydown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
@@ -3194,7 +3202,7 @@ function summaryHtml0(){const m=Math.floor(G.runT/60),s=Math.floor(G.runT%60),jc
 function gameOver(){if(typeof runClear==='function')runClear();if(G.ow)owDeath();P.down=0;G.ots=null;$('game').classList.remove('ots');feverReset();G.mjDeb=0;$('game').classList.remove('dark');G.state='dead';P.deathT=0;P.act=null;G.hurtFlash=0;G.flash=0;G.timeStop=0;tintFx(0);S.p('die');setTrack('death');$('bossBar').hidden=true;burst(P.x,P.y-10,40,['#e0283c','#fff',ch().col],90,1.2);
   const apn=award(null);setTimeout(()=>{openModal('dead',`<h3 class="big">Finis</h3><p class="sub">幕落。${ch().name} 的丝线，在掌声里断了。<br>「${ch().motto}」</p>${summaryHtml()}
     <div class="row"><button class="cta" id="again">再次登台</button></div><div class="row"><button class="ghost" id="toSel">换一具人偶</button><button class="ghost" id="toT">回到标题</button></div>`);
-    $('again').onclick=()=>{closeModal();G.ow?owStart(G.charIdx):startRun(G.charIdx)};$('toSel').onclick=()=>{closeModal();if(G.ow){G.owSel=1;owReset();toSelect();$('selH').textContent='假面回廊 · 漫游'}else toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
+    $('again').onclick=()=>{closeModal();musThen(G.world,()=>G.ow?owStart(G.charIdx):startRun(G.charIdx))};$('toSel').onclick=()=>{closeModal();if(G.ow){G.owSel=1;owReset();toSelect();$('selH').textContent='假面回廊 · 漫游'}else toSelect()};$('toT').onclick=()=>{closeModal();toTitle()}},1100)}
 function winGame(route){if(typeof runClear==='function')runClear();if(G.ow&&typeof owRunEnd==='function')owRunEnd(true);G.nlUp=nlUnlockOnWin();bsGain(150);route=route||'a';G.state='win';S.p('win');setTrack('title');best.wins=(best.wins||0)+1;best.act=5;best.endings=best.endings||{};best.endings[route]=1;if(route==='d')best.endings.b=1;store.set('amj_best',best);
   const got=[];if(unlock('mortis'))got.push('mortis');if((route==='b'||route==='d')&&unlock('oblivionis'))got.push('oblivionis');const apn=award(route);
   const un=got.length?`<div class="bond got">解锁新角色：${got.map(cname).join('、')}</div>`:'';
@@ -3244,7 +3252,7 @@ function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
 function runThemes(){const sa=G.act,ks=[];for(let a=1;a<=5;a++){G.act=a;try{ks.push(themeK())}catch(e){}}G.act=sa;return ks}
 function prepRooms(){if(!r3ok())return;const ks=runThemes();for(const k of Object.keys(R3.cache))if(!ks.includes(+k))delete R3.cache[k];for(const K of ks){if(R3.cache[K]||!R3T[K])continue;idbGet('room:'+K+':'+RW*R3F()+':v2').then(b=>b&&blobCv(b)).then(c=>{if(c&&!R3.cache[K])R3.cache[K]=c})}}
-function startRun(i,opt){if(updNeed()){updAsk();return}if(typeof owReset==='function')owReset();if(!(opt&&opt.resume)&&typeof runClear==='function')runClear();auInit();G.charIdx=i;G.world=WORLD;if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=WORLD>=2?1:nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.foeT=-9;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.mirrors=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CH5.filter(id=>id!==bid(CHARS[i].id)));if(opt&&opt.resume&&opt.resume.G.caps)G.caps=opt.resume.G.caps.slice();G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i,opt){if(updNeed()){updAsk();return}if(typeof owReset==='function')owReset();if(!(opt&&opt.resume)&&typeof runClear==='function')runClear();auInit();G.charIdx=i;G.world=WORLD;{const w=WORLD===2?'sk_idle':null;if(MF.name!==w||!w)mfCut(w)}if(WORLD===2)mfPreload(['sk_f1','sk_fever','sk_boss']);if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=WORLD>=2?1:nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.foeT=-9;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.mirrors=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CH5.filter(id=>id!==bid(CHARS[i].id)));if(opt&&opt.resume&&opt.resume.G.caps)G.caps=opt.resume.G.caps.slice();G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   if(G.world>=3)G.caps=[];applyWorld();try{prepRooms()}catch(e){}
   G.skHT=-9;G.rcT=0;G.pfT=-9;G.echoT=0;G.skAtk=null;G.skb=null;Object.assign(P,{ustarN:0,mortT:0,mortCd:0,tempoN:0,down:0,downT:0,revT:0,hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});G.bsx=0;G.bsRun=0;bsApply();memPerkApply();stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.rareGot=null;G.score=0;
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=cname(c.id);hudCache={};
@@ -3352,7 +3360,7 @@ function showMeta(tab){tab=tab||showMeta.tab||'end';showMeta.tab=tab;try{buildW3
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
   const pr=rf.call(el);pr&&pr.then&&pr.then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}}
-$('go').onclick=()=>{if(!isUnl(CHARS[G.charIdx].id))return;auInit();goLandscape();if(WORLD===1){G.owSel=0;owStart(G.charIdx);return}G.owSel=0;prepWorld(()=>startRun(G.charIdx))};
+$('go').onclick=()=>{if(!isUnl(CHARS[G.charIdx].id))return;auInit();goLandscape();if(WORLD===1){G.owSel=0;musThen(1,()=>owStart(G.charIdx));return}G.owSel=0;musThen(WORLD,()=>prepWorld(()=>startRun(G.charIdx)))};
 
 /* =================================================================== cutscenes */
 const CUT={on:false,shots:[],i:0,t:0,parts:[],onEnd:null,typed:-1,lb:0,petals:0};
@@ -3361,7 +3369,8 @@ function cutShot(){const sh=CUT.shots[CUT.i];CUT.t=0;CUT.typed=-1;const sb=sh.su
 function cutText(){const sh=CUT.shots[CUT.i];return T((sh&&sh.sub&&sh.sub.text)||'')}
 function cutLen(){const sh=CUT.shots[CUT.i];return Math.max(sh.d,cutText().length/18+1.8)}
 function cutNext(){if(!CUT.on)return;const n=cutText().length;if(CUT.t*18<n){CUT.t=n/18+.01;return}CUT.i++;if(CUT.i>=CUT.shots.length)endCut();else cutShot()}
-function endCut(){if(!CUT.on)return;CUT.on=false;$('cut').hidden=true;$('game').classList.remove('cut');G.paused=false;last=performance.now();const f=CUT.onEnd;CUT.onEnd=null;if(f)f()}
+function endCut(){if(!CUT.on)return;CUT.on=false;$('cut').hidden=true;$('game').classList.remove('cut');G.paused=false;last=performance.now();const f=CUT.onEnd;CUT.onEnd=null;if(f)f();
+  /* a cutscene inside a run never leaves the menu theme playing */if(G.state==='play'&&!CUT.on&&modal.hidden&&(MUS.name==='title'))setTrack(fightRoom()&&!G.cleared?'battle':'calm')}
 function cutBurst(x,y,n,cols,spd=70){for(let i=0;i<n;i++){const a=rnd(TAU),v=rnd(spd*.3,spd);CUT.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(.4,1),max:1,col:pick(cols),sz:rnd()<.3?2:1,g:30})}}
 function updCut(dt){CUT.t+=dt;CUT.lb=Math.min(1,CUT.lb+dt*2);const txt=cutText(),n=Math.min(txt.length,Math.floor(CUT.t*18));if(n!==CUT.typed){CUT.typed=n;$('cutTxt').textContent=txt.slice(0,n)}
   if(CUT.petals&&Math.random()<dt*14)CUT.parts.push({x:rnd(VW),y:-4,vx:rnd(-6,6),vy:rnd(14,26),life:12,max:12,col:pick(['#c8304a','#e05a70','#f2a2b6']),sz:2});
@@ -3420,7 +3429,7 @@ function renderCut(){const sh=CUT.shots[CUT.i];if(!sh)return;const t=CUT.t;ctx.s
   if(sh.flash&&t<sh.flash){ctx.fillStyle=`rgba(255,250,235,${1-t/sh.flash})`;ctx.fillRect(0,0,VW,VH)}
   const bh=VH*.14*CUT.lb;ctx.fillStyle='#000';ctx.fillRect(0,0,VW,bh);ctx.fillRect(0,VH-bh,VW,bh)}
 function cutPrologue(){const me=ch().id,cx=VW/2,fy=VH*.72;return[
-  {d:3.2,bg:'stage',fadeIn:1,music:'title',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'幕布已经落下了，黑暗里还有人在鼓掌。一下，一下，慢得让人心里发毛。'}},
+  {d:3.2,bg:'stage',fadeIn:1,music:'calm',actors:[{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{text:'幕布已经落下了，黑暗里还有人在鼓掌。一下，一下，慢得让人心里发毛。'}},
   {d:3.6,bg:'stage',z0:1,z1:1.12,sfx:'boss',actors:[{k:'mj',x:cx,y:VH*.62,sc:.36,alpha:0,a1:1,dur:1.6},{k:'ch',id:me,x:cx,y:fy,face:1,sc:1.4}],sub:{who:'Mujica',text:'「Welcome to the world of Ave Mujica……欢迎回来，我的人偶。」'}},
   {d:4.4,bg:'stage',actors:[...G.caps.map((id,i)=>({k:'ch',id,x:cx+(i-1.5)*48,y:fy-6,y1:fy-170,face:i<2?1:-1,anim:'hurt',sc:1.1,a1:0,strings:1,delay:1.2})),{k:'ch',id:me,x:cx,y:fy+12,face:1,sc:1.4}],
     sub:{who:'Mujica',text:'「你的同伴，你们的歌，我都替你收好了。火、风、水、地，一处放一样。」'}},
