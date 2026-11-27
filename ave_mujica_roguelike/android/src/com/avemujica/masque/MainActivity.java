@@ -73,7 +73,7 @@ public class MainActivity extends Activity implements InputManager.InputDeviceLi
 
     @Override
     protected void onPause() {
-        web.evaluateJavascript("try{if(G.state==='play'&&modal.hidden&&$('actCard').hidden)showPause();if(A.ctx)A.ctx.suspend()}catch(e){}", null);
+        web.evaluateJavascript("try{window.runSave&&runSave('exit')}catch(e){}try{if(G.state==='play'&&modal.hidden&&$('actCard').hidden)showPause();if(A.ctx)A.ctx.suspend()}catch(e){}", null);
         web.onPause();
         super.onPause();
     }
