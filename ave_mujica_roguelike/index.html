@@ -1012,7 +1012,7 @@ function stopMus(){MUS.playing=null;if(!MUS.src||!A.ctx)return;const g=MUS.g,src
 function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.playing=n;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
 /* recorded tracks (2.0.3): the title theme, and the waltz that plays while you are Oblivionis / Sakiko or in 祥子之夜.
    They play through an <audio> element (works from file:// in the APK and the Windows build) with a short fade */
-const MUSF={title:'assets/music/menu.mp3',ghost:'assets/music/ghost.mp3'};
+const MUSF={title:'assets/music/menu.mp3'};
 const MF={el:null,name:null,cache:{},want:null,vol:.5,fadeT:null};
 const mfVol=()=>settings.music?MF.vol:0;
 function mfFade(el,to,ms,done){clearInterval(el._fi);const from=el.volume,t0=performance.now();el._fi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);try{el.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1){clearInterval(el._fi);done&&done()}},40)}
@@ -1023,7 +1023,7 @@ function mfSync(){if(MF.el)mfFade(MF.el,mfVol(),300)}
 addEventListener('pointerdown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
 addEventListener('keydown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
 document.addEventListener('visibilitychange',()=>{if(!MF.el)return;if(document.hidden){try{MF.el.pause()}catch(e){}}else{const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=MF.name})}});
-const ghostOn=()=>G.state==='play'&&(G.world===2||['oblivionis','sakiko'].includes(ch().id));
+const ghostOn=()=>false&&!!MUSF.ghost;
 function setTrack(n,force){if(G.world>=2&&(n==='battle'||n==='calm'))n+='2';if(ghostOn()&&/^(calm|battle)2?$/.test(n))n='ghost';if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUSF[n]){if(MUS.name===n&&MF.el)return;MUS.name=n;stopMus();MUS.src=null;mfPlay(n);return}mfStop();if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
 /* the casual dolls have their own sounds: Uika an acoustic guitar and starlight, Mutsumi a low palm-muted guitar and a mirrored double, Sakiko paper, pen and piano */
 const pno=(m,t,v,d,dest)=>{const f=mtof(m);tone('triangle',f,t,.002,0,d||.6,dest||A.sfxWet,v);tone('sine',f*2,t,.002,0,(d||.6)*.45,dest||A.sfxWet,v*.3);tone('sine',f*3,t,.002,0,(d||.6)*.2,dest||A.sfxWet,v*.12)};
@@ -2353,7 +2353,7 @@ function beatPos(){if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.curre
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 /* rhythm judgement (light): every attack press is judged against the beat */
 const JUD={P:{t:'PERFECT',c:'#9fd4ff',mul:1.5,fv:8},GR:{t:'GREAT',c:'#ffe07a',mul:1.25,fv:6},G:{t:'GOOD',c:'#ff9ad0',mul:1,fv:4},B:{t:'BAD',c:'#9ab0d0',mul:.6,fv:0},M:{t:'MISS',c:'#ff4a5a',mul:.35,fv:-3}};
-function jWin(){const k=0,a=(settings.assist?1.35:1)*(1+.15*((G.mods&&G.mods.metro)||0)+(G.owTune?.15:0));return[Math.min(.32,(.22-.006*k)*a),Math.min(.38,(.28-.007*k)*a),Math.min(.43,(.34-.008*k)*a),Math.min(.47,(.43-.009*k)*a)]}
+function jWin(){const k=0,a=(1+.15*((G.mods&&G.mods.metro)||0)+(G.owTune?.15:0));return[Math.min(.32,(.22-.006*k)*a),Math.min(.38,(.28-.007*k)*a),Math.min(.43,(.34-.008*k)*a),Math.min(.47,(.43-.009*k)*a)]}
 /* melodies that turn a judgement into a better one: MISS -> GOOD, BAD -> GOOD, GOOD -> PERFECT (they can chain) */
 function jConvert(k){const m=G.mods,r=Math.random;
   if(k==='M'&&((m.maestro&&r()<.3)||(m.mGood&&r()<m.mGood)))k='G';
@@ -2495,8 +2495,8 @@ function skMenu(){if(!skReady())return;const set=skSet();S.p('pick');
     return `<button class="skm-c ${s.sig?'sig':s.t}" data-i="${i}"><span class="skm-key">${i+1}</span><span class="skm-orn"></span>
       <span class="skm-med">${embIc(em,tone,' skm-ic')}</span><b class="skm-n">${s.n}</b>
       <span class="skm-tags">${s.sig?'<em class="t-sig">专属</em>':''}<em class="t-${s.t}">${SKT[s.t]}</em></span>
-      <span class="skm-d">${s.d}</span><span class="skm-mul">${s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 伤害'} <i>×1.0–3.25</i></span></button>`};
-  openModal('skill',`<div class="skm"><div class="skm-hd"><span class="skm-eye">Mouvement</span><div class="skm-t">选择技能</div><div class="skm-sub">乐章值已满 · 打完一段短谱面后释放：越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25</div></div>
+      <span class="skm-d">${s.d}</span><span class="skm-mul">${s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 伤害'} <i>×1.0–${settings.simple?'1.9':'3.25'}</i></span></button>`};
+  openModal('skill',`<div class="skm"><div class="skm-hd"><span class="skm-eye">Mouvement</span><div class="skm-t">选择技能</div><div class="skm-sub">乐章值已满 · 打完一段短谱面后释放：${settings.simple?'简化谱面，倍率最高 ×1.9':'越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25'}</div></div>
     <div class="skm-cards">${set.map(card).join('')}</div>
     <div class="skm-ft"><label class="skm-sw"><input type="checkbox" id="skSkip"${settings.skSkip?' checked':''}><i></i><span>跳过谱面，直接以 ×1.0 释放</span></label><button class="skm-back" id="skNo">返回战斗<small>Esc</small></button></div></div>`);
   $('skSkip').onchange=e=>{settings.skSkip=e.target.checked?1:0;store.set('amj_settings',settings)};$('skNo').onclick=()=>closeModal();
@@ -2510,8 +2510,8 @@ const CHT={on:0};
    slide— a chain of small diamonds across lanes: keep a finger (or key) on the lane as each one passes, or tap it.
    Every finger is tracked on its own, so two thumbs pressing at once both count. */
 const CHL=4,CHCOL=['#ff7ab8','#f6d27a','#7fe0d0','#b98cff'],CHKEY=['D','F','J','K'];
-function chClock(){const live=A.ctx&&MUS.src&&settings.music&&MUS.bpm;if(live)return{b:beatNow(),bps:MUS.bpm/60,live:1};
-  const bps=2;return{b:(performance.now()-CHT.p0)/1000*bps-(settings.lat||0)/1000*bps,bps,live:0}}
+function chClock(){const now=performance.now();if(!CHT.ck){const live=!!(A.ctx&&MUS.src&&settings.music&&MUS.bpm),bps=live?MUS.bpm/60:2;CHT.ck={b:live?beatNow():-(settings.lat||0)/1000*bps,bps,t:now,live:live?1:0}}
+  const k=CHT.ck,dt=Math.min(.1,Math.max(0,(now-k.t)/1000));k.b+=dt*k.bps;k.t=now;return{b:k.b,bps:k.bps,live:k.live}}
 function chPattern(bps){const span=Math.max(10,Math.min(14,Math.round(6*bps))),ns=[];let t=0,last=rint(0,3),g=0,hadHold=0,hadSlide=0;
   const other=p=>{let l;do{l=rint(0,3)}while(l===p);return l};
   while(t<span-.4){const left=span-t,r=Math.random();
@@ -2521,14 +2521,18 @@ function chPattern(bps){const span=Math.max(10,Math.min(14,Math.round(6*bps))),n
     else if(r<.42&&left>=1){const l=other(last),l2=other(l);ns.push({p:t,l,type:'tap'},{p:t,l:l2,type:'tap'});last=l2;t+=1}
     else{const l=other(last);ns.push({p:t,l,type:'tap'});last=l;t+=Math.random()<.35?.5:1}}
   ns.sort((a,b)=>a.p-b.p);return ns}
+function chPatternSimple(bps){const span=Math.max(6,Math.min(9,Math.round(3.4*bps))),n=Math.max(5,Math.min(8,Math.round(span*.95))),ns=[];let ln=rint(0,3);
+  const nextL=p=>{let l;do{l=rint(0,3)}while(l===p||Math.abs(l-p)>2&&Math.random()<.5);return l};
+  for(let b=0;b<span&&ns.length<n;b++){ln=ns.length?nextL(ln):ln;ns.push({p:b,l:ln,type:'tap'});if(ns.length<n&&b<span-1&&Math.random()<.38){ln=nextL(ln);ns.push({p:b+.5,l:ln,type:'tap'})}}
+  while(ns.length<n){const p=ns[ns.length-1].p+1;ln=nextL(ln);ns.push({p,l:ln,type:'tap'})}return ns}
 function chTotal(){let n=0;for(const q of CHT.notes)n+=q.type==='hold'?2:1;return n}
-function skChart(s){CHT.p0=performance.now();const c0=chClock(),b0=Math.ceil(c0.b)+2;
-  Object.assign(CHT,{on:1,s,notes:chPattern(c0.bps).map(q=>({...q,b:b0+q.p,k:null,tk:null})),b0,cnt:{P:0,GR:0,G:0,B:0,M:0},pop:null,lastTick:Math.floor(c0.b),gp:{},end:0,res:null,press:[-9,-9,-9,-9],held:[0,0,0,0],tch:{},fx:[],combo:0,mulShown:''});
+function skChart(s){CHT.p0=performance.now();CHT.ck=null;CHT.end=0;CHT.res=null;CHT.simple=!!settings.simple;const c0=chClock(),b0=Math.ceil(c0.b)+2;
+  Object.assign(CHT,{on:1,s,notes:(CHT.simple?chPatternSimple(c0.bps):chPattern(c0.bps)).map(q=>({...q,b:b0+q.p,k:null,tk:null})),b0,cnt:{P:0,GR:0,G:0,B:0,M:0},pop:null,lastTick:Math.floor(c0.b),gp:{},end:0,res:null,press:[-9,-9,-9,-9],held:[0,0,0,0],tch:{},fx:[],combo:0,mulShown:''});
   const em=SKEMB[s.sig?ch().id:s.id]||'star8',tone=s.sig?2:s.t==='atk'?3:4;
   openModal('chart',`<div class="chm ${s.sig?'sig':s.t}"><div class="chm-hd"><span class="chm-med">${embIc(em,tone,' chm-ic')}</span><div class="chm-tt"><b>${s.n}</b><small>${s.sig?'专属 · ':''}${SKT[s.t]} · 倍率加在${s.t==='buff'?'持续时间':'伤害'}</small></div>
       <div class="chm-mul"><small>倍率</small><b id="chMul">×1.00</b></div></div>
     <canvas id="chCv" class="chcv"></canvas>
-    <div class="chm-ft"><span class="chm-hint">${isTouch?'轻触 · 长条按住 · 菱形滑过去':`<kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> · 长条按住 · 菱形按着就行`}</span><button class="skm-back" id="chSkip">跳过 · ×1.0</button></div></div>`);
+    <div class="chm-ft"><span class="chm-hint">${CHT.simple?(isTouch?'简化谱面 · 轻触音符':'简化谱面 · <kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd>'):isTouch?'轻触 · 长条按住 · 菱形滑过去':`<kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> · 长条按住 · 菱形按着就行`}</span><button class="skm-back" id="chSkip">跳过 · ×1.0</button></div></div>`);
   $('chSkip').onclick=()=>skChartEnd(1);if(!document.body.classList.contains('gp'))try{document.activeElement.blur()}catch(e){}
   const cv2=$('chCv'),laneAt=x=>{const r=cv2.getBoundingClientRect(),L=chLayout(r.width,r.height);return clamp(Math.floor((x-r.left-L.x0)/L.lw),0,CHL-1)};
   /* touch: the whole panel is the pad; every finger is handled separately, even when two land in the same event */
@@ -2564,12 +2568,13 @@ function chTick(c){const w=chWin(c.bps);
   for(const n of CHT.notes){
     if(!n.k){if(n.type==='trace'&&CHT.held[n.l]>0&&Math.abs(c.b-n.b)<=w[1])chJudge(n,'P');else if(c.b-n.b>w[3]){chJudge(n,'M');if(n.type==='hold'){chJudge(n,'M',1)}}}
     else if(n.type==='hold'&&!n.tk){const end=n.b+n.len;if(CHT.held[n.l]>0){if(c.b>=end-.05)chJudge(n,'P',1)}else if(c.b<end-.3)chJudge(n,'M',1);else chJudge(n,'P',1)}}
-  const lastB=Math.max(...CHT.notes.map(n=>n.b+(n.len||0)));if(!CHT.end&&CHT.notes.every(n=>n.k&&(n.type!=='hold'||n.tk))&&c.b>lastB+.3)skChartEnd(0);
+  const lastB=Math.max(...CHT.notes.map(n=>n.b+(n.len||0)));if(!CHT.end&&c.b>lastB+.3&&CHT.notes.every(n=>n.k&&(n.type!=='hold'||n.tk)))skChartEnd(0);
   const m='×'+chMul(CHT.cnt).toFixed(2);if(m!==CHT.mulShown){CHT.mulShown=m;const el=$('chMul');if(el)el.textContent=m}}
 /* judgement windows in milliseconds, turned into beats */
-function chWin(bps){const m=G.mods||{},a=(settings.assist?1.3:1)*(1+.15*(m.metro||0))*(G.owTune?1.15:1);return[42,75,115,160].map(v=>v*a/1000*bps)}
+function chWin(bps){const m=G.mods||{},a=(1+.15*(m.metro||0))*(G.owTune?1.15:1);return[42,75,115,160].map(v=>v*a/1000*bps)}
 /* multiplier: x1.0-1.6 by accuracy; a full combo (no BAD or MISS) x1.6-2.0; all perfect x3.25 */
-function chMul(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const acc=(cnt.P+.85*cnt.GR+.7*cnt.G+.3*cnt.B)/n,fc=!cnt.B&&!cnt.M,ap=fc&&!cnt.GR&&!cnt.G,bon=(G.mods.pfMul||0)*.5;
+function chMul(cnt){const v=chMul0(cnt);return settings.simple||CHT.simple?Math.round((1+(v-1)*.4)*100)/100:v}
+function chMul0(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const acc=(cnt.P+.85*cnt.GR+.7*cnt.G+.3*cnt.B)/n,fc=!cnt.B&&!cnt.M,ap=fc&&!cnt.GR&&!cnt.G,bon=(G.mods.pfMul||0)*.5;
   if(ap)return 3.25;if(fc)return Math.round((1.6+.4*clamp((acc-.7)/.3,0,1)+bon)*100)/100;return Math.round((1+.6*clamp((acc-.4)/.6,0,1)+bon)*100)/100}
 function skChartEnd(skip){if(CHT.end)return;CHT.end=1;const s=CHT.s,cnt=CHT.cnt,mul=skip?1:chMul(cnt),full=!skip&&cnt.P===chTotal()&&cnt.P>0,fc=!skip&&!full&&!cnt.B&&!cnt.M;
   if(full){G.pdN=(G.pdN||0)+1;S.p('clap',4);S.p('crit')}else if(fc)S.p('clap',3);CHT.res={mul,full,fc,t:performance.now()};
@@ -3242,6 +3247,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.0.4',date:'2026-11-27',notes:["暂时移除 Oblivionis / 祥子的华尔兹背景音乐", "修复：谱面还没打完就直接进入技能", "设置里的「节奏辅助」改为「简化谱面」：开启后谱面只有点击音符、更短，但技能获得的加成明显减少（最高 ×1.9）"]},
  {name:'2.0.3',date:'2026-11-27',notes:["修复：在手机上失败后重新开局会一直黑屏", "谱面：两根手指同时按两个键时都会被判定到；手机上轨道更宽，整个谱面面板都可以按", "谱面新增长按和滑键：长条要按住到尾巴，菱形链要手指按着滑过去；每个技能的谱面都加长了", "怪物不再随剧场位置、章节或同伴数量变强；新增难度选择，困难模式下所有怪物的生命和攻击力 +50%", "新的主菜单音乐「Mourning the Gilded Throne」；用 Oblivionis、便服的祥子游玩时，以及在「祥子之夜」里，背景音乐换成「Waltz for a Ghost Throne」"]},
  {name:'2.0.2',date:'2026-11-27',notes:["修复：在大世界反复碰到 NPC 或同一个物件时，会一直弹出对话", "战斗中小地图会淡出，打完再出现；小地图不再标出剧场", "五座剧场每局随机散落在地图上，终幕剧场离营地很远。要靠剧场上空的光柱和路人的消息去找", "新增 8 种可以互动的东西：野地里的钢琴、路边的穿衣镜、星空望远镜、留声机、戏服箱、小温室、海报墙和长椅", "城镇里有友善的路人走来走去（售票员、化妆师阿姨、舞台监督、粉丝、导览员……），野外偶尔也能碰到黑猫、看星星的人、巫女和船长。跟他们聊天能打听剧场的方向"]},
  {name:'2.0.1',date:'2026-11-27',notes:["技能和 Fever 同步：Fever 有多长，技能就持续多久。攻击技能在 Fever 期间会每 1.6 秒自动再放一次，延长 Fever 的旋律也会一起延长技能", "通往第二结局的三件信物不会再从大世界的宝箱里开出来，改为击败精英、强敌和剧场 Boss（终幕除外），或者完成委托时有一定概率获得", "重做便服的三角初华、若叶睦、丰川祥子：初华的星记与一等星、「sumimi 的笑容」；睦的温室之藤、「Mortis 在看着」；祥子的指挥棒与未完成的乐谱、「把人生交给我」", "大世界的人物和事件按 Ave Mujica 的世界改写：戴面具的引座员、一个人的乐队、提灯的观众、走失的小人偶、提线的人，还有断了线的人偶骑士、空荡的观众席和被撕碎的乐谱", "同伴更聪明了：平时不会一直贴着你，会自己在附近走动；打起来会先护住受伤的你、救倒下的队友、收掉残血的敌人，被围攻时会退回你身边，彼此也不会挤成一团", "大世界可以游泳过河了：游泳时变慢、不能攻击和冲刺，怪物不会下水", "野外藏着一把斧子，拿到后对着树攻击就能砍出一条路", "修复：同一次游戏里开第二局时，乐章值和连击要过一阵子才开始累积"]},
@@ -3261,7 +3267,7 @@ function showSettings(){const seg=(k,opts,cur)=>`<div class="segs">${opts.map(([
     ${isTouch?'':`<div class="setg"><div class="setl">显示</div>${seg('fs',[['w','窗口'],['f','全屏']],document.fullscreenElement?'f':'w')}<small>也可以按 F11 切换</small></div>`}
     <div class="setg"><div class="setl">语言</div>${seg('lang',[['zh','中文'],['en','English'],['ja','日本語']],LANG)}<small>切换语言后会回到标题画面</small></div>
     <div class="setg"><div class="setl">判定偏移</div><div class="segs"><button class="seg" data-lat="-10">−</button><button class="seg on" disabled>${(settings.lat||0)>0?'+':''}${settings.lat||0} ms</button><button class="seg" data-lat="10">+</button><button class="seg" id="calBtn">校准</button></div><small>判定总是偏早就调大，偏晚就调小，或用节拍器自动校准</small></div>
-    <div class="setg"><div class="setl">节奏辅助</div>${seg('ast',[['1','开'],['0','关']],settings.assist?'1':'0')}<small>放宽判定窗口，适合刚开始熟悉节拍时</small></div>
+    <div class="setg"><div class="setl">简化谱面</div>${seg('simp',[['1','开'],['0','关']],settings.simple?'1':'0')}<small>谱面只有点击音符、更短；技能倍率明显降低（最高 ×1.9）</small></div>
     <div class="setg"><div class="setl">音乐</div>${seg('mus',[['1','开'],['0','关']],settings.music?'1':'0')}</div><div class="setg"><div class="setl">音效</div>${seg('sfx',[['1','开'],['0','关']],settings.sfx?'1':'0')}</div>
     <div class="setg"><div class="setl">更新日志</div><div class="segs"><button class="seg" id="logBtn">查看</button></div><small>这次和以往每个版本更新了什么</small></div>
     ${updOn()?`<div class="setg"><div class="setl">版本</div><div class="segs"><button class="seg on" disabled>v${GAME_VER.name}</button><button class="seg" id="updBtn">检查更新</button></div><small>${UPD.status?UPD.status+(UPD.last?' · '+new Date(UPD.last).toTimeString().slice(0,5):''):'有新版本时会在标题画面提示'}</small></div>`:''}
@@ -3269,7 +3275,7 @@ function showSettings(){const seg=(k,opts,cur)=>`<div class="segs">${opts.map(([
   if($('updBtn'))$('updBtn').onclick=()=>{S.p('tick');updCheck(true)};$('logBtn').onclick=()=>{S.p('tick');showLog()};
   const save=()=>store.set('amj_settings',settings);
   panel.querySelectorAll('[data-lat]').forEach(b=>b.onclick=()=>{settings.lat=clamp((settings.lat||0)+(+b.dataset.lat),-200,200);save();S.p('tick');showSettings()});
-  panel.querySelectorAll('[data-ast]').forEach(b=>b.onclick=()=>{settings.assist=b.dataset.ast==='1';save();S.p('tick');showSettings()});$('calBtn').onclick=()=>showCalib();
+  panel.querySelectorAll('[data-simp]').forEach(b=>b.onclick=()=>{settings.simple=b.dataset.simp==='1'?1:0;save();S.p('tick');showSettings()});$('calBtn').onclick=()=>showCalib();
   panel.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{S.p('tick');const f=b.dataset.fs==='f';try{f?document.documentElement.requestFullscreen():document.exitFullscreen()}catch(e){}setTimeout(showSettings,400)});
   panel.querySelectorAll('[data-fps]').forEach(b=>b.onclick=()=>{settings.fps=+b.dataset.fps;save();S.p('tick');showSettings()});
   panel.querySelectorAll('[data-mus]').forEach(b=>b.onclick=()=>{settings.music=b.dataset.mus==='1';save();if(A.mus)(A.mus.gain.value=settings.music?.34:0,mfSync());showSettings()});
