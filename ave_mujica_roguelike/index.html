@@ -498,6 +498,9 @@ body.pc #gpBar .gpTop .gk.kb{background:transparent;box-shadow:inset 0 0 0 1px r
 body.pc #hint{display:none!important}
 
 /* skill key opens the skill menu when the gauge is full (2.2) */
+#chSkip{position:relative;padding:4px 8px 4px 22px;opacity:.8}#chSkip .skHold{position:absolute;left:4px;top:50%;width:13px;height:13px;margin-top:-6.5px;border-radius:50%;background:conic-gradient(var(--gold) calc(var(--hp,0)*360deg),rgba(201,164,92,.25) 0);-webkit-mask:radial-gradient(circle,transparent 45%,#000 48%);mask:radial-gradient(circle,transparent 45%,#000 48%)}
+#chSkip.holding .skHold{animation:skHold .8s linear forwards}@keyframes skHold{from{--hp:0}to{--hp:1}}@property --hp{syntax:'<number>';inherits:false;initial-value:0}
+#chSkip.holding{opacity:1;color:#f6dc8a}
 .hdiff{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;margin:6px 0 2px}.hdiff>span{color:var(--mist);letter-spacing:.2em;margin-right:2px}
 .hdiff button{padding:4px 14px;border:1px solid rgba(201,164,92,.35);background:rgba(0,0,0,.25);color:#cbbfc6;font:600 12px var(--f-body);letter-spacing:.2em;cursor:pointer}.hdiff button.on{border-color:var(--gold);color:#f6dc8a;background:rgba(201,164,92,.14);box-shadow:0 0 10px rgba(201,164,92,.25)}.hdiff button[data-h='1'].on{border-color:#e05a6a;color:#ffb3c0;background:rgba(200,40,60,.15)}
 .hdiff small{flex-basis:100%;color:#a89aa2;font-size:10.5px}
@@ -509,7 +512,7 @@ body.pc #hint{display:none!important}
 .chm-tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.chm-tt b{font:900 16px/1.2 var(--f-body);letter-spacing:.18em;color:#f6ead6;text-shadow:0 2px 0 #000}.chm-tt small{font-size:10.5px;letter-spacing:.08em;color:var(--c1);opacity:.9}
 .chm-mul{display:flex;flex-direction:column;align-items:flex-end;line-height:1}.chm-mul small{font-size:9px;letter-spacing:.2em;color:#a89aa2}.chm-mul b{font:bold 18px var(--f-pixel);color:var(--c1);text-shadow:0 0 10px var(--c1)}
 .chcv{display:block;width:100%;height:clamp(150px,40vh,240px);touch-action:none;cursor:pointer}
-.chm-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:0 2px}.chm-ft .skm-back{white-space:nowrap;flex:none}.chm-ft .skm-back:focus{outline:none}.chm-hint{font-size:10.5px;color:#a89aa2;letter-spacing:.04em}
+.chm-ft{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 2px 0;margin-top:2px;border-top:1px solid rgba(201,164,92,.15)}.chm-ft .skm-back{white-space:nowrap;flex:none}.chm-ft .skm-back:focus{outline:none}.chm-hint{font-size:10.5px;color:#a89aa2;letter-spacing:.04em}
 .chm-hint kbd{display:inline-block;min-width:14px;margin:0 1px;padding:0 3px;border:1px solid rgba(201,164,92,.5);border-radius:3px;font:9px/13px var(--f-pixel);color:#f4e6cc;text-align:center;background:rgba(201,164,92,.08)}
 @media (max-height:460px){.panel:has(.chm){padding:8px 12px 6px!important}.chm{gap:5px}.chm-med,.chm-ic.ic.emb{width:30px!important;height:30px!important}.chm-tt b{font-size:14px}.chcv{height:clamp(150px,52vh,220px)}}
 
@@ -2490,7 +2493,12 @@ function skHurt(){feverAdd(5);const id=ch().id;if(id==='uika')P.ustarN=Math.max(
 function accent(chart){perfPassive();pfExtra();P.mPfT=G.time;G.beatGlow=1;bsGain(.3);if(!chart)G.nums.push({x:P.x,y:P.y-44,v:'强音',t:0,say:1,jc:'#9fd4ff'})}
 function skReady(){return(G.fever||0)>=fCap()&&!(G.feverT>0)&&G.state==='play'&&!P.down&&!CUT.on&&modal.hidden&&!G.ots}
 /* ---- menu */
-function skMenu(){if(!skReady())return;const set=skSet();S.p('pick');
+/* input buffer: the finger that pressed the skill key lifts over the new menu and would click a card; a key pressed twice
+   closes what it opened. Every menu button waits a moment and only takes presses that began after it appeared */
+const UIB={menuT:0,closeT:0,chartT:0};
+const uiFresh=(t0,ms)=>performance.now()-t0<ms;
+function uiGuard(el,t0,ms,fn){el.addEventListener('pointerdown',()=>{el._pd=performance.now()});el.onclick=e=>{if(uiFresh(t0,ms))return;if(e.detail!==0&&!(el._pd>t0))return;fn(e)}}
+function skMenu(){if(!skReady()||uiFresh(UIB.closeT,900))return;UIB.menuT=performance.now();const set=skSet();S.p('pick');
   const card=(s,i)=>{const em=SKEMB[s.sig?ch().id:s.id]||'star8',tone=s.sig?2:s.t==='atk'?3:4;
     return `<button class="skm-c ${s.sig?'sig':s.t}" data-i="${i}"><span class="skm-key">${i+1}</span><span class="skm-orn"></span>
       <span class="skm-med">${embIc(em,tone,' skm-ic')}</span><b class="skm-n">${s.n}</b>
@@ -2500,7 +2508,7 @@ function skMenu(){if(!skReady())return;const set=skSet();S.p('pick');
     <div class="skm-cards">${set.map(card).join('')}</div>
     <div class="skm-ft"><label class="skm-sw"><input type="checkbox" id="skSkip"${settings.skSkip?' checked':''}><i></i><span>跳过谱面，直接以 ×1.0 释放</span></label><button class="skm-back" id="skNo">返回战斗<small>Esc</small></button></div></div>`);
   $('skSkip').onchange=e=>{settings.skSkip=e.target.checked?1:0;store.set('amj_settings',settings)};$('skNo').onclick=()=>closeModal();
-  panel.querySelectorAll('.skm-c').forEach(b=>b.onclick=()=>skChoose(set[+b.dataset.i]));const f=panel.querySelector('.skm-c');f&&f.focus({preventScroll:true})}
+  panel.querySelectorAll('.skm-c').forEach(b=>uiGuard(b,UIB.menuT,650,()=>skChoose(set[+b.dataset.i])));uiGuard($('skNo'),UIB.menuT,650,()=>{UIB.closeT=performance.now();closeModal()});const f=panel.querySelector('.skm-c');f&&f.focus({preventScroll:true})}
 function skChoose(s){if(settings.skSkip){closeModal();skCast(s,1,null);return}skChart(s)}
 /* ---- chart */
 const CHT={on:0};
@@ -2533,7 +2541,9 @@ function skChart(s){CHT.p0=performance.now();CHT.ck=null;CHT.end=0;CHT.res=null;
       <div class="chm-mul"><small>倍率</small><b id="chMul">×1.00</b></div></div>
     <canvas id="chCv" class="chcv"></canvas>
     <div class="chm-ft"><span class="chm-hint">${CHT.simple?(isTouch?'简化谱面 · 轻触音符':'简化谱面 · <kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd>'):isTouch?'轻触 · 长条按住 · 菱形滑过去':`<kbd>D</kbd><kbd>F</kbd><kbd>J</kbd><kbd>K</kbd> · 长条按住 · 菱形按着就行`}</span><button class="skm-back" id="chSkip">跳过 · ×1.0</button></div></div>`);
-  $('chSkip').onclick=()=>skChartEnd(1);if(!document.body.classList.contains('gp'))try{document.activeElement.blur()}catch(e){}
+  UIB.chartT=performance.now();{const sk=$('chSkip');sk.innerHTML='<i class="skHold"></i>按住跳过 · ×1.0';let tmr=null;const stop=()=>{clearTimeout(tmr);tmr=null;sk.classList.remove('holding')};
+    sk.addEventListener('pointerdown',e=>{e.preventDefault();if(uiFresh(UIB.chartT,1000)||CHT.end)return;sk.classList.add('holding');tmr=setTimeout(()=>{stop();if(CHT.on&&!CHT.end)skChartEnd(1)},800)});
+    for(const ev of['pointerup','pointercancel','pointerleave'])sk.addEventListener(ev,stop);sk.onclick=e=>{if(e.detail===0&&!uiFresh(UIB.chartT,1000))skChartEnd(1)}}if(!document.body.classList.contains('gp'))try{document.activeElement.blur()}catch(e){}
   const cv2=$('chCv'),laneAt=x=>{const r=cv2.getBoundingClientRect(),L=chLayout(r.width,r.height);return clamp(Math.floor((x-r.left-L.x0)/L.lw),0,CHL-1)};
   /* touch: the whole panel is the pad; every finger is handled separately, even when two land in the same event */
   const tz=panel,ok=e=>!(e.target&&e.target.closest&&e.target.closest('button'));
@@ -2546,7 +2556,7 @@ function skChart(s){CHT.p0=performance.now();CHT.ck=null;CHT.end=0;CHT.res=null;
   CHT.unbind=()=>{tz.removeEventListener('touchstart',ts);tz.removeEventListener('touchmove',tm);tz.removeEventListener('touchend',te);tz.removeEventListener('touchcancel',te);tz.removeEventListener('pointerdown',pd);removeEventListener('pointerup',pu)};
   requestAnimationFrame(chLoop)}
 const CHK=[['d','s','arrowleft','a'],['f','arrowdown','c'],['j','arrowup','n'],['k','l','arrowright',';']];
-function chKey(e){if(!CHT.on||G.modalKind!=='chart')return false;const k=e.key.toLowerCase();if(e.repeat){e.preventDefault();e.stopPropagation();return true}
+function chKey(e){if(!CHT.on||G.modalKind!=='chart')return false;const k=e.key.toLowerCase();if(k==='escape'){e.preventDefault();e.stopPropagation();if(e.repeat||uiFresh(UIB.chartT,1000))return true;if(CHT.escT&&performance.now()-CHT.escT<1500){skChartEnd(1)}else{CHT.escT=performance.now();toast('再按一次 Esc 跳过谱面')}return true}if(e.repeat){e.preventDefault();e.stopPropagation();return true}
   let l=CHK.findIndex(a=>a.includes(k));if(l<0&&(k===' '||k==='enter')){l=chNearestLane();CHT.keyL=CHT.keyL||{};CHT.keyL[k]=l}else if(l<0)return false;CHT.keysDown=CHT.keysDown||{};if(!CHT.keysDown[k]){CHT.keysDown[k]=l;chDown(l)}e.preventDefault();e.stopPropagation();return true}
 addEventListener('keyup',e=>{if(!CHT.on||!CHT.keysDown)return;const k=e.key.toLowerCase(),l=CHT.keysDown[k];if(l==null)return;delete CHT.keysDown[k];chUp(l)},true);
 function chNearestLane(){const c=chClock();let best=0,bo=9;for(const n of CHT.notes){if(n.k)continue;const o=Math.abs(c.b-n.b);if(o<bo){bo=o;best=n.l}}return best}
@@ -2578,7 +2588,7 @@ function chMul0(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const
   if(ap)return 3.25;if(fc)return Math.round((1.6+.4*clamp((acc-.7)/.3,0,1)+bon)*100)/100;return Math.round((1+.6*clamp((acc-.4)/.6,0,1)+bon)*100)/100}
 function skChartEnd(skip){if(CHT.end)return;CHT.end=1;const s=CHT.s,cnt=CHT.cnt,mul=skip?1:chMul(cnt),full=!skip&&cnt.P===chTotal()&&cnt.P>0,fc=!skip&&!full&&!cnt.B&&!cnt.M;
   if(full){G.pdN=(G.pdN||0)+1;S.p('clap',4);S.p('crit')}else if(fc)S.p('clap',3);CHT.res={mul,full,fc,t:performance.now()};
-  const go=()=>{CHT.on=0;CHT.unbind&&CHT.unbind();if(G.modalKind==='chart')closeModal();skCast(s,mul,skip?null:cnt)};if(skip)go();else setTimeout(go,900)}
+  const go=()=>{CHT.on=0;CHT.unbind&&CHT.unbind();UIB.closeT=performance.now();if(G.modalKind==='chart')closeModal();skCast(s,mul,skip?null:cnt)};if(skip)go();else setTimeout(go,900)}
 function chLayout(W,H){const lw=isTouch?(W-8)/CHL:Math.min(62,(W-16)/CHL),x0=(W-lw*CHL)/2,jy=H-(isTouch?22:34);return{lw,x0,jy,sp:(jy-8)/1.9}}
 function chRR(x,X,Y,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(X,Y,w,h,Math.max(0,Math.min(r,w/2,h/2)));else x.rect(X,Y,w,h)}
 function chDraw(c){const cv2=$('chCv');if(!cv2)return;const W=cv2.clientWidth,H=cv2.clientHeight,dp=Math.min(2,devicePixelRatio||1);if(cv2.width!==Math.round(W*dp)||cv2.height!==Math.round(H*dp)){cv2.width=Math.round(W*dp);cv2.height=Math.round(H*dp)}
@@ -2643,8 +2653,8 @@ function skbTick(dt){const A=G.skAtk;if(A){if(!(G.feverT>0)||P.down)G.skAtk=null
   if(B.regen){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*B.regen*dt*cr('heal'));for(const a of G.allies)if(!a.down)a.hp=Math.min(a.mhp,a.hp+a.mhp*B.regen*dt)}
   if(B.shr)P.sh=Math.min(P.shMax,P.sh+P.shMax*B.shr*dt);
   if(B.erase)for(const b of G.eb)if(!b.dead&&(b.x-P.x)**2+(b.y-P.y+8)**2<B.erase*B.erase){b.dead=1;burst(b.x,b.y,2,['#babef6','#fff'],20,.25)}}
-addEventListener('keydown',e=>{if(G.state!=='play')return;if(chKey(e))return;if(G.modalKind==='skill'&&e.target.id!=='skSkip'&&/^[1-3]$/.test(e.key)){const s=skSet()[+e.key-1];if(s)skChoose(s);e.preventDefault();e.stopPropagation()}
-  else if(G.modalKind==='skill'&&(e.key==='Escape'||e.key.toLowerCase()==='q'||e.key.toLowerCase()==='e')){closeModal();e.preventDefault();e.stopPropagation()}},true);
+addEventListener('keydown',e=>{if(G.state!=='play')return;if(chKey(e))return;if(G.modalKind==='skill'&&e.target.id!=='skSkip'&&/^[1-3]$/.test(e.key)){if(!uiFresh(UIB.menuT,400)&&!e.repeat){const s=skSet()[+e.key-1];if(s)skChoose(s)}e.preventDefault();e.stopPropagation()}
+  else if(G.modalKind==='skill'&&(e.key==='Escape'||e.key.toLowerCase()==='q'||e.key.toLowerCase()==='e')){if(!uiFresh(UIB.menuT,600)&&!e.repeat){UIB.closeT=performance.now();closeModal()}e.preventDefault();e.stopPropagation()}},true);
 
 /* boss second phase */
 const P2LINE=['「烛火不够亮？那就把整座大厅，点成一首挽歌。」','「孩子们，来。把她撕成，风能带走的大小。」','「为什么……为什么你们都要离开我——」','「大地啊。把她，种进根里去。」'],P2COL=['#ff7a2a','#b080ff','#4fb0ff','#7ae05a'];
