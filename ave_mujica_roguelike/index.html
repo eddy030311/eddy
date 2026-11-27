@@ -498,6 +498,9 @@ body.pc #gpBar .gpTop .gk.kb{background:transparent;box-shadow:inset 0 0 0 1px r
 body.pc #hint{display:none!important}
 
 /* skill key opens the skill menu when the gauge is full (2.2) */
+.hdiff{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;margin:6px 0 2px}.hdiff>span{color:var(--mist);letter-spacing:.2em;margin-right:2px}
+.hdiff button{padding:4px 14px;border:1px solid rgba(201,164,92,.35);background:rgba(0,0,0,.25);color:#cbbfc6;font:600 12px var(--f-body);letter-spacing:.2em;cursor:pointer}.hdiff button.on{border-color:var(--gold);color:#f6dc8a;background:rgba(201,164,92,.14);box-shadow:0 0 10px rgba(201,164,92,.25)}.hdiff button[data-h='1'].on{border-color:#e05a6a;color:#ffb3c0;background:rgba(200,40,60,.15)}
+.hdiff small{flex-basis:100%;color:#a89aa2;font-size:10.5px}
 /* the chart (vertical lanes) */
 .panel:has(.chm){width:min(100%,25rem)!important;padding:14px 16px 10px!important;background:radial-gradient(ellipse 90% 60% at 50% 100%,rgba(201,164,92,.12),transparent 70%),radial-gradient(ellipse 80% 50% at 50% 0,rgba(150,30,50,.32),transparent 65%),linear-gradient(180deg,rgba(22,8,14,.97),rgba(8,4,7,.98))!important}
 .chm{--c1:#f6dc8a;display:flex;flex-direction:column;gap:8px}.chm.atk{--c1:#ff8f7c}.chm.buff{--c1:#86e2d2}
@@ -788,7 +791,7 @@ body.pc .chpads{display:none}
   </div>
   <div class="selR">
   <ul class="abil" id="sAbil"></ul>
-  <div class="diff" hidden><span>难度</span><div class="nls" id="nls"></div><small id="dTxt"></small></div>
+  <div class="diff" hidden><span>难度</span><div class="nls" id="nls"></div><small id="dTxt"></small></div><div class="hdiff" id="hdiff"><span>难度</span><button type="button" data-h="0">默认</button><button type="button" data-h="1">困难</button><small id="hTxt"></small></div>
   <div class="kbd" id="kbdHint">手机：左半屏拖动移动，右下按钮攻击</div>
   <div class="gobar"><button class="cta" id="go">登 台</button></div>
   </div>
@@ -859,7 +862,7 @@ function auInit(){
   A.master=c.createGain();A.master.gain.value=.7;A.master.connect(A.comp);
   A.rev=c.createGain();{const lp=c.createBiquadFilter(),d1=c.createDelay(1),d2=c.createDelay(1),f1=c.createGain(),f2=c.createGain(),rg=c.createGain();lp.type='lowpass';lp.frequency.value=2400;
     d1.delayTime.value=.137;d2.delayTime.value=.211;f1.gain.value=.5;f2.gain.value=.45;rg.gain.value=.3;A.rev.connect(lp);lp.connect(d1);lp.connect(d2);d1.connect(f1);f1.connect(d2);d2.connect(f2);f2.connect(d1);d1.connect(rg);d2.connect(rg);rg.connect(A.master)}
-  A.mus=c.createGain();A.mus.gain.value=settings.music?.34:0;A.mus.connect(A.master);
+  A.mus=c.createGain();(A.mus.gain.value=settings.music?.34:0,mfSync());A.mus.connect(A.master);
   A.musWet=c.createGain();A.musWet.connect(A.mus);const ms=c.createGain();ms.gain.value=.55;A.musWet.connect(ms);ms.connect(A.rev);
   A.harpBus=c.createBiquadFilter();A.harpBus.type='lowpass';A.harpBus.frequency.value=3800;A.harpBus.connect(A.musWet);
   A.sfx=c.createGain();A.sfx.gain.value=settings.sfx?.6:0;A.sfx.connect(A.master);
@@ -1007,7 +1010,21 @@ function renderNow(n){const OAC=window.OfflineAudioContext||window.webkitOffline
   const pr=off.startRendering();if(pr&&pr.then)pr.then(done);else off.oncomplete=e=>done(e.renderedBuffer)}
 function stopMus(){MUS.playing=null;if(!MUS.src||!A.ctx)return;const g=MUS.g,src=MUS.src,t=A.ctx.currentTime;g.gain.cancelScheduledValues(t);g.gain.setValueAtTime(g.gain.value,t);g.gain.linearRampToValueAtTime(0,t+.6);try{src.stop(t+.65)}catch(e){}MUS.src=MUS.g=null}
 function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.createGain();src.buffer=MUS.buf[n];src.loop=true;g.gain.setValueAtTime(0,c.currentTime);g.gain.linearRampToValueAtTime(1,c.currentTime+.5);src.connect(g);g.connect(A.mus);src.start();MUS.src=src;MUS.g=g;MUS.playing=n;MUS.t0=c.currentTime;MUS.bpm=TRACKS[n].bpm}
-function setTrack(n,force){if(G.world>=2&&(n==='battle'||n==='calm'))n+='2';if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
+/* recorded tracks (2.0.3): the title theme, and the waltz that plays while you are Oblivionis / Sakiko or in 祥子之夜.
+   They play through an <audio> element (works from file:// in the APK and the Windows build) with a short fade */
+const MUSF={title:'assets/music/menu.mp3',ghost:'assets/music/ghost.mp3'};
+const MF={el:null,name:null,cache:{},want:null,vol:.5,fadeT:null};
+const mfVol=()=>settings.music?MF.vol:0;
+function mfFade(el,to,ms,done){clearInterval(el._fi);const from=el.volume,t0=performance.now();el._fi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);try{el.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1){clearInterval(el._fi);done&&done()}},40)}
+function mfPlay(n){if(MF.name===n&&MF.el){if(MF.el.paused){const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=n})}mfFade(MF.el,mfVol(),500);return}mfStop();let el=MF.cache[n];if(!el){el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';MF.cache[n]=el}
+  MF.el=el;MF.name=n;el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),900)}
+function mfStop(){const el=MF.el;MF.el=null;MF.name=null;MF.want=null;if(!el)return;mfFade(el,0,500,()=>{try{el.pause()}catch(e){}})}
+function mfSync(){if(MF.el)mfFade(MF.el,mfVol(),300)}
+addEventListener('pointerdown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
+addEventListener('keydown',()=>{if(MF.want&&MF.el){const p=MF.el.play();if(p&&p.then)p.then(()=>{MF.want=null;mfFade(MF.el,mfVol(),600)}).catch(()=>{})}},true);
+document.addEventListener('visibilitychange',()=>{if(!MF.el)return;if(document.hidden){try{MF.el.pause()}catch(e){}}else{const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=MF.name})}});
+const ghostOn=()=>G.state==='play'&&(G.world===2||['oblivionis','sakiko'].includes(ch().id));
+function setTrack(n,force){if(G.world>=2&&(n==='battle'||n==='calm'))n+='2';if(ghostOn()&&/^(calm|battle)2?$/.test(n))n='ghost';if(G.feverT>0&&!force&&n!=='fever'){G.feverPrev=n;return}if(MUSF[n]){if(MUS.name===n&&MF.el)return;MUS.name=n;stopMus();MUS.src=null;mfPlay(n);return}mfStop();if(MUS.name===n)return;MUS.name=n;if(!A.ctx)return;if(!n||!TRACKS[n]){stopMus();return}if(MUS.buf[n])startMus(n);else{const fb=fallbackFor(n);if(fb)startMus(fb);else stopMus();renderTrack(n,1)}}
 /* the casual dolls have their own sounds: Uika an acoustic guitar and starlight, Mutsumi a low palm-muted guitar and a mirrored double, Sakiko paper, pen and piano */
 const pno=(m,t,v,d,dest)=>{const f=mtof(m);tone('triangle',f,t,.002,0,d||.6,dest||A.sfxWet,v);tone('sine',f*2,t,.002,0,(d||.6)*.45,dest||A.sfxWet,v*.3);tone('sine',f*3,t,.002,0,(d||.6)*.2,dest||A.sfxWet,v*.12)};
 const NSFX={
@@ -1399,8 +1416,8 @@ const MINIB=[
   {name:'溺水的假面',sub:'Le Masque Noyé · 精英',spr:'w1m_3',sc:1.35,hp:470,r:10,spd:24,pats:['spiral','rain','ring','summon'],sum:['mask'],h:30,float:1,end:'「水面上……原来这么亮的吗。」',after:'假面浮上水面，安静地转了半圈，又沉回它熟悉的黑暗里。',line:'「水底很安静。安静到你心跳得多快，我都听得见。」'},
   {name:'荆棘骑士',sub:"Le Chevalier d'Épines · 精英",spr:'w1m_4',sc:1.25,hp:600,r:12,spd:22,pats:['spikes','fanRing','dash','summon'],sum:['rose','mari'],h:34,end:'「去吧。庭园的主人等你很久了。……替我，看一眼外面的花。」',after:'铠甲里空无一物。本该是心脏的位置，插着一支干枯的玫瑰。',line:'「这座庭园不欢迎客人。尤其是，还会流泪的客人。」'},
   {name:'帷幕守夜人',sub:'Le Veilleur du Rideau · 精英',spr:'w1m_5',sc:1.3,hp:800,r:13,spd:20,pats:['stream','spiral','fanRing','summon','rain'],sum:['mari','mask','crow'],h:40,end:'「灯要亮了……这块幕布我守了一辈子，总算轮到它拉开。」',after:'守夜人靠着幕布坐下，再也没起来。远处传来第一声定音鼓。',line:'「开演之前，任何人都不许看见舞台。」'}];
-function spawnMini(b){cdxBoss(b,'elite');const hm=actGrow()*STORYK()*((G.diff&&DF().ehp)||1)*1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length)*2.2;G.pending=Math.max(0,G.pending-1);
-  const e={t:'boss',mini:1,phase:1,maxPh:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:10+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.2,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:b.sc,pi:0,intro:.25,amb:2};
+function spawnMini(b){cdxBoss(b,'elite');const hm=STORYK()*((G.diff&&DF().ehp)||1)*1.2*EHP()*2.2;G.pending=Math.max(0,G.pending-1);
+  const e={t:'boss',mini:1,phase:1,maxPh:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:13*EDM(),elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.2,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:b.sc,pi:0,intro:.25,amb:2};
   if(G.eliteAff&&G.eliteAff.length){applyAff(e,G.eliteAff);G.affBonus=20*G.eliteAff.length}
   G.en.push(e);G.boss=e;S.p('boss');shake(5);setTrack('elite'+G.act);$('bossBar').hidden=false;$('bossName').innerHTML=`${b.name}${e.aff?' '+e.aff.map(a=>'【'+AFX[a].n+'】').join(''):''}<small>${b.sub}</small>`;hudCache.bf=null;later(1.4,()=>toast(b.line))}
 const RAR=['普通','稀有','传说'];
@@ -1437,7 +1454,7 @@ function setField(f){G.field=null;G.zones=(G.zones||[]).filter(z=>!z.fld);$('gam
   const txt=`场地 · ${f[0]}：${f[1].map(k=>FLD[k].d).join('；')}`;if(el)el.textContent=txt;later(.6,()=>toast(`场地效果 · ${f[0]}`))}
 function fieldThorns(){G.zones=G.zones.filter(z=>!(z.fld&&z.k==='thorn'));for(let i=0,n=0;i<40&&n<5;i++){const w=rint(30,44),h=rint(16,22),x=rnd(SIDE+16,RW-SIDE-16-w),y=rnd(TOP+28,RH-30-h);
     if(Math.abs(x+w/2-P.x)<42&&Math.abs(y+h/2-P.y)<34)continue;n++;G.fx.push({k:'warnR',x,y,w,h,t:0,d:.6,en:1});laterE(.6,()=>{if(fx('thorns'))G.zones.push({k:'thorn',fld:1,x,y,w,h})})}}
-function updField(dt){const bp=Math.floor(beatPos()),nb=bp!==G.flb,b=G.boss,dmg=7+G.act*2.5;if(nb)G.flb=bp;const spb=60/(MUS.bpm||120);
+function updField(dt){const bp=Math.floor(beatPos()),nb=bp!==G.flb,b=G.boss,dmg=9.5*EDM();if(nb)G.flb=bp;const spb=60/(MUS.bpm||120);
   if(nb&&fx('strings')&&bp%8===0){for(let i=0;i<2;i++){const vert=Math.random()<.5,th=10,d=spb*2;const r=vert?{x:clamp(P.x+rnd(-40,40),SIDE+6,RW-SIDE-16)-th/2,y:TOP,w:th,h:RH-TOP}:{x:SIDE,y:clamp(P.y+rnd(-30,30),TOP+10,RH-16)-th/2,w:RW-SIDE*2,h:th};
       G.fx.push({k:'warnR',...r,t:0,d,en:1});laterE(d,()=>{if(!fx('strings'))return;if(P.x>r.x-P.r&&P.x<r.x+r.w+P.r&&P.y>r.y-P.r&&P.y<r.y+r.h+P.r)hurtPlayer(dmg);shake(2);S.p('slam');G.fx.push({k:'line',x:r.x+(vert?th/2:0),y:r.y+(vert?0:th/2),x2:r.x+(vert?th/2:r.w),y2:r.y+(vert?r.h:th/2),t:0,d:.2,col:'#f4ece0'})})}}
   if(nb&&fx('lights')&&bp%4===2){const x=P.x,y=P.y,d=spb*1.5;G.fx.push({k:'warnC',x,y,r:17,t:0,d,en:1});laterE(d,()=>{if(!fx('lights'))return;if((P.x-x)**2+(P.y-y)**2<(17+P.r)**2)hurtPlayer(dmg);burst(x,y,14,['#fff6d0','#ffd27a'],70,.5);G.fx.push({k:'ring',x,y,r0:4,r1:22,t:0,d:.25,col:'#ffe9a0'})})}
@@ -1479,7 +1496,7 @@ const nlW=w=>{const o=NLS[w]||(NLS[w]={sel:1,max:9});o.max=9;return o};
 /* the N difficulty levels were removed in 2.1: every run plays at the base level */
 const NL=()=>1;
 /* each chapter adds monster HP on top of the base curve: N1 +25% per chapter (chapter 5 = +100%), +3% more per chapter for each N level above 1 */
-const actGrowRate=()=>.25+.03*(NL()-1),actGrow=()=>1+actGrowRate()*((G.act||1)-1);
+const actGrowRate=()=>0,actGrow=()=>1,EHP=()=>settings.hard?1.5:1,EDM=()=>settings.hard?1.5:1;
 /* the 假面之下 worlds are about the story: softer enemies and bosses, two waves a room */
 const STORYK=()=>G.world>=2?.7:1,STORYD=()=>G.world>=2?.7:1;
 const DIFFC={};function DF(){const lv=NL();if(DIFFC[lv])return DIFFC[lv];const k=lv-1;return DIFFC[lv]={n:'N'+lv,pet:1-.04*k,shop:1+.05*k,dmg:1+.06*k,ehp:1+.06*k,ap:1+.4*k,pick:0,leg:lv>=5?0:1,rare:lv>=5?1-.05*(lv-5):1,txt:NLR[lv].d}}
@@ -1982,15 +1999,15 @@ function spawnPos(){for(let i=0;i<40;i++){const x=rnd(30,RW-30),y=rnd(TOP+30,RH-
    the timer still lives in etimers so boss phase changes and room clears cancel it as before */
 function summon(t,x,y,elite){G.pending++;G.fx.push({k:'sum',x,y,t:0,d:.7});S.p('summon');G.etimers.push({t:G.time+.7,sp:1,bs:G.bossShot||0,fn:()=>{G.pending--;if(G.state!=='play')return;makeEnemy(t,x,y,elite)}})}
 function makeEnemy(t,x,y,elite){const _e=makeEnemy0(t,x,y,elite);if(_e&&!_e.boss)cdxEn(_e);if(_e&&NL()>=9&&!_e.boss&&Math.random()<.25)applyAff(_e,[pick(['tough','swift','venge'])]);return _e}
-function makeEnemy0(t,x,y,elite){const d=EN[t],hm=actGrow()*((G.diff&&DF().ehp)||1)*[1,1.7,2.6,3.7,5][G.act-1]*(1+G.room*.06)*(elite?3.4:1)*(G.hard||1)*(G.curseAct===G.act?1.4:1)*(1+.12*((G.allies&&G.allies.length)||0))*STORYK();
-  const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*[1,1.3,1.65,2.05,2.5][G.act-1]*(elite?1.3:1)*(G.hardDmg||1)*STORYD(),elite:!!elite,d,
+function makeEnemy0(t,x,y,elite){const d=EN[t],hm=EHP()*((G.diff&&DF().ehp)||1)*(elite?3.4:1)*(G.hard||1)*(G.curseAct===G.act?1.4:1)*STORYK();
+  const e={t,x,y,r:d.r*(elite?1.35:1),hp:d.hp*hm,mhp:d.hp*hm,spd:d.spd*(elite?1.1:1)*rnd(.9,1.1),dmg:d.dmg*EDM()*(elite?1.3:1)*(G.hardDmg||1)*STORYD(),elite:!!elite,d,
     st:'idle',stT:rnd(.3,1.2),fire:(d.fire||2)*rnd(.5,1),fl:0,kx:0,ky:0,stun:0,an:rnd(TAU),face:1,hitCd:new Map(),sc:elite?1.4:1};
   if(G.world>=2){const th=w2th(),sn=th&&'w2_'+th+'_'+t;if(sn&&SPR[sn])e.d={...d,spr:sn,h:SPR[sn].lh}}
   G.en.push(e);return e}
 function curBoss(){if(G.world>=2)return G.act===5?W2FINAL:BOSSES[G.act-1];return G.act===5&&G.route==='b'?BOSSB:BOSSES[G.act-1]}
-function spawnBoss(ov){const b=ov||curBoss();cdxBoss(b,'boss');const hm=STORYK()*(G.act===5?.75:1)*((G.diff&&DF().ehp)||1)*1.2*[1,1,1.1,1.2,1.3][G.act-1]*(1+.18*G.allies.length);
+function spawnBoss(ov){const b=ov||curBoss();cdxBoss(b,'boss');const hm=STORYK()*(G.act===5?.75:1)*((G.diff&&DF().ehp)||1)*1.2*EHP();
   if(!ov&&G.act===5&&G.route!=='b'&&G.world<2)return spawnMujica(hm);
-  const e={t:'boss',phase:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
+  const e={t:'boss',phase:1,boss:b,x:RW/2,y:TOP+70,r:b.r,hp:b.hp*hm,mhp:b.hp*hm,spd:b.spd,dmg:15*EDM(),elite:false,d:{spr:b.spr,h:b.h,float:b.float},st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.6};
   if(b.spr==='blank'){e.sc=1.3;e.y=TOP+92;e.r=20}
   if(b.spr==='audience'){e.sc=1.5;e.y=TOP+86;e.r=26}
   if(b.spr==='refl'){e.y=TOP+120;e.r=12}
@@ -1999,7 +2016,7 @@ function spawnBoss(ov){const b=ov||curBoss();cdxBoss(b,'boss');const hm=STORYK()
 function mjHp(f,hm){return BOSSES[4].hp*.45*hm*(1+.15*(f-1))*5}
 function mjBar(e){const f=MJF[e.form-1];$('bossName').innerHTML=`Mujica · ${f.name}<small>假面之主</small>`;hudCache.bf=null}
 function spawnMujica(hm){const b=BOSSES[4],hp=mjHp(1,hm);G.espd=1;
-  const e={t:'boss',boss:{...b,pats:MJF[0].pats},mj:1,form:1,hm,x:RW/2,y:TOP+124,r:26,hp,mhp:hp,spd:b.spd,dmg:12+G.act*3,elite:false,d:{spr:'mujica',h:90,float:1},amb:2,st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.2,
+  const e={t:'boss',boss:{...b,pats:MJF[0].pats},mj:1,form:1,hm,x:RW/2,y:TOP+124,r:26,hp,mhp:hp,spd:b.spd,dmg:15*EDM(),elite:false,d:{spr:'mujica',h:90,float:1},amb:2,st:'idle',stT:1.5,fl:0,kx:0,ky:0,stun:0,an:0,face:1,hitCd:new Map(),sc:1,pi:0,intro:1.2,
     hands:[-1,1].map(sd=>({s:sd,x:RW/2+(sd<0?-64:64),y:TOP+130,tx:0,ty:0,sp:4,fr:0,act:0,sw:0}))};
   G.en.push(e);G.boss=e;$('bossBar').hidden=false;mjBar(e);setTrack('mj1');preloadTracks(['mj2','mj3','mj4','mj5']);
   playCut(cutMjIntro(),()=>{shake(6);S.p('boss');toast('终幕 · Mujica');setDeb(1)})}
@@ -2009,7 +2026,7 @@ function mjNext(e){e.trans=1;setDeb(0);G.eb.forEach(b=>b.dead=1);G.etimers=[];G.
 function handSlam(e,h,x,y,dly=0){laterE(dly,()=>{h.act=1;h.st='up';h.stt=G.etime;h.tx=x;h.ty=y-30;h.sp=7;G.fx.push({k:'warnC',x,y,r:24,t:0,d:.8,en:1});S.p('warn')});
   laterE(dly+.72,()=>{h.ty=y+6;h.sp=30;h.fr=1;h.st='down';h.stt=G.etime});
   laterE(dly+.82,()=>{if((P.x-x)**2+(P.y-y)**2<(24+P.r)**2)hurtPlayer(10+G.act*3);shake(4);S.p('slam');burst(x,y,16,['#cfc3b6','#9b1b30','#3a2030'],80,.5);G.fx.push({k:'ring',x,y,r0:4,r1:26,t:0,d:.25,col:'#e0283c'});
-    if(e.form>=3)for(let i=0;i<10;i++)eshoot(x,y-4,i/10*TAU+rnd(.3),70,{dmg:6+G.act*2.6})});
+    if(e.form>=3)for(let i=0;i<10;i++)eshoot(x,y-4,i/10*TAU+rnd(.3),70,{dmg:8.6*EDM()})});
   laterE(dly+1.3,()=>{h.act=0;h.fr=0;h.sp=4;h.st=null})}
 function handSweep(e,h){const y=clamp(P.y,TOP+20,RH-24),from=h.s<0?SIDE+6:RW-SIDE-6;h.act=1;h.tx=from;h.ty=y+16;h.sp=6;G.fx.push({k:'warnR',x:SIDE,y:y-13,w:RW-SIDE*2,h:26,t:0,d:.9,en:1});S.p('warn');
   laterE(.9,()=>{h.sw=-h.s*330;h.sp=0;h.fr=1;S.p('dash')});laterE(2.3,()=>{h.sw=0;h.act=0;h.fr=0;h.sp=4})}
@@ -2856,12 +2873,12 @@ function updEnemy0(e,dt){
   for(const o of G.en){if(o===e||o.dead||o.boss)continue;const ddx=e.x-o.x,ddy=e.y-o.y,dd=ddx*ddx+ddy*ddy,rr=e.r+o.r;if(dd<rr*rr&&dd>.01){const d=Math.sqrt(dd),p=(rr-d)*.5;e.x+=ddx/d*p;e.y+=ddy/d*p}}
   bound(e);
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
-function eshoot(x,y,a,spd,o={}){if(G.bossShot===1){G.bsc=(G.bsc||0)+1;if(G.bsc%6===0)return}else if(G.bossShot===2&&!o._x&&Math.random()<.3)eshoot(x,y,a+(Math.random()<.5?.16:-.16),spd,{...o,_x:1});spd*=((G.mods&&G.mods.ebSlow)||1)*(G.espd||1);G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||(6+G.act*2.6),t:0,k:o.k||'orb',life:o.life||6,col:o.col,split:o.split});S.p('eshot')}
+function eshoot(x,y,a,spd,o={}){if(G.bossShot===1){G.bsc=(G.bsc||0)+1;if(G.bsc%6===0)return}else if(G.bossShot===2&&!o._x&&Math.random()<.3)eshoot(x,y,a+(Math.random()<.5?.16:-.16),spd,{...o,_x:1});spd*=((G.mods&&G.mods.ebSlow)||1)*(G.espd||1);G.eb.push({x,y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,r:o.r||3,dmg:o.dmg||8.6*EDM(),t:0,k:o.k||'orb',life:o.life||6,col:o.col,split:o.split});S.p('eshot')}
 function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;if(e.mj){updHands(e,dt);e.castT=Math.max(0,(e.castT||0)-dt)}
   if(e.intro>0){e.intro-=dt;return}if(e.trans)return;
   if(e.mini&&!e.enr&&e.hp<e.mhp*.5){e.enr=1;shake(4);S.p('boss');toast('精英 · 暴走');G.fx.push({k:'ring',x:e.x,y:e.y-10,r0:6,r1:64,t:0,d:.4,col:'#ff4a5a'})}
-  if(!e.mj&&FINAL[b.spr]&&e.phase>=3&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.2-.2*e.phase)*1.15;const a=Math.atan2(P.y-8-(e.y-30),P.x-e.x),n=1+e.phase;for(let i=0;i<n;i++)eshoot(e.x,e.y-30,a+(i-(n-1)/2)*.14,95,{dmg:6+G.act*2.9,col:p2col(e)})}}
-  if(e.mj&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.05-.15*e.form)*1.15;const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:6+G.act*2.9,col:MJF[e.form-1].col})}}
+  if(!e.mj&&FINAL[b.spr]&&e.phase>=3&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.2-.2*e.phase)*1.15;const a=Math.atan2(P.y-8-(e.y-30),P.x-e.x),n=1+e.phase;for(let i=0;i<n;i++)eshoot(e.x,e.y-30,a+(i-(n-1)/2)*.14,95,{dmg:8.9*EDM(),col:p2col(e)})}}
+  if(e.mj&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.05-.15*e.form)*1.15;const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:8.9*EDM(),col:MJF[e.form-1].col})}}
   const ph2=e.mj?(e.form>=3||e.hp<e.mhp*.5):e.phase===2;if(ph2&&!e.ph2){e.ph2=1;shake(6);G.eb.forEach(x=>x.dead=1)}
   if(e.dashT>0){e.dashT-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(b.spr==='queen'&&Math.random()<dt*20)eshoot(e.x,e.y-10,rnd(TAU),30,{k:'feather'});bound(e)}
   else if(e.busy>0){e.busy-=dt}
@@ -3113,7 +3130,7 @@ function showPause(){if(G.state!=='play')return;const owned=Object.keys(G.ups).m
   openModal('pause',`<h3>暂停</h3><p class="sub">${ch().name} · ${inTh()?'':`第${CN[G.act-1]}章`}「${ACTS[G.act-1].name}」· ${inTh()?'剧场':'本章'}特色：${CHAP[G.act-1].feat.n}</p>${G.allies.length?`<div class="chips">${G.allies.map(a=>`<span class="bd">同伴 · ${cname(a.id)}</span>`).join('')}</div>`:''}<div class="chips">${owned}</div>${questLog()}
    <div class="tog"><span><i class="u6" style="background-position:80% 0"></i> 音乐</span><button class="ghost" id="tMus">${settings.music?'开':'关'}</button></div><div class="tog"><span><i class="u6" style="background-position:100% 0"></i> 音效</span><button class="ghost" id="tSfx">${settings.sfx?'开':'关'}</button></div>
    <div class="row"><button class="cta" id="resume">继续</button></div><div class="row"><button class="ghost" id="quit">放弃本次演出</button></div>`);
-  $('resume').onclick=closeModal;$('tMus').onclick=()=>{settings.music=!settings.music;store.set('amj_settings',settings);if(A.mus)A.mus.gain.value=settings.music?.34:0;$('tMus').textContent=settings.music?'开':'关'};
+  $('resume').onclick=closeModal;$('tMus').onclick=()=>{settings.music=!settings.music;store.set('amj_settings',settings);if(A.mus)(A.mus.gain.value=settings.music?.34:0,mfSync());$('tMus').textContent=settings.music?'开':'关'};
   $('tSfx').onclick=()=>{settings.sfx=!settings.sfx;store.set('amj_settings',settings);if(A.sfx)A.sfx.gain.value=settings.sfx?.6:0;$('tSfx').textContent=settings.sfx?'开':'关'};
   $('quit').onclick=()=>{closeModal();if(typeof runClear==='function')runClear();toTitle()}}
 function mjChoice(){openModal('choice',`<h3>碎片的低语</h3><p class="sub">Mujica 碎了。碎片却没有落地，而是悬在你面前，拼成了一张完整的假面。<br>「戴上它吧。这样，就再也不会失去任何人了。」</p><div class="cards">
@@ -3163,7 +3180,8 @@ function showWaveTag(){const el=$('secBanner');if(!el)return;el.innerHTML=`<smal
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
 function toTitle(){if(typeof runTitleBtn==='function')setTimeout(runTitleBtn,0);G.owSel=0;if(typeof owReset==='function')owReset();feverReset();$('gpBar').hidden=true;G.state='title';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('title');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');G.amb=[];
   $('w2btn').hidden=!Object.keys(best.endings||{}).length;const ne=Object.keys(best.endings||{}).length;$('best').textContent=(best.wins?`通关 ${best.wins} 次 · 结局 ${ne}/4 · `:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章 · `:'')+`回忆 ${memTotal()}/${memMax()}`;$('memBtn').classList.toggle('hasnew',memNew()>0);updBadge();if(UPD.pending)setTimeout(updMaybeAsk,600)}
-function toSelect(){try{renderNL()}catch(e){}{const dv=document.querySelector('.selR .diff');if(dv)dv.style.display='none'}$('selH').textContent=WORLD===4?'镜中的睦 · Mortis':WORLD===3?'星之约 · 丰川祥子 × 三角初华':WORLD===2?'假面之下 · 丰川祥子':'选择人偶';buildTabs();if(WORLD>=2)G.charIdx=CHARS.findIndex(c=>c.id===(WORLD===4?'mortis':'oblivionis'));feverReset();$('gpBar').hidden=true;if(!isUnl(CHARS[G.charIdx].id))G.charIdx=0;G.state='select';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('select');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');selChar(G.charIdx)}
+function hdiffSync(){const h=!!settings.hard;document.querySelectorAll('#hdiff button').forEach(b=>b.classList.toggle('on',(b.dataset.h==='1')===h));const t=$('hTxt');if(t)t.textContent=h?'所有怪物的生命和攻击力 +50%':'怪物不会随剧场或同伴数量变强'}
+function toSelect(){try{renderNL()}catch(e){}hdiffSync();{const dv=document.querySelector('.selR .diff');if(dv)dv.style.display='none'}$('selH').textContent=WORLD===4?'镜中的睦 · Mortis':WORLD===3?'星之约 · 丰川祥子 × 三角初华':WORLD===2?'假面之下 · 丰川祥子':'选择人偶';buildTabs();if(WORLD>=2)G.charIdx=CHARS.findIndex(c=>c.id===(WORLD===4?'mortis':'oblivionis'));feverReset();$('gpBar').hidden=true;if(!isUnl(CHARS[G.charIdx].id))G.charIdx=0;G.state='select';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('select');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');selChar(G.charIdx)}
 function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{const b=document.createElement('button');const lk=!isUnl(c.id);b.className='tab'+(lk?' lock':'');b.innerHTML=`<canvas width="40" height="58"></canvas><span>${lk&&WORLD<2?'？？？':c.name}</span>${lk?`<em class="lk">${WORLD===4?'仅限睦':WORLD>=2?'仅限祥子':'未解锁'}</em>`:''}`;
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
 function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$('sReal').textContent=`${c.real} · ${c.role}`;$('sMotto').textContent=`「${c.motto}」`;
@@ -3184,6 +3202,7 @@ function startRun(i,opt){if(typeof owReset==='function')owReset();if(!(opt&&opt.
   if(opt&&opt.ow){owBegin(opt.resume);return}
   if(opt&&opt.resume){runRestoreRoom(opt.resume);return}
   G.zones=[];G.bg=buildBg();playCut(G.world===4?cutPrologue4().concat(cutChapter4(1)):G.world===3?cutPrologue3().concat(cutChapter3(1)):G.world===2?cutPrologue2().concat(cutChapter2(1)):cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>{enterRoom('combat');if(G.rareGot)later(1.2,()=>toast('试音 · 获得「'+G.rareGot+'」'))}))}
+document.querySelectorAll('#hdiff button').forEach(b=>b.onclick=()=>{settings.hard=b.dataset.h==='1'?1:0;store.set('amj_settings',settings);S.p('tick');hdiffSync()});
 $('start').onclick=()=>{auInit();runGuard(()=>{WORLD=1;goLandscape();S.p('door');G.owSel=1;toSelect();$('selH').textContent='假面回廊'})};
 $('w2btn').onclick=()=>{auInit();runGuard(()=>{S.p('door');w3Branch()})};
 $('meta').onclick=()=>{auInit();showMeta()};
@@ -3221,7 +3240,7 @@ function showSettings(){const seg=(k,opts,cur)=>`<div class="segs">${opts.map(([
   panel.querySelectorAll('[data-ast]').forEach(b=>b.onclick=()=>{settings.assist=b.dataset.ast==='1';save();S.p('tick');showSettings()});$('calBtn').onclick=()=>showCalib();
   panel.querySelectorAll('[data-fs]').forEach(b=>b.onclick=()=>{S.p('tick');const f=b.dataset.fs==='f';try{f?document.documentElement.requestFullscreen():document.exitFullscreen()}catch(e){}setTimeout(showSettings,400)});
   panel.querySelectorAll('[data-fps]').forEach(b=>b.onclick=()=>{settings.fps=+b.dataset.fps;save();S.p('tick');showSettings()});
-  panel.querySelectorAll('[data-mus]').forEach(b=>b.onclick=()=>{settings.music=b.dataset.mus==='1';save();if(A.mus)A.mus.gain.value=settings.music?.34:0;showSettings()});
+  panel.querySelectorAll('[data-mus]').forEach(b=>b.onclick=()=>{settings.music=b.dataset.mus==='1';save();if(A.mus)(A.mus.gain.value=settings.music?.34:0,mfSync());showSettings()});
   panel.querySelectorAll('[data-sfx]').forEach(b=>b.onclick=()=>{settings.sfx=b.dataset.sfx==='1';save();if(A.sfx)A.sfx.gain.value=settings.sfx?.6:0;S.p('tick');showSettings()});
   panel.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{if(b.dataset.lang===LANG)return;settings.lang=b.dataset.lang;save();try{sessionStorage.setItem('amj_toTitle','1')}catch(e){}location.reload()});
   $('setOk').onclick=()=>{closeModal();toTitle()}}
@@ -3229,7 +3248,7 @@ function showSettings(){const seg=(k,opts,cur)=>`<div class="segs">${opts.map(([
 function showCalib(){auInit();const c=A.ctx;if(!c){showSettings();return}if(c.state!=='running')c.resume();if(A.mus)A.mus.gain.value=0;
   const N=12,iv=.6,t0=c.currentTime+.8,ts=[];for(let i=0;i<N;i++){const t=t0+i*iv;ts.push(t);const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=i%4?1000:1500;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.06);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+.08)}
   const taps=[];openModal('calib',`<h3>判定校准</h3><p class="sub">听节拍器，每响一下就点一次下面的圆钮（前 4 下是预备拍）。戴耳机玩的话，请戴着耳机校准</p><button class="calpad" id="calPad">♪</button><p class="sub" id="calSt">0 / 8</p><div class="row"><button class="cta" id="calBack">返回</button></div>`);
-  const pad=$('calPad'),st=$('calSt'),back=$('calBack'),restore=()=>{removeEventListener('keydown',key);if(A.mus)A.mus.gain.value=settings.music?.34:0};
+  const pad=$('calPad'),st=$('calSt'),back=$('calBack'),restore=()=>{removeEventListener('keydown',key);if(A.mus)(A.mus.gain.value=settings.music?.34:0,mfSync())};
   const tap=e=>{if(e)e.preventDefault();if(pad.disabled)return;const t=c.currentTime;pad.classList.add('hit');setTimeout(()=>pad.classList.remove('hit'),90);let best=null;for(let i=4;i<N;i++){const d=t-ts[i];if(Math.abs(d)<.3&&(best==null||Math.abs(d)<Math.abs(best)))best=d}if(best!=null){taps.push(best*1000);st.textContent=taps.length+' / 8'}};
   const key=e=>{if(e.code==='Space'||e.code==='Enter')tap(e)};pad.addEventListener('pointerdown',tap);addEventListener('keydown',key);
   const fin=setTimeout(()=>{restore();pad.disabled=true;if(taps.length<5){st.textContent='点击次数不足，请重试';back.textContent='重试';back.onclick=()=>showCalib();return}
@@ -6736,7 +6755,7 @@ function owChop(a,range){const o=G.ow;if(!o||G.owArena||!o.mem.axe)return;for(le
     if(o.thp[i]<=0){delete o.thp[i];owFell(tx,ty)}return}}
 function owFell(tx,ty){const o=G.ow,i=owI(tx,ty);o.g[i]=TL.GR;(o.stumps=o.stumps||[]).push({x:tx*16+8,y:ty*16+12});S.p('slam');shake(4);burst(tx*16+8,ty*16-10,26,(TREEPAL[owTreeKind(o,i)]||TREEPAL.oak).c.slice(1),90,.7);
   owRepaint(tx,ty);
-  if(o.baked&&o.baked.has(i)&&o.gc&&G.bg){/* the tree was painted into the ground: repaint that patch and the baked trees around it */const bx=tx*16-20,by=ty*16-44,bw=56,bh=64,x=G.bg.getContext('2d');x.save();x.setTransform(OWBS,0,0,OWBS,0,0);x.beginPath();x.rect(bx,by,bw,bh);x.clip();x.imageSmoothingEnabled=false;x.drawImage(o.gc,bx,by,bw,bh,bx,by,bw,bh);
+  if(o.baked&&o.baked.has(i)&&o.gc&&G.bg){/* the tree was painted into the ground: repaint that patch and the baked trees around it */const bx=tx*16-20,by=ty*16-44,bw=56,bh=64,x=G.bg.getContext('2d');const bs=G.bg.bgS||1;x.save();x.setTransform(bs,0,0,bs,0,0);x.beginPath();x.rect(bx,by,bw,bh);x.clip();x.imageSmoothingEnabled=false;x.drawImage(o.gc,bx,by,bw,bh,bx,by,bw,bh);
     x.fillStyle='rgba(14,10,24,.26)';for(let yy=ty-4;yy<=ty+3;yy++)for(let xx=tx-2;xx<=tx+2;xx++){if(owTile(xx,yy)!==TL.TR)continue;x.beginPath();x.ellipse(xx*16+11+owHash(xx,yy)*2,yy*16+13,10,4.2,.1,0,TAU);x.fill()}
     for(let yy=ty-4;yy<=ty+4;yy++)for(let xx=tx-2;xx<=tx+2;xx++){const j=owI(xx,yy);if(owTile(xx,yy)!==TL.TR||!o.baked.has(j))continue;const sp=owTreeKind(o,j),v=(owHash(xx*13,yy*7)*6)|0,s=owTreeSpr(sp,v,o.th);x.drawImage(s.c,xx*16+8+(owHash(xx,yy*3)-.5)*4-s.ox,yy*16+13+(owHash(xx*5,yy)-.5)*3-s.oy,s.w,s.h)}x.restore();o.baked.delete(i)}
   /* trees just below the new clearing can now be walked behind */
@@ -6783,7 +6802,7 @@ function owGround(o){const th=o.th,P=th.pal||OWTH.forest.pal,W=RW,H=RH,N=owNoise
   const roads=o.roads&&o.roads.length?o.roads:null;
   if(roads){for(const r of roads){for(const[ww,col]of[[r.w+5,'#550000'],[r.w+2,'#550000'],[r.w,'#550000']]){rx.strokeStyle=col;rx.lineWidth=ww;rx.beginPath();r.pts.forEach((p,i)=>i?rx.lineTo(p.x,p.y):rx.moveTo(p.x,p.y));rx.stroke()}}}
   else{rx.fillStyle='#550000';for(let i=0;i<T;i++)if(g[i]===TL.RD){const x=i%OWW,y=(i/OWW)|0;for(const pad of[3,1,0]){rx.beginPath();if(rx.roundRect)rx.roundRect(x*OWT-pad,y*OWT-pad,OWT+pad*2,OWT+pad*2,5);else rx.rect(x*OWT-pad,y*OWT-pad,OWT+pad*2,OWT+pad*2);rx.fill()}}}
-  const RM=rx.getImageData(0,0,W,H).data;
+  const RM=rx.getImageData(0,0,W,H).data;rc.width=rc.height=1;
   const plotOf=new Int16Array(T).fill(-1);(o.plots||[]).forEach((p,k)=>{for(let y=p.y;y<p.y+p.h;y++)for(let x=p.x;x<p.x+p.w;x++)plotOf[I(x,y)]=k});
   const C=k=>hx3(P[k]),cDirt=C('dirt'),cRut=C('rut'),cCob=C('cobble'),cSand=C('sand'),cBank=C('bank'),cSh=C('shallow'),cDp=C('deep'),cFoam=C('foam'),cSoil=C('soil'),cFl=hx3(th.col.fl||'#3a3640');
   const tc=o.P0.town,tcx=tc.x*OWT+8,tcy=tc.y*OWT+8,sq=o.v2&&th.settle==='town';
@@ -6953,7 +6972,7 @@ function owPropSpr(k,th,v){const R=srand(v*53+k.length*7);
   const d=D[k];if(!d)return null;return owSprC('prop:'+k+':'+th.id+':'+(k==='stall'||k==='hay'||k==='mask'?v%4:0),d[0],d[1],d[2],d[3],d[4])}
 
 /* ---------------------------------------------------------------- the whole map */
-function owPaint(){const o=G.ow;if(!o.nonce){o.nonce=Date.now()%1e9;for(const k in OWSPR)if(k.startsWith('house:'))delete OWSPR[k]}const th=o.th,t0=performance.now(),{gc,cls}=owGround(o),c=mk(OWW*OWT*OWBS,OWH*OWT*OWBS),x=c.getContext('2d');c.bgS=OWBS;x.imageSmoothingEnabled=false;x.drawImage(gc,0,0,c.width,c.height);x.scale(OWBS,OWBS);x.lineCap='round';x.lineJoin='round';
+function owPaint(){const o=G.ow;if(!o.nonce){o.nonce=Date.now()%1e9;for(const k in OWSPR)if(k.startsWith('house:'))delete OWSPR[k]}const th=o.th,t0=performance.now(),{gc,cls}=owGround(o),bs=owBgScale(),c=mk(OWW*OWT*bs,OWH*OWT*bs),x=c.getContext('2d');c.bgS=bs;x.imageSmoothingEnabled=false;x.drawImage(gc,0,0,c.width,c.height);x.scale(bs,bs);x.lineCap='round';x.lineJoin='round';
   o.gc=gc;const g=o.g,bio=o.bio||new Uint8Array(OWW*OWH),P=th.pal||OWTH.forest.pal,I=owI,clsAt=(px,py)=>px<0||py<0||px>=RW||py>=RH?1:cls[(py|0)*RW+(px|0)],at=(tx,ty)=>owTile(tx,ty);
   /* road ruts and soft edges */
   for(const r of o.roads||[]){if(!r.main)continue;const p=r.pts;for(const side of[-1,1]){x.strokeStyle=hexA(P.rut,.55);x.lineWidth=1.1;x.beginPath();let on=0;for(let i=1;i<p.length-1;i++){const a=p[i-1],b=p[i+1],dx=b.x-a.x,dy=b.y-a.y,l=Math.hypot(dx,dy)||1,nx=-dy/l*side*r.w*.22,ny=dx/l*side*r.w*.22,qx=p[i].x+nx,qy=p[i].y+ny;
@@ -7014,7 +7033,11 @@ function owPaint(){const o=G.ow;if(!o.nonce){o.nonce=Date.now()%1e9;for(const k 
   /* bushes along forest edges (baked; low) */
   for(let ty=1;ty<OWH-1;ty++)for(let tx=1;tx<OWW-1;tx++){const t=g[I(tx,ty)];if(t!==TL.GR)continue;const nT=(at(tx+1,ty)===TL.TR)+(at(tx-1,ty)===TL.TR)+(at(tx,ty+1)===TL.TR)+(at(tx,ty-1)===TL.TR);const h=owHash(tx*3,ty*5);if(nT&&h<.32){const qx=tx*16+4+owHash(tx,ty*2)*8,qy=ty*16+8+owHash(tx*2,ty)*6;if(clsAt(qx,qy)!==0)continue;const s=owBushSpr(th,(h*100|0)%5,owGF(o,tx,ty)>.45);x.fillStyle='rgba(14,10,24,.25)';x.beginPath();x.ellipse(qx+2,qy,7,2.4,0,0,TAU);x.fill();x.drawImage(s.c,qx-s.ox,qy-s.oy,s.w,s.h)}}
   owSprInit(x);
-  o.paintMs=Math.round(performance.now()-t0);return c}
+  o.paintMs=Math.round(performance.now()-t0);
+  if(bs>1&&!owBgOk(c)){c.width=c.height=1;OWBGLOW=1;store.set('amj_bglow',1);return owPaint()}return c}
+let OWBGLOW=store.get('amj_bglow',0);const owBgScale=()=>OWBGLOW?1:OWBS;
+/* a canvas the device could not allocate reads back empty: sample a few points */
+function owBgOk(c){try{const x=c.getContext('2d');if(!x)return false;let any=0;for(const[fx,fy]of[[.5,.5],[.25,.3],[.75,.7]]){const d=x.getImageData(Math.floor(c.width*fx),Math.floor(c.height*fy),1,1).data;if(d[3]>0)any++}return any>0}catch(e){return false}}
 
 /* ---------------------------------------------------------------- sprites: y-sorted with the characters */
 function owTreeKind(o,i){const sp=o.th.trees||[['oak',1]],k=((o.trs&&o.trs[i])||1)-1;if(k===9)return'dead';if(k===10)return'gothic';if(k===3)return'fruit';return(sp[Math.min(k,sp.length-1)]||sp[0])[0]}
@@ -7075,7 +7098,8 @@ function owAtmosOver(cam,t){const o=G.ow,nf=owNight(),p=(o.clock%OWDAY)/OWDAY,gk
 
 /* ------------------------------------------------------------------ start / reset */
 let OWLAST=0;
-function owReset(){P.swim=false;$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
+function owFreeMap(o){const kill=c=>{if(c&&c.width){c.width=1;c.height=1}};if(G.bg&&G.bg.bgS)kill(G.bg);if(o){kill(o.gc);o.gc=null;kill(o.fog);if(o.save)kill(o.save.bg)}for(const k in OWSPR)if(k.startsWith('house:')){kill(OWSPR[k].c);delete OWSPR[k]}}
+function owReset(){P.swim=false;if(G.ow)owFreeMap(G.ow);$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
 function owStart(i){OWLAST=1;const ks=Object.keys(OWTH),last=store.get('amj_owlast','');let th=pick(ks);if(th===last&&ks.length>1)th=pick(ks.filter(k=>k!==last));store.set('amj_owlast',th);G.owTheme=th;WORLD=1;startRun(i,{ow:1})}
 function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res){const n=res.ow.g.length;OWW=res.ow.w||(n===112*84?112:144);OWH=res.ow.h||Math.round(n/OWW)}else{OWW=144;OWH=108}try{buildW34Art()}catch(e){}
   G.ow={th,g:null,P0:null,exp:new Uint8Array(OWW*OWH),clock:rnd(20,60),fogT:0,mapT:0,npcs:[],I:[],eng:0,engT:0,lastEng:0,mem:{},kills0:G.kills||0,t0:G.time,quiet:0};
@@ -7509,7 +7533,7 @@ function w1Mode(){openModal('fork',`<div class="fork"><div class="fk-head"><div 
    whole (map, fog, monsters, NPCs, chests, loot) every 20 seconds and whenever the game is hidden or closed.
    Death, a win, or giving up clears the save; a new run asks before replacing it. */
 const RUNKEY='amj_run',RUNVER=1;
-const RUNG=['owDone','owNext','world','nl','diff','revUsed','bench','route','mods','ups','bonds','fvN','duetN','eliteK','pdN','grades','jc','rc','rcMax','met','curseAct','quests','qQueue','offered','seenEv','relics','dark','audDone','reflOn','inter','bossK','frags','caps','petals','act','room','roomsDone','kills','score','w1order','w2order','owTheme','lsAct','uikaAct','underUsed'];
+const RUNG=['hardRun','owDone','owNext','world','nl','diff','revUsed','bench','route','mods','ups','bonds','fvN','duetN','eliteK','pdN','grades','jc','rc','rcMax','met','curseAct','quests','qQueue','offered','seenEv','relics','dark','audDone','reflOn','inter','bossK','frags','caps','petals','act','room','roomsDone','kills','score','w1order','w2order','owTheme','lsAct','uikaAct','underUsed'];
 const plain=v=>JSON.parse(JSON.stringify(v===undefined?null:v));
 function runHas(){const s=store.get(RUNKEY,null);return s&&s.ver===RUNVER?s:null}
 function runClear(){try{localStorage.removeItem(RUNKEY)}catch(e){}runTitleBtn()}
