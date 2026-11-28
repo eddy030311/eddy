@@ -492,12 +492,25 @@ body.pc #hint{display:none!important}
 #curtain.shut .cvL,#curtain.shut .cvR{transform:none}#curtain.shut .cvT,#curtain.val .cvT{transform:none}
 #curtain.fast i,#curtain.fast b{transition:none}
 
+
+/* HUD (2.3): the level is a small seal on the portrait, its ring the experience; slanted bars stepping down */
+#hud .hpw{position:relative;flex:none;display:flex;align-items:flex-end;align-self:flex-start}
+#hud .lvbadge{--p:0;position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:17px;height:17px;border-radius:50%;display:grid;place-items:center;font-style:normal;
+  background:radial-gradient(circle,#1c0a12 0 54%,transparent 56%),conic-gradient(from -90deg,#f6dc8a calc(var(--p)*1%),rgba(201,164,92,.22) 0);box-shadow:0 0 0 1px rgba(0,0,0,.75),0 1px 4px rgba(0,0,0,.7)}
+#hud .lvbadge b{font:700 8.5px/1 "Cinzel","Noto Serif SC",serif;color:#ffe6a8;text-shadow:0 1px 0 #000;letter-spacing:-.02em}
+#hud .lvbadge.max{background:radial-gradient(circle,#2a0e16 0 54%,transparent 56%),conic-gradient(#ffe6a8,#c9a45c,#ffe6a8);box-shadow:0 0 0 1px rgba(0,0,0,.75),0 0 6px rgba(246,220,138,.6)}
+#hud .hpw:has(#hPort[hidden]) .lvbadge{position:relative;left:auto;bottom:auto;transform:none;margin-top:2px}
+#hud .whorow{gap:0}
+#hud .who{font-size:15px;line-height:1.05}
+#hud .bar{height:8px;margin-top:4px;border:0;border-radius:0;background:linear-gradient(180deg,rgba(6,3,5,.75),rgba(22,10,16,.6));box-shadow:none;clip-path:polygon(4px 0,100% 0,calc(100% - 4px) 100%,0 100%)}
+#hud .bar:before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(201,164,92,.55),rgba(201,164,92,.15)) top/100% 1px no-repeat,linear-gradient(90deg,rgba(201,164,92,.3),rgba(201,164,92,.05)) bottom/100% 1px no-repeat}
+#hud .bar i{background:linear-gradient(180deg,#ef6a80 0,#b8203a 45%,#6e0c1e 100%);box-shadow:inset 0 1px 0 rgba(255,220,226,.35)}
+#hud .bar span{z-index:2;text-align:right;padding-right:7px;font:600 7px/8px "Cinzel","Noto Serif SC",serif;letter-spacing:.06em;color:#fbe8ea;opacity:.92}
+#hud .bar.shb{height:3px;margin:3px 6px 0 3px;background:rgba(10,8,16,.6)}#hud .bar.shb i{background:linear-gradient(90deg,#4a74b0,#d8ecff);box-shadow:none}
+#hud .bar.fvb{height:3px;margin:3px 12px 0 6px;background:rgba(14,6,12,.6)}#hud .bar.fvb.on{box-shadow:none;filter:drop-shadow(0 0 4px rgba(255,79,168,.9))}
+#hud .bar.shb:before,#hud .bar.fvb:before{display:none}
 /* 2.2 personal levels */
 .whorow{display:flex;align-items:center;gap:7px;min-width:0}
-.lvtag{flex:none;position:relative;font:italic 700 11px/1 "Cinzel","Noto Serif SC",serif;letter-spacing:.06em;color:#f4e2b4;padding:3px 7px 3px 8px;background:linear-gradient(180deg,#3a1520,#1a0a10);border:1px solid #c9a45c;clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%);text-shadow:0 1px 0 #000}
-.lvtag b{font-style:normal;font-size:13px;color:#ffe6a8;margin-left:2px}
-.lvx{display:block;height:2px;margin:3px 0 2px;background:rgba(201,164,92,.18);position:relative;overflow:hidden}
-.lvx s{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#8a6a2a,#f6dc8a);box-shadow:0 0 6px #f6dc8a;transition:width .4s}
 #lvUp{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:61;pointer-events:none;text-align:center;color:#f4e6cc;min-width:260px}
 #lvUp[hidden]{display:none}
 #lvUp .lu-in{position:relative;padding:12px 34px 10px;background:radial-gradient(ellipse at 50% 50%,rgba(60,16,26,.92),rgba(14,6,10,.0) 72%);animation:luIn 3.2s ease forwards}
@@ -839,9 +852,9 @@ body.pc .chpads{display:none}
   <canvas id="cv"></canvas>
   <div id="vig"></div><div id="tint"></div>
   <div id="hud" hidden>
-    <i id="hPort" class="port" hidden></i>
+    <div class="hpw"><i id="hPort" class="port" hidden></i><em class="lvbadge" id="hLv" title="个人等级"><b>1</b></em></div>
     <div class="hpbox">
-      <div class="whorow"><div class="who" id="hWho">Doloris</div><em class="lvtag" id="hLv">Lv<b>1</b></em></div><i class="lvx"><s id="hLvF"></s></i>
+      <div class="whorow"><div class="who" id="hWho">Doloris</div></div>
       <div class="bar"><i id="hpFill"></i><span id="hpTxt">100/100</span></div>
       <div class="bar shb"><i id="shFill"></i><span id="shTxt"></span></div>
       <div class="bar fvb" id="fvBar"><i id="fvFill"></i><span id="fvTxt">乐章 0%</span></div>
@@ -6262,7 +6275,7 @@ function lvGain(n,why){if(G.state!=='play'&&G.state!=='win'||!CHARS[G.charIdx])r
 function lvBanner(l){const el=$('lvUp');if(!el)return;const c=ch();el.querySelector('b').innerHTML=`<i>Lv</i>${l}`;el.querySelector('em').textContent=`${cname(c.id)} · 生命 +${((lvHpK(l)-1)*100).toFixed(1)}% · 伤害 +${((lvDmK(l)-1)*100).toFixed(1)}%${l>=LVMAX?' · 已达上限':''}`;
   el.hidden=false;const inn=el.querySelector('.lu-in');inn.style.animation='none';void inn.offsetWidth;inn.style.animation='';clearTimeout(lvBanner.t);lvBanner.t=setTimeout(()=>el.hidden=true,3200);
   S.p('lvl');burst(P.x,P.y-12,30,[GOLD,'#fff','#f6dc8a'],90,.9);for(let i=0;i<18;i++)G.parts.push({x:P.x+rnd(-10,10),y:P.y-rnd(0,8),vx:rnd(-8,8),vy:rnd(-60,-30),life:1.4,max:1.4,col:pick([GOLD,'#fff4d8']),sz:rnd(1,2)})}
-function lvHud(){const t=$('hLv'),f=$('hLvF');if(!t||!CHARS[G.charIdx])return;const r=lvRec(ch().id);t.innerHTML=`Lv<b>${r.l}</b>`;f.style.width=(r.l>=LVMAX?100:Math.min(100,r.x/lvNeed(r.l)*100))+'%'}
+function lvHud(){const t=$('hLv');if(!t||!CHARS[G.charIdx])return;const r=lvRec(ch().id),p=r.l>=LVMAX?100:Math.min(100,r.x/lvNeed(r.l)*100);t.innerHTML=`<b>${r.l}</b>`;t.style.setProperty('--p',p.toFixed(1));t.classList.toggle('max',r.l>=LVMAX);t.title=`个人等级 Lv ${r.l}`+(r.l>=LVMAX?'':` · 经验 ${Math.floor(r.x)}/${lvNeed(r.l)}`)}
 function lvCard(id){const r=lvRec(id),mx=r.l>=LVMAX,need=lvNeed(r.l),pct=mx?100:Math.min(100,r.x/need*100),c=CHARS.find(q=>q.id===id)||{};
   return `<div class="lvmed"><svg viewBox="0 0 48 48"><defs><linearGradient id="lvg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6dc8a"/><stop offset="1" stop-color="#8a6a2a"/></linearGradient></defs><path d="M24 2 L44 13 L44 35 L24 46 L4 35 L4 13 Z" fill="#1a0a10" stroke="url(#lvg)" stroke-width="1.5"/><path d="M24 6 L40 15 L40 33 L24 42 L8 33 L8 15 Z" fill="none" stroke="${c.col||'#c9a45c'}" stroke-opacity=".55"/><circle cx="24" cy="24" r="17" fill="none" stroke="#c9a45c" stroke-opacity=".25" stroke-dasharray="${(pct/100*106.8).toFixed(1)} 200" transform="rotate(-90 24 24)" stroke-width="2"/></svg><span><small>LV</small><b>${r.l}</b></span></div>
     <div class="lvbody"><div class="lvtop"><b>个人等级</b><span>${mx?'已达上限':`EXP ${Math.floor(r.x)} / ${need}`}</span></div><div class="lvbar"><i style="width:${pct.toFixed(1)}%"></i></div>
@@ -8142,7 +8155,7 @@ function thWave(it){const k=G.ow.isTh,fin=k===5;it.wave++;const budget=(3.5+k*1.
   toast(it.elite?(it.wave===2?'精英现身了':'精英的随从冲了出来'):`第 ${it.wave}/2 波`);S.p(it.wave===2?'boss':'warn')}
 function thTick(dt){const T=G.ow,k=T.isTh,st=thSt(k);if(T.proscQ&&!T.proscOpen&&thStageOpen()){T.proscOpen=1;const f=T.proscQ.f;f.v=1;const Q=furSpr(f);T.proscQ.s={c:Q.c,ox:6,oy:Q.T+f.h,w:Q.W,h:Q.H};S.p('clap',3)}
   for(const it of T.I){if(it.kind!=='thzone'||it.done)continue;const d=Math.hypot(P.x-it.x,P.y-it.y);
-    if(!it.act){if(d<it.r&&!P.down&&!CUT.on&&modal.hidden){it.act=1;it.wave=0;thWave(it)}continue}
+    if(!it.act){const inRoom=T.roomAt&&(()=>{const a=T.roomAt[owI(clamp(Math.floor(P.x/16),0,OWW-1),clamp(Math.floor(P.y/16),0,OWH-1))];return a>=0&&a===T.roomAt[owI(Math.floor(it.x/16),Math.floor(it.y/16))]})();if((d<it.r||inRoom)&&!P.down&&!CUT.on&&modal.hidden){it.act=1;it.wave=0;thWave(it)}continue}
     it.ids=it.ids.filter(e=>!e.dead);
     if(d>it.r*5&&it.ids.length){for(const e of it.ids)e.dead=1;it.act=0;it.wave=0;it.ids=[];toast('你离开了，那里的敌人散去了');continue}
     if(!it.ids.length&&!it.wait){if(it.wave<2){it.wait=1;later(.9,()=>{it.wait=0;if(it.act&&!it.done)thWave(it)})}else{it.done=1;it.act=0;st.z[it.i]=1;thReward(it)}}}
@@ -8153,6 +8166,7 @@ function thReward(it){const k=G.ow.isTh,T=G.ow,dn=T.I.filter(q=>q.kind==='thzone
   later(1,()=>offerUps(it.elite?'精英倒下了':'这一幕结束了',it.elite?'它留下的东西里，有一段旋律还在发光。':'台下没有掌声。地上有一段被踩过的旋律。',rollUps(nCh(),it.elite?1:0)));
   if(dn>=2&&!(G.inter||{})[k]){(G.inter=G.inter||{})[k]=1;later(2.6,()=>{if(modal.hidden&&!CUT.on)playCut(cutInter(k),()=>{})})}}
 function thDrawItem(it,t){const x=it.x,y=it.y;
+  if(it.kind==='thzone'&&G.ow&&G.ow.indoor)return;
   if(it.kind==='thzone'){const on=it.act,done=it.done,r=on?it.r:40,a=done?.18:on?.55+.2*Math.sin(t*6):.35+.1*Math.sin(t*2);ctx.save();ctx.strokeStyle=done?'#8a7a90':it.elite?'#ffb050':'#e0283c';ctx.globalAlpha=a;ctx.lineWidth=1.2;
       ctx.beginPath();ctx.ellipse(x,y,r,r*.55,0,0,TAU);ctx.stroke();ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(x,y,r*.7,r*.38,0,0,TAU);ctx.stroke();ctx.setLineDash([]);
       if(!done){for(let i=0;i<6;i++){const q=i/6*TAU+t*.2,cx=x+Math.cos(q)*30,cy=y+Math.sin(q)*16;ctx.globalAlpha=1;ctx.fillStyle='#ece4d4';ctx.fillRect(cx-1,cy-4,2,4);ctx.fillStyle='#ffb040';ctx.fillRect(cx-.5,cy-6-Math.sin(t*9+i)*.6,1,1.6)}
@@ -8370,7 +8384,7 @@ function thSprInit(){const o=G.ow,B=o.spr=Array.from({length:OWH},()=>[]);o.bake
 function thLightPuts(put,t){const o=G.ow,cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2},vis=(x,y,m)=>x>cam.x-m&&x<cam.x+VW+m&&y>cam.y-m&&y<cam.y+VH+m;
   for(const l of o.lights){if(!vis(l.x,l.y,l.r))continue;const fl=l.k==='candle'||l.k==='fire'||l.k==='sconce'?.86+.14*Math.sin(t*11+l.x)*Math.sin(t*6.7+l.y):l.k==='win'?.9+.1*Math.sin(t*.4+l.x*.01):1;put(l.x,l.y,l.r*fl,l.c,l.a)}
   put(P.x,P.y-10,70,'#ffe8d0',.35);
-  for(const it of o.I){if(it.kind==='thzone'&&!it.done)put(it.x,it.y,it.act?120:70,it.elite?'#ffb050':'#ff6070',it.act?.6:.35);else if(it.kind==='exitg')put(it.x,it.y-10,80,'#ffe0a0',.6);else if(it.kind==='theatre')put(it.x,it.y-20,thStageOpen()?160:90,'#ffb070',thStageOpen()?.8:.45)}}
+  for(const it of o.I){if(it.kind==='exitg')put(it.x,it.y-10,80,'#ffe0a0',.6);else if(it.kind==='theatre')put(it.x,it.y-20,thStageOpen()?160:90,'#ffb070',thStageOpen()?.8:.45)}}
 function thStageOpen(){const o=G.ow;if(!o||!o.isTh)return 0;const zs=o.I.filter(q=>q.kind==='thzone');return zs.filter(q=>q.done).length>=Math.max(1,zs.length-1)}
 function thEpic(cam,t){const o=G.ow,S=THST[o.indoor],vis=(x,y,m)=>x>cam.x-m&&x<cam.x+VW+m&&y>cam.y-m&&y<cam.y+VH+m;ctx.save();
   /* drifting haze */ctx.globalCompositeOperation='source-over';for(let i=0;i<3;i++){const hx=cam.x+((i*311+t*(3+i))%(VW+400))-200,hy=cam.y+VH*(.3+.25*i)+Math.sin(t*.13+i)*16;ctx.globalAlpha=.06;ctx.drawImage(glow(S.dust),hx-150,hy-36,300,72)}
