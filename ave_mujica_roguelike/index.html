@@ -2449,7 +2449,7 @@ function allyFrame(a){const fr=ART.fr[a.id];if(!fr)return{c:SPR['ch_'+a.id].f[0]
   if(a.down&&fr.death){return{c:fr.death[Math.min(fr.death.length-1,Math.floor(a.downT*8))],sc:.5,dy:2}}
   if(a.act){an=a.act.n;i=Math.min(fr[an].length-1,Math.floor(a.act.t/a.act.d*fr[an].length))}else if(a.moving){an='run';i=Math.floor(a.walk*12)%fr.run.length}else{an='idle';i=Math.floor(a.animT*5)%fr.idle.length}
   return{c:fr[an][i],sc:.5,dy:2}}
-function drawAlly(a,t){if(fx('charm')){const hy=a.y-42+Math.sin(t*4)*2;ctx.drawImage(SPR.heart,Math.round(a.x-3),Math.round(hy))}const col=CHARS.find(c=>c.id===a.id).col;ctx.globalAlpha=.35;ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(a.x,a.y,8,3,0,0,TAU);ctx.stroke();ctx.globalAlpha=1;shadow(a.x,a.y,6);
+function drawAlly(a,t){if(fx('charm')){const hy=a.y-42+Math.sin(t*4)*2;ctx.drawImage(SPR.heart,Math.round(a.x-3),Math.round(hy))}shadow(a.x,a.y,6);
   if(a.frz>0){ctx.globalAlpha=.25;ctx.fillStyle='#ff4fa8';ctx.beginPath();ctx.arc(a.x,a.y-14,13,0,TAU);ctx.fill();ctx.globalAlpha=1}const f=allyFrame(a);if(a.down)ctx.filter='saturate(.35) brightness(.8)';if(a.fl>0&&Math.floor(a.fl*40)%2)ctx.globalAlpha=.45;drawSpr(f.c,a.x,a.y+f.dy,a.face,null,f.sc);ctx.filter='none';ctx.globalAlpha=1;
   if(a.down){drawDownRing(a.x,a.y,a.revT/ALLY_REV,t,'✚ 救治');return}
   const bw=16,bx=Math.round(a.x-bw/2),by=Math.round(a.y-31);ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(bx-1,by-1,bw+2,a.shMax?5:3);const fvA=G.feverT>0&&ch().id==='doloris';if(fvA){const o=(t*40)%(bw*2),gr=ctx.createLinearGradient(bx-o,0,bx-o+bw*2,0);['#ff4fa8','#f6dc8a','#4ccac2','#c08aff','#ff4fa8'].forEach((c2,i)=>gr.addColorStop(i/4,c2));ctx.fillStyle=gr;ctx.save();ctx.shadowColor='#ff4fa8';ctx.shadowBlur=4;ctx.fillRect(bx,by,Math.max(0,Math.round(bw*a.hp/a.mhp)),1.5);ctx.restore()}else{ctx.fillStyle=a.hp<a.mhp*.3?'#e0283c':'#7ad08a';ctx.fillRect(bx,by,Math.max(0,Math.round(bw*a.hp/a.mhp)),1.5)}
@@ -6468,7 +6468,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   for(const d of G.deco)if(d.k==='piano'||d.k==='mannequin'||d.hs)list.push({y:d.sy!=null?d.sy:d.y,d});if(G.npc)list.push({y:G.npc.y,n:1});for(const a of G.allies)list.push({y:a.y,al:a});for(const q of (G.mirrors||[]))list.push({y:q.y,mi:q});if(G.cage)list.push({y:G.cage.y,cg:1});for(const tu of G.turrets)list.push({y:tu.y,tu});
   list.sort((a,b)=>a.y-b.y);
   for(const g of G.ghosts){ctx.globalAlpha=.35*(1-g.t/.25);drawSpr(g.c,g.x,g.y+g.dy,g.face,null,g.sc);ctx.globalAlpha=1}
-  for(const it of list){if(it.p){rimLight();if(P.ride&&G.ow){vehDraw(P.x,P.y,P.face||1,1,t);ctx.save();ctx.translate(-(P.face||1)*3,-9);drawPlayer(t);ctx.restore()}else drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
+  for(const it of list){if(it.p){rimLight();if(P.ride&&G.ow){const fc=P.face||1,v=G.ow.veh,sp=v?Math.hypot(v.vx||0,v.vy||0):0,seat=P.y-13;vehDraw(P.x,P.y,fc,1,t);ctx.save();ctx.beginPath();ctx.rect(P.x-40,P.y-90,80,90-13+1.5);ctx.clip();ctx.translate(P.x-fc*10,seat);ctx.rotate(fc*.07*Math.min(1,sp/VEH.max));ctx.translate(-P.x,-seat+1+Math.sin(t*26)*.25*Math.min(1,sp/120));drawPlayer(t);ctx.restore();vehFront(P.x,P.y,fc)}else drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
   for(const b of G.pb)drawPB(b,t);
   for(const b of G.eb)drawEB(b,t);
   drawEnsemble(t);
@@ -6491,10 +6491,7 @@ function shadow(x,y,r){ctx.drawImage(SHD,x-r*1.4,y-r*.7,r*2.8,r*1.4)}
 function drawPlayer(t){const art=!!ART.fr[ch().id];if(G.state==='dead'&&!art)return;const pf=pFrame(!art&&P.hurtT>.2&&G.state!=='dead'),cy=P.y-pf.h;shadow(P.x,P.y,art?8:6);
   if(G.state!=='dead'){
     if(P.frenzy>0){ctx.globalAlpha=.3+.15*Math.sin(t*20);ctx.fillStyle='#ff4fa8';ctx.beginPath();ctx.arc(P.x,cy,art?18:14,0,TAU);ctx.fill();ctx.globalAlpha=1}
-    if(P.sh>0){ctx.strokeStyle=`rgba(159,212,255,${.15+.45*P.sh/P.shMax})`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(P.x,cy,art?19:15,0,TAU);ctx.stroke()}
     if(P.blink>0&&Math.floor(t*16)%2)return}
-  {const bp=beatPos(),fr=bp-Math.floor(bp),fv=G.feverT>0,rr=9+16*(1-fr);ctx.globalAlpha=(fv?.55:.22)*(1-fr*.6);ctx.strokeStyle=fv?FVC[Math.floor(bp)%FVC.length]:'#f6dc8a';ctx.lineWidth=fv?1.2:.7;ctx.beginPath();ctx.ellipse(P.x,P.y,rr,rr*.42,0,0,TAU);ctx.stroke();ctx.globalAlpha=1;
-    if(fv){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.35*(G.beatGlow||0);ctx.drawImage(glow(FVC[Math.floor(bp)%FVC.length]),P.x-26,P.y-38,52,52);ctx.restore()}}
   if(IN.aimA!=null&&G.state!=='dead'&&!P.down){const a=IN.aimA;ctx.strokeStyle='rgba(246,220,138,.55)';ctx.lineWidth=.8;ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(P.x+Math.cos(a)*10,P.y-8+Math.sin(a)*10);ctx.lineTo(P.x+Math.cos(a)*46,P.y-8+Math.sin(a)*46);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#f6dc8a';ctx.fillRect(Math.round(P.x+Math.cos(a)*48)-1,Math.round(P.y-8+Math.sin(a)*48)-1,2,2)}
   drawSpr(pf.c,P.x,P.y+pf.dy,P.face,null,pf.sc);if(P.down)drawDownRing(P.x,P.y,(P.revT||0)/ALLY_REV,t,'等待救治');
   if(art&&P.hurtT>.15&&G.state!=='dead'){ctx.globalAlpha=.5;drawSpr(pFrame(true).c,P.x,P.y+pf.dy,P.face,null,pf.sc);ctx.globalAlpha=1}
@@ -8646,12 +8643,12 @@ function vehBtn(){const b=$('rideBtn');if(!b)return;const show=!!(G.ow&&!G.owAre
 /* riding: momentum, smashing, ramming */
 function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(!v){P.ride=0;return}const l=Math.hypot(mx,my),MAX=VEH.max*(G.feverT>0?1.1:1);
   const tx=l>.12?mx/Math.max(1,l)*MAX:0,ty=l>.12?my/Math.max(1,l)*MAX:0,k=l>.12?VEH.acc:VEH.coast;v.vx+=(tx-v.vx)*Math.min(1,dt*k);v.vy+=(ty-v.vy)*Math.min(1,dt*k);
-  const sp=Math.hypot(v.vx,v.vy);if(Math.abs(v.vx)>8)P.face=v.vx<0?-1:1;v.face=P.face;P.moving=sp>12;P.walk=(P.walk||0)+dt*sp/90;
+  const sp=Math.hypot(v.vx,v.vy);if(Math.abs(v.vx)>8)P.face=v.vx<0?-1:1;v.face=P.face;P.moving=false;
   const nx=P.x+v.vx*dt,ny=P.y+v.vy*dt,hx=Math.floor((nx+(v.vx>0?9:v.vx<0?-9:0))/OWT),hy=Math.floor((ny-3+(v.vy>0?3:v.vy<0?-4:0))/OWT),t=owTile(hx,hy);
   if(OWSOLID[t]||t===TL.WA){const edge=hx<2||hy<2||hx>OWW-3||hy>OWH-3;
     if(!edge&&sp>VEH.smash&&(t===TL.TR||t===TL.RK)){if(t===TL.TR)owFell(hx,hy);else{o.g[owI(hx,hy)]=TL.GR;owRepaint(hx,hy);burst(hx*16+8,hy*16+4,22,['#6a6872','#9a98a0','#3a3840'],100,.6);S.p('shbreak');shake(5)}
-      const f=sp/VEH.max;vehRecoil(v,.45);vehHurt(P.maxHp*(.06+.1*f));toast(t===TL.TR?'撞断了一棵树':'把石头撞碎了');return}
-    if(sp>VEH.smash*1.1&&t!==TL.WA)vehHurt(P.maxHp*.05*(sp/VEH.max));vehRecoil(v,sp>120?.35:.05);return}
+      const f=sp/VEH.max;vehRecoil(v,.45);vehHurt(P.maxHp*(.01+.02*f));toast(t===TL.TR?'撞断了一棵树':'把石头撞碎了');return}
+    if(sp>VEH.smash*1.1&&t!==TL.WA)vehHurt(P.maxHp*.01*(sp/VEH.max));vehRecoil(v,sp>120?.35:.05);return}
   P.x=nx;P.y=ny;owBound(P);v.x=P.x;v.y=P.y;
   if(sp>90)for(const e of G.en){if(e.dead||(e.intro>0)||e.boss)continue;const rr=e.r+11;if((e.x-P.x)**2+(e.y-6-(P.y-6))**2>rr*rr)continue;const f=sp/VEH.max,sc=1+.35*((G.act||1)-1);
     hurtEnemy(e,(70+90*f)*sc*(e.elite?.7:1),{noMod:1});const a=Math.atan2(e.y-P.y,e.x-P.x)*.5+Math.atan2(v.vy,v.vx)*.5;e.kx=(e.kx||0)+Math.cos(a)*(260+260*f);e.ky=(e.ky||0)+Math.sin(a)*(260+260*f);e.stun=Math.max(e.stun||0,.8);
@@ -8659,6 +8656,7 @@ function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(!v){P.ride=0;return}const l=M
   if(sp>170&&Math.random()<dt*30)G.parts.push({x:P.x-v.vx/sp*14+rnd(-3,3),y:P.y-1,vx:-v.vx*.15+rnd(-10,10),vy:rnd(-12,-2),life:.5,max:.5,col:pick(['rgba(200,190,170,.6)','rgba(150,140,130,.5)']),sz:rnd(1.2,2.4)})}
 function vehRecoil(v,k){v.vx*=-k;v.vy*=-k;P.x-=Math.sign(v.vx||1)*0;shake(6);S.p('slam');P.inv=Math.max(P.inv||0,.35)}
 function vehHurt(d){if(P.down||G.state!=='play')return;const i0=P.inv;P.inv=0;hurtPlayer(Math.round(d),'crash');if(P.inv<i0)P.inv=i0}
+function vehFront(x,y,face){const s=vehSpr();ctx.save();ctx.translate(x,y-s.h+4);if(face<0)ctx.scale(-1,1);ctx.beginPath();ctx.rect(-s.w/2+17.5,0,s.w-17.5,s.h*.62);ctx.clip();ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false}
 function vehDraw(x,y,face,ride,t){const s=vehSpr(),sp=ride&&G.ow&&G.ow.veh?Math.hypot(G.ow.veh.vx||0,G.ow.veh.vy||0):0,bob=ride?Math.sin(t*30)*.3*Math.min(1,sp/100):0;shadow(x,y,14);ctx.save();ctx.translate(x,y-s.h+4+bob);if(face<0){ctx.scale(-1,1)}ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false;
   if(ride&&sp>60){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5;ctx.drawImage(glow('#fff4c8'),x+face*18-10,y-21,20,14);ctx.globalAlpha=.12*Math.min(1,sp/200);const v=G.ow.veh;for(let k=0;k<4;k++){const ox=-v.vx/sp*(18+k*9),oy=-v.vy/sp*(18+k*9);ctx.fillStyle='#fff';ctx.fillRect(x+ox-6,y-12+oy+(k-1.5)*4,12,.6)}ctx.restore()}}
 
