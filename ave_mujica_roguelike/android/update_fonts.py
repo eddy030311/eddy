@@ -20,7 +20,7 @@ def cps_of(block):
 for f in os.listdir(FD):
     if f.endswith('.woff2'): os.remove(os.path.join(FD, f))
 css_out = []; n = 0; seen = {}
-for q in ['family=UnifrakturMaguntia', 'family=Silkscreen', 'family=Noto+Serif+SC:wght@400;700;900']:
+for q in ['family=UnifrakturMaguntia', 'family=Cinzel:wght@400;600;700;900', 'family=Noto+Serif+SC:wght@400;700;900']:
     for block in re.findall(r'@font-face\s*\{[^}]*\}', get_css(q)):
         cps = cps_of(block)
         if cps is not None and not (cps & need): continue
