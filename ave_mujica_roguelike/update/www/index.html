@@ -820,7 +820,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 18, "name": "2.0"};</script>
+<script>window.GAME_VER={"v": 19, "name": "2.0.1"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -2606,7 +2606,7 @@ function chTick(c){const w=chWin(c.bps);
   const lastB=Math.max(...CHT.notes.map(n=>n.b+(n.len||0)));if(!CHT.end&&c.b>lastB+.3&&CHT.notes.every(n=>n.k&&(n.type!=='hold'||n.tk)))skChartEnd(0);
   const m='×'+chMul(CHT.cnt).toFixed(2);if(m!==CHT.mulShown){CHT.mulShown=m;const el=$('chMul');if(el)el.textContent=m}}
 /* judgement windows in milliseconds, turned into beats */
-function chWin(bps){const m=G.mods||{},a=(1+.15*(m.metro||0))*(G.owTune?1.15:1);return[42,75,115,160].map(v=>v*a/1000*bps)}
+function chWin(bps){const m=G.mods||{},a=(1+.15*(m.metro||0))*(G.owTune?1.15:1);return[42,75,115,160].map(v=>v*1.15*a/1000*bps)}
 /* multiplier: x1.0-1.6 by accuracy; a full combo (no BAD or MISS) x1.6-2.0; all perfect x3.25 */
 function chMul(cnt){const v=chMul0(cnt);return settings.simple||CHT.simple?Math.round((1+(v-1)*.4)*100)/100:v}
 function chMul0(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const acc=(cnt.P+.85*cnt.GR+.7*cnt.G+.3*cnt.B)/n,fc=!cnt.B&&!cnt.M,ap=fc&&!cnt.GR&&!cnt.G,bon=(G.mods.pfMul||0)*.5;
@@ -3282,6 +3282,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.0.1',date:'2026-11-28',notes:["修复：从房子里出来后，大地图上会出现屋里的地板和门垫", "大世界视野更宽，画面四周的黑边和暗角都减少了", "谱面判定窗口加宽 15%"]},
  {name:'2.0',date:'2026-11-28',notes:["「假面回廊」变成一整片开放世界：每局随机进入六片土地之一——血色森林、沉没海岸、金麦谷、雾都旧城，以及新的「血月废都」（血红的天空、遍地废墟、几乎没有友善的人、怪物成群）和「蓝夜之城」（永不结束的蓝色夜晚、三座城镇、人多怪少）", "五座剧场就是五个章节，每局随机散落在地图上，按什么顺序演都可以：全部演完把同伴都救出来，只演几座，或者直接去终幕碰碰运气。小地图不标剧场，要靠剧场上空的光柱和路人的消息去找", "越靠近终幕剧场，周围越哥特、越荒诞：枯树和黑红色的树、墓碑、紫火路灯、半埋在土里的巨大假面、野地里的剧院座椅和棋盘地板", "大世界里的每栋房子都能进去：客厅或客厅加厨房，每栋都不一样；桌上的食物能回血、回护盾或加乐章值；有时有人住，偶尔是敌对的人", "每座城镇都有一家面具店：当前能学的旋律全都买得到，传说也有，就是很贵；柜台也收战利品", "城镇里有友善的路人走来走去，野外偶尔能碰到黑猫、看星星的人、巫女和船长；大世界的人物和事件都按 Ave Mujica 的世界写：戴面具的引座员、一个人的乐队、提灯的观众、提线的人……", "新增可以互动的东西：野地里的钢琴、穿衣镜、望远镜、留声机、戏服箱、小温室、海报墙、长椅；泪之泉和血之祭坛也在大地图上，第三结局需要的「黑暗的选择」更容易凑齐", "可以游泳过河（水下看不远、移动变慢、不能攻击，怪物不会下水）；近战可以直接砍树开路", "战争迷雾、小地图（战斗中会淡出）和昼夜变化；怪物会巡逻，听到动静会过来查看；宝箱、埋藏宝物和可以卖钱的战利品", "画面和光影大幅升级：地面、道路、河流、树林、房屋都画得很细，角色可以走到树和房子后面；体积光束、灯光泛光、地面雾气、按时间变化的调色，血月和月光；走进剧场时大幕合上，演完出来时拉开", "踩拍判定取消了，普通攻击想怎么打就怎么打。打怪、击倒敌人、受伤都会攒「乐章值」，攒满后打开技能菜单（游戏暂停），每个人偶有 3 个技能；菜单刚弹出时不会误选卡片", "选好技能后打一段四键下落式谱面（D F J K，手机直接点轨道，多指同时按都会判定），有点击、长按和滑键。越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25；按住 0.8 秒可以跳过。设置里可以改为「简化谱面」（只有点击音符，加成明显减少）", "技能和 Fever 同步：Fever 有多长，增益就持续多久，攻击技能在 Fever 期间会自动反复释放", "「强音」：连击每满 8 下，或在谱面里打出 PERFECT，都算一次强音。原来靠 PERFECT 触发的人偶被动和旋律，现在都靠强音触发", "五名人偶按定位重新设计（交涉、分身、潜行、寻宝、讲价各有所长）；便服的三角初华、若叶睦、丰川祥子重做了被动和攻击方式；同伴更聪明，会护住你、救倒下的队友、收掉残血的敌人", "怪物不再随剧场位置、章节或同伴数量变强；新增默认 / 困难难度，困难下怪物生命和攻击 +50%；取消 N 难度等级", "通往第二结局的信物改为击败强敌、剧场 Boss 或完成委托时概率获得", "新的主菜单音乐；「祥子之夜」全部换成录制配乐：探索、Fever、Boss 战，以及最终战四个阶段（骄傲 → 孤注一掷 → 疲惫 → 放手）各一首，谱面跟着曲子的节拍走", "「假面之下」的剧情按动画重新校正：Ave Mujica 解散之后的祥子之夜、「把你们剩下的人生交给我」、睦与 Mortis、CRYCHIC 的那一句话", "加入存档：标题画面可以「继续演出」，地图上和剧场里都会自动存档；在线更新改为强制更新", "修复：失败后重新开局黑屏、谱面没打完就进入技能、反复碰到 NPC 一直弹对话、开局后主菜单音乐要过几秒才换掉等问题"]},
  {name:'1.3.3',date:'2026-11-27',notes:["重写了约 330 句剧情、过场和开场幕的文字，旁白更自然，每个角色说话更像她自己"]},
  {name:'1.3.2',date:'2026-11-23',notes:["怪物生命随章节成长：N1 每章 +25%（第五章 +100%），难度越高成长越多", "护盾不再随时间恢复，清理房间后恢复一定比例，N 等级越高恢复越少", "Doloris：Fever 期间持续治疗同伴，同伴血条变为 Fever 的颜色", "镜中 Mortis 继承你当前的最大生命、护盾和全部强化效果"]},
@@ -7465,11 +7466,11 @@ function owTimeName(){const o=G.ow,p=(o.clock%OWDAY)/OWDAY;if(o.th.sky==='blue')
 
 /* ------------------------------------------------------------------ fog of war and minimap */
 function owFogInit(){const o=G.ow;{const m=$('owMap');if(m&&(m.width!==OWW||m.height!==OWH)){m.width=OWW;m.height=OWH;o.mapImg=null}}o.fog=mk(OWW,OWH);o.fogX=o.fog.getContext('2d');o.fogD=o.fogX.createImageData(OWW,OWH);o.vis=new Uint8Array(OWW*OWH);owFogTick(true)}
-function owSightR(){return(7.5+2.3*((G.mods&&G.mods.owSight)||0))*(1-.3*owNight())*(P.swim?.4:1)}
+function owSightR(){return(12+2.3*((G.mods&&G.mods.owSight)||0))*(1-.15*owNight())*(P.swim?.3:1)}
 function owFogTick(force){const o=G.ow,R=owSightR(),c=owTP(P),r2=R*R,D=o.fogD.data;o.vis.fill(0);let fresh=0;
   for(let y=Math.max(0,Math.floor(c.y-R-1));y<=Math.min(OWH-1,Math.ceil(c.y+R+1));y++)for(let x=Math.max(0,Math.floor(c.x-R-1));x<=Math.min(OWW-1,Math.ceil(c.x+R+1));x++){if((x-c.x)**2+(y-c.y)**2>r2)continue;const i=owI(x,y);o.vis[i]=1;if(!o.exp[i]){o.exp[i]=1;fresh++;if(!OWSOLID[o.g[i]])o.expN=(o.expN||0)+1}}
   if(fresh&&G.mods.owForage&&Math.random()<.012*fresh*G.mods.owForage)G.picks.push({k:'petal',x:P.x+rnd(-20,20),y:P.y+rnd(-14,14),vx:0,vy:-20,t:0,v:1});
-  for(let i=0;i<OWW*OWH;i++){D[i*4+3]=o.vis[i]?0:o.exp[i]?95:255}o.fogX.putImageData(o.fogD,0,0)}
+  for(let i=0;i<OWW*OWH;i++){D[i*4+3]=o.vis[i]?0:o.exp[i]?55:255}o.fogX.putImageData(o.fogD,0,0)}
 function owMapTick(){const cv2=$('owMap');if(!cv2||cv2.hidden)return;const o=G.ow,x=cv2.getContext('2d'),C=o.th.col,img=o.mapImg||(o.mapImg=x.createImageData(OWW,OWH)),D=img.data;
   const col={[TL.HS]:C.hs||'#5a3030',[TL.PL]:C.pl||C.rd,[TL.FD]:C.fd||C.sa,[TL.DK]:C.br,[TL.FN]:C.br,[TL.PR]:C.pl||C.rk[1],[TL.GR]:C.gr[1],[TL.FW]:C.gr[2],[TL.SA]:C.sa,[TL.RD]:C.rd,[TL.WA]:C.wa[1],[TL.BR]:C.br,[TL.FL]:C.fl,[TL.WL]:C.wl[0],[TL.RK]:C.rk[1],[TL.SC]:(G.mods.owTreasure?'#ffd27a':C.rk[1]),[TL.TR]:C.tr[1]};const rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   const cache=o.rgb||(o.rgb={});for(let i=0;i<OWW*OWH;i++){if(!o.exp[i]){D[i*4]=10;D[i*4+1]=8;D[i*4+2]=12;D[i*4+3]=230;continue}const h=col[o.g[i]]||'#000',c=cache[h]||(cache[h]=rgb(h));const b=o.vis[i]?1.35:1;D[i*4]=Math.min(255,c[0]*b+12);D[i*4+1]=Math.min(255,c[1]*b+10);D[i*4+2]=Math.min(255,c[2]*b+12);D[i*4+3]=255}
@@ -7551,7 +7552,7 @@ function owBeacon(cam,t){const o=G.ow;if(CUT.on)return;
   ctx.font='5px "Noto Serif SC",serif';ctx.fillStyle='rgba(244,230,204,.7)';ctx.fillText(Math.round(Math.hypot(dx,dy)/16)+'步',lx,ly+7);ctx.textAlign='left';ctx.restore()}
 function owQueueDraw(q,t){const s=owSprH('doll',18);if(!s)return;for(const p of q.pts){shadow(p.x,p.y,4);ctx.save();ctx.filter='grayscale(.85) brightness(.75)';drawSpr(s.c,p.x,p.y+Math.sin(t*1.2+p.ph)*.4,-1,null,s.sc);ctx.restore()}}
 function owOverlay(cam,t){const o=G.ow;owAtmosOver(cam,t);owEpic(cam,t);owBeacon(cam,t);ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(o.fog,0,0,OWW,OWH,0,0,OWW*OWT,OWH*OWT);ctx.restore();ctx.imageSmoothingEnabled=false;
-  const nf=owNight();if(nf>0){const r0=40+40*(1-nf),r1=150+60*(1-nf)+((G.mods.owSight||0)*30);const g=ctx.createRadialGradient(P.x,P.y-8,r0,P.x,P.y-8,r1);g.addColorStop(0,'rgba(8,10,28,0)');g.addColorStop(1,`rgba(6,8,24,${(.42*nf).toFixed(3)})`);ctx.fillStyle=g;ctx.fillRect(cam.x-10,cam.y-10,VW+20,VH+20)}
+  const nf=owNight();if(nf>0){const r0=90+50*(1-nf),r1=250+60*(1-nf)+((G.mods.owSight||0)*30);const g=ctx.createRadialGradient(P.x,P.y-8,r0,P.x,P.y-8,r1);g.addColorStop(0,'rgba(8,10,28,0)');g.addColorStop(1,`rgba(6,8,24,${(.42*nf).toFixed(3)})`);ctx.fillStyle=g;ctx.fillRect(cam.x-10,cam.y-10,VW+20,VH+20)}
   else{ctx.fillStyle=`rgba(255,160,90,${(.04).toFixed(3)})`;ctx.fillRect(cam.x,cam.y,VW,VH)}
   owGrade(cam,t);owUnderwater(cam,t);owDoorLabel(t)}
 /* 2.2 lighting: volumetric shafts with dust in them, bloom halos on every light, drifting haze, a lens flare by day,
@@ -7585,7 +7586,7 @@ function owEpic(cam,t){const o=G.ow,K=owSkyK(),p=(o.clock%OWDAY)/OWDAY,sky=o.th.
   else if(sky==='blue'||nf>.6){const mx=cam.x+VW*.16,my=cam.y+VH*.08;halo(mx,my,120,K.moon||'#e0e8ff',.18+.1*(sky==='blue'));halo(mx,my,30,'#ffffff',.3)}
   ctx.restore();ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over'}
 let OWGK='',OWVG=null;function owGrade(cam,t){const K=owSkyK();ctx.save();const g=ctx.createLinearGradient(cam.x,cam.y,cam.x+VW*.3,cam.y+VH);g.addColorStop(0,K.top);g.addColorStop(1,K.bot);ctx.globalCompositeOperation='soft-light';ctx.globalAlpha=K.ga;ctx.fillStyle=g;ctx.fillRect(cam.x,cam.y,VW,VH);
-  const vk=VW+'x'+VH+G.ow.th.sky;if(vk!==OWGK){OWGK=vk;OWVG=mk(VW>>1,VH>>1);const x=OWVG.getContext('2d'),w=OWVG.width,h=OWVG.height,rg=x.createRadialGradient(w/2,h*.46,Math.min(w,h)*.3,w/2,h/2,Math.hypot(w,h)*.58);const c=G.ow.th.sky==='blood'?'30,2,6':G.ow.th.sky==='blue'?'4,6,24':'6,4,10';rg.addColorStop(0,`rgba(${c},0)`);rg.addColorStop(.75,`rgba(${c},.28)`);rg.addColorStop(1,`rgba(${c},.7)`);x.fillStyle=rg;x.fillRect(0,0,w,h)}
+  const vk=VW+'x'+VH+G.ow.th.sky;if(vk!==OWGK){OWGK=vk;OWVG=mk(VW>>1,VH>>1);const x=OWVG.getContext('2d'),w=OWVG.width,h=OWVG.height,rg=x.createRadialGradient(w/2,h*.46,Math.min(w,h)*.3,w/2,h/2,Math.hypot(w,h)*.58);const c=G.ow.th.sky==='blood'?'30,2,6':G.ow.th.sky==='blue'?'4,6,24':'6,4,10';rg.addColorStop(0,`rgba(${c},0)`);rg.addColorStop(.8,`rgba(${c},.14)`);rg.addColorStop(1,`rgba(${c},.42)`);x.fillStyle=rg;x.fillRect(0,0,w,h)}
   ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.imageSmoothingEnabled=true;ctx.drawImage(OWVG,cam.x,cam.y,VW,VH);ctx.restore();ctx.imageSmoothingEnabled=false}
 /* 2.2: under water you can barely see: a murky blue fog closes in to a small circle, light ripples across it */
 function owUnderwater(cam,t){const k=G.ow.swimK=clamp((G.ow.swimK||0)+(P.swim?.06:-.08),0,1);if(k<=0)return;const x=P.x,y=P.y-6,br=1+.04*Math.sin(t*2.2);
@@ -7606,13 +7607,13 @@ const HFOOD={bread:{n:'面包',d:'回复 15% 生命',f:()=>healP(.15)},soup:{n:'
 function healP(k){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*k*cr('heal'));S.p('heal')}
 const HLINE=['「请进。……外面那么吵，你也是被剧场的光吸引来的吧？」','「坐吧，茶刚泡好。这屋子很久没来客人了。」','「嘘——孩子刚睡着。有事小声说哦。」','「你也是戴着面具的人啊。我年轻的时候，也想过站上那样的舞台。」','「门没锁，是因为我在等一个人。……不是你，不过也欢迎。」','「桌上的东西随便吃。反正今晚，大家都要去看戏。」'];
 const HHOST=['「……谁？！」屋里的人抄起了身边的东西。','「这屋子已经有主了。」几个戴着假面的人从暗处站了起来。','「来得正好，把花瓣留下。」'];
-function owDoorTick(dt){const o=G.ow;o.doorB=null;if(!o.bld||P.down||P.swim)return;for(const b of o.bld){if(b.kind==='theatre')continue;const dx=b.door.x*OWT+8,dy=b.door.y*OWT;if(Math.abs(P.x-dx)<9&&P.y>=dy-2&&P.y<dy+13){o.doorB=b;break}}
+function owDoorTick(dt){const o=G.ow;o.doorB=null;if(!o.bld||P.down||P.swim||o.entering)return;for(const b of o.bld){if(b.kind==='theatre')continue;const dx=b.door.x*OWT+8,dy=b.door.y*OWT;if(Math.abs(P.x-dx)<9&&P.y>=dy-2&&P.y<dy+13){o.doorB=b;break}}
   if(o.doorB&&(P.inMy||0)<-.45&&modal.hidden&&!CUT.on){o.doorT=(o.doorT||0)+dt;if(o.doorT>.22){o.doorT=0;owEnterHouse(o.doorB)}}else o.doorT=0}
 function owDoorLabel(t){const b=G.ow.doorB;if(!b||G.owArena)return;const x=b.door.x*OWT+8,y=b.door.y*OWT-22+Math.sin(t*4)*1.5,s=b.shop?'▲ 进入商店':'▲ 进屋';ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';const w=ctx.measureText(s).width+8;
   ctx.fillStyle='rgba(10,6,12,.72)';ctx.fillRect(x-w/2,y-7,w,10);ctx.fillStyle=b.shop?'#ffe08a':'#ffe6c8';ctx.fillText(s,x,y);ctx.textAlign='left'}
 function owLoadBar(on,txt){let el=$('owLoad');if(!el){el=document.createElement('div');el.id='owLoad';el.innerHTML='<b></b><i><s></s></i>';$('game').appendChild(el)}el.hidden=!on;if(!on)return;el.querySelector('b').textContent=txt;const s=el.querySelector('s');s.style.transition='none';s.style.width='0%';void s.offsetWidth;s.style.transition='width .55s ease-out';s.style.width='100%'}
-function owEnterHouse(b){const o=G.ow;if(!o||G.owArena||G.owIn)return;P.vx=P.vy=0;curtain(1);S.p('door');owLoadBar(1,b.shop?'推开商店的门……':'推开门……');
-  setTimeout(()=>{try{owBuildHouse(b)}catch(e){console.warn('house',e);owLoadBar(0);curtain(0);return}setTimeout(()=>{owLoadBar(0);curtain(0)},260)},620)}
+function owEnterHouse(b){const o=G.ow;if(!o||G.owArena||G.owIn||o.entering)return;o.entering=1;P.vx=P.vy=0;curtain(1);S.p('door');owLoadBar(1,b.shop?'推开商店的门……':'推开门……');
+  setTimeout(()=>{o.entering=0;try{if(!G.owIn&&!G.owArena&&G.ow===o)owBuildHouse(b)}catch(e){console.warn('house',e);owLoadBar(0);curtain(0);return}setTimeout(()=>{owLoadBar(0);curtain(0)},260)},620)}
 function owBuildHouse(b){const o=G.ow,st=(o.hs=o.hs||{})[b.id]||(o.hs[b.id]={eaten:[],met:0,host:0,cleared:0});
   o.save={en:G.en,picks:G.picks,bg:G.bg,deco:G.deco,px:P.x,py:P.y};G.en=[];G.picks=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.deco=[];G.owArena=1;G.owTh=0;RW=512;RH=288;G.type='house';G.cleared=true;
   $('owMap').hidden=true;$('game').classList.remove('ow');o.inFight=0;o.doorB=null;
@@ -7650,10 +7651,10 @@ function owBuildHouse(b){const o=G.ow,st=(o.hs=o.hs||{})[b.id]||(o.hs[b.id]={eat
     G.act=sa;H.host=1;setTrack('battle');later(.3,()=>toast(pick(HHOST)))}
   else later(.3,()=>toast(b.shop?'面具店 · 什么都卖，只是不便宜':st.who==='folk'?'屋里有人':ruin?'被烧过的屋子。还有没烧完的东西':'屋里没有人，桌上还留着吃的'));
   updStage()}
-function owLeaveHouse(){const o=G.ow,H=G.owIn;if(!H)return;curtain(1);S.p('door');owLoadBar(1,'回到外面……');
+function owLeaveHouse(){const o=G.ow,H=G.owIn;if(!H||H.leaving)return;H.leaving=1;curtain(1);S.p('door');owLoadBar(1,'回到外面……');
   setTimeout(()=>{const s=o.save||{},b=H.b;if(G.bg&&G.bg!==s.bg){G.bg.width=1;G.bg.height=1}
-    G.en=s.en||[];G.picks=s.picks||[];G.bg=s.bg||owPaint();G.deco=s.deco||[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owIn=null;o.save=null;
-    RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.owTh=0;G.type='ow';G.cleared=false;P.x=b.door.x*OWT+8;P.y=b.door.y*OWT+12;P.vx=P.vy=0;P.inv=Math.max(P.inv,1);owPlaceAllies();
+    G.en=s.en||[];G.picks=s.picks||[];G.deco=s.deco||[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owIn=null;o.save=null;
+    RW=OWW*OWT;RH=OWH*OWT;G.bg=s.bg&&s.bg.bgS&&s.bg.width>1?s.bg:owPaint();G.owArena=0;G.owTh=0;G.type='ow';G.cleared=false;P.x=b.door.x*OWT+8;P.y=b.door.y*OWT+12;P.vx=P.vy=0;P.inv=Math.max(P.inv,1);owPlaceAllies();
     $('owMap').hidden=false;$('game').classList.add('ow');setTrack('calm');updStage();setTimeout(()=>{owLoadBar(0);curtain(0)},240)},520)}
 function owHouseTick(dt){const H=G.owIn,st=H.st;
   for(const d of G.deco){if(d.k==='hfood'&&!d.eaten&&Math.hypot(P.x-d.x,P.y-(d.sy-2))<24){d.eaten=1;st.eaten.push(d.i);const F=HFOOD[d.f];F.f();burst(d.x,d.y-6,10,['#fff4d8','#ffd27a'],40,.4);G.nums.push({x:d.x,y:d.y-14,v:F.n,t:0,say:1,jc:'#ffe6c0'});toast(`${F.n} · ${F.d}`)}
