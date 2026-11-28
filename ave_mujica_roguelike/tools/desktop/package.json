@@ -1,0 +1,10 @@
+{
+  "name": "ave-mujica-masque",
+  "productName": "Ave Mujica",
+  "version": "1.0.0",
+  "description": "Ave Mujica · 假面回廊 (fan-made pixel roguelike)",
+  "main": "main.js",
+  "dependencies": {
+    "resedit": "^2.0.3"
+  }
+}

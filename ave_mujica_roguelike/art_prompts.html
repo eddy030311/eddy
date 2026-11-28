@@ -1,0 +1,332 @@
+<title>假面回廊 美术提示词</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Noto+Serif+SC:wght@500;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column; each asset is a "ticket" (ID stub + spec chips + copyable prompt). Single dark gothic look, matching the game. */
+:root{
+  --bg:#0e0a0d; --panel:#170f14; --sunk:#0a0709; --line:#33242d; --fg:#ece2d2; --mut:#a3979f; --gold:#c9a45c; --rose:#d0405a; --ok:#7ad0a0;
+  --f-black:"UnifrakturMaguntia","Noto Serif SC",serif;
+  --f-head:"Noto Serif SC","Songti SC",serif;
+  --f-body:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+body{background:var(--bg);color:var(--fg);font:15px/1.7 var(--f-body)}
+.wrap{max-width:46rem;margin:0 auto;padding-block:28px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header .eb{font-family:var(--f-black);color:var(--gold);font-size:20px}
+h1{font-family:var(--f-head);font-weight:900;font-size:30px;letter-spacing:.12em;margin:2px 0 8px;text-wrap:balance}
+h2{font-family:var(--f-head);font-weight:900;font-size:21px;letter-spacing:.1em;margin:44px 0 6px;text-wrap:balance}
+h2 small{display:block;font:500 13px var(--f-body);letter-spacing:0;color:var(--mut);margin-top:4px}
+p{margin:0 0 10px;max-width:65ch}
+.lead{color:#cfc4cd}
+ol.steps{margin:14px 0 0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+ol.steps b{color:var(--gold)}
+.box{border:1px solid var(--line);background:var(--panel);padding:14px 16px;margin-top:16px}
+.box h3{margin:0 0 6px;font:900 15px var(--f-head);letter-spacing:.08em;color:var(--gold)}
+.box ul{margin:0;padding-left:1.2em}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{font:12px var(--f-mono);border:1px solid var(--line);padding:2px 7px;color:#d8ccd5;background:var(--sunk);white-space:nowrap}
+.chip.must{border-color:var(--rose);color:#ffb3c0}
+.chip.opt{color:var(--mut)}
+.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.toc a{color:var(--fg);text-decoration:none;border:1px solid var(--line);padding:4px 10px;font-size:13px}
+.toc a:hover{border-color:var(--gold)}
+.ticket{display:grid;grid-template-columns:64px 1fr;border:1px solid var(--line);margin-top:14px;background:var(--panel)}
+.stub{border-right:1px dashed var(--line);display:flex;flex-direction:column;align-items:center;padding:12px 4px;gap:4px;background:var(--sunk)}
+.stub b{font:600 14px var(--f-mono);color:var(--gold)}
+.stub span{font-size:10px;color:var(--mut);writing-mode:vertical-rl;letter-spacing:.2em}
+.tbody{min-width:0;padding:12px 14px}
+.tbody h4{margin:0;font:900 16px var(--f-head);letter-spacing:.04em}
+.tbody .what{color:#cfc4cd;font-size:13.5px;margin:4px 0 0}
+table.rows{border-collapse:collapse;font-size:12.5px;margin:8px 0;width:100%}
+table.rows td{border-top:1px solid var(--line);padding:4px 6px;vertical-align:top}
+table.rows td:first-child{white-space:nowrap;color:var(--gold);font-family:var(--f-mono);width:1%}
+.pwrap{position:relative;margin-top:8px}
+pre{margin:0;background:var(--sunk);border:1px solid var(--line);padding:12px 12px 12px;font:12.5px/1.6 var(--f-mono);color:#e6dbe3;white-space:pre-wrap;word-break:break-word;max-height:16em;overflow:auto}
+.cp{margin-top:6px;display:flex;gap:8px;align-items:center}
+button{font:600 13px var(--f-body);color:var(--fg);background:#3e0a16;border:1px solid var(--gold);padding:7px 14px;cursor:pointer}
+button:hover{background:#5a1222}
+button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.done{font-size:12px;color:var(--ok)}
+.neg{border-left:2px solid var(--rose);padding-left:10px}
+footer{margin-top:48px;color:var(--mut);font-size:13px;border-top:1px solid var(--line);padding-top:14px}
+@media (max-width:480px){.ticket{grid-template-columns:44px 1fr}.stub b{font-size:12px}h1{font-size:25px}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eb">Ave Mujica · 假面回廊</div>
+  <h1>美术提示词</h1>
+  <p class="lead">把下面的提示词拿去生图，生成后发回给我，我会抠掉背景、切图，替换进游戏：人物动作改成逐帧动画，按钮换成每个角色专属的技能图标，HUD 换成哥特金框。</p>
+  <ol class="steps">
+    <li><b>生图时附上参考图</b>：生成角色时，把你发我的那张设定资料图一起上传（垫图、参考图或角色参考都行），服装会准确很多。</li>
+    <li><b>背景统一用纯品红 #FF00FF</b>：我靠这个颜色抠图。如果你用的工具能直接导出透明 PNG，那样也可以。</li>
+    <li><b>发回来时注明编号</b>：比如「C1-A」「I3」。上传后文件名会变，我靠编号对应。一张图对应一个编号。</li>
+  </ol>
+  <nav class="toc" aria-label="目录"><a href="#chars">一、人物动作</a><a href="#icons">二、技能图标</a><a href="#hud">三、HUD</a><a href="#ups">四、强化图标</a><a href="#foes">五、敌人与 Boss</a><a href="#rooms">六、场景背景</a><a href="#mujica">七、Mujica 动作</a><a href="#casual">八、便服人物</a><a href="#rules">规格与负面词</a></nav>
+</header>
+
+<section id="rules">
+  <div class="box">
+    <h3>交付规格（每张都适用）</h3>
+    <ul>
+      <li>像素风格：硬边、无抗锯齿、无模糊，1 像素深色描边。</li>
+      <li>尺寸：画面是小像素尺寸放大后的大图，比如 384×256 放大 4 倍成 1536×1024。我会自动识别像素格再缩回去，只要每个像素格大小一致就行。</li>
+      <li>网格：帧与帧之间格子等大，不要画格线、不要文字、不要水印。</li>
+      <li>帧数不必完全照写。生成器多给或少给几帧都没关系，发回时告诉我哪一行是什么动作就行。</li>
+      <li>Midjourney 用户：在提示词末尾加上卡片里写的 <code>--ar</code> 比例和 <code>--style raw</code>。</li>
+    </ul>
+  </div>
+  <div class="box">
+    <h3>负面提示词（Stable Diffusion / NovelAI 等支持时使用）</h3>
+    <div class="pwrap"><pre id="neg" class="neg"></pre></div>
+    <div class="cp"><button data-copy="neg">复制</button><span class="done" hidden>已复制</span></div>
+  </div>
+</section>
+
+<section id="chars">
+  <h2>一、人物动作 <small>每人两张精灵图。A 张：待机、跑步、闪避、受击；B 张：近战、远程、技能、倒下。角色一律面朝右，我会在游戏里镜像。</small></h2>
+  <div id="charList"></div>
+</section>
+
+<section id="icons">
+  <h2>二、技能与操作图标 <small>每人一张，一行 4 个：近战、远程、闪避、技能。会放进右下角的圆形按钮里，所以图标本身不要带圆框。</small></h2>
+  <div id="iconList"></div>
+</section>
+
+<section id="hud">
+  <h2>三、HUD <small>按钮外框、血条、头像、小图标等。标「必需」的优先做，「可选」的有空再做。</small></h2>
+  <div id="hudList"></div>
+</section>
+
+<section id="ups">
+  <h2>四、强化图标 <small>全部 69 个强化，按游戏里的顺序分成 6 张图：每张 12 个（4 列 × 3 行），最后一张 9 个（3 × 3）。表格里写了每个图标对应的强化效果。</small></h2>
+  <div id="upList"></div>
+</section>
+
+<section id="foes">
+  <h2>五、敌人与 Boss <small>替换现在的小像素敌人。小怪每张 6 列 × 4 行（每格 64×64），Boss 每张 4 列 × 3 行（每格 128×128）。全部面朝右，背景用纯品红。</small></h2>
+  <div id="foeList"></div>
+</section>
+<section id="mujica">
+  <h2>七、Mujica 动作 <small>生成时请务必上传你给我的那张 Mujica 原图作参考。M1–M3 是动作：本体（不含双手）、单只骨手、退场；M4-1 到 M4-5 是五张面具各自的破碎过程。两只手分开各画一张（M2-L、M2-R）。面具破碎和发光眼睛由游戏代码处理，图里保持五张面具完整、无发光。</small></h2>
+  <div id="mjList"></div>
+</section>
+<section id="rooms">
+  <h2>六、场景背景 <small>每章一张完整的房间俯视图，直接当地板和墙壁使用。我会在上面叠加光影、门、障碍物和角色。不要品红背景，画满整张图。</small></h2>
+  <div id="roomList"></div>
+</section>
+
+<section id="casual">
+  <h2>八、便服人物 <small>三角初华、若叶睦、丰川祥子的日常便服版，用于「星之约」与「镜中的睦」。格式和第一节一样：每人 A、B 两张精灵图。生成时请上传对应的设定资料图作参考。</small></h2>
+  <div id="casualList"></div>
+</section>
+<footer>人物、技能图标、HUD、强化图标已经完成。新增：敌人 5 张（E1–E5）、Boss 4 张（B1–B4）、场景 5 张（R1–R5）。建议先做 R1 和 E1，我先接进一章给你看效果。优先做人物 A/B 张和技能图标，其余可以之后再补。</footer>
+</div>
+
+<script>
+const STYLE="Pixel art game asset in crisp 16-bit SNES/GBA style: hard pixel edges, no anti-aliasing, no blur, no smooth gradients, limited palette of about 32 colors, clean 1-pixel dark outline (#120c10), soft cel shading with 2 to 3 tones per material. Theme: gothic Victorian masquerade, an elegant dark rock band of living dolls; palette anchored on deep wine red #9b1b30, black #0b080d, antique gold #c9a45c and bone white #ece2d2. Background: flat solid pure magenta #FF00FF everywhere outside the subject, no floor, no cast shadow on the background, no gradient. No text, no letters, no numbers, no watermark, no signature, no border around the image.";
+const NEG="blurry, anti-aliasing, smooth shading, painterly, 3d render, photo, realistic, gradient background, white background, transparent checkerboard pattern, floor, scenery, text, letters, watermark, signature, grid lines, labels, frame numbers, cropped, cut off, extra limbs, deformed hands, inconsistent character, outfit changes between frames, different scale between frames, isometric, top-down view, front view";
+const SHEET="Strict sprite sheet: an exact grid of 6 columns by 4 rows of equal square cells (64x64 game pixels per cell, whole sheet 384x256 pixels, or an exact integer upscale such as 1536x1024). Side view; the character faces RIGHT in every frame. Chibi proportions, about 2.5 heads tall, character about 44 pixels tall, centered horizontally in each cell with the feet on the same baseline 4 pixels above the bottom edge of the cell. The same character, outfit, scale and lighting in every frame. Nothing crosses a cell edge. No grid lines, no labels, no visual effects, no projectiles and no motion lines: only the body and the instrument. Each row is one animation read left to right; unused cells stay empty background.";
+const DEATH="DEATH, 5 frames: as if the strings of a marionette were cut, she staggers, drops to her knees, slumps forward and lies still on her side, the mask slipping off her face in the last frame";
+const HURT="HURT, 2 frames: flinches backward from a hit with eyes shut and hair flung forward, then catches her balance";
+const DASH="DASH, 3 frames: a fast low forward dash, body leaning hard forward, hair, ribbons and skirt streaming backward";
+
+const C=[
+ {id:'C1',name:'Doloris（三角初华）',
+  desc:"Doloris, a girl with shoulder-length straight platinum-blonde hair fading to soft pink at the tips, violet eyes, a black lace masquerade eye-mask and a black choker. Costume: black dress with off-shoulder neckline and long detached black sleeves, sheer beige lace bodice panel, brown leather lace-up corset belt with gold buckles and straps, black puffy knee-length shorts, a high-low black overskirt with crimson lining and a sheer grey tulle train, grey knee socks with black garter bands, black heeled pumps. Instrument: a black offset-body electric guitar with gold hardware and a maple neck, worn on a strap.",
+  idle:"holds the black guitar at her hip, gentle breathing, hair and tulle train swaying",
+  run:"guitar slung on her back",
+  melee:"MELEE, 5 frames: grips the guitar neck with both hands and swings the guitar body horizontally like a battle axe in a wide arc: wind-up behind her, mid-swing, impact pose with the guitar fully extended in front, follow-through, recover",
+  ranged:"RANGED, 4 frames: sings: one hand pressed to her chest, the other reaching forward with open palm, head slightly raised, mouth open",
+  skill:"SKILL, 6 frames: raises one arm straight toward the sky with the head tilted up and eyes closed, singing; the overskirt and hair lift as if caught in an updraft, then she lowers her arm",
+  icon:"accent colors gold #f6dc8a and lavender #a57ee6. 1) melee: a black offset guitar mid-swing with a golden curved slash; 2) ranged: a glowing golden eighth note with a tiny star sparkle; 3) dash: a streak of blonde-to-pink hair with lace ribbon; 4) skill (Starfall of Sorrow): three golden stars falling diagonally past a thin crescent moon"},
+ {id:'C2',name:'Mortis（若叶睦）',
+  desc:"Mortis, a girl with long straight pale sage-silver hair, amber eyes, a dark crimson velvet beret tilted to one side, and a black lace mask covering her nose and mouth (lower face). Costume: short black capelet with crimson trim and gold embroidery, cream cravat with a green gem brooch, crimson vest with gold buttons, a long black skirt open at the front with silver studs along the edges and a crimson underlayer, sheer beige puffy sleeves with black cuffs, grey tights, ruffled ankle socks, dark red Mary-Jane shoes. Instrument: a hot-pink superstrat electric guitar with a maple neck.",
+  idle:"stands very still like a doll, guitar held loosely at her side, only the hair moving, blinks once",
+  run:"guitar held in one hand, slightly stiff doll-like gait",
+  melee:"MELEE, 5 frames: a quick three-hit combo using the pink guitar like a sword: upward slash, downward slash, then a heavy spinning strike with the guitar fully extended, then recover",
+  ranged:"RANGED, 4 frames: leans forward and strums the pink guitar with aggressive fast downstrokes, hair whipping",
+  skill:"SKILL, 6 frames: Dance of Death: her body jerks like a marionette, head snaps back, arms flung out, beret almost falling off, then she lands in a low predatory crouch holding the guitar",
+  icon:"accent colors hot pink #ff4fa8 and sage silver #cdd3c3. 1) melee: a hot-pink electric guitar crossed with a sharp white slash; 2) ranged: three short pink lightning-shaped sound bolts in a row; 3) dash: a cut marionette string curling in the air; 4) skill (Dance of Death): a cracked porcelain doll face wearing a crimson beret, wrapped in pink flames"},
+ {id:'C3',name:'Timoris（八幡海铃）',
+  desc:"Timoris, a girl with long wavy dark purple-black hair, teal-cyan eyes, and a black lace mask covering her nose and mouth (lower face). Costume: short dark crimson capelet with a gold embroidered hem, black vest with a beige front panel and black buttons, sheer beige ruffled sleeves, black nylon half gloves, black riding shorts with beige front panels, black thigh-high heeled boots. Instrument: a pale lavender-white 5-string electric bass with a rosewood neck.",
+  idle:"arms crossed with the bass on her back, calm and composed, weight shifting slightly",
+  run:"bass on her back, long confident strides",
+  melee:"MELEE, 5 frames: lifts the heavy bass overhead with both hands and slams it down into the ground in front of her: raise, peak, slam, impact crouch, recover",
+  ranged:"RANGED, 4 frames: bass held low in playing position, she plucks the strings with firm fingers, body leaning back slightly",
+  skill:"SKILL, 6 frames: Low Frequency of Fear: plants her boots wide, raises the bass vertically and stamps, striking a huge chord, capelet and hair blown outward by the force, then lowers the bass",
+  icon:"accent colors teal #4ccac2 and crimson #7a1e28. 1) melee: a bass headstock smashing down onto cracked ground; 2) ranged: three concentric teal sound-wave arcs; 3) dash: a swirling dark crimson capelet; 4) skill (Low Frequency of Fear): a black lace half-mask surrounded by expanding teal shockwave rings"},
+ {id:'C4',name:'Amoris（祐天寺若麦）',
+  desc:"Amoris, a girl with a short lavender-purple bob, pink-magenta eyes, and a black cat-eye lace masquerade mask with pointed tips. Costume: high-collar black pinstriped blouse with sheer grey chiffon sleeves, silver chain necklace, long black swallow-tail coat tails behind her, a short crimson skirt, a garter belt, sheer wine-red stockings with back seams, dark red ankle-strap heels. Weapon: a pair of wooden drumsticks with dark red tips.",
+  idle:"twirls one drumstick between her fingers, hip cocked, playful",
+  run:"a drumstick in each hand, light bouncy run, coat tails flapping",
+  melee:"MELEE, 5 frames: two fast alternating drumstick strikes like a drum fill: left hand strike, right hand strike, a cross-arm finishing hit, follow-through, recover with a wink",
+  ranged:"RANGED, 4 frames: throws a drumstick forward overhand like a dart: wind-up, throw, release with the arm extended, recover holding a new stick",
+  skill:"SKILL, 6 frames: Beat of Love: spins on one heel twirling both drumsticks, then strikes the air rhythmically in four directions and ends blowing a kiss",
+  icon:"accent colors pink-magenta #ff6a9a and lavender #8e6bd2. 1) melee: two crossed drumsticks with a starburst impact; 2) ranged: a spinning drumstick with a short curved trail; 3) dash: a trail of small pink hearts; 4) skill (Beat of Love): a ring of pink hearts around a golden cymbal"},
+ {id:'C5',name:'Oblivionis（丰川祥子）',
+  desc:"Oblivionis, a girl with very long wavy periwinkle-blue hair in two twin tails tied with black ribbons, amber eyes, and a black lace masquerade eye-mask. Costume: crimson blouse with puffed short sleeves and a black lace jabot, black lace-up corset, a layered black and charcoal high-low ruffled skirt with a beige underlayer and gold embroidery, black lace gloves, dark grey tights, black lace-up heeled boots. She fights by conducting with her gloved hand, summoning floating piano keys and crimson rose petals.",
+  idle:"stands upright with refined posture, one gloved hand resting at her waist, twin tails swaying",
+  run:"elegant quick steps, skirt layers bouncing, twin tails streaming",
+  melee:"MELEE, 5 frames: a sweeping backhand conductor's gesture like a fortissimo cue: arm drawn back, fast sweep across the body, arm fully extended, wrist flourish, recover",
+  ranged:"RANGED, 4 frames: points one gloved finger forward commandingly, the other hand on her chest, chin raised",
+  skill:"SKILL, 6 frames: Hour of Oblivion: spreads both arms wide, skirt flaring, head bowed with eyes closed, then raises her head slowly and opens her eyes",
+  icon:"accent colors periwinkle #8d93dd and crimson #8c1f2d. 1) melee: a crimson rose on a thorny stem sweeping in a curve; 2) ranged: a single glowing white piano key; 3) dash: a black ribbon swirl; 4) skill (Hour of Oblivion): a cracked golden pocket watch with stopped hands and a periwinkle glow"}
+];
+
+const HUD=[
+ {id:'H1',t:'按钮外框（普通 / 按下）',must:1,ar:'2:1',size:'128×64',what:'右下角四个圆形按钮的外框，中间放技能图标。',
+  p:"Two round game UI button frames side by side in equal square cells (each 64x64 pixels, whole image 128x64, or an exact integer upscale). Left: normal state; right: pressed state that is darker with a faint crimson inner glow. Each frame is an ornate antique-gold ring with gothic filigree, a tiny rose at the top and a tiny lace mask at the bottom; the inside of the ring is a dark wine-red velvet disc with a soft radial highlight and no symbol in the center, because an icon will be placed there."},
+ {id:'H2',t:'玩家血条框',must:1,ar:'10:1',size:'160×16',what:'左上角血条的外框，内部留空给红色填充。',
+  p:"A horizontal health bar frame, 160x16 pixels (or an exact integer upscale such as 1280x128). Ornate antique-gold gothic frame with a small crimson rose cap on the left end and a small black lace mask cap on the right end. The inner rectangle where the health fill goes must be EMPTY flat magenta #FF00FF, a clean rectangle about 136x6 pixels in the center."},
+ {id:'H3',t:'Boss 血条框',must:1,ar:'12:1',size:'240×20',what:'Boss 战时屏幕底部的血条框。',
+  p:"A wide boss health bar frame, 240x20 pixels (or an exact integer upscale). Black iron and antique-gold gothic frame with thorny vine filigree along the edges and a small ornate theater mask with a crown in the top center. The inner rectangle where the fill goes must be EMPTY flat magenta #FF00FF, a clean rectangle about 220x8 pixels in the center."},
+ {id:'H4',t:'角色头像 ×5',must:1,ar:'5:1',size:'160×32',what:'左上角名字旁的小头像，5 人一排。生成时请附上 5 张设定图。',
+  p:"Five small character bust portraits in one row of equal square cells (each 32x32 pixels, whole image 160x32, or an exact integer upscale), each inside a small dark oval frame with an antique-gold rim, facing slightly right. In order: 1) platinum-blonde girl with pink hair tips, violet eyes, black lace eye-mask; 2) girl with long sage-silver hair, crimson beret, amber eyes, black lace mask over the mouth; 3) girl with long dark purple-black hair, teal eyes, black lace mask over the mouth, crimson capelet; 4) girl with short lavender bob, pink eyes, black cat-eye mask; 5) girl with periwinkle-blue twin tails and black ribbons, amber eyes, black lace eye-mask."},
+ {id:'H5',t:'小图标 ×6',must:0,ar:'6:1',size:'96×16',what:'花瓣（货币）、护盾、回血心、暂停、音乐、音效。',
+  p:"Six tiny game UI icons in one row of equal square cells (each 16x16 pixels, whole image 96x16, or an exact integer upscale), bold and readable at tiny size. In order: 1) a pink rose petal (currency); 2) a small gold heater shield with a rose emblem (shield); 3) a red heart with a white highlight (healing pickup); 4) two vertical gold bars (pause); 5) a gold eighth note (music); 6) a gold speaker with sound waves (sound effects)."},
+ {id:'H6',t:'房间门图标 ×7',must:0,ar:'7:1',size:'168×24',what:'门上方显示的房间类型：演出、精英、化妆间、商店、衣柜、终幕之门、下一幕。',
+  p:"Seven small game map icons in one row of equal square cells (each 24x24 pixels, whole image 168x24, or an exact integer upscale). In order: 1) battle: two crossed rapiers; 2) elite: a skull wearing a small gold crown; 3) dressing room / rest: a vanity mirror with a lit candle; 4) backstage shop: a faceless dress-form mannequin with a rose petal; 5) wardrobe / treasure: a closed crimson chest with gold trim; 6) boss gate: an ornate crowned theater mask with red eyes; 7) next act: red stage curtains parting upward."},
+ {id:'H7',t:'虚拟摇杆',must:0,ar:'3:2',size:'96×64',what:'左手移动用的摇杆底座和摇杆头。',
+  p:"Virtual joystick parts side by side: left a 64x64 base, right a 32x32 knob vertically centered (whole image 96x64, or an exact integer upscale). Base: a thin ring shaped like a gothic rose window, dark wine red with antique-gold tracery, mostly hollow with a dark translucent-looking center. Knob: a round white porcelain knob with a gold rim and a tiny lace pattern."},
+ {id:'H8',t:'弹窗边框（九宫格）',must:0,ar:'1:1',size:'96×96',what:'选旋律、商店、暂停弹窗的外框。四边必须均匀，方便拉伸。',
+  p:"A square ornate UI panel frame for 9-slice scaling, 96x96 pixels (or an exact integer upscale). A 12-pixel-wide border of black iron and antique gold with gothic filigree; each corner has a small crimson rose ornament; the four straight edges between the corners use a simple repeating pattern that tiles cleanly. The interior is a flat very dark plum fill #140a10 with no pattern."}
+];
+
+const UPS=["断弦之刃: a snapped guitar string curling into a blade shape","回响: an eighth note with echoing ripple rings","急板: a metronome with its arm swinging fast","坚硬假面: a sturdy white porcelain mask with a gold rim","华尔兹步: a black heeled shoe with a swirl of motion","玫瑰花瓣: a cluster of pink rose petals","红茶时间: a porcelain teacup with rising steam","延音: a golden fermata symbol","复调: three musical notes fanning out","贯穿之声: a note-headed arrow piercing through three bars","致命之吻: a red lipstick kiss mark with a tiny dagger","荆棘礼服: a corset bodice wrapped in thorny vines","卡农: two overlapping crescent sound waves","血之契约: a drop of blood on a scroll with a wax seal","安可: a circular arrow around a bouquet of roses","黑色生日: a black birthday cake with one lit candle","Ave: a silver cross with a halo and small wings","银十字: two small silver crosses orbiting a point","月之碎片: a shattered crescent moon with fragments","Symbol: four alchemical element triangles combined in a circle","千面: a cluster of many overlapping masks"];
+
+const UPS2=["连弹: two bullets in a fast row with speed lines", "重音: a heavy hammer-shaped musical accent mark", "广域和弦: a wide golden arc slash", "疾奏: a winged arrow", "强音: a large glowing orb note", "强拍: a fist pushing a shock ring", "银镜: a silver hand mirror", "调律: a tuning fork with circular arrows", "铁处女: a small iron maiden coffin", "花之引力: a horseshoe magnet pulling rose petals", "安眠曲: a crescent moon over a sleeping heart", "谢幕礼: a theater bow with a falling rose", "贪婪的假面: a gold coin wearing a tiny mask", "花瓣浴: a bathtub of rose petals with a heart bubble", "序曲: a curtain opening with a golden numeral I", "心跳: a beating heart with a pulse line", "终止式: a double bar line that cracks like glass", "休止符: a rest symbol with a skull", "回旋曲: a note bouncing off a wall", "分奏: one note splitting into three", "连锁音: a chain of lightning between notes", "余烬: a flaming note", "寒霜: a frozen note with ice crystals", "渐强: a crescendo hairpin sign glowing red", "终幕之刃: a sword through a crown", "华彩: an ornate cadenza flourish burst", "返场: a curtain call bow with a circular arrow", "疾风步: a footstep with a burst shockwave", "回身射: a spinning dancer shooting notes around", "双人舞: two dancing silhouettes", "共鸣爆发: a ring of notes exploding outward", "碎镜: a shattering mirror", "掌声: two clapping hands", "过载: a glowing hexagon shield fully charged", "呼吸: a breath of wind around a mirror", "幻影: a ghostly afterimage silhouette", "最后的独唱: a lone microphone under a spotlight", "延音踏步: an hourglass with a dancing foot", "幸运的玫瑰: a four-leaf clover made of rose petals", "留声机: a small gramophone", "双重奏: two mirrored arrows back to back", "回声: an infinity sign of sound waves", "不死鸟: a phoenix rising from a mask", "终焉之音: a purple vortex swallowing notes", "圣盾: a holy gold-and-silver shield with wings", "雷鸣: a lightning bolt from a dark cloud", "镜面: a mirror reflecting a bullet", "慢板: a slow hourglass with a snail-like note"];
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let n=0;
+function ticket({id,stub,title,what,chips,rows,prompt}){const k='p'+(n++);
+  return `<article class="ticket"><div class="stub"><b>${id}</b><span>${stub}</span></div><div class="tbody"><h4>${title}</h4>${what?`<p class="what">${what}</p>`:''}
+  <div class="chips">${chips.map(c=>`<span class="chip ${c[1]||''}">${c[0]}</span>`).join('')}</div>
+  ${rows?`<table class="rows">${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`:''}
+  <div class="pwrap"><pre id="${k}">${esc(prompt)}</pre></div><div class="cp"><button data-copy="${k}">复制提示词</button><span class="done" hidden>已复制</span></div></div></article>`}
+document.getElementById('neg').textContent=NEG;
+document.getElementById('charList').innerHTML=C.map(c=>
+  ticket({id:c.id+'-A',stub:'人物',title:c.name+' · A 张',what:'待机、跑步、闪避、受击。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','待机 4 帧'],['第2行','跑步 6 帧'],['第3行','闪避 3 帧'],['第4行','受击 2 帧']],
+    prompt:`${STYLE}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — IDLE, 4 frames: ${c.idle}.\nRow 2 — RUN, 6 frames: a full running cycle, ${c.run}.\nRow 3 — ${DASH}.\nRow 4 — ${HURT}.`})+
+  ticket({id:c.id+'-B',stub:'人物',title:c.name+' · B 张',what:'近战、远程、技能、倒下。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','近战 5 帧'],['第2行','远程 4 帧'],['第3行','技能 6 帧'],['第4行','倒下 5 帧']],
+    prompt:`${STYLE}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — ${c.melee}.\nRow 2 — ${c.ranged}.\nRow 3 — ${c.skill}.\nRow 4 — ${DEATH}.`})).join('');
+document.getElementById('iconList').innerHTML=C.map((c,i)=>ticket({id:'I'+(i+1),stub:'图标',title:c.name+' · 操作图标',chips:[['必需','must'],['4×1 格'],['128×32'],['--ar 4:1']],
+  rows:[['1','近战'],['2','远程'],['3','闪避'],['4','技能']],
+  prompt:`${STYLE}\n\nGame UI icon set for ${c.name.split('（')[0]}: 4 icons in a single row of equal square cells (each 32x32 pixels, whole image 128x32, or an exact integer upscale such as 1024x256). Each icon is one bold centered symbol that reads clearly at small size and fills about 80% of its cell; no circular frame, no button and no plate behind the symbol. Icons in order, ${c.icon}.`})).join('');
+document.getElementById('hudList').innerHTML=HUD.map(h=>ticket({id:h.id,stub:'HUD',title:h.t,what:h.what,chips:[h.must?['必需','must']:['可选','opt'],[h.size],['--ar '+h.ar]],prompt:`${STYLE}\n\n${h.p}`})).join('');
+const UPICONS=[{"i": 1, "n": "断弦之刃", "d": "近战伤害 +20%", "r": 0, "v": "a snapped silver guitar string curling into a sharp blade"}, {"i": 2, "n": "回响", "d": "远程伤害 +20%", "r": 0, "v": "a crimson eighth note with three echoing ripple rings"}, {"i": 3, "n": "急板", "d": "攻击速度 +15%", "r": 0, "v": "a brass metronome with its arm swinging fast, motion arcs"}, {"i": 4, "n": "坚硬假面", "d": "最大生命 +20，并回复 20", "r": 0, "v": "a cracked but sturdy white porcelain half-mask with a gold rim"}, {"i": 5, "n": "华尔兹步", "d": "移动速度 +10%", "r": 0, "v": "a black high-heeled shoe with a small rose and a swirling dance trail"}, {"i": 6, "n": "玫瑰花瓣", "d": "花瓣获取 +40%", "r": 0, "v": "a small cluster of pink rose petals drifting"}, {"i": 7, "n": "红茶时间", "d": "立即回复 40% 生命", "r": 0, "v": "a porcelain teacup with a rose pattern and rising steam"}, {"i": 8, "n": "延音", "d": "闪避冷却 -25%", "r": 0, "v": "a golden fermata symbol (an arc over a dot)"}, {"i": 9, "n": "复调", "d": "远程额外 +1 发", "r": 1, "v": "three golden eighth notes fanning out"}, {"i": 10, "n": "贯穿之声", "d": "远程穿透 +1", "r": 1, "v": "a note-headed arrow piercing through three vertical bars"}, {"i": 11, "n": "致命之吻", "d": "暴击率 +12%", "r": 1, "v": "red lips leaving a kiss mark with a tiny silver dagger beside them"}, {"i": 12, "n": "荆棘礼服", "d": "受伤时对周围敌人造成 30 伤害", "r": 1, "v": "a black and crimson corset bodice wrapped in thorny vines"}, {"i": 13, "n": "卡农", "d": "近战挥击时向前释放一道音波", "r": 1, "v": "two overlapping cream-colored crescent sound waves"}, {"i": 14, "n": "血之契约", "d": "击杀敌人回复 2 生命", "r": 1, "v": "a parchment contract with a drop of blood and a red wax seal"}, {"i": 15, "n": "安可", "d": "技能冷却 -25%", "r": 1, "v": "a red rose bouquet circled by a golden curved arrow"}, {"i": 16, "n": "黑色生日", "d": "最大护盾 +15，护盾恢复等待时间 -20%", "r": 1, "v": "a black birthday cake with dripping red icing and one lit candle"}, {"i": 17, "n": "Ave", "d": "倒下时复活一次，回复 50% 生命", "r": 2, "v": "a silver cross with a halo and small white wings"}, {"i": 18, "n": "银十字", "d": "两枚银十字环绕身边，持续伤害敌人", "r": 2, "v": "two small silver crosses orbiting a sparkle on a thin golden ring"}, {"i": 19, "n": "月之碎片", "d": "击杀时迸发 3 枚追踪星屑", "r": 2, "v": "a pale crescent moon shattering into shards"}, {"i": 20, "n": "Symbol", "d": "所有伤害 +30%", "r": 2, "v": "four alchemical element triangles inside a crimson circle with gold trim"}, {"i": 21, "n": "千面", "d": "释放技能后 3 秒内无敌", "r": 2, "v": "a cluster of many overlapping masquerade masks"}, {"i": 22, "n": "连弹", "d": "远程攻击速度 +20%", "r": 0, "v": "two crimson notes flying in a fast row with speed lines"}, {"i": 23, "n": "重音", "d": "近战范围 +20%", "r": 0, "v": "a heavy golden accent mark striking down like a hammer, with impact lines"}, {"i": 24, "n": "广域和弦", "d": "近战挥击角度 +25%", "r": 0, "v": "a wide sweeping golden crescent slash"}, {"i": 25, "n": "疾奏", "d": "弹速 +30%", "r": 0, "v": "a winged silver arrow with a note head"}, {"i": 26, "n": "强音", "d": "远程弹体增大 40%，更容易命中", "r": 0, "v": "a large glowing crimson sound orb with a gold rim"}, {"i": 27, "n": "强拍", "d": "击退效果 +60%", "r": 0, "v": "a gloved fist pushing out a shock ring"}, {"i": 28, "n": "银镜", "d": "最大护盾 +20", "r": 0, "v": "a silver hand mirror with an ornate gold frame"}, {"i": 29, "n": "调律", "d": "护盾恢复速度 +40%", "r": 0, "v": "a tuning fork wrapped by pale blue circular arrows"}, {"i": 30, "n": "铁处女", "d": "受到伤害 -8%", "r": 0, "v": "a small iron maiden casket with gold studs"}, {"i": 31, "n": "花之引力", "d": "拾取范围 +80%", "r": 0, "v": "a gold horseshoe magnet pulling in rose petals"}, {"i": 32, "n": "安眠曲", "d": "每秒回复 0.6 生命", "r": 0, "v": "a crescent moon above a sleeping heart, with a small lullaby note"}, {"i": 33, "n": "谢幕礼", "d": "每清理一个房间回复 8% 生命", "r": 0, "v": "a rose falling in front of a bowing red theater curtain"}, {"i": 34, "n": "贪婪的假面", "d": "商店价格 -20%", "r": 0, "v": "a gold coin wearing a tiny black lace mask"}, {"i": 35, "n": "花瓣浴", "d": "拾取花瓣时 10% 几率回复 2 生命", "r": 0, "v": "a clawfoot bathtub filled with rose petals and a small heart-shaped bubble"}, {"i": 36, "n": "序曲", "d": "对满血敌人伤害 +40%", "r": 0, "v": "red stage curtains opening to reveal a golden Roman numeral I"}, {"i": 37, "n": "心跳", "d": "最大生命 +10%", "r": 0, "v": "a beating crimson heart with a pulse line"}, {"i": 38, "n": "终止式", "d": "暴击伤害 +50%", "r": 1, "v": "a double bar line cracking like glass with a red spark"}, {"i": 39, "n": "休止符", "d": "对生命低于 30% 的敌人伤害 +50%", "r": 1, "v": "a musical rest symbol beside a small skull"}, {"i": 40, "n": "回旋曲", "d": "远程子弹撞墙反弹 +1 次", "r": 1, "v": "a note bouncing off a stone wall with a curved trail"}, {"i": 41, "n": "分奏", "d": "远程命中后分裂出 2 枚小音弹", "r": 1, "v": "one note splitting into three smaller notes"}, {"i": 42, "n": "连锁音", "d": "命中时 20% 几率向附近敌人传导电弧", "r": 1, "v": "three notes linked by a pale blue lightning chain"}, {"i": 43, "n": "余烬", "d": "攻击使敌人燃烧 3 秒", "r": 1, "v": "a crimson note wrapped in orange flames"}, {"i": 44, "n": "寒霜", "d": "攻击使敌人减速 35%，持续 2 秒", "r": 1, "v": "a frozen pale blue note with ice crystals"}, {"i": 45, "n": "渐强", "d": "本房间每击杀一个敌人，伤害 +3%（最多 +30%）", "r": 1, "v": "a glowing red crescendo hairpin sign (<)"}, {"i": 46, "n": "终幕之刃", "d": "对 Boss 与精英伤害 +30%", "r": 1, "v": "a silver sword piercing a golden crown"}, {"i": 47, "n": "华彩", "d": "技能伤害 +40%", "r": 1, "v": "an ornate golden cadenza flourish bursting with sparkles"}, {"i": 48, "n": "返场", "d": "击杀精英时技能冷却立即清零", "r": 1, "v": "a bowing silhouette under a spotlight with a circular arrow"}, {"i": 49, "n": "疾风步", "d": "闪避结束时在落点造成范围伤害", "r": 1, "v": "a high-heel footprint with a golden burst shockwave"}, {"i": 50, "n": "回身射", "d": "闪避时向四周射出 6 枚音符", "r": 1, "v": "a spinning dancer silhouette firing notes in a ring"}, {"i": 51, "n": "双人舞", "d": "闪避可以连续使用 2 次", "r": 1, "v": "two dancing silhouettes side by side mid-step"}, {"i": 52, "n": "共鸣爆发", "d": "每第 10 次攻击释放一圈音波", "r": 1, "v": "a ring of golden notes exploding outward from a bright center"}, {"i": 53, "n": "碎镜", "d": "护盾被击破时，对周围敌人造成 40 伤害并击退", "r": 1, "v": "a shattering silver mirror with flying shards"}, {"i": 54, "n": "掌声", "d": "击杀敌人回复 4 点护盾", "r": 1, "v": "two white-gloved hands clapping with small sparkles"}, {"i": 55, "n": "过载", "d": "护盾全满时伤害 +20%", "r": 1, "v": "a glowing pale blue hexagonal shield, fully charged"}, {"i": 56, "n": "呼吸", "d": "护盾开始恢复的等待时间 -35%", "r": 1, "v": "a soft breath of wind curling around a hand mirror"}, {"i": 57, "n": "幻影", "d": "15% 几率完全闪避伤害", "r": 1, "v": "a ghostly translucent afterimage silhouette"}, {"i": 58, "n": "最后的独唱", "d": "生命低于 30% 时伤害 +35%", "r": 1, "v": "a lone microphone under a narrow spotlight"}, {"i": 59, "n": "延音踏步", "d": "受伤后的无敌时间 +50%", "r": 1, "v": "a small hourglass with a dancing foot"}, {"i": 60, "n": "幸运的玫瑰", "d": "更容易出现稀有与传说旋律", "r": 1, "v": "a four-leaf clover made of rose petals"}, {"i": 61, "n": "留声机", "d": "每 9 秒召唤一台持续 6 秒、自动射击的留声机", "r": 1, "v": "a small brass gramophone with a flared horn"}, {"i": 62, "n": "双重奏", "d": "每次远程攻击额外向身后发射一轮", "r": 2, "v": "two mirrored golden arrows back to back"}, {"i": 63, "n": "回声", "d": "远程攻击 0.15 秒后以 50% 伤害再发射一次", "r": 2, "v": "an infinity sign made of sound waves"}, {"i": 64, "n": "不死鸟", "d": "每一章首次倒下时，以 30% 生命与满护盾复活", "r": 2, "v": "a crimson and gold phoenix rising from a masquerade mask"}, {"i": 65, "n": "终焉之音", "d": "释放技能时制造一个吸引并持续伤害敌人的漩涡", "r": 2, "v": "a purple vortex swallowing musical notes"}, {"i": 66, "n": "圣盾", "d": "最大护盾 +50，受伤不再打断护盾恢复", "r": 2, "v": "a holy gold and silver shield with small wings"}, {"i": 67, "n": "雷鸣", "d": "每 3 秒对随机敌人降下落雷", "r": 2, "v": "a jagged lightning bolt striking from a dark cloud"}, {"i": 68, "n": "镜面", "d": "护盾存在时，30% 几率把击中你的子弹反弹回去", "r": 2, "v": "a mirror reflecting a bullet back"}, {"i": 69, "n": "慢板", "d": "敌方子弹速度 -25%", "r": 2, "v": "an hourglass with sand falling slowly and a sleepy note"}];
+const ICONSTYLE='All icons belong to one family: ornate gothic emblems with a dark outline, antique gold accents, crimson and bone-white tones, light from the top-left, at most a small sparkle. No frame, no plate and no circle behind each icon.';
+const RARC=['',', with a crimson-and-gold accent',', surrounded by a soft radiant golden glow (legendary)'];
+const RART=['普通','稀有','传说'];
+for(let s=0;s<UPICONS.length;s+=12){const part=UPICONS.slice(s,s+12),cols=part.length>9?4:3,rows=Math.ceil(part.length/cols),W=cols*32,H=rows*32,no=s/12+1;
+  document.getElementById('upList').innerHTML+=ticket({id:'U'+no,stub:'强化',title:`强化图标 · 第 ${no} 张（${part[0].i}–${part[part.length-1].i}）`,what:`${cols} 列 × ${rows} 行，从左到右、从上到下排列。`,
+    chips:[['必需','must'],[`${cols}×${rows} 格`],[`${W}×${H}`],['--ar '+(cols===rows?'1:1':cols+':'+rows)]],
+    rows:part.map(u=>[String(u.i),`<b>${u.n}</b>（${RART[u.r]}）${u.d}`]),
+    prompt:`${STYLE}\n\nGame UI icon sheet: ${part.length} upgrade icons in an exact grid of ${cols} columns by ${rows} rows of equal square cells (each 32x32 pixels, whole image ${W}x${H}, or an exact integer upscale such as ${W*8}x${H*8}). Each icon is one bold centered symbol filling about 80% of its cell and readable at small size. ${ICONSTYLE}\nOrder left to right, top to bottom:\n${part.map((u,k)=>`${k+1}) ${u.v}${RARC[u.r]}`).join('\n')}.`})}
+
+const FOESHEET="Strict sprite sheet: an exact grid of 6 columns by 4 rows of equal square cells (64x64 game pixels per cell, whole sheet 384x256, or an exact integer upscale such as 1536x1024). Side view, facing RIGHT in every frame, same scale and lighting in every frame, feet or lowest point on the same baseline 4 pixels above the cell bottom, centered in each cell. Nothing crosses a cell edge. No grid lines, no labels, no effects outside the body. Highly detailed pixel art with rich shading, rim light from the upper left, deep crimson and antique gold accents.";
+const BOSSSHEET="Strict sprite sheet: an exact grid of 4 columns by 3 rows of equal square cells (128x128 game pixels per cell, whole sheet 512x384, or an exact integer upscale such as 2048x1536). Front three-quarter view, the same scale in every frame, centered with the lowest point on a shared baseline 6 pixels above the cell bottom. Nothing crosses a cell edge. No grid lines, no labels. Very highly detailed pixel art boss, dramatic rim lighting, ornate gothic details, deep crimson, black and antique gold.";
+const FOES=[
+ {id:'E1',n:'提线人偶',d:'a small wooden marionette doll with a cracked porcelain face, painted rosy cheeks, a tattered dark crimson dress with gold trim, jointed wooden limbs, and three silver puppet strings rising from its head and hands',
+  rows:[['第1行','待机 4 帧：被丝线吊着轻轻摇晃'],['第2行','行走 6 帧：关节僵硬地蹒跚前进'],['第3行','攻击 4 帧：猛扑向前，双臂伸出'],['第4行','死亡 5 帧：丝线断裂，散成木块和瓷片']],
+  r:"Row 1 — IDLE, 4 frames: dangling and swaying gently on its strings. Row 2 — WALK, 6 frames: a stiff jerky puppet walk. Row 3 — ATTACK, 4 frames: lunges forward with both arms outstretched. Row 4 — DEATH, 5 frames: the strings snap and it collapses into wooden pieces and porcelain shards."},
+ {id:'E2',n:'假面幽灵',d:'a floating white porcelain masquerade mask with gold filigree, empty eye holes glowing with violet light, trailing a wispy translucent violet ghost cloak and lace ribbons',
+  rows:[['第1行','漂浮 4 帧'],['第2行','移动 6 帧：斗篷飘动'],['第3行','施法 4 帧：眼洞亮起并射出光球'],['第4行','死亡 5 帧：面具碎裂、烟雾散去']],
+  r:"Row 1 — FLOAT, 4 frames: bobbing in the air. Row 2 — MOVE, 6 frames: drifting with the cloak streaming behind. Row 3 — CAST, 4 frames: the eyes flare and release an orb of violet light. Row 4 — DEATH, 5 frames: the mask cracks and shatters as the ghostly cloak dissolves into smoke."},
+ {id:'E3',n:'荆棘玫瑰',d:'a carnivorous blood-red rose plant rooted in cracked stone, with a huge layered bloom that hides a ring of tiny teeth, thorny dark green stems and leaves',
+  rows:[['第1行','待机 4 帧：摇曳'],['第2行','蓄力 6 帧：花苞收紧'],['第3行','爆发 4 帧：花瓣张开、喷出花刺'],['第4行','死亡 5 帧：枯萎凋零']],
+  r:"Row 1 — IDLE, 4 frames: swaying slowly. Row 2 — CHARGE, 6 frames: the bloom closes tightly and trembles. Row 3 — BURST, 4 frames: the petals snap open wide revealing teeth, spraying thorns outward. Row 4 — DEATH, 5 frames: it wilts, blackens and crumbles."},
+ {id:'E4',n:'乌鸦',d:'a large black raven with glossy blue-black feathers, a single glowing red eye, a small gold ring on its leg, and ragged wing tips',
+  rows:[['第1行','飞行 4 帧'],['第2行','盘旋 6 帧'],['第3行','俯冲 4 帧：收翼急冲'],['第4行','死亡 5 帧：羽毛四散坠落']],
+  r:"Row 1 — FLY, 4 frames: a full wing-flap cycle. Row 2 — CIRCLE, 6 frames: gliding and banking. Row 3 — DIVE, 4 frames: wings tucked, beak first, a fast dive. Row 4 — DEATH, 5 frames: it bursts into falling black feathers."},
+ {id:'E5',n:'无头骑士',d:'a towering headless knight in dented blackened plate armor with gold edging, a tattered crimson cape, crimson light glowing from the empty neck hole, wielding a huge two-handed greatsword',
+  rows:[['第1行','行走 4 帧：沉重地前进'],['第2行','蓄力 6 帧：高举巨剑'],['第3行','砸击 4 帧：巨剑劈向地面'],['第4行','死亡 5 帧：盔甲散落、红光熄灭']],
+  r:"Row 1 — WALK, 4 frames: a heavy slow march. Row 2 — WIND-UP, 6 frames: raising the greatsword high overhead. Row 3 — SLAM, 4 frames: the sword crashes down into the ground with impact. Row 4 — DEATH, 5 frames: the armor falls apart piece by piece and the crimson glow fades."}];
+const BOSSES2=[
+ {id:'B1',n:'烛台伯爵（第一章）',d:'a gaunt skeletal aristocrat in a long black tailcoat with a crimson waistcoat and gold buttons, a white porcelain skull face, and a tall golden three-armed candelabra growing from his head like a crown, with burning candles dripping wax down his shoulders',
+  r:"Row 1 — IDLE, 4 frames: candle flames flickering, coat tails swaying. Row 2 — ATTACK, 4 frames: sweeps an arm and the candles flare, flinging fire. Row 3 — HURT 1 frame, then DEATH 3 frames: the candles go out one by one and he crumbles into wax and ash."},
+ {id:'B2',n:'鸦羽之后（第二章）',d:'a tall regal crow queen with an enormous pair of tattered black feathered wings, a black feather gown, a pale porcelain face with a red eye-shadow mask, long black hair and a small gold crown with a red gem',
+  r:"Row 1 — IDLE, 4 frames: wings slowly opening and closing. Row 2 — ATTACK, 4 frames: wings thrust forward, launching a storm of feathers. Row 3 — HURT 1 frame, then DEATH 3 frames: she collapses into a swirl of black feathers."},
+ {id:'B3',n:'泣泪人偶（第三章）',d:'a giant porcelain doll in a navy blue dress with white lace, dark blue hair in a bonnet, huge glassy blue eyes, endless blue tears streaming down her cracked cheeks and pooling at her feet',
+  r:"Row 1 — IDLE, 4 frames: sobbing, tears flowing. Row 2 — ATTACK, 4 frames: she wails and a spiral of tear drops bursts outward. Row 3 — HURT 1 frame, then DEATH 3 frames: cracks spread over her porcelain face and she shatters."},
+ {id:'B4',n:'荆棘王座（第四章）',d:'a faceless king made of black thorny vines seated on a massive throne of twisted thorns and blood-red roses, wearing a tarnished gold crown, two small glowing green eyes in the dark where the face should be',
+  r:"Row 1 — IDLE, 4 frames: vines writhing, roses breathing. Row 2 — ATTACK, 4 frames: raises a vine-hand and thorn spikes erupt from the ground. Row 3 — HURT 1 frame, then DEATH 3 frames: the thorns wither, the roses fall and the throne collapses."}];
+const ROOMSTYLE="Top-down three-quarter view pixel art game room background, highly detailed, crisp pixels, no anti-aliasing, cinematic moody lighting with deep shadows. Exact composition (game layout, keep it): the image is 1024x576; the TOP 15% of the image is the back wall seen from the front (stained-glass gothic windows, columns and wall sconces along it, a gold-trimmed baseboard at its bottom edge); thin side walls 24 pixels wide on the left and right edges; a thin wall strip 24 pixels tall along the bottom edge; everything else is an EMPTY open floor. A narrow vertical red carpet runner with gold borders runs down the exact center from the back wall to the bottom. Keep the floor open and clear: no furniture, no pillars, no characters, no creatures, no text, no UI. Only flat floor details such as tiles, cracks, small debris.";
+const ROOMS=[
+ {id:'R1',n:'第一章 · 烛火之厅',d:'a candlelit gothic hall: warm red-brown stone floor slabs with scorch marks, melted candle wax puddles and ash, back wall of dark brick with tall red and amber stained-glass windows and burning candle sconces, warm orange light pools'},
+ {id:'R2',n:'第二章 · 鸦羽回廊',d:'a cold moonlit gallery: blue-grey slate tiles scattered with black feathers, back wall with pale blue and lavender stained glass, empty iron birdcages hanging from the wall, cold silver light'},
+ {id:'R3',n:'第三章 · 泪之水底',d:'a flooded underwater crypt: wet deep-blue stone floor with shallow shimmering puddles and caustic light ripples, back wall with blue and teal stained glass, dripping stalactite stains, cold aquatic glow'},
+ {id:'R4',n:'第四章 · 荆棘庭园',d:'an overgrown gothic garden courtyard: mossy green flagstones with grass in the cracks, creeping thorny vines and fallen red rose petals, back wall of crumbling stone with green and gold stained glass half covered by vines'},
+ {id:'R5',n:'第五章 · 假面舞台',d:'a grand theater stage seen from above: polished dark wooden stage boards, scattered red rose petals, a row of footlights along the back, back wall of heavy crimson velvet curtains with gold tassels and gold masquerade-mask ornaments, a dramatic spotlight glow'}];
+document.getElementById('foeList').innerHTML=FOES.map(f=>ticket({id:f.id,stub:'敌人',title:f.n,chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],rows:f.rows,
+  prompt:`${STYLE}\n\nSprite sheet of ${f.d}.\n\n${FOESHEET}\n\n${f.r}`})).join('')+BOSSES2.map(f=>ticket({id:f.id,stub:'Boss',title:f.n,chips:[['必需','must'],['4×3 格'],['512×384'],['--ar 4:3']],
+  rows:[['第1行','待机 4 帧'],['第2行','攻击 4 帧'],['第3行','受击 1 帧 + 死亡 3 帧']],prompt:`${STYLE}\n\nBoss sprite sheet of ${f.d}.\n\n${BOSSSHEET}\n\n${f.r}`})).join('');
+
+const MJSTYLE="Pixel art game boss sprite sheet that matches the attached reference image EXACTLY: same five black-and-silver lace masquerade masks in the same arrangement (sequined cat-eye mask top left, tall crescent mask top center, small cat-ear mask top right, lace mouth mask center left, small filigree mask center right), same crimson silk ribbons, same silver chains with hanging ruby drops, same central ruby brooch, same muted palette of black, bone, silver and deep crimson #9b1b30, same pixel density and outline. Highly detailed pixel art, crisp pixels, no anti-aliasing, no blur. Background: flat solid pure magenta #FF00FF everywhere outside the subject, no floor, no shadow on the background. No text, no labels, no grid lines, no glow effects, no extra characters.";
+const MJS=[
+ {id:'M1',n:'Mujica 本体（不含双手）',chips:[['必需','must'],['4×3 格'],['1024×576'],['--ar 16:9']],what:'五张面具、丝带、链子和宝石胸针这一整团，去掉两只骨手。每格 256×192，每一帧大小和位置一致，底部对齐。',
+  rows:[['第1行','漂浮待机 4 帧：丝带飘动、链子摆动、整体轻微上下浮动'],['第2行','施法 4 帧：向后一仰，丝带向外炸开，胸针宝石闪亮，再回正'],['第3行','受击 2 帧（向后一颤）+ 暴怒 2 帧（丝带剧烈甩动、链子绷直）']],
+  prompt:"Sprite sheet of ONLY the central body of the boss from the reference: the cluster of five masks with the crimson ribbons, silver chains, ruby drops and the ruby brooch. Do NOT draw the two skeletal hands. Exact grid of 4 columns by 3 rows of equal cells (each 256x192 pixels, whole sheet 1024x576, or an exact integer upscale). The body is the same size in every frame, centered horizontally, with its lowest point on a shared baseline 8 pixels above the cell bottom; nothing crosses a cell edge.\nRow 1 — IDLE FLOAT, 4 frames: ribbons ripple, chains and ruby drops swing gently, the whole cluster bobs up and down by a few pixels.\nRow 2 — CAST, 4 frames: the cluster rears back, ribbons flare outward, the ruby brooch flashes brighter, then it settles back.\nRow 3 — HURT, 2 frames: the cluster jolts backward and tilts; then ENRAGED, 2 frames: ribbons whip violently and chains pull taut."},
+ {id:'M2-L',n:'Mujica 骨手 · 观众左边那只',chips:[['必需','must'],['6×4 格'],['768×512'],['--ar 3:2']],what:'只画一只手：参考图里观众左侧的骷髅恶魔手（含手腕上的链子和丝带）。每格 128×128，手腕在上、爪尖朝下，底部对齐。',
+  rows:[['第1行','悬浮 4 帧：手指缓慢屈伸'],['第2行','砸地 6 帧：高举、五指张开、下落、掌心拍地、爪尖嵌入、收回'],['第3行','横扫 4 帧：侧身横向扫过，掌心在前、利爪拖在后'],['第4行','崩解 5 帧：指骨松脱、一节节散落']],
+  prompt:"Sprite sheet of ONLY ONE skeletal demon hand: the hand on the VIEWER'S LEFT in the reference image, with its bony fingers, long curved blood-red claws, the silver chain wrapped around the wrist and the trailing crimson ribbon. Exact grid of 6 columns by 4 rows of equal cells (each 128x128 pixels, whole sheet 768x512, or an exact integer upscale). The wrist is at the top and the claws point down; the hand is the same size in every frame and centered, with the claw tips on a shared baseline 6 pixels above the cell bottom; nothing crosses a cell edge. Unused cells stay empty magenta.\nRow 1 — HOVER, 4 frames: the fingers slowly curl and uncurl.\nRow 2 — SLAM, 6 frames: raised high, claws spread wide, falling, palm slamming flat down, claws digging in, lifting back up.\nRow 3 — SWEEP, 4 frames: turned sideways, sweeping horizontally with the palm leading and the claws trailing behind.\nRow 4 — CRUMBLE, 5 frames: the finger bones loosen joint by joint and fall apart, the chain slips off."},
+ {id:'M3',n:'Mujica 退场（结局用）',chips:[['可选','opt'],['4×2 格'],['1024×384'],['--ar 8:3']],what:'完整的 Mujica（含双手）。每格 256×192。用于结局：丝线断开后整体垮塌。',
+  rows:[['第1行','垮塌 4 帧：双手无力垂下、丝带失去张力'],['第2行','坠落 4 帧：链子松开、面具团整体下坠并散开']],
+  prompt:"Sprite sheet of the COMPLETE boss from the reference (the mask cluster together with both skeletal hands). Exact grid of 4 columns by 2 rows of equal cells (each 256x192 pixels, whole sheet 1024x384, or an exact integer upscale), same scale in every frame, centered, nothing crosses a cell edge.\nRow 1 — COLLAPSE, 4 frames: as if the puppet strings were cut, both hands drop limply, the ribbons lose their tension and droop, the cluster sags.\nRow 2 — FALL, 4 frames: the chains come loose, the cluster tips forward and falls apart, ribbons and ruby drops scattering, the last frame almost empty."}];
+{const L=MJS.find(m=>m.id==='M2-L');MJS.splice(MJS.indexOf(L)+1,0,{...L,id:'M2-R',n:'Mujica 骨手 · 观众右边那只',
+  what:'只画一只手：参考图里观众右侧的骷髅恶魔手（含手腕上的链子和丝带）。每格 128×128，手腕在上、爪尖朝下，底部对齐。动作和左手一一对应，方便两只手同步。',
+  prompt:L.prompt.replace("the hand on the VIEWER'S LEFT in the reference image","the hand on the VIEWER'S RIGHT in the reference image (keep its own shape, finger positions and claws exactly as drawn on that side; do not simply mirror the left hand)").replace("SWEEP, 4 frames: turned sideways,","SWEEP, 4 frames: turned sideways toward the left,")+"\nThe row order and frame counts must match the left-hand sheet exactly, so both hands can play the same animation side by side."})}
+document.getElementById('mjList').innerHTML=MJS.map(m=>ticket({id:m.id,stub:'Mujica',title:m.n,what:m.what,chips:m.chips,rows:m.rows,prompt:`${MJSTYLE}\n\n${m.prompt}`})).join('');
+
+const MJMASKS=[
+ {id:'M4-1',n:'悲伤之面（Doloris）',k:'the sequined cat-eye masquerade mask at the TOP LEFT of the reference: black lace covered in small silver sequins and pearl beads, two almond eye holes, pointed upswept corners'},
+ {id:'M4-2',n:'死之面（Mortis）',k:'the tall crescent-shaped mask at the TOP CENTER of the reference: black lace with silver filigree, one single eye hole, sweeping into a long curved crescent point'},
+ {id:'M4-3',n:'恐惧之面（Timoris）',k:'the lace mouth mask at the CENTER LEFT of the reference: a half-mask covering only the nose and mouth, black lace with large silver floral patterns, no eye holes'},
+ {id:'M4-4',n:'爱之面（Amoris）',k:'the small cat-ear mask at the TOP RIGHT of the reference: black lace with silver filigree, two oval eye holes, two pointed cat-ear tips on top'},
+ {id:'M4-5',n:'忘却之面（Oblivionis）',k:'the small filigree eye mask at the CENTER RIGHT of the reference: black lace with fine silver filigree, two eye holes, softly pointed outer corners'}];
+const SHATTER="Exact grid of 3 columns by 2 rows of equal cells (each 192x160 pixels, whole sheet 576x320, or an exact integer upscale such as 2304x1280). Front view, the mask the same size and position in every frame, centered in each cell. Nothing crosses a cell edge.\nFrame 1 (row 1, left) — INTACT: the mask whole and pristine.\nFrame 2 (row 1, middle) — FIRST CRACK: a single thin bone-white hairline crack runs across the mask.\nFrame 3 (row 1, right) — SPREADING: a web of jagged cracks spreads over the whole mask, small chips flaking off the edges.\nFrame 4 (row 2, left) — BREAKING: the mask splits into 6 to 9 large jagged pieces with thin gaps between them, still roughly in shape, the lace pattern continuing across each piece.\nFrame 5 (row 2, middle) — BURSTING: the pieces fly outward in all directions and rotate, smaller shards and tiny lace threads in between.\nFrame 6 (row 2, right) — REMNANT: only the jagged broken outer rim remains where the mask was (a thin irregular ring of broken lace edge with a hollow center), a few last tiny fragments falling.";
+document.getElementById('mjList').innerHTML+=MJMASKS.map(m=>ticket({id:m.id,stub:'破碎',title:'面具破碎 · '+m.n,what:'6 帧：完好 → 第一道裂纹 → 裂纹蔓延 → 碎成大块 → 碎片飞散 → 只剩破碎的边缘。第 6 帧会留在 Mujica 身上，作为这张面具被打碎后的样子。',
+  chips:[['必需','must'],['3×2 格'],['576×320'],['--ar 9:5']],rows:[['第1行','完好 · 第一道裂纹 · 裂纹蔓延'],['第2行','碎成大块 · 碎片飞散 · 残留的破碎边缘']],
+  prompt:`${MJSTYLE}\n\nSprite sheet showing ONLY ONE mask from the reference breaking apart: ${m.k}. Draw this mask alone, detached from the rest of the boss, with no ribbons, chains or hands.\n\n${SHATTER}`})).join('');
+document.getElementById('roomList').innerHTML=ROOMS.map(r=>ticket({id:r.id,stub:'场景',title:r.n,what:'整张房间图。顶部 15% 是后墙，左右和底部是细墙，中间一条红地毯，其余是空地板。',chips:[['必需','must'],['1024×576'],['--ar 16:9']],
+  prompt:`${ROOMSTYLE}\n\nSetting: ${r.d}.\nPalette anchored on deep wine red #9b1b30, black, antique gold #c9a45c and bone white, adapted to this setting.`})).join('');
+
+/* ---- 八、便服人物 ---- */
+const STYLE_CASUAL="Pixel art game asset in crisp 16-bit SNES/GBA style: hard pixel edges, no anti-aliasing, no blur, no smooth gradients, limited palette of about 32 colors, clean 1-pixel dark outline (#120c10), soft cel shading with 2 to 3 tones per material. Theme: everyday slice-of-life, a high-school girl in her own casual clothes (no mask, no stage costume), soft natural colors that still sit well next to deep wine red #9b1b30, antique gold #c9a45c and bone white #ece2d2. Background: flat solid pure magenta #FF00FF everywhere outside the subject, no floor, no cast shadow on the background, no gradient. No text, no letters, no numbers, no watermark, no signature, no border around the image.";
+const DEATH_CASUAL="DEATH, 5 frames: she staggers, drops to her knees, slumps forward and lies still on her side, the item she was holding slipping from her hand in the last frame";
+const CS=[
+ {id:'S1',name:'三角初华 · 便服',
+  desc:"Uika Misumi in casual clothes, a girl with shoulder-length straight platinum-blonde hair fading to soft pink at the tips, side-swept bangs, violet eyes and a gentle smile. Outfit: a black baseball cap, a plain white short-sleeve T-shirt tucked into a long beige A-line denim maxi skirt with front pockets, white ankle socks, black canvas high-top sneakers with white soles. Instrument: a wooden acoustic guitar on a black strap.",
+  idle:"holds the acoustic guitar at her hip, gentle breathing, cap brim bobbing slightly, long skirt swaying",
+  run:"guitar slung on her back, one hand holding her cap down, long skirt fluttering",
+  melee:"MELEE, 5 frames: grips the acoustic guitar neck with both hands and swings the guitar body horizontally in a wide arc: wind-up behind her, mid-swing, impact pose with the guitar fully extended in front, follow-through, recover",
+  ranged:"RANGED, 4 frames: strums the acoustic guitar once and sings, head slightly raised, mouth open, then lowers the guitar",
+  skill:"SKILL, 6 frames: raises one arm straight toward the sky with the head tilted up and eyes closed, singing happily; hair and long skirt lift as if caught in a breeze, the cap tips back, then she lowers her arm"},
+ {id:'S2',name:'若叶睦 · 便服',
+  desc:"Mutsumi Wakaba in casual clothes, a girl with very long straight pale sage-silver hair past the waist with blunt bangs, amber eyes and a calm, nearly expressionless face. Outfit: a black velvet choker, a navy-blue tartan plaid long-sleeve dress with a ruffled hem just below the knee, a cream lace bib collar with a small navy ribbon bow, a belt at the waist, cream cuffs with buttons, white frilled ankle socks, dark brown Mary-Jane heels. Instrument: a pale cream electric guitar on a strap.",
+  idle:"stands very still, guitar held loosely at her side, only her long hair moving, blinks once, one hand tucks hair behind her ear",
+  run:"guitar on her back, small quiet steps, long hair and plaid skirt flowing behind",
+  melee:"MELEE, 5 frames: a quick three-hit combo using the cream guitar like a sword: upward slash, downward slash, then a heavy spinning strike with the guitar fully extended, then recover",
+  ranged:"RANGED, 4 frames: leans forward and picks the guitar strings with quick precise strokes, hair swinging",
+  skill:"SKILL, 6 frames: closes her eyes and holds the guitar to her chest; a faint second silhouette of herself steps out beside her, then she opens her eyes and settles into a low ready stance"},
+ {id:'S3',name:'丰川祥子 · 便服',
+  desc:"Sakiko Togawa in casual clothes, a girl with long wavy blue-lavender hair with two small side braids tied with black ribbons, side-swept bangs, amber eyes and an elegant gentle smile. Outfit: a pale pink long-sleeve blouse with a pleated front, buttoned cuffs and a thin black ribbon bow tie, a high-waisted grey tartan plaid A-line midi skirt with a black waistband, white frilled ankle socks, black Mary-Jane shoes. Held item: a black leather sheet-music folder.",
+  idle:"stands gracefully with hands clasped in front holding the sheet-music folder, gentle breathing, wavy hair swaying",
+  run:"the folder held to her chest with one arm, the other hand lifting her skirt slightly, ribbons fluttering",
+  melee:"MELEE, 5 frames: snaps the closed sheet-music folder forward in a sharp horizontal sweep like a fan: wind-up, mid-swing, impact pose with the arm fully extended, follow-through, recover",
+  ranged:"RANGED, 4 frames: opens the sheet-music folder and thrusts it forward with one hand, the other hand raised like a pianist about to play, then closes it",
+  skill:"SKILL, 6 frames: raises one hand like a conductor giving the downbeat, eyes closed, skirt and hair lifting slightly, holds the pose, then lowers her hand with a composed smile"}];
+document.getElementById('casualList').innerHTML=CS.map(c=>
+  ticket({id:c.id+'-A',stub:'便服',title:c.name+' · A 张',what:'待机、跑步、闪避、受击。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','待机 4 帧'],['第2行','跑步 6 帧'],['第3行','闪避 3 帧'],['第4行','受击 2 帧']],
+    prompt:`${STYLE_CASUAL}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — IDLE, 4 frames: ${c.idle}.\nRow 2 — RUN, 6 frames: a full running cycle, ${c.run}.\nRow 3 — ${DASH}.\nRow 4 — ${HURT}.`})+
+  ticket({id:c.id+'-B',stub:'便服',title:c.name+' · B 张',what:'近战、远程、技能、倒下。',chips:[['必需','must'],['6×4 格'],['384×256'],['--ar 3:2']],
+    rows:[['第1行','近战 5 帧'],['第2行','远程 4 帧'],['第3行','技能 6 帧'],['第4行','倒下 5 帧']],
+    prompt:`${STYLE_CASUAL}\n\nSprite sheet of ${c.desc}\n\n${SHEET}\n\nRow 1 — ${c.melee}.\nRow 2 — ${c.ranged}.\nRow 3 — ${c.skill}.\nRow 4 — ${DEATH_CASUAL}.`})).join('');
+document.addEventListener('click',e=>{const b=e.target.closest('button[data-copy]');if(!b)return;const pre=document.getElementById(b.dataset.copy),ok=b.nextElementSibling;
+  const sel=()=>{const r=document.createRange();r.selectNodeContents(pre);const s=getSelection();s.removeAllRanges();s.addRange(r);ok.textContent='已选中，请长按复制';ok.hidden=false};
+  const done=()=>{ok.textContent='已复制';ok.hidden=false;setTimeout(()=>ok.hidden=true,1600)};
+  try{navigator.clipboard.writeText(pre.textContent).then(done,sel)}catch(_){sel()}});
+</script>
