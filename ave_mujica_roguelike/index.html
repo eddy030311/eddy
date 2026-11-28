@@ -8388,7 +8388,7 @@ function thEpic(cam,t){const o=G.ow,S=THST[o.indoor],vis=(x,y,m)=>x>cam.x-m&&x<c
   ctx.restore();
   /* chandeliers hang above everything */
   for(const l of o.lights){if(l.k!=='chand'||!vis(l.x,l.y-60,80))continue;thChand(l.x,l.y-58,t,S,l.r>160)}}
-function thChand(cx,cy,t,S,big){ctx.save();const sw=Math.sin(t*.8+cx)*.6;ctx.strokeStyle=hexA(S.trim,.55);ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(cx,cy-60);ctx.lineTo(cx+sw,cy-8);ctx.stroke();
+function thChand(cx,cy,t,S,big){ctx.save();{const d=Math.hypot(P.x-cx,(P.y-20)-cy);if(d<70)ctx.globalAlpha=.3+.7*d/70}const sw=Math.sin(t*.8+cx)*.6;ctx.strokeStyle=hexA(S.trim,.55);ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(cx,cy-60);ctx.lineTo(cx+sw,cy-8);ctx.stroke();
   const n=big?8:6,R=big?15:11;ctx.fillStyle=hexA(S.trim,.9);ctx.beginPath();ctx.ellipse(cx+sw,cy,R,R*.32,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(cx+sw,cy+.6,R-2,R*.24,0,0,TAU);ctx.fill();
   ctx.fillStyle=hexA(S.trim,.95);ctx.beginPath();ctx.moveTo(cx+sw-2,cy-8);ctx.lineTo(cx+sw+2,cy-8);ctx.lineTo(cx+sw+1,cy+5);ctx.lineTo(cx+sw-1,cy+5);ctx.fill();
   for(let i=0;i<n;i++){const a=i/n*TAU,px=cx+sw+Math.cos(a)*R,py=cy+Math.sin(a)*R*.32;ctx.fillStyle='#f6efe0';ctx.fillRect(px-.6,py-4,1.2,4);const f=.7+.3*Math.sin(t*12+i*2.3);
