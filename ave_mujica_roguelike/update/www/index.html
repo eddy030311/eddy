@@ -531,9 +531,9 @@ body.pc #hint{display:none!important}
 
 /* ---------- select screen (2.2): a spotlight on the doll, her programme beside her, the cast along the bottom ---------- */
 #select{--cc:#c9a45c;display:grid;grid-template-columns:minmax(0,38fr) minmax(0,62fr);grid-template-rows:auto minmax(0,1fr) auto;grid-template-areas:'head info' 'show info' 'foot foot';gap:6px clamp(10px,3vw,36px);overflow:hidden;
-  padding:12px max(20px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 10px) max(20px,env(safe-area-inset-left,0px));
+  padding:calc(env(safe-area-inset-top,0px) + 16px) max(30px,calc(env(safe-area-inset-right,0px) + 14px)) calc(env(safe-area-inset-bottom,0px) + 20px) max(30px,calc(env(safe-area-inset-left,0px) + 14px));
   background:radial-gradient(ellipse 30% 58% at 21% 50%,color-mix(in srgb,var(--cc) 13%,transparent),transparent 72%),radial-gradient(ellipse 70% 38% at 50% -6%,rgba(130,18,38,.3),transparent 70%),linear-gradient(180deg,rgba(14,7,11,.985),rgba(7,4,7,.99))}
-#select:before{content:'';position:absolute;inset:7px;pointer-events:none;border:1px solid rgba(201,164,92,.1)}
+#select:before{content:'';position:absolute;inset:9px;pointer-events:none;border:1px solid rgba(201,164,92,.1)}
 .sel-head{grid-area:head;position:relative;display:flex;align-items:center;gap:16px;min-width:0}
 .sel-back{flex:none;white-space:nowrap;padding:5px 12px;font-size:12px;letter-spacing:.24em;border-color:rgba(201,164,92,.22);background:none;color:#bfb2b8}
 .sel-title{display:flex;flex-direction:column;gap:2px;min-width:0}
@@ -609,7 +609,7 @@ body.pc #hint{display:none!important}
 #go{min-width:150px}
 #go:disabled{opacity:.45;filter:grayscale(1)}
 @media (max-height:420px){
-  #select{padding-top:8px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 6px);gap:4px}
+  #select{padding-top:calc(env(safe-area-inset-top,0px) + 14px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px);gap:4px}
   .sel-title small{display:none}.sel-title h2{font-size:14px}
   .pname{font-size:30px}.sel-info{gap:5px}.sk-rows dd.cl{-webkit-line-clamp:1}.sk-sig{padding:5px 10px 6px 11px}.sk-leg{padding-top:5px}.sel-sub{padding-bottom:5px}
   .sk-sig p{font-size:11px;line-height:1.5}.sk-rows{font-size:10.5px;line-height:1.45}
@@ -934,7 +934,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 26, "name": "2.3"};</script>
+<script>window.GAME_VER={"v": 27, "name": "2.3"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
