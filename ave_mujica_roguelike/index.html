@@ -2370,7 +2370,7 @@ function updAllies(dt){const sc=1+.35*(G.act-1),live=G.en.filter(e=>!e.dead&&!(e
   {let sx=0,sy=0;for(const b of G.allies){if(b===a||b.down)continue;const dx2=a.x-b.x,dy2=a.y-b.y,dd=dx2*dx2+dy2*dy2;if(dd<18*18&&dd>.01){const k=(18-Math.sqrt(dd))/18;sx+=dx2/Math.sqrt(dd)*k*14;sy+=dy2/Math.sqrt(dd)*k*14}}{const dx2=a.x-P.x,dy2=a.y-P.y,dd=dx2*dx2+dy2*dy2;if(dd<12*12&&dd>.01){sx+=dx2/Math.sqrt(dd)*8;sy+=dy2/Math.sqrt(dd)*8}}tx+=sx;ty+=sy}
   {const br=allyBrain(a,i,live,rt,tx,ty);if(br){tx=br[0];ty=br[1];a.spdK=br[2]}else a.spdK=1}
   const dx=tx-a.x,dy=ty-a.y,d=Math.hypot(dx,dy);
-  if(d>160&&!rt&&a.mode==='role'){a.x=tx;a.y=ty}else if(d>4){const v=Math.min((rt?125:105)*(a.spdK||1),d*4);a.x+=dx/d*v*dt;a.y+=dy/d*v*dt;a.walk+=dt;a.moving=true;a.face=dx<0?-1:1}else a.moving=false;bound(a);
+  if(d>160&&!rt&&a.mode==='role'){a.x=tx;a.y=ty}else if(d>4){const v=Math.min((rt?165:140)*(a.spdK||1),d*4);a.x+=dx/d*v*dt;a.y+=dy/d*v*dt;a.walk+=dt;a.moving=true;a.face=dx<0?-1:1}else a.moving=false;bound(a);
   if(a.ct<=0)for(const e of live){if(d2(e,a)<(e.r+a.r+1)**2){allyHurt(a,e.dmg*.7);a.ct=.9;break}}
   if(a.id==='timoris'){for(const b of G.eb){if(b.dead||(b.x-a.x)**2+(b.y-a.y+8)**2>81)continue;b.dead=1;a.sh=Math.max(0,a.sh-1.5);burst(b.x,b.y,4,['#4ccac2','#fff'],40,.25)}}
   if(fx('charm'))return;const t=a.tgt&&!a.tgt.dead&&!(a.tgt.intro>0)?a.tgt:nearest(170,a);if(!t||t.intro>0)return;
@@ -3085,7 +3085,7 @@ function updPlayer(dt){const c=ch(),m=G.mods;if(P.down){P.downT=(P.downT||0)+dt;
   if(fx('wither')&&!(G.feverT>0))P.hp=Math.max(1,P.hp-P.maxHp*.012*dt);
   if(P.lungeT>0){P.lungeT-=dt;P.x+=P.lvx*dt;P.y+=P.lvy*dt;if(!P.gt||G.time-P.gt>.025){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
   else if(P.dashT>0){P.x+=P.vx*dt;P.y+=P.vy*dt;if(!P.gt||G.time-P.gt>.03){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
-  else{const sp=70*c.spd*m.move*cr('spd')*(1+skb('spd'))*(P.swim?.55:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(fx('charm')?.85:1)*(G.feverT>0?1.25:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
+  else{const sp=95*c.spd*m.move*cr('spd')*(1+skb('spd'))*(P.swim?.55:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(fx('charm')?.85:1)*(G.feverT>0?1.25:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
   if(l>.15){P.dx=mx/l;P.dy=my/l;if(Math.abs(mx)>.15&&P.atkT<=0)P.face=mx<0?-1:1;P.walk=(P.walk||0)+dt*l;P.frame=[1,0,2,0][Math.floor(P.walk*9)%4]}else P.frame=0;
   P.moving=l>.15;P.animT=(P.animT||0)+dt;if(P.act){P.act.t+=dt;if(P.act.t>=P.act.d)P.act=null}
   bound(P);
