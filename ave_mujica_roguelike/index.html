@@ -1027,6 +1027,8 @@ const MUSF={title:'assets/music/menu.mp3',sk_idle:'assets/music/sk_idle.mp3',sk_
   sk_f1:'assets/music/sk_final1.mp3',fv_doloris:'assets/music/fv_doloris.mp3',fv_mortis:'assets/music/fv_mortis.mp3',sk_f2:'assets/music/sk_final2.mp3',sk_f3:'assets/music/sk_final3.mp3',sk_f4:'assets/music/sk_final4.mp3'};
 /* 2.1: 祥子之夜 (world 2) has its own recorded score: exploring, Fever, the chapter bosses, and the four phases of the final duel with yourself.
    [bpm, first beat in seconds], measured from the files, so charts and beat-timed skills follow the recording */
+/* 2.0.3: Fever songs start at their climax and loop inside it (start/end in seconds, both on bar lines so the beat never slips) */
+const MUSC={sk_fever:[147.303,172.903],fv_doloris:[118.108,144.108],fv_mortis:[144.107,168.107]};
 const MUSB={fv_doloris:[120,.108],fv_mortis:[80,.107],sk_idle:[80,.086],sk_fever:[150,.103],sk_boss:[150,.104],sk_f1:[150,.103],sk_f2:[180,.156],sk_f3:[80,.096],sk_f4:[160,.092]};
 /* 2.1.1: everything that plays inside 祥子之夜 comes from these seven recordings (the title screen keeps the menu theme) */
 const SKMAP={calm:'sk_idle',calm2:'sk_idle',battle:'sk_f1',battle2:'sk_f1',fever:'sk_fever',boss:'sk_boss',w2final:'sk_f1',death:'sk_f3',title:'sk_f4',mj:'sk_boss'};
@@ -1039,8 +1041,10 @@ const MF={el:null,name:null,cache:{},want:null,vol:.5,fadeT:null,bpm:0,off:0};
 const mfLive=()=>!!(MF.el&&MF.bpm&&settings.music&&!MF.el.paused&&MF.el.readyState>2);
 const mfVol=()=>settings.music?MF.vol:0;
 function mfFade(el,to,ms,done){clearInterval(el._fi);const from=el.volume,t0=performance.now();el._fi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);try{el.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1){clearInterval(el._fi);done&&done()}},40)}
+function mfSegStart(el,n){const c=MUSC[n];if(!c)return;const go=()=>{try{el.currentTime=c[0]}catch(e){}};if(el.readyState>=1)go();else el.addEventListener('loadedmetadata',go,{once:true})}
+function mfSegTick(){const c=MF.el&&MUSC[MF.name];if(c&&MF.el.currentTime>=c[1])try{MF.el.currentTime=c[0]+(MF.el.currentTime-c[1]);MF.wrapB=(MF.wrapB||0)+(c[1]-c[0])*MF.bpm/60}catch(e){}}
 function mfPlay(n){if(n==='sk_f1')setTimeout(()=>mfPreload(['sk_f2','sk_f3','sk_f4']),0);if(MF.name===n&&MF.el){if(MF.el.paused){const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=n})}mfFade(MF.el,mfVol(),500);return}mfStop();let el=MF.cache[n];if(!el){el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';MF.cache[n]=el}
-  MF.el=el;MF.name=n;{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),600)}
+  MF.el=el;MF.name=n;MF.wrapB=0;mfSegStart(el,n);{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),600)}
 function mfStop(){const el=MF.el;MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;if(!el)return;mfFade(el,0,300,()=>{try{el.pause()}catch(e){}})}
 /* switch without fades: building the world blocks the page for a few seconds, which froze the fade timers and kept the menu theme playing at full volume */
 function mfCut(n){const o=MF.el;if(o){clearInterval(o._fi);try{o.pause()}catch(e){}}MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;MUS.name=null;if(!n)return;stopMus();MUS.name=n;MUS.src=null;mfPlay(n);if(MF.el){clearInterval(MF.el._fi);MF.el.volume=mfVol()}}
@@ -2378,7 +2382,7 @@ function showSection(){if(G.type==='trial')return;const sec=G.type==='boss'?5:G.
 /* =================================================================== rhythm + fever */
 const FEVER_T=9,FCAP={mortis:100,doloris:100,amoris:100,oblivionis:100,timoris:100,uika:100,mutsumi:100,sakiko:100},FDUR={mortis:9,doloris:9,amoris:9,oblivionis:9,timoris:9,uika:9,mutsumi:9,sakiko:9};
 const fCap=()=>FCAP[ch().id]||100;
-function beatPos(){if(mfLive())return(MF.el.currentTime-MF.off)*MF.bpm/60;if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
+function beatPos(){if(mfLive())return(MF.el.currentTime-MF.off)*MF.bpm/60+(MF.wrapB||0);if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 /* rhythm judgement (light): every attack press is judged against the beat */
 const JUD={P:{t:'PERFECT',c:'#9fd4ff',mul:1.5,fv:8},GR:{t:'GREAT',c:'#ffe07a',mul:1.25,fv:6},G:{t:'GOOD',c:'#ff9ad0',mul:1,fv:4},B:{t:'BAD',c:'#9ab0d0',mul:.6,fv:0},M:{t:'MISS',c:'#ff4a5a',mul:.35,fv:-3}};
@@ -2553,7 +2557,10 @@ const CHT={on:0};
    slide— a chain of small diamonds across lanes: keep a finger (or key) on the lane as each one passes, or tap it.
    Every finger is tracked on its own, so two thumbs pressing at once both count. */
 const CHL=4,CHCOL=['#ff7ab8','#f6d27a','#7fe0d0','#b98cff'],CHKEY=['D','F','J','K'];
-function chClock(){const now=performance.now();if(!CHT.ck){const live=mfLive()||!!(A.ctx&&MUS.src&&settings.music&&MUS.bpm),bps=mfLive()?MF.bpm/60:live?MUS.bpm/60:2;CHT.ck={b:live?beatNow():-(settings.lat||0)/1000*bps,bps,t:now,live:live?1:0}}
+function chClock(){const now=performance.now();if(!CHT.ck){const mk=!!(MF.el&&MF.bpm&&settings.music),live=mfLive()||!!(A.ctx&&MUS.src&&settings.music&&MUS.bpm),bps=mk?MF.bpm/60:live?MUS.bpm/60:2;
+    CHT.ck={b:live?beatNow():mk?(MF.el.currentTime-MF.off)*MF.bpm/60-(settings.lat||0)/1000*bps:-(settings.lat||0)/1000*bps,bps,t:now,live:live?1:0,mk}}
+  /* a recorded song that was still seeking when the chart opened: lock onto it as soon as it plays */if(CHT.ck.mk&&!CHT.ck.live&&mfLive()&&Math.abs(MF.bpm/60-CHT.ck.bps)<1e-6){CHT.ck.b=beatNow();CHT.ck.live=1;CHT.ck.t=now}
+  if(CHT.ck.mk&&CHT.ck.live&&mfLive()){const d=beatNow()-CHT.ck.b;if(d>-.5){CHT.ck.b=CHT.ck.b+d;CHT.ck.t=now;return{b:CHT.ck.b,bps:CHT.ck.bps,live:1}}}
   const k=CHT.ck,dt=Math.min(.1,Math.max(0,(now-k.t)/1000));k.b+=dt*k.bps;k.t=now;return{b:k.b,bps:k.bps,live:k.live}}
 function chPattern(bps){const span=Math.max(10,Math.min(14,Math.round(6*bps))),ns=[];let t=0,last=rint(0,3),g=0,hadHold=0,hadSlide=0;
   const other=p=>{let l;do{l=rint(0,3)}while(l===p);return l};
@@ -6229,7 +6236,7 @@ portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInp
 let lastDraw=0,slow=0;
 function audioWatch(now){if(!A.ctx||A.ctx.state!=='running'||document.hidden)return;if(now-(A.wT||0)<1000)return;const ct=A.ctx.currentTime;
   if(A.wC!=null&&Math.abs(ct-A.wC)<1e-4){A.stall=(A.stall||0)+1;if(A.stall===1){A.ctx.suspend().then(()=>A.ctx.resume()).catch(()=>{})}else if(A.stall>=3){A.stall=0;try{A.ctx.close()}catch(e){}A.ctx=null;MUS.src=null;A.wC=null;auInit()}}else A.stall=0;A.wC=ct;A.wT=now}
-function frame(now){requestAnimationFrame(frame);try{audioWatch(now)}catch(e){}if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
+function frame(now){requestAnimationFrame(frame);try{mfSegTick()}catch(e){}try{audioWatch(now)}catch(e){}if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
