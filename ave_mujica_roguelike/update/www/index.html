@@ -10,7 +10,7 @@
   --ink:#0b080d; --velvet:#1c0d14; --blood:#9b1b30; --rose:#d0405a; --gold:#c9a45c; --bone:#ece2d2; --mist:#8d8497; --line:#3a2a33;
   --f-display:"UnifrakturMaguntia","Noto Serif SC",serif;
   --f-body:"Noto Serif SC","Songti SC","STSong",serif;
-  --f-pixel:"Silkscreen",ui-monospace,monospace;
+  --f-pixel:"Cinzel","Noto Serif SC",serif;
   color-scheme:dark;
 }
 html,body{height:100%;margin:0;background:var(--ink);color:var(--bone);overflow:hidden;overscroll-behavior:none;
@@ -204,7 +204,7 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #actCard p{margin:0;max-width:22em;font-size:14px;line-height:2;color:#bdb3bf;white-space:pre-line}
 #actCard small{color:#5e5566;font-size:11px;margin-top:18px}
 #cut{position:fixed;inset:0;cursor:pointer;touch-action:none}
-body.gp .pb::before{content:attr(data-k);position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;font:700 12px/20px system-ui,sans-serif;color:#fff;text-align:center;box-shadow:0 0 0 2px #000;z-index:2}
+body.gp .pb::before{content:attr(data-k);position:absolute;top:-7px;right:-7px;width:20px;height:20px;border-radius:50%;font:700 12px/20px var(--f-pixel);color:#fff;text-align:center;box-shadow:0 0 0 2px #000;z-index:2}
 body.gp #bRanged::before{background:#3a9a3a}body.gp #bDash::before{background:#c8303a}body.gp #bMelee::before{background:#2f6ac8}body.gp #bSkill::before{background:#c8a020}
 #game.cut~#gpLegend,#game.cut~#gpHint,body.boss #gpLegend{display:none!important}
 #gpBar{position:absolute;right:calc(env(safe-area-inset-right,0px) + 14px);bottom:calc(env(safe-area-inset-bottom,0px) + 10px);pointer-events:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px;font-family:"Noto Serif SC",serif}
@@ -223,7 +223,7 @@ body.gp #bRanged::before{background:#3a9a3a}body.gp #bDash::before{background:#c
 .gs.ready{box-shadow:inset 0 0 0 1px #ffd27a,inset 0 0 0 3px rgba(0,0,0,.6),inset 0 0 16px rgba(201,164,92,.55)}
 .gw .gk{position:absolute;left:50%;bottom:-13px;transform:translateX(-50%);z-index:2}
 .gw{position:relative}.gw em{position:absolute;top:-13px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;letter-spacing:.12em;color:var(--gold);white-space:nowrap;text-shadow:0 1px 0 #000}
-.gk{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;font:700 9px/1 system-ui,sans-serif;color:#fff;background:#1c1418;box-shadow:0 0 0 1px #000,inset 0 0 0 1px rgba(255,255,255,.35)}
+.gk{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;padding:0 4px;box-sizing:border-box;border-radius:9px;font:700 9px/1 var(--f-pixel);color:#fff;background:#1c1418;box-shadow:0 0 0 1px #000,inset 0 0 0 1px rgba(255,255,255,.35)}
 .gk.tr{border-radius:4px 4px 7px 7px;min-width:24px;background:#2a2026}
 .gk.fa{background:#3a9a3a}.gk.fb{background:#c8303a}.gk.fx{background:#2f6ac8}.gk.fy{background:#c8a020}
 body.ps .gk.fa{background:#3d6fd0}body.ps .gk.fb{background:#c8303a}body.ps .gk.fx{background:#c25aa8}body.ps .gk.fy{background:#2aa594}
@@ -231,7 +231,7 @@ body.ps .gk.fa{background:#3d6fd0}body.ps .gk.fb{background:#c8303a}body.ps .gk.
 @media (orientation:landscape) and (max-height:430px),(orientation:landscape) and (pointer:fine){.gs{width:40px;height:40px}.gpSlots{gap:7px}}
 #gpLegend{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 6px);font-size:11px;color:#d8ccd5;background:rgba(11,8,13,.7);padding:4px 10px;border:1px solid var(--line);pointer-events:none;white-space:nowrap}
 #gpHint{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 6px);z-index:40;font-size:12px;color:#ece2d2;background:rgba(11,8,13,.85);padding:5px 12px;border:1px solid var(--gold);pointer-events:none;white-space:nowrap}
-body.gp.gpmenu #gpHint{display:block}#gpHint .k{display:inline-block;width:17px;height:17px;border-radius:50%;font:700 11px/17px system-ui,sans-serif;text-align:center;color:#fff;margin:0 3px}#gpHint .ka{background:#3a9a3a}#gpHint .kb{background:#c8303a}
+body.gp.gpmenu #gpHint{display:block}#gpHint .k{display:inline-block;width:17px;height:17px;border-radius:50%;font:700 11px/17px var(--f-pixel);text-align:center;color:#fff;margin:0 3px}#gpHint .ka{background:#3a9a3a}#gpHint .kb{background:#c8303a}
 body.gp button:focus{outline:3px solid var(--gold);outline-offset:2px;box-shadow:0 0 14px rgba(201,164,92,.7)}
 #cutSkip{position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:calc(env(safe-area-inset-right,0px) + 12px);border:1px solid #5a4520;background:rgba(0,0,0,.6);color:var(--gold);font-size:13px;padding:6px 12px;letter-spacing:.1em}
 #cutSub{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 3%);transform:translateX(-50%);width:min(calc(88*var(--vw,1vw)),46rem);text-align:center;display:flex;flex-direction:column;gap:3px;text-shadow:0 2px 0 #000;pointer-events:none}
@@ -471,6 +471,7 @@ body:not(.gp) #bSkill.ready::before,#gsSkill.ready::before,body:not(.gp) #bSkill
 .spet{display:inline-block;margin-top:4px;color:#ffe08a;font-size:13px}
 #owLoad{position:absolute;left:50%;top:58%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}#owLoad[hidden]{display:none}
 #owLoad b{font:500 13px "Noto Serif SC",serif;letter-spacing:.3em;color:#f0e2c8;text-shadow:0 0 8px rgba(0,0,0,.8)}#owLoad i{display:block;width:160px;height:3px;background:rgba(255,255,255,.12)}#owLoad s{display:block;height:100%;width:0;background:linear-gradient(90deg,#c9a45c,#ffe9a0)}
+.card .fl{display:block;margin-top:5px;font-style:italic;font-size:11px;letter-spacing:.06em;color:#b8a7b2;opacity:.85}.shopi i.fl{grid-column:2;font-size:10.5px;color:#a8989f;font-style:italic}
 .updn{text-align:left;margin:6px 0 8px;padding-left:18px;font-size:12.5px;line-height:1.7;color:#ece2d2;max-height:calc(30*var(--vh,1vh));overflow-y:auto}
 .updbar{position:relative;height:6px;margin:6px 0 10px;background:rgba(255,255,255,.08);border:1px solid var(--line,#3a2a34)}.updbar s{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,#c9a45c,#ffe9a0);transition:width .2s}.updbar em{position:absolute;right:0;top:9px;font:9px var(--f-pixel);color:var(--gold,#c9a45c);font-style:normal}
 .mtab i{position:absolute;top:-3px;right:-3px;width:6px;height:6px;border-radius:50%;background:#ff4fa8}
@@ -502,7 +503,7 @@ body.pc .cta:hover{filter:brightness(1.15)}
 body.pc .tab:hover{filter:brightness(1.2)}
 body.pc #game.playing #cv{cursor:none}
 body.pc #pad,body.pc #stickZone{display:none!important}
-body.pc #gpBar .gk.kb{min-width:20px;height:16px;border-radius:4px;padding:0 5px;font:700 8px/16px system-ui,sans-serif;letter-spacing:.04em;background:#241a20;box-shadow:inset 0 -2px 0 rgba(0,0,0,.45),0 0 0 1px rgba(216,204,213,.45);color:#f0e6ea}
+body.pc #gpBar .gk.kb{min-width:20px;height:16px;border-radius:4px;padding:0 5px;font:700 8px/16px var(--f-pixel);letter-spacing:.04em;background:#241a20;box-shadow:inset 0 -2px 0 rgba(0,0,0,.45),0 0 0 1px rgba(216,204,213,.45);color:#f0e6ea}
 body.pc #gpBar .gpTop .gk.kb{background:transparent;box-shadow:inset 0 0 0 1px rgba(216,204,213,.55)}
 body.pc #hint{display:none!important}
 
@@ -563,7 +564,7 @@ body.pc #hint{display:none!important}
 .skm-n{font-size:16px;font-weight:900;letter-spacing:.2em;text-indent:.2em;color:#f6ead6;text-shadow:0 2px 0 #000}
 .skm-tags{display:flex;gap:5px;justify-content:center}
 .skm-tags em{font-style:normal;font-size:10px;letter-spacing:.18em;text-indent:.18em;padding:2px 7px 1px;border-radius:2px;border:1px solid currentColor;line-height:1.3}
-.t-sig{color:#f6dc8a;background:rgba(246,220,138,.08)}.t-atk{color:#ff9c88;background:rgba(255,120,100,.08)}.t-buff{color:#9fe8dc;background:rgba(120,230,210,.07)}
+.t-sig{color:#f6dc8a;background:rgba(246,220,138,.08)}.t-atk{color:#ff9c88;background:rgba(255,120,100,.08)}.t-buff{color:#9fe8dc;background:rgba(120,230,210,.07)}.t-heal{color:#b8f0a0;background:rgba(150,230,120,.07)}
 .skm-d{font-size:12px;line-height:1.6;color:#cfc2c8;flex:1;display:flex;align-items:center;padding:0 2px}
 .skm-mul{width:100%;padding-top:7px;border-top:1px solid rgba(201,164,92,.18);font-size:10px;letter-spacing:.1em;color:#a89aa2}
 .skm-mul i{font-style:normal;font-family:var(--f-pixel);color:var(--c1);margin-left:3px}
@@ -586,7 +587,7 @@ body.pc #hint{display:none!important}
 .skrow{justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
 .skskip{font-size:11px;color:#cbbfc6;display:flex;align-items:center;gap:6px;cursor:pointer}
 .skmt{display:block;font-size:10px;letter-spacing:.08em;color:#cbbfc6;margin-top:2px}
-.chpad{flex:1;max-width:220px;height:54px;border:1px solid var(--gold);border-radius:8px;background:rgba(159,212,255,.06);color:#f4ece0;font:600 14px/1.1 system-ui,sans-serif;touch-action:manipulation}
+.chpad{flex:1;max-width:220px;height:54px;border:1px solid var(--gold);border-radius:8px;background:rgba(159,212,255,.06);color:#f4ece0;font:600 14px/1.1 var(--f-pixel);touch-action:manipulation}
 .chpad small{display:block;font-size:9px;opacity:.6;margin-top:3px}.chpad[data-l="1"]{background:rgba(255,154,208,.06)}
 .chpad.on{background:rgba(255,224,122,.35)}
 body.pc .chpads{display:none}
@@ -820,7 +821,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 22, "name": "2.0.3"};</script>
+<script>window.GAME_VER={"v": 23, "name": "2.1"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -1026,16 +1027,16 @@ function startMus(n){stopMus();const c=A.ctx,src=c.createBufferSource(),g=c.crea
 /* recorded tracks (2.0.3): the title theme, and the waltz that plays while you are Oblivionis / Sakiko or in 祥子之夜.
    They play through an <audio> element (works from file:// in the APK and the Windows build) with a short fade */
 const MUSF={title:'assets/music/menu.mp3',sk_idle:'assets/music/sk_idle.mp3',sk_fever:'assets/music/sk_fever.mp3',sk_boss:'assets/music/sk_boss.mp3',
-  sk_f1:'assets/music/sk_final1.mp3',fv_doloris:'assets/music/fv_doloris.mp3',fv_mortis:'assets/music/fv_mortis.mp3',sk_f2:'assets/music/sk_final2.mp3',sk_f3:'assets/music/sk_final3.mp3',sk_f4:'assets/music/sk_final4.mp3'};
+  sk_f1:'assets/music/sk_final1.mp3',fv_doloris:'assets/music/fv_doloris.mp3',fv_amoris:'assets/music/fv_amoris.mp3',fv_timoris:'assets/music/fv_timoris.mp3',fv_mortis:'assets/music/fv_mortis.mp3',sk_f2:'assets/music/sk_final2.mp3',sk_f3:'assets/music/sk_final3.mp3',sk_f4:'assets/music/sk_final4.mp3'};
 /* 2.1: 祥子之夜 (world 2) has its own recorded score: exploring, Fever, the chapter bosses, and the four phases of the final duel with yourself.
    [bpm, first beat in seconds], measured from the files, so charts and beat-timed skills follow the recording */
 /* 2.0.3: Fever songs start at their climax and loop inside it (start/end in seconds, both on bar lines so the beat never slips) */
-const MUSC={sk_fever:[147.303,172.903],fv_doloris:[118.108,144.108],fv_mortis:[144.107,168.107]};
-const MUSB={fv_doloris:[120,.108],fv_mortis:[80,.107],sk_idle:[80,.086],sk_fever:[150,.103],sk_boss:[150,.104],sk_f1:[150,.103],sk_f2:[180,.156],sk_f3:[80,.096],sk_f4:[160,.092]};
+const MUSC={fv_amoris:[51.279,75.279],fv_timoris:[74.095,96.095],sk_fever:[147.303,172.903],fv_doloris:[118.108,144.108],fv_mortis:[144.107,168.107]};
+const MUSB={fv_amoris:[150,.079],fv_timoris:[120,.095],fv_doloris:[120,.108],fv_mortis:[80,.107],sk_idle:[80,.086],sk_fever:[150,.103],sk_boss:[150,.104],sk_f1:[150,.103],sk_f2:[180,.156],sk_f3:[80,.096],sk_f4:[160,.092]};
 /* 2.1.1: everything that plays inside 祥子之夜 comes from these seven recordings (the title screen keeps the menu theme) */
 const SKMAP={calm:'sk_idle',calm2:'sk_idle',battle:'sk_f1',battle2:'sk_f1',fever:'sk_fever',boss:'sk_boss',w2final:'sk_f1',death:'sk_f3',title:'sk_f4',mj:'sk_boss'};
 /* 2.0.2: Oblivionis and casual Sakiko play "the last cathedral encore" in Fever, Doloris and casual Uika "crown of mourning glass", Mortis and casual Mutsumi "the weight of glass" (any world) */
-const FVT={oblivionis:'sk_fever',sakiko:'sk_fever',doloris:'fv_doloris',uika:'fv_doloris',mortis:'fv_mortis',mutsumi:'fv_mortis'};
+const FVT={amoris:'fv_amoris',timoris:'fv_timoris',oblivionis:'sk_fever',sakiko:'sk_fever',doloris:'fv_doloris',uika:'fv_doloris',mortis:'fv_mortis',mutsumi:'fv_mortis'};
 const skTrack=n=>{if(n==='fever'&&G.state==='play'&&FVT[ch().id])return FVT[ch().id];if(G.world!==2||!n||MUSB[n]||!/^(play|dead|win)$/.test(G.state))return n;return SKMAP[n]||(/^(w2_|elite|mj)/.test(n)?'sk_boss':'sk_idle')};
 /* recorded tracks are loaded ahead of time so a switch starts at once instead of after the file has buffered */
 function mfPreload(names){for(const n of names){if(!MUSF[n]||MF.cache[n])continue;try{const el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';el.load();MF.cache[n]=el}catch(e){}}}
@@ -1623,7 +1624,7 @@ const UPS=[
   {id:'storm',n:'雷鸣',d:'每次强音有 30% 几率对随机敌人降下落雷',r:2,ic:'☇',a:m=>m.storm+=1,max:1},
   {id:'mirror',n:'镜面',d:'护盾存在时，30% 几率把击中你的子弹反弹回去',r:2,ic:'⧉',a:m=>m.shDeflect=1,max:1},
   {id:'slowmo',n:'慢板',d:'敌方子弹速度 -20%',r:2,ic:'⌛',a:m=>m.ebSlow*=.8,max:1},
-  {id:'tempo',n:'稳拍',d:'技能谱面的最终倍率 +0.05',r:0,ic:'♩',a:m=>m.pfMul=(m.pfMul||0)+.1,max:3},
+  {id:'tempo',n:'稳拍',d:'技能谱面的最终倍率 +0.1',r:0,ic:'♩',a:m=>m.pfMul=(m.pfMul||0)+.2,max:3},
   {id:'count',n:'数拍',d:'技能谱面中，MISS 有 25% 几率改判为 GOOD（可叠加）',r:0,ic:'¼',a:m=>m.mGood=(m.mGood||0)+.25,max:2},
   {id:'comboX',n:'连奏',d:'连击里程碑的伤害加成翻倍',r:1,ic:'∞',a:m=>m.comboX=1,max:1},
   {id:'maestro',n:'指挥家',d:'技能谱面中，BAD 全部改判为 GOOD，MISS 有 30% 几率改判为 GOOD',r:2,ic:'𝄞',a:m=>m.maestro=1,max:1},
@@ -2185,7 +2186,7 @@ function drawEnsemble(t){const c=G.call;if(c&&!c.e.dead){const e=c.e,a=c.a,col=c
     ctx.strokeStyle=GOLD;ctx.lineWidth=1.2;ctx.setLineDash([3,2]);ctx.lineDashOffset=-t*12;ctx.beginPath();ctx.ellipse(e.x,e.y,e.r+7,(e.r+7)*.5,0,0,TAU);ctx.stroke();ctx.setLineDash([]);
     ctx.strokeStyle=col;ctx.globalAlpha=.9;ctx.beginPath();ctx.arc(e.x,e.y-(e.d&&e.d.h||16)-8,4.5,-Math.PI/2,-Math.PI/2+TAU*k);ctx.stroke();ctx.globalAlpha=1;
     ctx.globalAlpha=.25+.15*Math.sin(t*10);ctx.strokeStyle=col;ctx.beginPath();ctx.moveTo(a.x,a.y-10);ctx.lineTo(e.x,e.y-8);ctx.stroke();ctx.globalAlpha=1;
-    const bx=Math.round(a.x),by=Math.round(a.y-44+Math.sin(t*6)*1.5);ctx.fillStyle='rgba(10,6,10,.75)';ctx.beginPath();ctx.arc(bx,by,5.5,0,TAU);ctx.fill();ctx.strokeStyle=col;ctx.stroke();ctx.fillStyle=GOLD;ctx.font='bold 8px serif';ctx.textAlign='center';ctx.fillText('♪',bx,by+3)}}
+    const bx=Math.round(a.x),by=Math.round(a.y-44+Math.sin(t*6)*1.5);ctx.fillStyle='rgba(10,6,10,.75)';ctx.beginPath();ctx.arc(bx,by,5.5,0,TAU);ctx.fill();ctx.strokeStyle=col;ctx.stroke();ctx.fillStyle=GOLD;ctx.font='bold 8px \"Noto Serif SC\",serif';ctx.textAlign='center';ctx.fillText('♪',bx,by+3)}}
 
 /* ---- companion judgement: they read the fight like seasoned players (and sometimes slip) ---- */
 const CALLOUT={revive:['我来救她！','掩护我，我去扶人！'],pdown:['撑住！马上来！','别动，我来了！'],retreat:['撤一下！','先退一步。'],protect:['别怕，我在。','站到我后面！'],
@@ -2469,12 +2470,12 @@ function drawLane(){if(G.state!=='play'||CUT.on||G.ots||P.down)return;const d=cv
   ctx.fillStyle=on&&live?'#9fd4ff':'rgba(244,236,224,.75)';ctx.fillRect(hx-z,y-2*z,2*z,h+4*z);ctx.restore();
   const q=LANE.pop;if(q){const t=(performance.now()-q.t)/1000;if(t>.75)LANE.pop=null;else{
     ctx.globalCompositeOperation='lighter';ctx.globalAlpha=Math.max(0,.85-t*2.6);ctx.drawImage(glow(q.c),hx-h*1.2,y+h/2-h*1.2,h*2.4,h*2.4);ctx.globalCompositeOperation='source-over';
-    const s=1+.3*Math.max(0,1-t*7);ctx.globalAlpha=Math.min(1,(.75-t)*4);ctx.font=`${Math.round(9.5*z*s)}px Silkscreen,monospace`;ctx.textAlign='center';ctx.textBaseline='bottom';
+    const s=1+.3*Math.max(0,1-t*7);ctx.globalAlpha=Math.min(1,(.75-t)*4);ctx.font=`${Math.round(9.5*z*s)}px Cinzel,"Noto Serif SC",serif`;ctx.textAlign='center';ctx.textBaseline='bottom';
     ctx.fillStyle='#000';ctx.fillText(q.label,hx+.8*z,y-3.2*z);ctx.fillStyle=q.c;ctx.fillText(q.label,hx,y-4*z);ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.globalAlpha=1}}}
 function drawBeatRing(){if(P.down||G.state!=='play')return;const b=beatNow(),f=b-Math.floor(b),win=Math.min(f,1-f)<=jWin()[0];if(win!==G.bWin){G.bWin=win;document.body.classList.toggle('onbeat',win)}}
 function perfectFx(){if(G.time-(G.pfT||0)<.35)return;G.pfT=G.time;bsGain(.3);lanePop('P');G.beatGlow=1}
 function feverAdd(n){if(G.feverT>0||G.state!=='play'||!inCombat())return;const was=(G.fever||0)>=fCap();G.fever=Math.max(0,Math.min(fCap(),(G.fever||0)+(n>0?n*(G.bsL>=4?1.15:1)*(1+(G.mods.fvGain||0))/(G.mods.skillCd||1):n)));}
-function feverStart(s,tm,dm){s=s||skSig();tm=tm||1;G.skDm=dm||1;bsGain(10);{const m=G.mods;G.fvKillU=0;if(m.fvHeal)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*m.fvHeal);if(m.fvNova)for(let i=0;i<16;i++)shoot({x:P.x,y:P.y-8,a:i/16*TAU,spd:180,dmg:10*m.ranged*m.fvNova,k:'note',pierce:1,col:'#f6dc8a',life:.8,r:3})}G.fvN=(G.fvN||0)+1;G.fever=0;G.feverT=G.feverMax=(s.sig?(FDUR[ch().id]||8)+(G.mods.fvDur||0):s.t==='buff'?s.dur+(G.mods.fvDur||0):6+(G.mods.fvDur||0)*.5)*tm;G.fvExtU=0;if(!G.fvPre)G.feverPrev=MUS.name;G.fvPre=0;setTrack('fever',1);P.sh=P.shMax;G.flash=.45;doSkill(s);shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
+function feverStart(s,tm,dm){s=s||skSig();tm=tm||1;G.skDm=dm||1;bsGain(10);{const m=G.mods;G.fvKillU=0;if(m.fvHeal)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*m.fvHeal);if(m.fvNova)for(let i=0;i<16;i++)shoot({x:P.x,y:P.y-8,a:i/16*TAU,spd:180,dmg:10*m.ranged*m.fvNova,k:'note',pierce:1,col:'#f6dc8a',life:.8,r:3})}G.fvN=(G.fvN||0)+1;G.fever=0;G.feverT=G.feverMax=(s.sig?(FDUR[ch().id]||8)+(G.mods.fvDur||0):(s.dur||9)+(G.mods.fvDur||0))*tm;G.fvExtU=0;if(!G.fvPre)G.feverPrev=MUS.name;G.fvPre=0;setTrack('fever',1);P.sh=P.shMax;G.flash=.45;doSkill(s);shake(5);S.p('skill',ch().id);G.fbeat=Math.floor(beatPos());
   const el=$('fever');el.querySelector('span').textContent=s.n;el.hidden=false;el.classList.remove('go');void el.offsetWidth;el.classList.add('go');clearTimeout(feverStart.t);feverStart.t=setTimeout(()=>el.hidden=true,1700);$('game').classList.add('fv')}
 function feverEnd(){if(!G.feverT&&!$('game').classList.contains('fv'))return;G.skb=null;G.skAtk=null;P.orb=null;P.twinT=0;G.barrier=null;P.bsk=null;if(G.tsOwn&&G.timeStop>0)G.timeStop=0;if(G.mods&&G.mods.after)G.afterT=G.time+4;G.feverT=0;if(G.mods&&G.mods.fvKeep&&G.state==='play'&&!G.fvPause)G.fever=fCap()*.3;$('game').classList.remove('fv');const p=G.feverPrev;G.feverPrev=null;
   if(G.state==='play')setTrack(p||(fightRoom()&&!G.cleared?(G.boss&&!G.boss.dead?(G.boss.mj?'mj'+G.boss.form:'boss'):'battle'):'calm'),1)}
@@ -2503,27 +2504,27 @@ function updRhythm(dt){const bi=Math.floor(beatPos());
    The chart can be skipped, which releases the skill at ×1.0.
    强音 (accent): every 8th hit in a combo, and every PERFECT in a chart. Character passives and the old PERFECT melodies
    hang off accents now. */
-const SKT={buff:'增益',atk:'攻击'};
-const SKX={/* the two new skills per stage doll; casual members share their doll's pair */
-  doloris:[{id:'meteor',n:'流星雨',t:'atk',ic:'☄',d:'向敌人连续降下 10 颗流星，每颗造成 26 点范围伤害'},
-    {id:'requiem',n:'安魂曲',t:'buff',ic:'✚',dur:6,d:'立刻回复自己和同伴 15% 生命，倒下的同伴以 30% 生命站起；6 秒内每秒回复 2% 生命'}],
-  mortis:[{id:'waltz',n:'送葬圆舞',t:'atk',ic:'✂',d:'原地旋斩三圈，每圈造成 34 点伤害；生命低于 25% 的普通敌人直接送葬'},
-    {id:'strings',n:'断线人偶',t:'buff',ic:'♠',dur:7,d:'7 秒内近战伤害 +40%，每次近战命中回复 1 生命'}],
-  timoris:[{id:'tide',n:'潮汐冲击',t:'atk',ic:'≋',d:'向外推出三道冲击波，每道造成 24 点伤害并击晕 1 秒'},
-    {id:'wall',n:'静默壁垒',t:'buff',ic:'⛨',dur:8,d:'护盾立刻充满，8 秒内每秒恢复 15% 护盾，受到伤害 -35%'}],
-  amoris:[{id:'hearts',n:'心之乱打',t:'atk',ic:'♥',d:'向四周连射三圈爱心（共 30 颗），每颗 12 点伤害并穿透一名敌人'},
-    {id:'pulse',n:'心跳加速',t:'buff',ic:'♡',dur:8,d:'8 秒内暴击率 +30%，移动速度 +25%，攻击间隔 -20%'}],
-  oblivionis:[{id:'erase',n:'遗忘之刻',t:'atk',ic:'⌛',d:'抹去全场敌弹，对 220 范围内的敌人造成 40 点伤害，外加其当前生命 12% 的伤害（Boss 为 4%）'},
-    {id:'hush',n:'无声的回响',t:'buff',ic:'◌',dur:7,d:'7 秒内身边的敌弹会被不断抹去，所有伤害 +20%'}]};
-/* 2.0.2: collecting all of a girl's memories gives her a fourth skill (this replaces the old memory perks) */
-const SK4={doloris:{id:'aria',n:'一等星的咏叹',t:'atk',ic:'✧',d:'向最近的 6 名敌人各降下一道星光，每道造成 30 点伤害并减速 2 秒'},
-  uika:{id:'summer',n:'夏夜的星图',t:'atk',ic:'✩',d:'在你周围落下 12 颗流星，每颗造成 18 点范围伤害'},
-  mortis:{id:'curtain',n:'谢幕的提线',t:'buff',ic:'♣',dur:7,d:'7 秒内近战伤害 +30%，受到伤害 -25%，每次近战命中回复 1 生命'},
-  mutsumi:{id:'hothouse',n:'温室的回声',t:'buff',ic:'❀',dur:8,d:'8 秒内每秒回复 3% 生命，受到伤害 -20%'},
-  timoris:{id:'sonar',n:'沉没的低音',t:'atk',ic:'≈',d:'朝敌人扇形射出 7 道低音声波，每道造成 22 点伤害并穿透 3 名敌人'},
-  amoris:{id:'encore',n:'安可连打',t:'buff',ic:'♬',dur:8,d:'8 秒内攻击间隔 -30%，所有伤害 +15%'},
-  oblivionis:{id:'crown',n:'忘却之冠',t:'buff',ic:'♛',dur:7,d:'7 秒内所有伤害 +25%，暴击率 +20%'},
-  sakiko:{id:'finale',n:'终章的指挥',t:'atk',ic:'♮',d:'抹去全场敌弹，对 160 范围内的敌人造成 30 点伤害并击晕 1.2 秒'}};
+const SKT={buff:'增益',atk:'攻击',heal:'治疗'};
+const SKX={/* 2.1: every non-signature skill is an attack, a heal and a buff in one; Fever lasts 9 s at the base */
+  doloris:[{id:'meteor',n:'流星雨',ic:'☄',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：降下 10 颗流星，每颗 26 点范围伤害。治疗：回复 10% 生命。增益：9 秒内所有伤害 +15%'},
+    {id:'requiem',n:'安魂曲',ic:'✚',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：三道圣光脉冲，每道对身边敌人 18 点伤害。治疗：你和同伴回复 20% 生命，倒下的同伴站起来。增益：9 秒内每秒回复 2% 生命，受到伤害 -15%'}],
+  mortis:[{id:'waltz',n:'送葬圆舞',ic:'✂',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：原地旋斩三圈，每圈 34 点伤害，残血的普通敌人直接送葬。治疗：回复 8% 生命。增益：9 秒内近战伤害 +25%'},
+    {id:'strings',n:'断线人偶',ic:'♠',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：丝线抽打最近的 5 名敌人，各 24 点伤害。治疗：回复 8% 生命，近战每次命中回复 1 生命。增益：9 秒内近战伤害 +40%'}],
+  timoris:[{id:'tide',n:'潮汐冲击',ic:'≋',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：三道冲击波，每道 24 点伤害并击晕 1 秒。治疗：护盾充满，回复 8% 生命。增益：9 秒内受到伤害 -20%'},
+    {id:'wall',n:'静默壁垒',ic:'⛨',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：壁垒震开身边的敌人，造成 20 点伤害。治疗：护盾充满，回复 10% 生命，9 秒内每秒恢复 15% 护盾。增益：受到伤害 -35%'}],
+  amoris:[{id:'hearts',n:'心之乱打',ic:'♥',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：向四周连射三圈爱心（共 30 颗），每颗 12 点伤害并穿透。治疗：回复 10% 生命。增益：9 秒内暴击率 +15%'},
+    {id:'pulse',n:'心跳加速',ic:'♡',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：两圈心跳冲击，每圈对身边敌人 20 点伤害。治疗：回复 12% 生命。增益：9 秒内暴击率 +30%，移动速度 +25%，攻击间隔 -20%'}],
+  oblivionis:[{id:'erase',n:'遗忘之刻',ic:'⌛',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：抹去全场敌弹，对 220 范围内的敌人造成 40 点伤害外加当前生命 12%（Boss 为 4%）。治疗：回复 10% 生命。增益：9 秒内所有伤害 +15%'},
+    {id:'hush',n:'无声的回响',ic:'◌',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：寂静之环对 120 范围内的敌人造成 26 点伤害并减速。治疗：回复 12% 生命。增益：9 秒内身边的敌弹不断被抹去，所有伤害 +20%'}]};
+/* 2.0.2: collecting all of a girl's memories gives her a fourth skill (2.1: also attack + heal + buff, 9 s) */
+const SK4={doloris:{id:'aria',n:'一等星的咏叹',ic:'✧',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：向最近的 6 名敌人各降下一道星光，30 点伤害并减速 2 秒。治疗：回复 8% 生命。增益：9 秒内暴击率 +15%'},
+  uika:{id:'summer',n:'夏夜的星图',ic:'✩',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：落下 12 颗流星，每颗 18 点范围伤害。治疗：回复 12% 生命，护盾充满。增益：9 秒内移动速度 +20%'},
+  mortis:{id:'curtain',n:'谢幕的提线',ic:'♣',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：朝敌人挥出一道落幕斩，40 点伤害。治疗：回复 15% 生命。增益：9 秒内受到伤害 -25%，近战伤害 +20%'},
+  mutsumi:{id:'hothouse',n:'温室的回声',ic:'❀',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：藤蔓缠住身边的敌人，20 点伤害并减速 2 秒。治疗：回复 6% 生命，9 秒内每秒回复 3%。增益：受到伤害 -20%'},
+  timoris:{id:'sonar',n:'沉没的低音',ic:'≈',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：扇形射出 7 道低音声波，每道 22 点伤害并穿透 3 名敌人。治疗：回复 10% 生命。增益：9 秒内攻击间隔 -15%'},
+  amoris:{id:'encore',n:'安可连打',ic:'♬',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：对最近的 8 名敌人各连打两下，每下 16 点伤害。治疗：回复 10% 生命。增益：9 秒内攻击间隔 -30%，所有伤害 +15%'},
+  oblivionis:{id:'crown',n:'忘却之冠',ic:'♛',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：王冠的碎光击中最近的 5 名敌人，各 34 点伤害。治疗：回复 10% 生命。增益：9 秒内所有伤害 +25%，暴击率 +20%'},
+  sakiko:{id:'finale',n:'终章的指挥',ic:'♮',tags:['atk','heal','buff'],t:'atk',dur:9,d:'攻击：抹去全场敌弹，对 160 范围内的敌人造成 30 点伤害并击晕 1.2 秒。治疗：回复 10% 生命，护盾充满。增益：9 秒内所有伤害 +15%'}};
 const SKEMB={aria:'sun',summer:'backstar',curtain:'crown',hothouse:'clover',sonar:'wavy',encore:'clap',crown:'crown',finale:'baton',doloris:'star8',mortis:'mirror2',timoris:'aegis',amoris:'heartF',oblivionis:'hglass',uika:'sparkle',mutsumi:'twin',sakiko:'scroll',meteor:'nova',requiem:'candle',waltz:'swords',strings:'doll',tide:'waves',wall:'shield',hearts:'heart',pulse:'pulse',erase:'vortex',hush:'breath'};
 function skSig(){const c=ch(),f=(c.ab||[]).find(a=>a[0]==='Fever'||a[0]==='技能 Ⅰ');return{id:'sig',n:SKN[c.id],t:'buff',ic:'✦',sig:1,d:f?f[1].replace(/^[^·]*·\s*/,''):'专属技能'}}
 function skSet(){const id=ch().id;return[skSig(),...(SKX[bid(id)]||SKX.doloris),...(SK4[id]&&memDone(id)?[SK4[id]]:[])]}
@@ -2543,9 +2544,9 @@ function skMenu(){if(!skReady()||uiFresh(UIB.closeT,900))return;UIB.menuT=perfor
   const card=(s,i)=>{const em=SKEMB[s.sig?ch().id:s.id]||'star8',tone=s.sig?2:s.t==='atk'?3:4;
     return `<button class="skm-c ${s.sig?'sig':s.t}" data-i="${i}"><span class="skm-key">${i+1}</span><span class="skm-orn"></span>
       <span class="skm-med">${embIc(em,tone,' skm-ic')}</span><b class="skm-n">${s.n}</b>
-      <span class="skm-tags">${s.sig?'<em class="t-sig">专属</em>':''}<em class="t-${s.t}">${SKT[s.t]}</em></span>
-      <span class="skm-d">${s.d}</span><span class="skm-mul">${s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 伤害'} <i>×1.0–${settings.simple?'1.9':'3.25'}</i></span></button>`};
-  openModal('skill',`<div class="skm"><div class="skm-hd"><span class="skm-eye">Mouvement</span><div class="skm-t">选择技能</div><div class="skm-sub">乐章值已满 · 打完一段短谱面后释放：${settings.simple?'简化谱面，倍率最高 ×1.9':'越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25'}</div></div>
+      <span class="skm-tags">${s.sig?'<em class="t-sig">专属</em>':''}${(s.tags||[s.t]).map(k=>`<em class="t-${k}">${SKT[k]}</em>`).join('')}</span>
+      <span class="skm-d">${s.d}</span><span class="skm-mul">${s.sig?(s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 效果'):'谱面加成 · 伤害与治疗'} <i>×0.7–${settings.simple?'1.9':'3.25'}</i></span></button>`};
+  openModal('skill',`<div class="skm"><div class="skm-hd"><span class="skm-eye">Mouvement</span><div class="skm-t">选择技能</div><div class="skm-sub">乐章值已满 · 打完一段短谱面后释放：${settings.simple?'简化谱面，倍率最高 ×1.9':'PERFECT 大幅提高倍率，GREAT 中等，GOOD 少量，BAD 和 MISS 会扣倍率；全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25'}</div></div>
     <div class="skm-cards${set.length>3?' n4':''}">${set.map(card).join('')}</div>
     <div class="skm-ft"><label class="skm-sw"><input type="checkbox" id="skSkip"${settings.skSkip?' checked':''}><i></i><span>跳过谱面，直接以 ×1.0 释放</span></label><button class="skm-back" id="skNo">返回战斗<small>Esc</small></button></div></div>`);
   $('skSkip').onchange=e=>{settings.skSkip=e.target.checked?1:0;store.set('amj_settings',settings)};$('skNo').onclick=()=>closeModal();
@@ -2628,8 +2629,11 @@ function chTick(c){const w=chWin(c.bps);
 function chWin(bps){const m=G.mods||{},a=(1+.15*(m.metro||0))*(G.owTune?1.15:1);return[42,75,115,160].map(v=>v*1.15*a/1000*bps)}
 /* multiplier: x1.0-1.6 by accuracy; a full combo (no BAD or MISS) x1.6-2.0; all perfect x3.25 */
 function chMul(cnt){const v=chMul0(cnt);return settings.simple||CHT.simple?Math.round((1+(v-1)*.4)*100)/100:v}
-function chMul0(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const acc=(cnt.P+.85*cnt.GR+.7*cnt.G+.3*cnt.B)/n,fc=!cnt.B&&!cnt.M,ap=fc&&!cnt.GR&&!cnt.G,bon=(G.mods.pfMul||0)*.5;
-  if(ap)return 3.25;if(fc)return Math.round((1.6+.4*clamp((acc-.7)/.3,0,1)+bon)*100)/100;return Math.round((1+.6*clamp((acc-.4)/.6,0,1)+bon)*100)/100}
+/* 2.1: every judgement moves the multiplier: PERFECT a lot, GREAT a fair amount, GOOD as before, BAD takes a little away, MISS more.
+   All GOOD with a full combo is still ×1.6 as before; a full combo adds 0.2 (up to ×2.0); all PERFECT stays ×3.25 */
+const CHW={P:1.35,GR:.9,G:.67,B:-.25,M:-.6};
+function chMul0(cnt){const n=cnt.P+cnt.GR+cnt.G+cnt.B+cnt.M;if(!n)return 1;const fc=!cnt.B&&!cnt.M,ap=fc&&!cnt.GR&&!cnt.G,bon=(G.mods.pfMul||0)*.5;if(ap)return 3.25;
+  const avg=(cnt.P*CHW.P+cnt.GR*CHW.GR+cnt.G*CHW.G+cnt.B*CHW.B+cnt.M*CHW.M)/n;let v=1+.6*avg+bon;if(fc)v=Math.min(2+bon,v+.2);return Math.round(clamp(v,.7,3.25)*100)/100}
 function skChartEnd(skip){if(CHT.end)return;CHT.end=1;const s=CHT.s,cnt=CHT.cnt,mul=skip?1:chMul(cnt),full=!skip&&cnt.P===chTotal()&&cnt.P>0,fc=!skip&&!full&&!cnt.B&&!cnt.M;
   if(full){G.pdN=(G.pdN||0)+1;S.p('clap',4);S.p('crit')}else if(fc)S.p('clap',3);CHT.res={mul,full,fc,t:performance.now()};
   const go=()=>{CHT.on=0;CHT.unbind&&CHT.unbind();UIB.closeT=performance.now();if(G.modalKind==='chart')closeModal();skCast(s,mul,skip?null:cnt)};if(skip)go();else setTimeout(go,900)}
@@ -2661,46 +2665,52 @@ function chDraw(c){const cv2=$('chCv');if(!cv2)return;const W=cv2.clientWidth,H=
   g=x.createLinearGradient(x0,0,x0+LW,0);g.addColorStop(0,'rgba(201,164,92,0)');g.addColorStop(.15,GOLD);g.addColorStop(.5,'#fff2c8');g.addColorStop(.85,GOLD);g.addColorStop(1,'rgba(201,164,92,0)');x.fillStyle=g;x.fillRect(x0-6,jy-1,LW+12,2);
   for(let l=0;l<CHL;l++){const lx=x0+l*lw,pr=(now-CHT.press[l])/1000,on=pr<.12||CHT.held[l]>0,col=CHCOL[l];x.lineWidth=1.5;x.strokeStyle=on?'#fff':hexA(col,.7);chRR(x,lx+5.5,jy-6,lw-11,12,4);x.stroke();
     if(on){x.fillStyle=hexA(col,CHT.held[l]>0?.4:.45*(1-pr/.12));chRR(x,lx+5.5,jy-6,lw-11,12,4);x.fill()}
-    if(!isTouch){x.font='bold 10px Silkscreen,monospace';x.textAlign='center';x.fillStyle=on?'#fff':'rgba(244,230,204,.55)';x.fillText(CHKEY[l],lx+lw/2,jy+22)}}
+    if(!isTouch){x.font='bold 10px Cinzel,"Noto Serif SC",serif';x.textAlign='center';x.fillStyle=on?'#fff':'rgba(244,230,204,.55)';x.fillText(CHKEY[l],lx+lw/2,jy+22)}}
   CHT.fx=CHT.fx.filter(f=>now-f.t<380);for(const f of CHT.fx){const e=(now-f.t)/380,lx=x0+f.l*lw+lw/2,col=f.k==='P'?'#9fd4ff':f.k==='GR'?'#ffe07a':'#ff9ad0';x.globalAlpha=1-e;x.strokeStyle=col;x.lineWidth=2*(1-e)+.5;x.beginPath();x.ellipse(lx,jy,lw*.3+e*lw*.4,6+e*10,0,0,TAU);x.stroke();
     for(let q=0;q<6;q++){const a=q/6*TAU+f.t,r=8+e*26;x.fillStyle=col;x.fillRect(lx+Math.cos(a)*r-1,jy+Math.sin(a)*r*.5-1-e*8,2,2)}x.globalAlpha=1}
-  const q=CHT.pop;if(q){const t=(now-q.t)/1000;if(t<.6){const s=1+.25*Math.max(0,1-t*8);x.globalAlpha=Math.min(1,(.6-t)*4);x.textAlign='center';x.font=`bold ${Math.round(16*s)}px Silkscreen,monospace`;x.fillStyle='rgba(0,0,0,.6)';x.fillText(JUD[q.k].t,W/2+1,jy*.52+1);x.shadowColor=JUD[q.k].c;x.shadowBlur=12;x.fillStyle=JUD[q.k].c;x.fillText(JUD[q.k].t,W/2,jy*.52);x.shadowBlur=0;x.globalAlpha=1}}
-  if(CHT.combo>=2){x.textAlign='center';x.font='bold 24px Silkscreen,monospace';x.fillStyle='rgba(244,230,204,.13)';x.fillText(CHT.combo,W/2,jy*.36);x.font='8px Silkscreen,monospace';x.fillStyle='rgba(244,230,204,.3)';x.fillText('COMBO',W/2,jy*.36+11)}
+  const q=CHT.pop;if(q){const t=(now-q.t)/1000;if(t<.6){const s=1+.25*Math.max(0,1-t*8);x.globalAlpha=Math.min(1,(.6-t)*4);x.textAlign='center';x.font=`bold ${Math.round(16*s)}px Cinzel,"Noto Serif SC",serif`;x.fillStyle='rgba(0,0,0,.6)';x.fillText(JUD[q.k].t,W/2+1,jy*.52+1);x.shadowColor=JUD[q.k].c;x.shadowBlur=12;x.fillStyle=JUD[q.k].c;x.fillText(JUD[q.k].t,W/2,jy*.52);x.shadowBlur=0;x.globalAlpha=1}}
+  if(CHT.combo>=2){x.textAlign='center';x.font='bold 24px Cinzel,"Noto Serif SC",serif';x.fillStyle='rgba(244,230,204,.13)';x.fillText(CHT.combo,W/2,jy*.36);x.font='8px Cinzel,"Noto Serif SC",serif';x.fillStyle='rgba(244,230,204,.3)';x.fillText('COMBO',W/2,jy*.36+11)}
   const r=CHT.res;if(r){const e=Math.min(1,(now-r.t)/250);x.globalAlpha=e;x.fillStyle='rgba(10,4,8,.78)';x.fillRect(0,0,W,H);x.textAlign='center';
-    if(r.full||r.fc){x.font='bold 13px Silkscreen,monospace';const cc=r.full?'#ffe9a0':'#9fd4ff';x.fillStyle=cc;x.shadowColor=cc;x.shadowBlur=16;x.fillText(r.full?'ALL PERFECT':'FULL COMBO',W/2,H/2-22);x.shadowBlur=0}
-    x.font=`bold ${Math.round(26+8*(1-e))}px Silkscreen,monospace`;x.fillStyle=r.full?'#ffe9a0':r.fc?'#9fd4ff':'#f4e6cc';x.fillText('×'+r.mul.toFixed(2),W/2,H/2+6);
-    const C=CHT.cnt;x.font='8px Silkscreen,monospace';x.fillStyle='rgba(244,230,204,.75)';x.fillText(`P ${C.P}  GR ${C.GR}  G ${C.G}  B ${C.B}  M ${C.M}`,W/2,H/2+24);x.globalAlpha=1}
+    if(r.full||r.fc){x.font='bold 13px Cinzel,"Noto Serif SC",serif';const cc=r.full?'#ffe9a0':'#9fd4ff';x.fillStyle=cc;x.shadowColor=cc;x.shadowBlur=16;x.fillText(r.full?'ALL PERFECT':'FULL COMBO',W/2,H/2-22);x.shadowBlur=0}
+    x.font=`bold ${Math.round(26+8*(1-e))}px Cinzel,"Noto Serif SC",serif`;x.fillStyle=r.full?'#ffe9a0':r.fc?'#9fd4ff':'#f4e6cc';x.fillText('×'+r.mul.toFixed(2),W/2,H/2+6);
+    const C=CHT.cnt;x.font='8px Cinzel,"Noto Serif SC",serif';x.fillStyle='rgba(244,230,204,.75)';x.fillText(`P ${C.P}  GR ${C.GR}  G ${C.G}  B ${C.B}  M ${C.M}`,W/2,H/2+24);x.globalAlpha=1}
   x.textAlign='left'}
 /* ---- release */
-function skCast(s,mul,cnt){if(G.state!=='play'||P.down)return;const m=G.mods,buff=s.t==='buff',dm=buff?1:mul*(1+.2*(m.downbeat||0)),tm=buff?mul*(1+(m.gMul||0)):1;
+function skCast(s,mul,cnt){if(G.state!=='play'||P.down)return;const m=G.mods,buff=s.t==='buff',dm=buff?1:mul*(1+.2*(m.downbeat||0)),tm=(buff?mul:1)*(1+(m.gMul||0));
   G.skDm=dm;G.skLast={id:s.id,n:s.n,mul};feverStart(s,tm,dm);
   G.nums.push({x:P.x,y:P.y-52,v:s.n+' ×'+mul.toFixed(2),t:0,say:1,jc:mul>=1.5?'#9fd4ff':'#ffe07a'})}
-function skFx(s,dur,dm,again){const m=G.mods,pw=(m.melee+m.ranged)/2*m.skillDmg*dm*(again||1),sc=1+.35*(G.act-1),live=()=>G.en.filter(e=>!e.dead&&!(e.intro>0));
-  const id=s.id;if(s.t==='atk'&&!again)G.skAtk={s,dur,dm,next:G.time+1.6};
-  if(id==='meteor'){for(let i=0;i<10;i++)later(i*.13,()=>{const L=live(),e=L.length?pick(L):null,x0=e?e.x:P.x+rnd(-70,70),y0=e?e.y:P.y+rnd(-50,40);G.fx.push({k:'starfall',x:x0,y:y0,t:0,d:.3});
-      later(.26,()=>{aoe(x0,y0,22,26*pw*sc,'#ffe9a0',{noMod:1});burst(x0,y0,10,['#ffe9a0','#fff','#f6dc8a'],80,.45);S.p('hit')})})}
-  else if(id==='requiem'){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.15*cr('heal'));for(const a of G.allies){if(a.down){a.down=0;a.hp=a.mhp*.3;a.revT=0;a.inv=1.5;burst(a.x,a.y-10,20,[GOLD,'#fff'],80,.6)}else a.hp=Math.min(a.mhp,a.hp+a.mhp*.15)}
-    G.skb={id,t:dur,regen:.02};burst(P.x,P.y-10,24,['#ffe9a0','#9ad8a0','#fff'],80,.6);S.p('heal')}
+function skFx(s,dur,dm,again){const m=G.mods,pw=(m.melee+m.ranged)/2*m.skillDmg*dm*(again||1),sc=1+.35*(G.act-1),live=()=>G.en.filter(e=>!e.dead&&!(e.intro>0)),first=!again,id=s.id;
+  if(s.t==='atk'&&first)G.skAtk={s,dur,dm,next:G.time+1.6};
+  /* the heal and the buff happen once, when the skill is cast; the attack repeats through Fever */
+  const heal=(k,o={})=>{if(!first)return;const f=k*(1+(dm-1)*.5);P.hp=Math.min(P.maxHp,P.hp+P.maxHp*f*cr('heal'));if(o.sh)P.sh=P.shMax;
+      for(const a of G.allies){if(a.down&&o.revive){a.down=0;a.hp=a.mhp*.3;a.revT=0;a.inv=1.5;burst(a.x,a.y-10,20,[GOLD,'#fff'],80,.6)}else if(!a.down)a.hp=Math.min(a.mhp,a.hp+a.mhp*f)}
+      G.nums.push({x:P.x,y:P.y-44,v:'+'+Math.round(P.maxHp*f),t:0,heal:1});S.p('heal')},
+    buff=o=>{if(first)G.skb={id,t:dur,...o}},
+    near=n=>live().sort((a,b)=>d2(a,P)-d2(b,P)).slice(0,n),
+    ring=(r,dmgv,col,o={})=>{G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:8,r1:r,t:0,d:.35,col,w:3});for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>(r+e.r)**2)continue;hurtEnemy(e,dmgv*pw*sc,{kb:o.kb||0,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1});if(o.slow)e.slowT=Math.max(e.slowT||0,o.slow);if(o.stun&&!e.boss)e.stun=Math.max(e.stun||0,o.stun)}},
+    meteors=(n,dmgv,col)=>{for(let i=0;i<n;i++)later(i*.11,()=>{const L=live(),e=L.length&&Math.random()<.75?pick(L):null,x0=e?e.x:P.x+rnd(-80,80),y0=e?e.y:P.y+rnd(-60,50);G.fx.push({k:'starfall',x:x0,y:y0,t:0,d:.3});
+      later(.26,()=>{aoe(x0,y0,21,dmgv*pw*sc,col,{noMod:1});burst(x0,y0,9,[col,'#fff','#f6dc8a'],80,.45);S.p('hit')})})};
+  if(id==='meteor'){meteors(10,26,'#ffe9a0');heal(.10);buff({dmg:.15})}
+  else if(id==='requiem'){for(let i=0;i<3;i++)later(i*.3,()=>ring(70,18,'#ffe9a0'));heal(.2,{revive:1});buff({regen:.02,dr:.15});if(first)burst(P.x,P.y-10,24,['#ffe9a0','#9ad8a0','#fff'],80,.6)}
+  else if(id==='aria'){near(6).forEach((e,i)=>later(i*.08,()=>{if(e.dead)return;G.fx.push({k:'bolt',x:e.x+rnd(-6,6),y:e.y-130,x2:e.x,y2:e.y-6,t:0,d:.25});hurtEnemy(e,30*pw*sc,{noMod:1});e.slowT=Math.max(e.slowT||0,2);burst(e.x,e.y-8,8,['#ffe9a0','#fff'],60,.4)}));S.p('crit');heal(.08);buff({crit:.15})}
+  else if(id==='summer'){meteors(12,18,'#ffd8f0');heal(.12,{sh:1});buff({spd:.2})}
   else if(id==='waltz'){for(let i=0;i<3;i++)later(i*.2,()=>{const r=64;G.fx.push({k:'slash',x:P.x,y:P.y-6,a:i*2.1,range:r,arc:6.2,t:0,d:.22,col:'#ff6fae',big:1});G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:8,r1:r,t:0,d:.25,col:'#cdd3c3',w:2});S.p('swing',ch().id);shake(3);
-      for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>(r+e.r)**2)continue;if(!e.boss&&!e.elite&&e.hp<e.mhp*.25){hurtEnemy(e,e.hp+1,{noMod:1});G.nums.push({x:e.x,y:e.y-(e.d.h||16)-6,v:'送葬',t:0,say:1})}else hurtEnemy(e,34*pw*sc,{kb:150,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1})}})}
-  else if(id==='strings'){G.skb={id,t:dur,mel:.4,ls:1};burst(P.x,P.y-10,20,['#ff6fae','#cdd3c3'],60,.6)}
-  else if(id==='tide'){for(let i=0;i<3;i++)later(i*.22,()=>{const r=56+i*26;G.fx.push({k:'ring',x:P.x,y:P.y-4,r0:8,r1:r,t:0,d:.35,col:'#4ccac2',w:3});shake(3);S.p('slam');
-      for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>(r+e.r)**2)continue;hurtEnemy(e,24*pw*sc,{kb:180,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1});if(!e.boss)e.stun=Math.max(e.stun||0,1)}})}
-  else if(id==='wall'){P.sh=P.shMax;G.skb={id,t:dur,dr:.35,shr:.15};G.fx.push({k:'ring',x:P.x,y:P.y,r0:6,r1:40,t:0,d:.4,col:'#9fd4ff',w:3});S.p('shield')}
-  else if(id==='hearts'){for(let w=0;w<3;w++)later(w*.18,()=>{for(let i=0;i<10;i++)shoot({x:P.x,y:P.y-8,a:i/10*TAU+w*.31,spd:160,dmg:12*pw*sc,k:'heart',pierce:1,col:'#ff6a9a',life:1.1,r:3,noMod:1});S.p('shot','amoris')})}
-  else if(id==='pulse'){G.skb={id,t:dur,crit:.3,spd:.25,cd:.2};burst(P.x,P.y-12,16,['#ff6a9a','#ffc4d8'],60,.5)}
+      for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>(r+e.r)**2)continue;if(!e.boss&&!e.elite&&e.hp<e.mhp*.25){hurtEnemy(e,e.hp+1,{noMod:1});G.nums.push({x:e.x,y:e.y-(e.d.h||16)-6,v:'送葬',t:0,say:1})}else hurtEnemy(e,34*pw*sc,{kb:150,ang:Math.atan2(e.y-P.y,e.x-P.x),noMod:1})}});heal(.08);buff({mel:.25})}
+  else if(id==='strings'){near(5).forEach((e,i)=>later(i*.07,()=>{if(e.dead)return;G.fx.push({k:'slash',x:e.x,y:e.y-6,a:rnd(TAU),range:20,arc:2.2,t:0,d:.2,col:'#ff6fae'});hurtEnemy(e,24*pw*sc,{noMod:1});S.p('hit')}));heal(.08);buff({mel:.4,ls:1});if(first)burst(P.x,P.y-10,20,['#ff6fae','#cdd3c3'],60,.6)}
+  else if(id==='curtain'){const t0=nearest(220),a0=t0?Math.atan2(t0.y-P.y,t0.x-P.x):(P.face>0?0:Math.PI);G.fx.push({k:'slash',x:P.x,y:P.y-6,a:a0,range:84,arc:2.4,t:0,d:.3,col:'#ff6fae',big:1});shake(4);S.p('swing',ch().id);
+    for(const e of live()){const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy);let da=Math.abs(Math.atan2(dy,dx)-a0);if(da>Math.PI)da=TAU-da;if(d<84+e.r&&da<1.25)hurtEnemy(e,40*pw*sc,{kb:160,ang:Math.atan2(dy,dx),noMod:1})}heal(.15);buff({dr:.25,mel:.2})}
+  else if(id==='hothouse'){ring(90,20,'#9ad8a0',{slow:2});heal(.06);buff({regen:.03,dr:.2});if(first)burst(P.x,P.y-10,20,['#9ad8a0','#e8f0d0'],60,.6)}
+  else if(id==='tide'){for(let i=0;i<3;i++)later(i*.22,()=>{ring(56+i*26,24,'#4ccac2',{kb:180,stun:1});shake(3);S.p('slam')});heal(.08,{sh:1});buff({dr:.2})}
+  else if(id==='wall'){ring(70,20,'#9fd4ff',{kb:200});S.p('shield');heal(.10,{sh:1});buff({dr:.35,shr:.15})}
+  else if(id==='sonar'){const t0=nearest(280),a0=t0?Math.atan2(t0.y-P.y,t0.x-P.x):(P.face>0?0:Math.PI);for(let i=0;i<7;i++)shoot({x:P.x,y:P.y-8,a:a0+(i-3)*.16,spd:210,dmg:22*pw*sc,k:'wave',pierce:3,col:'#4ccac2',life:1,r:5,noMod:1});S.p('slam');shake(3);heal(.10);buff({cd:.15})}
+  else if(id==='hearts'){for(let w=0;w<3;w++)later(w*.18,()=>{for(let i=0;i<10;i++)shoot({x:P.x,y:P.y-8,a:i/10*TAU+w*.31,spd:160,dmg:12*pw*sc,k:'heart',pierce:1,col:'#ff6a9a',life:1.1,r:3,noMod:1});S.p('shot','amoris')});heal(.10);buff({crit:.15})}
+  else if(id==='pulse'){for(let i=0;i<2;i++)later(i*.28,()=>ring(62,20,'#ff6a9a'));heal(.12);buff({crit:.3,spd:.25,cd:.2});if(first)burst(P.x,P.y-12,16,['#ff6a9a','#ffc4d8'],60,.5)}
+  else if(id==='encore'){const L=near(8);for(let r=0;r<2;r++)L.forEach((e,i)=>later(r*.35+i*.04,()=>{if(e.dead)return;hurtEnemy(e,16*pw*sc,{noMod:1});burst(e.x,e.y-8,5,['#ff6a9a','#ffe07a'],50,.3)}));S.p('shot','amoris');heal(.10);buff({cd:.3,dmg:.15})}
   else if(id==='erase'){G.eb.forEach(b=>{b.dead=1;G.parts.push({x:b.x,y:b.y,vx:0,vy:-20,life:.6,max:.6,col:'#babef6',sz:1.5})});G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:220,t:0,d:.6,col:'#babef6',w:2});shake(5);S.p('crit');
-    for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>220*220)continue;hurtEnemy(e,40*pw*sc+e.hp*(e.boss?.04:.12)*dm,{noMod:1})}}
-  else if(id==='hush'){G.skb={id,t:dur,erase:64,dmg:.2};G.fx.push({k:'ring',x:P.x,y:P.y-6,r0:64,r1:10,t:0,d:.4,col:'#babef6',w:2})}
-  else if(id==='aria'){const L=live().sort((a,b)=>d2(a,P)-d2(b,P)).slice(0,6);L.forEach((e,i)=>later(i*.08,()=>{if(e.dead)return;G.fx.push({k:'bolt',x:e.x+rnd(-6,6),y:e.y-130,x2:e.x,y2:e.y-6,t:0,d:.25});hurtEnemy(e,30*pw*sc,{noMod:1});e.slowT=Math.max(e.slowT||0,2);burst(e.x,e.y-8,8,['#ffe9a0','#fff'],60,.4)}));S.p('crit')}
-  else if(id==='summer'){for(let i=0;i<12;i++)later(i*.09,()=>{const L=live(),e=L.length&&Math.random()<.7?pick(L):null,x0=e?e.x:P.x+rnd(-80,80),y0=e?e.y:P.y+rnd(-60,50);G.fx.push({k:'starfall',x:x0,y:y0,t:0,d:.3});
-      later(.26,()=>{aoe(x0,y0,20,18*pw*sc,'#ffd8f0',{noMod:1});burst(x0,y0,8,['#ffd8f0','#fff','#9fd4ff'],70,.4);S.p('hit')})})}
-  else if(id==='curtain'){G.skb={id,t:dur,mel:.3,dr:.25,ls:1};burst(P.x,P.y-10,20,['#ff6fae','#cdd3c3','#fff'],60,.6)}
-  else if(id==='hothouse'){G.skb={id,t:dur,regen:.03,dr:.2};burst(P.x,P.y-10,20,['#9ad8a0','#e8f0d0'],60,.6);S.p('heal')}
-  else if(id==='sonar'){const t0=nearest(280),a0=t0?Math.atan2(t0.y-P.y,t0.x-P.x):(P.face>0?0:Math.PI);for(let i=0;i<7;i++)shoot({x:P.x,y:P.y-8,a:a0+(i-3)*.16,spd:210,dmg:22*pw*sc,k:'wave',pierce:3,col:'#4ccac2',life:1,r:5,noMod:1});S.p('slam');shake(3)}
-  else if(id==='encore'){G.skb={id,t:dur,cd:.3,dmg:.15};burst(P.x,P.y-12,18,['#ff6a9a','#ffe07a'],60,.5)}
-  else if(id==='crown'){G.skb={id,t:dur,dmg:.25,crit:.2};G.fx.push({k:'ring',x:P.x,y:P.y-6,r0:6,r1:48,t:0,d:.45,col:'#f6dc8a',w:2});S.p('crit')}
-  else if(id==='finale'){G.eb.forEach(b=>{b.dead=1});G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:160,t:0,d:.5,col:'#c8b8f0',w:2});shake(4);S.p('crit');for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>160*160)continue;hurtEnemy(e,30*pw*sc,{noMod:1});if(!e.boss)e.stun=Math.max(e.stun||0,1.2)}}}
+    for(const e of live()){if((e.x-P.x)**2+(e.y-P.y)**2>220*220)continue;hurtEnemy(e,40*pw*sc+e.hp*(e.boss?.04:.12)*dm,{noMod:1})}heal(.10);buff({dmg:.15})}
+  else if(id==='hush'){ring(120,26,'#babef6',{slow:2});heal(.12);buff({erase:64,dmg:.2})}
+  else if(id==='crown'){near(5).forEach((e,i)=>later(i*.08,()=>{if(e.dead)return;G.fx.push({k:'bolt',x:e.x,y:e.y-120,x2:e.x,y2:e.y-6,t:0,d:.25});hurtEnemy(e,34*pw*sc,{noMod:1});burst(e.x,e.y-8,8,['#f6dc8a','#fff'],60,.4)}));S.p('crit');heal(.10);buff({dmg:.25,crit:.2})}
+  else if(id==='finale'){G.eb.forEach(b=>{b.dead=1});ring(160,30,'#c8b8f0',{stun:1.2});shake(4);S.p('crit');heal(.10,{sh:1});buff({dmg:.15})}}
 function skbTick(dt){const A=G.skAtk;if(A){if(!(G.feverT>0)||P.down)G.skAtk=null;else if(G.time>=A.next){A.next+=1.6;skFx(A.s,A.dur,A.dm,.6)}}
   const B=G.skb;if(!B)return;if(G.feverT>0)B.t=Math.max(B.t,G.feverT);B.t-=dt;if(B.t<=0||P.down){G.skb=null;return}
   if(B.regen){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*B.regen*dt*cr('heal'));for(const a of G.allies)if(!a.down)a.hp=Math.min(a.mhp,a.hp+a.mhp*B.regen*dt)}
@@ -2810,10 +2820,10 @@ function twinStrike(a,dmg,range,arc){if(ch().id==='mutsumi')S.p('mecho');const g
 function drawBarrier(t){const B=G.barrier;if(B){ctx.save();ctx.globalAlpha=.16+.06*Math.sin(t*6);ctx.fillStyle='#4ccac2';ctx.beginPath();ctx.ellipse(B.x,B.y,B.r,B.r*.5,0,0,TAU);ctx.fill();ctx.globalAlpha=.6;ctx.strokeStyle='#9ff0ea';ctx.lineWidth=1;ctx.setLineDash([4,3]);ctx.lineDashOffset=t*10;ctx.stroke();ctx.setLineDash([]);ctx.restore()}
   if(P.orb&&!P.down){const O=P.orb;for(let q=0;q<2;q++){const oa=O.a+q*Math.PI,x=P.x+Math.cos(oa)*30,y=P.y-6+Math.sin(oa)*18;ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.7;ctx.drawImage(glow('#ffe9a0'),x-10,y-10,20,20);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
       ctx.fillStyle='#fff6d0';ctx.fillRect(Math.round(x)-1,Math.round(y)-3,2,6);ctx.fillRect(Math.round(x)-3,Math.round(y)-1,6,2);ctx.fillStyle='#ffe9a0';ctx.fillRect(Math.round(x)-2,Math.round(y)-2,4,4)}}
-  for(const e of G.en)if(e.noteT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.noteT-G.time)*2);ctx.fillStyle='#c8b8f0';ctx.font='8px serif';ctx.textAlign='center';ctx.fillText('♪',e.x,e.y-(e.d.h||16)-4+Math.sin(G.time*6)*1.5);ctx.textAlign='left';ctx.globalAlpha=1}
+  for(const e of G.en)if(e.noteT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.noteT-G.time)*2);ctx.fillStyle='#c8b8f0';ctx.font='8px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillText('♪',e.x,e.y-(e.d.h||16)-4+Math.sin(G.time*6)*1.5);ctx.textAlign='left';ctx.globalAlpha=1}
   if(ch().id==='uika'&&P.ustarN&&!P.down){for(let k=0;k<P.ustarN;k++){const a=-Math.PI/2+(k-(P.ustarN-1)/2)*.42,x=P.x+Math.cos(a)*13,y=P.y-34+Math.sin(a)*5;ctx.globalAlpha=.75+.25*Math.sin(G.time*5+k);ctx.fillStyle='#ffe9a0';ctx.fillRect(Math.round(x)-1,Math.round(y),2,1);ctx.fillRect(Math.round(x)-.5,Math.round(y)-.5,1,2)}ctx.globalAlpha=1}
-  for(const e of G.en)if(e.sleepT>G.time&&!e.dead){ctx.fillStyle='#cfe0ff';ctx.font='7px serif';ctx.textAlign='center';ctx.fillText('z',e.x+5+Math.sin(G.time*2)*2,e.y-(e.d.h||16)-2-(G.time*6%6));ctx.textAlign='left'}
-  for(const e of G.en)if(e.starT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.starT-G.time)*2);ctx.fillStyle='#ffe9a0';ctx.font='7px serif';ctx.textAlign='center';ctx.fillText('★',e.x+6,e.y-(e.d.h||16)-2);ctx.textAlign='left';ctx.globalAlpha=1}
+  for(const e of G.en)if(e.sleepT>G.time&&!e.dead){ctx.fillStyle='#cfe0ff';ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillText('z',e.x+5+Math.sin(G.time*2)*2,e.y-(e.d.h||16)-2-(G.time*6%6));ctx.textAlign='left'}
+  for(const e of G.en)if(e.starT>G.time&&!e.dead){ctx.globalAlpha=Math.min(1,(e.starT-G.time)*2);ctx.fillStyle='#ffe9a0';ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillText('★',e.x+6,e.y-(e.d.h||16)-2);ctx.textAlign='left';ctx.globalAlpha=1}
   if((P.twinT>0||P.mortT>0)&&!P.down&&ch().id==='mutsumi'&&ART.fr.mortis){const mf=ART.fr.mortis,an=P.act&&mf[P.act.n]?mf[P.act.n]:mf.idle;ctx.globalAlpha=.55;ctx.filter='hue-rotate(-25deg) saturate(.8) brightness(1.15)';drawSpr(an[Math.floor(G.time*7)%an.length],P.x-(P.face||1)*16,P.y,P.face||1,null,.5);ctx.filter='none';ctx.globalAlpha=1}
   else if(P.twinT>0&&!P.down){const fr=pFrame(false);ctx.globalAlpha=.42;ctx.filter='grayscale(.6) brightness(1.2)';drawSpr(fr.c,P.x-(P.face||1)*16,P.y+fr.dy-2,P.face||1,null,fr.sc);ctx.filter='none';ctx.globalAlpha=1}}
 function doSkill(s){const c=ch(),id=c.id,m=G.mods;P.skillCd=0;setAct('skill',.85);if(G.bonds.oblivionis)G.eb.forEach(b=>{b.dead=1;burst(b.x,b.y,2,['#babef6'],20,.3)});S.p('skill',id);shake(4);G.flash=.25;
@@ -3051,7 +3061,7 @@ function updAmb(dt){if(G.owIn){G.amb.length=0;return}const k=G.state==='play'?AC
 function shClearFrac(){const m=G.mods||{};return m.aegis?1:Math.min(1,Math.max(.2,.6-.05*(NL()-1))*(m.shRegen||1))}
 function shRestore(){const f=shClearFrac();if(P.shMax>0&&P.sh<P.shMax){const v=P.shMax*f;P.sh=Math.min(P.shMax,P.sh+v);G.nums.push({x:P.x,y:P.y-34,v:'+'+Math.round(v),t:0,shb:1});burst(P.x,P.y-12,8,['#9fd4ff','#fff'],50,.4);S.p('shield')}
   for(const a of G.allies||[])if(a.shMax)a.sh=Math.min(a.shMax,(a.sh||0)+a.shMax*f);for(const q of G.mirrors||[])if(q.shMax)q.sh=Math.min(q.shMax,(q.sh||0)+q.shMax*f)}
-function roomCleared(){feverCashOut();G.cleared=true;shRestore();if(G.mods.roomPetal)G.petals+=G.mods.roomPetal;if(G.mods.fvRoom&&!(G.feverT>0))G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.25*G.mods.fvRoom);if(P.down)playerUp(null);S.p('door');setTrack('calm');if(G.mods.roomHeal)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.08*G.mods.roomHeal);
+function roomCleared(){feverCashOut();G.cleared=true;shRestore();if(G.mods.roomPetal)G.petals+=G.mods.roomPetal;if(G.mods.fvRoom&&!(G.feverT>0))G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.35*G.mods.fvRoom);if(P.down)playerUp(null);S.p('door');setTrack('calm');if(G.mods.roomHeal)P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.08*G.mods.roomHeal);
   const type=G.type;
   if(type==='event'){later(.6,()=>memberThanks());return}
   if(type==='trial'&&G.trialKind==='shadow'){qProg('trials');G.petals+=30;const own=Object.keys(G.ups).map(id=>UPS.find(u=>u.id===id)).filter(u=>u.rep||(G.ups[u.id]||0)<(u.max||9));
@@ -3102,7 +3112,7 @@ function rollUps(n,minR,bias=0){bias+=.08*((G.mods&&G.mods.luck)||0);const res=[
   for(let k=0;k<n*10&&res.length<n;k++){const r=Math.random();let rar=r<lp?2:r<rp?1:0;rar=Math.max(rar,minR);const pool=avail.filter(u=>u.r===rar&&!res.includes(u));if(pool.length)res.push(pick(pool))}
   while(res.length<n){const pool=avail.filter(u=>!res.includes(u)&&u.r>=minR);const pl=pool.length?pool:avail.filter(u=>!res.includes(u));if(!pl.length)break;res.push(pick(pl))}
   if(NL()>=5&&!G.qLeg)return res.map(u=>u.r>=1?{...u,cost:rint(0,COSTS.length-1)}:u);return res}
-function upCard(u,i,extra=''){return `<button class="card r${u.r}" data-i="${i}">${upIc(u)}<b>${u.n}<span class="rt">${u.s?SCHN[u.s]+' · ':''}${RAR[u.r]}</span></b><span class="d">${u.d}${extra}${u.cost!=null?`<em class="cost">代价：${COSTS[u.cost].n}</em>`:''}</span></button>`}
+function upCard(u,i,extra=''){return `<button class="card r${u.r}" data-i="${i}">${upIc(u)}<b>${u.n}<span class="rt">${u.s?SCHN[u.s]+' · ':''}${RAR[u.r]}</span></b><span class="d">${u.d}${extra}${u.cost!=null?`<em class="cost">代价：${COSTS[u.cost].n}</em>`:''}${u.fl&&LANG==='zh'?`<i class="fl">${u.fl}</i>`:''}</span></button>`}
 function applyUp(u){G.ups[u.id]=(G.ups[u.id]||0)+1;cdxNote('u',u.id,{w:G.world||1});u.a(G.mods,P);if(u.cost!=null)COSTS[u.cost].a(G.mods);stats();P.hp=Math.min(P.hp,P.maxHp);S.p('pick')}
 function showReward(kind){const minR=kind==='trial'||kind==='curse'?2:kind==='boss'?1:kind==='elite'?1:0,bias=kind==='boss'?.4:kind==='treasure'?.15:0;const cs=rollUps(nCh(),minR,bias);
   const title=kind==='trial'?'试炼 · 献礼':kind==='curse'?'契约':kind==='boss'?'幕间 · 喝彩':kind==='treasure'?'衣柜深处':'选择一段旋律';
@@ -3285,7 +3295,7 @@ function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{cons
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
 function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$('sReal').textContent=`${c.real} · ${c.role}`;$('sMotto').textContent=`「${c.motto}」`;
   $('sStats').innerHTML=Object.entries(c.st).map(([k,v])=>`<dt>${k}</dt><dd>${[1,2,3,4,5].map(j=>`<i class="${j<=v?'on':''}"></i>`).join('')}</dd>`).join('');
-  const ro=CROLE[c.id];$('sAbil').innerHTML=(ro?`<li><b>定位</b><span>${ro.tag}</span></li>`:'')+c.ab.map(([k,v])=>`<li><b>${k==='Fever'?'技能 Ⅰ':k}</b><span>${v}</span></li>`).join('')+(SKX[bid(c.id)]||[]).map((q,j)=>`<li><b>技能 ${j?'Ⅲ':'Ⅱ'}</b><span>${q.n} · ${SKT[q.t]}：${q.d}</span></li>`).join('')+(ro?`<li><b>探索</b><span>「${ro.pass.n}」${ro.pass.d}</span></li><li><b>优劣</b><span>优势：${ro.pro}　弱点：${ro.con}</span></li>`:'')+(MEMPERK[c.id]?`<li class="memrow${memDone(c.id)?' on':''}"><b>回忆</b><span>${memDone(c.id)?`「<i>${MEMPERK[c.id].n}</i>」<i>${MEMPERK[c.id].d}</i>`:`${MS.got[c.id]||0}/6 · 集齐后解锁「${MEMPERK[c.id].n}」`}</span></li>`:'');
+  const ro=CROLE[c.id];$('sAbil').innerHTML=c.ab.map(([k,v])=>`<li><b>${k==='Fever'?'技能 Ⅰ':k}</b><span>${v}</span></li>`).join('')+(SKX[bid(c.id)]||[]).map((q,j)=>`<li><b>技能 ${j?'Ⅲ':'Ⅱ'}</b><span>${q.n}：${q.d}</span></li>`).join('')+(ro?`<li><b>探索</b><span>「${ro.pass.n}」${ro.pass.d}</span></li>`:'')+(MEMPERK[c.id]?`<li class="memrow${memDone(c.id)?' on':''}"><b>回忆</b><span>${memDone(c.id)?`「<i>${MEMPERK[c.id].n}</i>」<i>${MEMPERK[c.id].d}</i>`:`${MS.got[c.id]||0}/6 · 集齐后解锁「${MEMPERK[c.id].n}」`}</span></li>`:'');
   const lk=!isUnl(c.id);if(lk){$('sAbil').innerHTML=WORLD===4?`<li class="lockrow"><b>镜中的睦</b><span>这是 Mortis 和若叶睦两个人的故事。在这里，只有 Mortis 能登台。</span></li>`:WORLD===3?`<li class="lockrow"><b>星之约</b><span>这是祥子和初华两个人的故事。祥子登台，初华会一直陪在她身边。</span></li>`:WORLD===2?`<li class="lockrow"><b>假面之下</b><span>这是丰川祥子一个人的故事。在这里，只有 Oblivionis 能登台。</span></li>`:`<li class="lockrow"><b>未解锁</b><span>解锁条件：${UNLOCKREQ[c.id]}</span></li>`;$('sMotto').textContent='「……」'}
   $('sBs').innerHTML=lk?'':bsSel(c.id);$('go').disabled=lk;$('go').textContent=lk?'未 解 锁':'登 台';
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
@@ -3310,6 +3320,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.1',date:'2026-11-28',notes:["文字风格统一为古典衬线字体", "谱面倍率按判定累积：PERFECT 大幅提高、GREAT 中等、GOOD 不变、BAD 扣一点、MISS 扣得更多", "所有非专属技能重做：攻击、治疗、增益兼具，Fever 基础 9 秒", "旋律全部整理：每首加一句描述，重名的改名，偏弱的加强", "Amoris 和 Timoris 也有了专属 Fever 曲，从高潮开始", "选择人偶页去掉「定位」和「优劣」"]},
  {name:'2.0.3',date:'2026-11-28',notes:["专属 Fever 曲从高潮开始，并在高潮段落里循环；谱面锁定在曲子的节拍上", "走失的小人偶会绕开障碍物、游泳过河、跟着你走，送到营地后会一直待在营火旁", "大世界视野再收回一点"]},
  {name:'2.0.2',date:'2026-11-28',notes:["新难度「非常困难」：怪物生命和攻击力 +100%，攻击和放技能更频繁", "屋内精致化：家具和房间重画，窗光、火光、灯光和光晕", "专属 Fever 曲：Oblivionis / 祥子、Doloris / 初华、Mortis / 睦各有一首，谱面跟着它的节拍走", "集齐角色的全部回忆后，技能从三个变为四个（八个新技能）", "祥子之夜可以用便服祥子游玩；星之约的初华和镜中的睦的 Boss 改为便服形态", "大世界视野稍微收回一点"]},
  {name:'2.0.1',date:'2026-11-28',notes:["修复：游泳时画面的光影、迷雾和水下效果全部消失（水花的颜色格式让灯光计算出错，整帧后半段都没画出来）","修复：从房子里出来后，大地图上会出现屋里的地板和门垫", "大世界视野更宽，画面四周的黑边和暗角都减少了", "谱面判定窗口加宽 15%"]},
@@ -6276,7 +6287,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   for(const p of G.parts){ctx.globalAlpha=clamp(p.life/p.max*1.5,0,1);ctx.fillStyle=p.col;const s=p.sz||1;ctx.fillRect(Math.round(p.x),Math.round(p.y),s,s)}ctx.globalAlpha=1;
   if((!G.ow||G.owArena)&&!G.owIn)fogDraw(t);lightsDraw(cam,t);bloomDraw(t);if(G.ow&&!G.owArena)owOverlay(cam,t);else if(G.owIn)owHouseOver(cam,t);
   drawAmb(t);
-  ctx.textAlign='center';for(const n of G.nums){const k=n.t/.7;ctx.globalAlpha=1-k*k;ctx.font=n.jc?'7px Silkscreen,monospace':n.say?'bold 7px "Noto Serif SC",serif':`${n.crit?9:n.burn||n.ally||n.ah?6:7}px Silkscreen,monospace`;ctx.fillStyle='#000';ctx.fillText(n.v,n.x+.6,n.y-k*12+.6);
+  ctx.textAlign='center';for(const n of G.nums){const k=n.t/.7;ctx.globalAlpha=1-k*k;ctx.font=n.jc?'700 8px Cinzel,"Noto Serif SC",serif':n.say?'bold 7px "Noto Serif SC",serif':`700 ${n.crit?10:n.burn||n.ally||n.ah?7:8}px Cinzel,"Noto Serif SC",serif`;ctx.fillStyle='#000';ctx.fillText(n.v,n.x+.6,n.y-k*12+.6);
     ctx.fillStyle=n.jc?n.jc:n.ah?'#ff8a9a':n.heal?'#7ad0a0':n.say?GOLD:n.shb?'#9fd4ff':n.burn?'#ff9a3a':n.ally?'#d8c8e8':n.crit?'#ffe066':'#fff';ctx.fillText(n.v,n.x,n.y-k*12)}ctx.globalAlpha=1;
   drawSays();otsSpot(t);postDraw(t);otsOverlay(t);tintFx(t)}
 let tintKey='';function tintFx(t){let bg='',op=0;
@@ -6329,7 +6340,7 @@ function drawNpc(t){const n=G.npc,ev=n.ev,im=npcImg(ev),fl=ev.stranger&&['mask',
   if(ev.member){const f=ART.fr[ev.member];if(f)drawSpr(f.idle[Math.floor(t*4)%f.idle.length],n.x,n.y+2,face,null,.5);else drawSpr(im.c,n.x,n.y+1,face)}
   else{if(ev.stranger.spr==='knight')ctx.globalAlpha=.75;drawSpr(im.c,n.x,n.y+fl,face,null,im.sc);ctx.globalAlpha=1}
   if(ev.member&&!n.freed){ctx.strokeStyle=ev.member==='doloris'?'#2f6a34':'rgba(230,220,210,.5)';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<5;i++){const a=t*.7+i*1.26;ctx.moveTo(n.x+Math.cos(a)*9,n.y-4+Math.sin(a)*3);ctx.lineTo(n.x+Math.cos(a+2)*7,n.y-26+Math.sin(a*1.3)*4)}ctx.stroke()}
-  if(!n.done){const by=n.y-(ev.member?40:34)+Math.sin(t*4)*1.5;ctx.fillStyle='rgba(11,8,13,.85)';ctx.fillRect(n.x-6,by-6,12,9);ctx.fillStyle=GOLD;ctx.font='bold 8px Silkscreen,monospace';ctx.textAlign='center';ctx.fillText(n.talked?'!':'…',n.x,by+1)}
+  if(!n.done){const by=n.y-(ev.member?40:34)+Math.sin(t*4)*1.5;ctx.fillStyle='rgba(11,8,13,.85)';ctx.fillRect(n.x-6,by-6,12,9);ctx.fillStyle=GOLD;ctx.font='bold 8px Cinzel,"Noto Serif SC",serif';ctx.textAlign='center';ctx.fillText(n.talked?'!':'…',n.x,by+1)}
   if(G.ots)return;ctx.font='bold 6px "Noto Serif SC",serif';ctx.textAlign='center';const nm=npcName(ev),tw=ctx.measureText(nm).width;ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(n.x-tw/2-2,n.y+4,tw+4,8);ctx.fillStyle=ev.member?'#ece2d2':'#c08aff';ctx.fillText(nm,n.x,n.y+10)}
 function drawTurret(u,t){shadow(u.x,u.y,5);ctx.fillStyle='#4a2a1a';ctx.fillRect(Math.round(u.x-4),Math.round(u.y-5),8,5);ctx.fillStyle=GOLD;ctx.fillRect(Math.round(u.x-1),Math.round(u.y-9),2,4);ctx.beginPath();ctx.moveTo(u.x,u.y-9);ctx.lineTo(u.x+8,u.y-15);ctx.lineTo(u.x+6,u.y-7);ctx.fill();ctx.globalAlpha=Math.min(1,u.t);ctx.fillStyle='#f6dc8a';ctx.fillRect(Math.round(u.x-4),Math.round(u.y-1),Math.round(8*u.t/6),1);ctx.globalAlpha=1}
 function drawDeco(d,t){if(d.hs){drawHDeco(d,t);return}if(d.k==='piano'){ctx.fillStyle='#120c10';ctx.fillRect(d.x-18,d.y-14,36,14);ctx.fillStyle='#e8e4dc';ctx.fillRect(d.x-16,d.y-6,32,3);ctx.fillStyle='#120c10';for(let i=0;i<32;i+=3)ctx.fillRect(d.x-16+i,d.y-6,1,2);
@@ -6673,7 +6684,9 @@ const OWUP=[
   {id:'owTrust',n:'温柔的声音',d:'交涉成功率 +10%',r:0,ic:'☏',a:m=>m.owTrust=(m.owTrust||0)+1,max:2,ow:1},
   {id:'owCloneLife',n:'镜中余温',d:'分身多存在 5 秒，召唤冷却 -4 秒',r:1,ic:'◫',a:m=>m.owCloneLife=(m.owCloneLife||0)+1,max:2,ow:1,char:['mortis']},
   {id:'owTreasure',n:'寻宝直觉',d:'隐藏通道和宝箱会显示在小地图上',r:1,ic:'✧',a:m=>m.owTreasure=1,max:1,ow:1,unl:'treasure'}];
-UPS.push(...OWUP);Object.assign(EMBUP,{owTrade:'coins',owSense:'notes',owTrust:'heart',owCloneLife:'masks',owSight:'eye',owStealth:'moon',owForage:'coins',owRest:'ember',owTreasure:'sparkle'});
+UPS.push(...OWUP);
+/* 2.1: every melody gets a line of its own (shown in Chinese), a few names that clashed with skills and mechanics are changed, the weak ones are stronger */
+const UPREV={"blade": {"fl": "琴弦断了，就用断口去唱。"}, "echo": {"fl": "声音走得比人更远。"}, "presto": {"fl": "心跳先一步对准了节拍。"}, "mask": {"fl": "只要戴着，就不会被看穿。"}, "waltz": {"fl": "一、二、三，转身。"}, "petal": {"fl": "散场后，满地都是没人捡的玫瑰。"}, "tea": {"fl": "演出之间，总要有一杯茶的时间。"}, "fermata": {"fl": "在这一拍上，多停留一会儿。"}, "poly": {"fl": "同一段旋律，有好几个声部。"}, "pierce": {"fl": "穿过人群，只唱给一个人听。"}, "kiss": {"fl": "吻落下的那一拍，躲不开。"}, "thorn": {"fl": "玫瑰从不主动刺人。"}, "canon": {"fl": "每一次挥击，都有回声追着跑。"}, "blood": {"fl": "契约写在血里，读的时候要小心。"}, "encore": {"fl": "台下在喊：再一曲。", "n": "再一曲"}, "bday": {"fl": "黑色的蛋糕上，没有点蜡烛。"}, "ave": {"fl": "帷幕落下之前，人偶不会倒下。"}, "orbit": {"fl": "银十字绕着你转，像一首没唱完的圣歌。"}, "moon": {"fl": "月亮碎了，碎片还在发光。"}, "symbol": {"fl": "这一个符号，就是全部。"}, "masq": {"fl": "换一张脸的瞬间，谁也碰不到你。"}, "rapid": {"fl": "错开半拍，反而刚刚好。"}, "heavy": {"fl": "这一下，要整个大厅都听见。"}, "wide": {"fl": "和弦张开双臂，把所有人都抱进去。"}, "bigshot": {"fl": "不用喊，整座剧场也听得见。", "n": "宏亮的音色"}, "shUp": {"fl": "镜面越亮，越照不出伤痕。"}, "armor": {"fl": "冰冷的铁，护着温热的心。"}, "regen": {"fl": "每一个装饰音，都是一次喘息。"}, "roomHeal": {"fl": "鞠躬的时候，顺便把伤口藏起来。"}, "greed": {"fl": "假面后面的笑，是讨价还价用的。"}, "first": {"fl": "第一个音符，最响。"}, "critdmg": {"fl": "终止式之后，没有下一句。"}, "exec": {"fl": "休止符也是乐谱的一部分。"}, "rebound": {"fl": "声音撞到墙，又回来找你。"}, "split": {"fl": "一个音，分成了两个声部。"}, "chain": {"fl": "一根弦响了，整架琴都在共鸣。"}, "burn": {"fl": "烧完的乐谱，只剩余温。"}, "frost": {"fl": "冬天的舞台，连呼吸都很慢。"}, "cresc": {"fl": "越往后，越响。"}, "bossbane": {"fl": "终幕的刀，留给最后的观众。"}, "skillDmg": {"fl": "华彩乐段，属于独奏者。"}, "eliteReset": {"fl": "强敌倒下的那一刻，台下在喊安可。"}, "dashBlast": {"fl": "你经过的地方，风还没停。"}, "dashShot": {"fl": "转身的时候，把音符撒向四周。"}, "dash2": {"fl": "舞伴不只一个。"}, "nova": {"fl": "第八拍，整个大厅一起震动。"}, "shBreak": {"fl": "镜子碎的时候，碎片也会伤人。"}, "shKill": {"fl": "每一阵掌声，都是一层护壁。"}, "evade": {"fl": "你看到的，只是残影。"}, "low": {"fl": "最后一首歌，要唱得最响。"}, "iframe": {"fl": "受伤之后，先站稳这一拍。"}, "luck": {"fl": "今晚的玫瑰，开得特别好。"}, "gramo": {"fl": "留声机会替你把歌唱完。"}, "twin": {"fl": "背后，还有一个你在演奏。"}, "echoL": {"fl": "同一句歌词，唱两遍。", "n": "叠句"}, "phoenix": {"fl": "灰烬里，有人在重新调音。"}, "vortex": {"fl": "终焉的声音，会把一切都卷进来。"}, "aegis": {"fl": "圣盾之下，演出继续。"}, "storm": {"fl": "雷声，是天空在打拍子。"}, "mirror": {"fl": "镜子里的你，会替你还手。"}, "slowmo": {"fl": "慢一点。再慢一点。"}, "tempo": {"fl": "稳住，别抢拍。", "d": "技能谱面的最终倍率 +0.1"}, "count": {"fl": "一、二、三、四，重新数一遍。"}, "comboX": {"fl": "音符连成线，线连成歌。"}, "maestro": {"fl": "指挥棒一挥，错音也变成了伏笔。"}, "impro": {"fl": "没写在谱上的，就即兴吧。"}, "absolute": {"fl": "每一个音，都在它该在的地方。"}, "longf": {"fl": "把最后一个音拉长。"}, "fvKeep": {"fl": "歌停了，余韵还在。"}, "fvDmg": {"fl": "狂热烧到了最旺。"}, "fvExt": {"fl": "只要节拍不停，舞台就不落幕。"}, "grace": {"fl": "在主音之前，先轻轻碰一下。"}, "tremolo": {"fl": "颤动的弦，挡下了冲击。"}, "cadenza": {"fl": "积攒到第三次，一口气唱出来。"}, "downbeat": {"fl": "第一拍，要踩得最重。"}, "legato": {"fl": "音与音之间，不留空隙。", "d": "所有技能的 Fever 持续时间 +15%"}, "harmonic": {"fl": "泛音会自己找到方向。"}, "resonance": {"fl": "共振之后，下一击更沉。"}, "beatShield": {"fl": "节奏稳了，人也就稳了。"}, "heartbeat": {"fl": "心跳和节拍合在一起。"}, "breath": {"fl": "换口气，继续唱。"}, "echoBeat": {"fl": "闪开之后，正好落在拍子上。"}, "ostinato": {"fl": "同一个音型，一遍又一遍。"}, "prelude": {"fl": "前奏响起，台下就安静了。"}, "accel": {"fl": "越来越快，停不下来。"}, "rapture": {"fl": "登场的那一刻，疼痛都忘了。"}, "harvest": {"fl": "狂热里倒下的，都化成了时间。"}, "embers": {"fl": "每一个倒下的敌人，都留下一点火。"}, "feverEye": {"fl": "狂热中的眼睛，只看得见要害。"}, "feverArmor": {"fl": "狂热是最好的铠甲。"}, "curtainFv": {"fl": "大幕落下，台下还在喊返场。", "d": "房间清空后，乐章值补充 35%", "r": 1}, "bloom": {"fl": "技能绽开的时候，音符像花瓣一样散开。"}, "gilded": {"fl": "镀金的时刻，连掉下的东西都闪闪发光。"}, "afterglow": {"fl": "聚光灯熄灭后，余晖还在。"}, "still": {"fl": "站定，开口，全场都在听。"}, "sweep": {"fl": "普通的观众，留不住你。"}, "giant": {"fl": "越高的墙，倒得越响。"}, "momentum": {"fl": "停下来，就会被追上。"}, "detonate": {"fl": "最后一个音，炸开了。"}, "mark": {"fl": "先看中的那一个，就不放过。"}, "stiletto": {"fl": "细针一样的高音，刺得最深。"}, "overkill": {"fl": "多出来的力气，留给下一个。"}, "agile": {"fl": "手指在弦上，比心跳还快。"}, "hammer": {"fl": "定音锤落下，地面都在震。"}, "finale": {"fl": "最后一个观众，享受全部的掌声。"}, "vibrato": {"fl": "揉一下弦，声音就多了一层。"}, "corset": {"fl": "束紧的腰身，撑得住一整场。"}, "ledger": {"fl": "每一片花瓣，都记在账上。"}, "bandage": {"fl": "下一幕开场前，把伤口缠好。"}, "quickstep": {"fl": "脚步越快，护壁越厚。"}, "danceDR": {"fl": "舞步之间，没有破绽。"}, "presence": {"fl": "站在台中央的人，气势不一样。"}, "bows": {"fl": "谢幕礼成，台下撒来花瓣。"}, "vampire": {"fl": "红色的华尔兹，越跳越有精神。"}, "wealth": {"fl": "口袋里的花瓣，也会唱歌。"}, "lastStand": {"fl": "倒下之前，再站起来一次。"}, "understudy": {"fl": "替身替你挨下了第一刀。"}, "sforzando": {"fl": "第一下，就要震住全场。"}, "coda": {"fl": "尾声，才是最响的地方。"}, "cloak": {"fl": "斗篷一甩，人已经不在原地。"}, "owSight": {"fl": "站高一点，就能看见更远的剧场。"}, "owStealth": {"fl": "脚步轻得像落下的羽毛。"}, "owForage": {"fl": "没人走过的路上，总有遗落的东西。"}, "owRest": {"fl": "篝火边坐一会儿，伤就好一点。"}, "owTrade": {"fl": "战利品要卖给识货的人。"}, "owSense": {"fl": "地底下有东西在唱歌。"}, "owTrust": {"fl": "温柔的声音，谁都愿意听。"}, "owCloneLife": {"fl": "镜子里的余温，散得慢一些。"}, "owTreasure": {"fl": "藏起来的东西，总会被你找到。"}};for(const u of UPS){const r=UPREV[u.id];if(r)Object.assign(u,r)}Object.assign(EMBUP,{owTrade:'coins',owSense:'notes',owTrust:'heart',owCloneLife:'masks',owSight:'eye',owStealth:'moon',owForage:'coins',owRest:'ember',owTreasure:'sparkle'});
 const owUpOk=u=>!u.unl||!!OWS.unl[u.unl];
 
 /* ------------------------------------------------------------------ helpers */
@@ -7548,7 +7561,7 @@ function owDrawProp2(it,t){const x=it.x,y=it.y,k=it.kind;if(!it.done){ctx.save()
   if(k==='piano'){ctx.fillStyle='#141016';ctx.beginPath();ctx.moveTo(x-10,y);ctx.lineTo(x-10,y-7);ctx.quadraticCurveTo(x+2,y-9,x+9,y-4);ctx.lineTo(x+9,y);ctx.closePath();ctx.fill();ctx.strokeStyle='#141016';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x-6,y-7);ctx.lineTo(x+4,y-16);ctx.stroke();ctx.fillStyle='#2a2430';ctx.beginPath();ctx.moveTo(x-9,y-7.5);ctx.lineTo(x+4,y-16);ctx.lineTo(x+8,y-5);ctx.closePath();ctx.fill();ctx.fillStyle='#eee8e0';ctx.fillRect(x-10,y-2,8,1.6);ctx.fillStyle='#141016';for(let q=0;q<4;q++)ctx.fillRect(x-9.4+q*2,y-2,.6,1);ctx.fillStyle='#c01e3a';ctx.fillRect(x-3,y-9,1.2,1.2)}
   else if(k==='mirror'){ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.ellipse(x,y-10,5.6,9,0,0,TAU);ctx.fill();ctx.fillStyle='#a8c8e0';ctx.beginPath();ctx.ellipse(x,y-10,4.2,7.6,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(x-3,y-15,1,6);ctx.fillStyle='#6a4a2a';ctx.fillRect(x-.6,y-2,1.2,2);ctx.fillRect(x-3,y-.6,6,1.2)}
   else if(k==='telescope'){ctx.strokeStyle='#3a2a1e';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x-4,y);ctx.moveTo(x,y-7);ctx.lineTo(x+4,y);ctx.moveTo(x,y-7);ctx.lineTo(x,y);ctx.stroke();ctx.save();ctx.translate(x,y-8);ctx.rotate(-.6);ctx.fillStyle='#c9a45c';ctx.fillRect(-6,-1.6,12,3.2);ctx.fillStyle='#8a6a34';ctx.fillRect(4,-2,2.4,4);ctx.restore()}
-  else if(k==='gramophone'){ctx.fillStyle='#4a3020';ctx.fillRect(x-5,y-5,10,5);ctx.fillStyle='#1a1416';ctx.beginPath();ctx.ellipse(x,y-5.5,4,1.4,0,0,TAU);ctx.fill();ctx.strokeStyle='#8a6a34';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+2,y-6);ctx.lineTo(x+3,y-12);ctx.stroke();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.moveTo(x+3,y-12);ctx.lineTo(x+10,y-19);ctx.quadraticCurveTo(x+13,y-13,x+9,y-9);ctx.closePath();ctx.fill();if(!it.done&&Math.sin(t*3)>0){ctx.fillStyle='#ffe9a0';ctx.font='6px serif';ctx.fillText('♪',x+9,y-20-Math.sin(t*2)*2)}}
+  else if(k==='gramophone'){ctx.fillStyle='#4a3020';ctx.fillRect(x-5,y-5,10,5);ctx.fillStyle='#1a1416';ctx.beginPath();ctx.ellipse(x,y-5.5,4,1.4,0,0,TAU);ctx.fill();ctx.strokeStyle='#8a6a34';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(x+2,y-6);ctx.lineTo(x+3,y-12);ctx.stroke();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.moveTo(x+3,y-12);ctx.lineTo(x+10,y-19);ctx.quadraticCurveTo(x+13,y-13,x+9,y-9);ctx.closePath();ctx.fill();if(!it.done&&Math.sin(t*3)>0){ctx.fillStyle='#ffe9a0';ctx.font='6px \"Noto Serif SC\",serif';ctx.fillText('♪',x+9,y-20-Math.sin(t*2)*2)}}
   else if(k==='costume'){ctx.fillStyle='#5a3424';ctx.fillRect(x-7,y-6,14,6);ctx.fillStyle='#7a4a30';ctx.fillRect(x-7,y-6,14,1.4);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.moveTo(x-6,y-6);ctx.quadraticCurveTo(x-2,y-11,x+5,y-7);ctx.lineTo(x+7,y-1);ctx.lineTo(x+4,y-6);ctx.fill();ctx.fillStyle='#ece6de';ctx.beginPath();ctx.ellipse(x-3,y-8,2,1.4,0,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.fillRect(x-.6,y-4,1.2,1.4)}
   else if(k==='cucumber'){ctx.fillStyle='rgba(180,220,230,.35)';ctx.fillRect(x-9,y-12,18,12);ctx.strokeStyle='#d8dcd4';ctx.lineWidth=.6;ctx.strokeRect(x-9,y-12,18,12);ctx.beginPath();ctx.moveTo(x-9,y-12);ctx.lineTo(x,y-16);ctx.lineTo(x+9,y-12);ctx.moveTo(x,y-16);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle='#3a6a2a';for(let q=0;q<6;q++)ctx.fillRect(x-7+q*2.6,y-9+(q%2)*2,1.4,6);ctx.fillStyle='#6aa03a';for(let q=0;q<4;q++)ctx.fillRect(x-6+q*4,y-5,.9,3)}
   else if(k==='poster'){ctx.fillStyle='#4a3424';ctx.fillRect(x-.6,y-4,1.2,4);ctx.fillRect(x-9,y-16,18,12);ctx.fillStyle='#e8dcc0';ctx.fillRect(x-8,y-15,7,10);ctx.fillStyle='#2a1a22';ctx.fillRect(x+1,y-15,7,10);ctx.fillStyle='#8a1a2a';ctx.beginPath();ctx.arc(x-4.5,y-11,1.8,0,TAU);ctx.fill();ctx.fillStyle='#c9a45c';ctx.beginPath();ctx.arc(x+4.5,y-11,1.6,0,TAU);ctx.fill()}
@@ -7704,7 +7717,7 @@ function owShopList(){const cap=noLeg()?1:2;return UPS.filter(u=>u.r<=cap&&(!u.o
 function owShopPrice(u){return Math.round([130,260,460][u.r]*(1+.35*(G.ups[u.id]||0))*cr('buy')*(G.ow&&G.ow.th.sky==='blood'?1.25:1))}
 function owShop(d){const inv=owInvValue(),L=owShopList(),ic=u=>{const i=UPIDX(u.id);return UI.ups&&i>=0&&i<UI.upsN?`<i class="ci" style="${upPos(i)}"></i>`:`<span class="sic">${u.ic||'♪'}</span>`};
   openModal('shop',`<h3>${d.name}</h3><p class="sub">「想要什么就拿吧——只要你付得起。这里的旋律，都是从剧场后台流出来的。」<br><span class="spet">✿ ${Math.floor(G.petals)}</span></p>
-    <div class="shopg">${L.map((u,i)=>{const p=owShopPrice(u),own=G.ups[u.id]||0;return`<button class="shopi r${u.r}" data-i="${i}" ${G.petals<p?'disabled':''}>${ic(u)}<b>${u.n}${own?` <em>×${own}</em>`:''}</b><span>${u.d}</span><u>✿ ${p}</u></button>`}).join('')}</div>
+    <div class="shopg">${L.map((u,i)=>{const p=owShopPrice(u),own=G.ups[u.id]||0;return`<button class="shopi r${u.r}" data-i="${i}" ${G.petals<p?'disabled':''}>${ic(u)}<b>${u.n}${own?` <em>×${own}</em>`:''}</b><span>${u.d}</span>${u.fl&&LANG==='zh'?`<i class="fl">${u.fl}</i>`:''}<u>✿ ${p}</u></button>`}).join('')}</div>
     <div class="row">${inv.n?`<button class="ghost" id="shSell">出售战利品 · ✿${inv.v}</button>`:''}<button class="cta" id="shBye">离开柜台</button></div>`);
   panel.querySelectorAll('.shopi').forEach(btn=>btn.onclick=()=>{const u=L[+btn.dataset.i],p=owShopPrice(u);if(G.petals<p)return;G.petals-=p;applyUp(u);S.p('pick');toast('买下了「'+u.n+'」');const sc=panel.querySelector('.shopg').scrollTop;owShop(d);const g=panel.querySelector('.shopg');if(g)g.scrollTop=sc});
   if($('shSell'))$('shSell').onclick=()=>{G.petals+=inv.v;G.ow.inv={};toast(`卖掉了战利品，得到 ✿${inv.v}`);owShop(d)};$('shBye').onclick=()=>closeModal()}
@@ -7899,7 +7912,7 @@ function owDrawTheatre(it,t){const k=it.k,big=k===5,W=big?112:80,Hf=big?64:48,do
   const dw=big?20:16,dh=big?26:22,cx=bx+W/2;
   if(nx){const fl=.75+.25*Math.sin(t*9)*Math.sin(t*5.3);ctx.fillStyle=`rgba(255,170,90,${.55*fl})`;ctx.beginPath();ctx.moveTo(cx-dw/2+2,by);ctx.lineTo(cx-dw/2+2,by-dh+dw/2);ctx.arc(cx,by-dh+dw/2,dw/2-2,Math.PI,0);ctx.lineTo(cx+dw/2-2,by);ctx.fill();
     ctx.fillStyle='#8a1a2a';ctx.fillRect(cx-dw/2+1,by-dh+4,4,dh-4);ctx.fillRect(cx+dw/2-5,by-dh+4,4,dh-4);
-    ctx.globalAlpha=behind?.5:.6+.4*Math.sin(t*4);ctx.fillStyle='#ffe07a';ctx.font='bold 9px serif';ctx.textAlign='center';ctx.fillText('▼',cx,by-Hf-34+Math.sin(t*3)*2.5);ctx.textAlign='left'}
+    ctx.globalAlpha=behind?.5:.6+.4*Math.sin(t*4);ctx.fillStyle='#ffe07a';ctx.font='bold 9px \"Noto Serif SC\",serif';ctx.textAlign='center';ctx.fillText('▼',cx,by-Hf-34+Math.sin(t*3)*2.5);ctx.textAlign='left'}
   else if(done){ctx.fillStyle='#5a1a24';ctx.beginPath();ctx.moveTo(cx-dw/2+1,by);ctx.lineTo(cx-dw/2+1,by-dh+dw/2);ctx.arc(cx,by-dh+dw/2,dw/2-1,Math.PI,0);ctx.lineTo(cx+dw/2-1,by);ctx.fill();ctx.fillStyle='rgba(0,0,0,.3)';for(let q=-dw/2+3;q<dw/2-1;q+=3)ctx.fillRect(cx+q,by-dh+4,.8,dh-4)}
   ctx.restore()}
 function owTheatreTalk(it){const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
