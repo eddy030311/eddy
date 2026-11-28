@@ -8486,7 +8486,7 @@ function owGuards(k){if(owIsDone(k))return;const o=G.ow,it=o.I.find(q=>q.kind===
   for(let j=0;j<Math.round((3+Math.min(2,k>>1))*ECNT());j++){const q=owRandFree(it.x/OWT,it.y/OWT+3,6,3);if(q){const e=owMake(pick(pool),q.x,q.y,j===0,gid);e.ow.home={x:it.x,y:it.y+40}}}G.act=sa;
   (o.queues=o.queues||[]).push({k,pts:Array.from({length:3},(_,j)=>({x:it.x+(k===5?30:24)+j*11,y:it.y+14+j*3,ph:Math.random()*6}))})}
 function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};lvGain(80);if(o.thm)delete o.thm[k];
-  G.en=s.en||[];G.picks=s.picks||[];G.bg=s.bg||owPaint();G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.cage=null;G.boss=null;G.waves=[];G.pending=0;G.npc=null;G.ots=null;G.vortex=null;
+  G.en=s.en||[];G.picks=s.picks||[];RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.bg=s.bg||owPaint();if(!s.bg)owFogInit();G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.cage=null;G.boss=null;G.waves=[];G.pending=0;G.npc=null;G.ots=null;G.vortex=null;
   try{setField(null)}catch(e){}$('bossBar').hidden=true;RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.owTh=0;o.save=null;G.type='ow';G.cleared=false;G.room=0;
   const D=owDoneL();if(!D.includes(k))D.push(k);G.owNext=D.length+1;G.act=Math.min(5,G.owNext);const it=o.I.find(q=>q.kind==='theatre'&&q.k===k);if(it)it.done=1;if(o.queues)o.queues=o.queues.filter(q=>q.k!==k);
   P.x=s.px!=null?s.px:P.x;P.y=(s.py!=null?s.py:P.y)+12;P.vx=P.vy=0;P.inv=1.5;owPlaceAllies();
