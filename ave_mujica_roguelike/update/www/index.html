@@ -617,6 +617,11 @@ body.pc #hint{display:none!important}
   #go{min-width:130px;padding:8px 18px}
 }
 @media (max-width:640px){#select{grid-template-columns:minmax(0,34fr) minmax(0,66fr)}.sk-note{display:none}#select .hdiff>span,#select .hdiff small{display:none}}
+/* 2.3 manuscripts found in the theatres */
+.panel:has(.thl){width:min(100%,30rem)!important;padding:20px 24px 14px!important;background:linear-gradient(180deg,rgba(40,30,24,.97),rgba(22,16,12,.98))!important;box-shadow:inset 0 0 0 1px rgba(201,164,92,.35),inset 0 0 40px rgba(0,0,0,.6),0 20px 60px rgba(0,0,0,.7)!important}
+.thl{display:flex;flex-direction:column;gap:8px}.thl-eye{font:italic 11px var(--f-display);letter-spacing:.3em;color:rgba(201,164,92,.75)}
+.thl h3{margin:0;font-size:18px;letter-spacing:.3em;color:#f4e6cc}.thl p{margin:4px 0 6px;font-size:14px;line-height:1.9;color:#e0d4c0;text-indent:2em}
+.thl-ft{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:8px;border-top:1px solid rgba(201,164,92,.2);font-size:11px;color:#a8988a;letter-spacing:.1em}.thl-ft .cta{padding:6px 18px;font-size:13px}
 /* 2.2 legacy skills: the loadout page after choosing a doll */
 .panel:has(.lg){width:min(100%,62rem)!important;box-sizing:border-box;max-height:calc(var(--vh,1vh)*100 - 30px)!important;display:flex!important;flex-direction:column;overflow:hidden!important;padding:16px 20px 12px!important;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(150,30,50,.38),transparent 60%),radial-gradient(ellipse 60% 50% at 50% 110%,rgba(201,164,92,.12),transparent 70%),linear-gradient(180deg,rgba(22,8,14,.98),rgba(8,4,7,.99))!important}
 .lg{display:flex;flex-direction:column;gap:10px;min-height:0;flex:1}
@@ -934,7 +939,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 28, "name": "2.3"};</script>
+<script>window.GAME_VER={"v": 29, "name": "2.3"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -2909,7 +2914,7 @@ function doMelee(){if(P.swim)return;if(G.ow)owNoise(P.x,P.y,130);const c=ch(),m=
     if(id==='sakiko')for(let i=0;i<4;i++){const aa=a+rnd(-arc/2,arc/2);G.parts.push({x:P.x+Math.cos(aa)*range*.7,y:P.y-6+Math.sin(aa)*range*.7,vx:Math.cos(aa)*30,vy:Math.sin(aa)*30-10,life:.6,max:.6,col:pick(['#f4f0ff','#c8b8f0']),sz:2,g:40})}
     if(id==='oblivionis')for(let i=0;i<6;i++){const aa=a+rnd(-arc/2,arc/2);G.parts.push({x:P.x+Math.cos(aa)*range*.7,y:P.y-6+Math.sin(aa)*range*.7,vx:Math.cos(aa)*30,vy:Math.sin(aa)*30,life:.6,max:.6,col:pick(['#ff5a78','#c8304a','#ffd0da']),sz:1.5,g:30})}
     if(M.wave>0)for(let i=0;i<M.wave;i++){const aa=a+(i-(M.wave-1)/2)*.25;shoot({x:P.x,y:P.y-6,a:aa,spd:200,dmg:dmg*.5,k:'wave',pierce:3,col:m.col,life:.45,r:5})}};
-  if(G.ow&&!G.owArena)later(.08,()=>owChop(a,range));
+  if(G.ow&&!G.owArena)later(.08,()=>G.ow&&G.ow.indoor?thMelee(a,range):owChop(a,range));
   if(tgt){const gap=Math.sqrt(d2(tgt,P))-(tgt.r+range*.55);if(gap>4){const L=Math.min(gap,60);P.lvx=Math.cos(a)*L/.09;P.lvy=Math.sin(a)*L/.09;P.lungeT=.09;P.inv=Math.max(P.inv,.15);later(.09,go);return}}
   go()}
 function beat(){if(ch().id!=='amoris'||!(G.feverT>0))return false;P.beat=(P.beat||0)+1;if(P.beat%2===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
@@ -7430,7 +7435,7 @@ function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res
   if(!res){const cp=G.ow.P0.camp;P.x=cp.x*OWT+8;P.y=cp.y*OWT+30;stats();P.sh=P.shMax}P.vx=P.vy=0;P.inv=1;
   if(!res){owPopulate();owCaches()}owTheatres();if(!res)for(let k=1;k<=5;k++)owGuards(k);G.bg=owPaint();owFogInit();const m=$('owMap');if(m)m.hidden=false;$('game').classList.add('ow');
   setTrack('calm');updStage();$('hud').hidden=false;
-  if(res){if(res.th){owEnterTheatre(res.th,res);return}if(res.thMap&&!owIsDone(res.thMap.k)){try{thBuild(res.thMap.k,thSt(res.thMap.k),{tpx:res.thMap.px,tpy:res.thMap.py})}catch(e){console.warn('theatre resume',e);if(G.owW)thRestoreWorld(true)}later(.6,()=>toast('继续 · '+ACTS[res.thMap.k-1].name));return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
+  if(res){if(res.th){owEnterTheatre(res.th,res);return}if(res.thMap){try{thBuild(res.thMap.k,thSt(res.thMap.k),{tpx:res.thMap.px,tpy:res.thMap.py})}catch(e){console.warn('theatre resume',e);if(G.owW)thRestoreWorld(true)}later(.6,()=>toast('继续 · '+ACTS[res.thMap.k-1].name));return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
   playCut(cutPrologue(),()=>{later(.4,()=>toast(th.name+' · '+th.fr));later(2.8,()=>toast('五座剧场散落在这片土地上，地图上不会标出来——要自己去找。'));later(6.2,()=>toast('上空有光柱的就是剧场；亮着红光的那座是终幕，按什么顺序演都可以。'));later(9.6,()=>toast('剧场里关着同伴，救出的人越多，终幕越好打。路上遇到的人，也许知道剧场在哪。'));if(G.rareGot)later(13,()=>toast('试音 · 获得「'+G.rareGot+'」'))});
   if(OWS.runs===0)later(10,()=>toast('提示：攻击会发出声音，附近的怪物会过来查看。'))}
 
@@ -7719,9 +7724,9 @@ function owUpdate(dt){const o=G.ow;if(!o)return;if(!G.owArena)owSwimTick(dt);els
   const eng=owEngaged();if(eng){o.engT=G.time;if(!o.inFight){o.inFight=1;setTrack('battle')}}else if(o.inFight&&G.time-o.engT>2.5){o.inFight=0;shRestore();if(G.mods.owRest){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.06*G.mods.owRest);S.p('heal')}setTrack('calm')}
   owUpdNpcs(dt);owCacheTick(dt);if(o.eng)owCloneTick();
   G.owTune=0;const mus=o.npcs.find(n=>n.id==='musician');if(mus&&o.mem.tune&&owNight()<.5&&d2(mus,P)<(o.mem.tune>=1?999999:110*110))G.owTune=1;
-  for(const it of o.I){if(it.done&&!it.fight)continue;const dd=d2(it,P);if(dd>48*48&&!it.skip)it.arm=1;if(it.skip&&dd>60*60){it.skip=0;it.arm=1}
+  for(const it of o.I){if(it.done&&!it.fight&&it.kind!=='theatre')continue;const dd=d2(it,P);if(dd>48*48&&!it.skip)it.arm=1;if(it.skip&&dd>60*60){it.skip=0;it.arm=1}
     if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;
-    if(it.arm&&!it.done&&dd<16*16&&modal.hidden&&!CUT.on&&G.time>(it.cool||0)){it.arm=0;it.cool=G.time+5;owEventTalk(it)}
+    if(it.arm&&(!it.done||it.kind==='theatre')&&dd<16*16&&modal.hidden&&!CUT.on&&G.time>(it.cool||0)){it.arm=0;it.cool=G.time+5;owEventTalk(it)}
     if(it.kind==='nest'&&!it.done&&!it.fight&&dd<130*130&&(it.spT=(it.spT||4)-dt)<=0){it.spT=7;if(G.en.filter(e=>!e.dead&&e.ow&&e.ow.g===-4&&d2(e,it)<140*140).length<4){const q=owRandFree(it.x/OWT,it.y/OWT,3,1);if(q){const e=owMake(pick(['mari','crow']),q.x,q.y,false,-4);e.ow.home={x:it.x,y:it.y}}}}
     if(it.fight){it.fight.ids=it.fight.ids.filter(e=>!e.dead);if(!it.fight.ids.length){if(it.fight.wave<2)it.fight.next();else{it.fight=null;it.done=1;G.picks.push({k:'chest',x:it.x,y:it.y+12,t:0,ow:1});dropRelic(it.x+20,it.y,.3);toast('巢穴塌了。里面压着一个箱子。');later(.8,()=>offerUps('巢穴深处','黑色的东西散成了灰。底下埋着一段旋律。',rollUps(3,1)))}}}
     if(it.shade&&it.shade.dead){it.shade=null;dropRelic(it.x,it.y,.3);later(.6,()=>offerUps('倒影散了','水面恢复了平静，倒影也变回了你的样子。',rollUps(3,2)))}}
@@ -7759,10 +7764,10 @@ function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();con
     else if(it.kind==='grove'){ctx.fillStyle='#3a4a3a';ctx.fillRect(x-7,y-8,14,8);ctx.fillStyle='#5a7a50';ctx.fillRect(x-7,y-9,14,2);ctx.fillStyle='#ffd27a';ctx.fillRect(x-1,y-13+b,2,4)}
     else if(it.kind==='gate'){ctx.fillStyle='#2a0a12';ctx.fillRect(x-14,y-22,28,22);ctx.fillStyle='#6a1220';ctx.fillRect(x-12,y-20,11,20);ctx.fillRect(x+1,y-20,11,20);ctx.fillStyle=GOLD;ctx.fillRect(x-14,y-23,28,1.5);ctx.fillRect(x-1,y-12,2,2)}}}
 function owList(list){const o=G.ow;for(const n of o.npcs)if(owNpcVisible(n)&&Math.abs(n.x-P.x)<VW&&Math.abs(n.y-P.y)<VH)list.push({y:n.y,ow:n});
-  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll'||it.kind==='stranger'&&!it.done)&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});for(const it of o.I)if(it.kind==='theatre'&&!o.indoor&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
+  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll'||it.kind==='stranger'&&!it.done)&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});if(o.inter)for(const it of o.inter)if(Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH)list.push({y:it.k==='food'?it.y+4:it.y-3,ow:{thi:it}});for(const it of o.I)if(it.kind==='theatre'&&!o.indoor&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
   if(o.spr){const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2},r0=Math.max(0,Math.floor(cam.y/16)-1),r1=Math.min(OWH-1,Math.floor((cam.y+VH)/16)+6),x0=cam.x-60,x1=cam.x+VW+60;for(let r=r0;r<=r1;r++)for(const q of o.spr[r])if(q.x+(q.s.w||0)>x0&&q.x<x1)list.push({y:q.y,ow:{owsp:q}})}}
 function owSprH(k,h){const s=SPR[k];if(!s)return null;const c=s.f[0];return{c,sc:h/c.height,f:s.f}}
-function owDrawItem(it,t){if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
+function owDrawItem(it,t){if(it.thi){thDrawInter(it.thi,t);return}if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
   if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':e.kind==='stranger'?(SPR.puppeteer?'puppeteer':'mask'):'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
   const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();if(n.swim)owSwimOver(n,t);
   if(d2(n,P)<40*40){ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';const nm=T(n.name),w=ctx.measureText(nm).width+6;ctx.fillRect(n.x-w/2,n.y-38,w,9);ctx.fillStyle='#ffe6b0';ctx.fillText(nm,n.x,n.y-31);ctx.textAlign='left'}}
@@ -8128,7 +8133,7 @@ function thBuild(k,st,res){const W=G.ow;
   if(res&&res.tpx!=null){P.x=res.tpx;P.y=res.tpy}else{P.x=T.exitP.x;P.y=T.exitP.y-30}P.vx=P.vy=0;P.inv=1.2;owPlaceAllies();
   G.bg=T.indoor?thPaintIndoor():owPaint();owFogInit();$('owMap').hidden=false;$('game').classList.add('ow');T.inFight=0;setTrack('calm');updStage();
   const nz=T.P0.zones.length,dn=st.z.filter(Boolean).length;
-  if(!st.seen){st.seen=1;later(.3,()=>playCut(cutChapter(k),()=>showActCard(k,()=>later(.4,()=>toast('剧场里有几处战场，清理之后舞台的幕布才会拉开。入口的大门随时可以离开，进度会保留。')))))}
+  if(!st.seen){st.seen=1;later(.3,()=>playCut(cutChapter(k),()=>showActCard(k,()=>later(.4,()=>toast('舞台在宅邸深处，随时可以去。房间里有吃的、散落的手稿，有些东西用近战敲一下会有动静。入口随时可以离开，进度会保留。')))))}
   else later(.5,()=>owBanner('Théâtre',`回到「${ACTS[k-1].name}」`,`已清理 ${dn}/${nz} 处`))}
 function thSave(T,st){if(!T||!T.exp)return;let e='';for(let i=0;i<T.exp.length;i++)e+=T.exp[i]?'1':'0';st.exp=e;for(const it of T.I)if(it.kind==='thzone'&&it.done)st.z[it.i]=1}
 function thRestoreWorld(paint){const T=G.ow,W=G.owW;if(!W)return;if(T&&T.clock)W.o.clock=T.clock;thFreeGround(T);
@@ -8144,8 +8149,7 @@ function thStageGo(k){const T=G.ow,W=G.owW;if(!W)return;const st=thSt(k);thSave(
   setTimeout(()=>{const wx=W.px,wy=W.py;thRestoreWorld(false);const o=G.ow;o.save={en:G.en,picks:G.picks,bg:null,px:wx,py:wy};
     G.en=[];G.picks=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owArena=1;G.owTh=k;RW=512;RH=288;G.owTune=0;$('owMap').hidden=true;$('game').classList.remove('ow');o.inFight=0;feverCashOut();
     G.act=k;G.cleared=false;P.vx=P.vy=0;G.room=3;jresReset();try{preloadTracks(k===5?['mj1','mj2','mj3','mj4','mj5']:[])}catch(e){}$('fade').classList.remove('on');enterRoom('boss');setTimeout(()=>curtain(0),250)},800)}
-function thStageTalk(it){const k=it.k,T=G.ow,zs=T.I.filter(q=>q.kind==='thzone'),need=Math.max(1,zs.length-1),dn=zs.filter(q=>q.done).length,nm=ACTS[k-1].name;
-  if(dn<need){owTalkModal({name:'舞台 · '+nm,talkN:0},`幕布还垂着。台下的观众在等这一场里别的戏先演完。<br><span style="color:#ffb3c0">还要清理 ${need-dn} 处战场（已清理 ${dn}/${zs.length}）。</span>`,[owBye]);return}
+function thStageTalk(it){const k=it.k,nm=ACTS[k-1].name;if(owIsDone(k)){owTalkModal({name:'舞台 · '+nm,talkN:0},'舞台已经空了。幕布收在两边，地板上还留着谢幕时撒下的花瓣。',[owBye]);return}
   owTalkModal({name:'舞台 · '+nm,talkN:0},k===5?'所有的线，都系在这里。走上舞台就是终幕，演完之前下不来。':'幕布拉开了。这座剧场的主人，在舞台中央等你。走上去以后，演完之前下不来。',
     [{ic:'⚔',r:2,t:'走上舞台',d:k===5?'开演终幕':'与这座剧场的主人对决',fn:()=>thStageGo(k)},{ic:'…',t:'还没准备好',d:'先去别处看看，或者从入口离开',fn:()=>{}}])}
 /* the stranger: one encounter per theatre (the old puppeteer, once you carry three relics) */
@@ -8156,7 +8160,7 @@ function thWave(it){const k=G.ow.isTh,fin=k===5;it.wave++;const budget=(3.5+k*1.
   if(it.elite&&it.wave===2){list=list.slice(0,Math.ceil(list.length/2));list.push({t:pick(['knight','mask','rose']),elite:1})}
   it.ids=[];for(const w of list){const q=owRandFree(it.x/OWT,it.y/OWT,5,1.5)||{x:it.x,y:it.y};const e=thMake(w.t,q.x,q.y,!!w.elite,-900-it.i);if(e)it.ids.push(e);burst(q.x,q.y-8,8,['#c8102e','#fff'],50,.4)}
   toast(it.elite?(it.wave===2?'精英现身了':'精英的随从冲了出来'):`第 ${it.wave}/2 波`);S.p(it.wave===2?'boss':'warn')}
-function thTick(dt){const T=G.ow,k=T.isTh,st=thSt(k);if(T.proscQ&&!T.proscOpen&&thStageOpen()){T.proscOpen=1;const f=T.proscQ.f;f.v=1;const Q=furSpr(f);T.proscQ.s={c:Q.c,ox:6,oy:Q.T+f.h,w:Q.W,h:Q.H};S.p('clap',3)}
+function thTick(dt){const T=G.ow,k=T.isTh,st=thSt(k);thInterTick();if(T.proscQ&&!T.proscOpen&&thStageOpen()){T.proscOpen=1;const f=T.proscQ.f;f.v=1;const Q=furSpr(f);T.proscQ.s={c:Q.c,ox:6,oy:Q.T+f.h,w:Q.W,h:Q.H};S.p('clap',3)}
   for(const it of T.I){if(it.kind!=='thzone'||it.done)continue;const d=Math.hypot(P.x-it.x,P.y-it.y);
     if(!it.act){const inRoom=T.roomAt&&(()=>{const a=T.roomAt[owI(clamp(Math.floor(P.x/16),0,OWW-1),clamp(Math.floor(P.y/16),0,OWH-1))];return a>=0&&a===T.roomAt[owI(Math.floor(it.x/16),Math.floor(it.y/16))]})();if((d<it.r||inRoom)&&!P.down&&!CUT.on&&modal.hidden){it.act=1;it.wave=0;thWave(it)}continue}
     it.ids=it.ids.filter(e=>!e.dead);
@@ -8165,7 +8169,7 @@ function thTick(dt){const T=G.ow,k=T.isTh,st=thSt(k);if(T.proscQ&&!T.proscOpen&&
   {const have=new Set(G.picks.filter(p=>p.thc!=null&&!p.open&&!p.dead).map(p=>p.thc));(T.chests||[]).forEach((c,i)=>{if(!have.has(i))st.ch[i]=1})}}
 function thReward(it){const k=G.ow.isTh,T=G.ow,dn=T.I.filter(q=>q.kind==='thzone'&&q.done).length,nz=T.P0.zones.length;S.p('win');G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.25);G.petals+=owCoin(10+k*3);
   if(G.quests.pages)qProg('pages');if(it.elite&&G.quests.elites)qProg('elites');dropRelic(it.x,it.y,it.elite?.35:.12);if(typeof lvGain==='function')lvGain(it.elite?60:30,it.elite?'精英清场':'清场');
-  owBanner('Scène',it.elite?'精英倒下了':'这一处安静了',dn>=Math.max(1,nz-1)?'舞台的幕布拉开了':`已清理 ${dn}/${nz} 处`);
+  owBanner('Scène',it.elite?'精英倒下了':'这一处安静了',`已清理 ${dn}/${nz} 处`);
   later(1,()=>offerUps(it.elite?'精英倒下了':'这一幕结束了',it.elite?'它留下的东西里，有一段旋律还在发光。':'台下没有掌声。地上有一段被踩过的旋律。',rollUps(nCh(),it.elite?1:0)));
   if(dn>=2&&!(G.inter||{})[k]){(G.inter=G.inter||{})[k]=1;later(2.6,()=>{if(modal.hidden&&!CUT.on)playCut(cutInter(k),()=>{})})}}
 function thDrawItem(it,t){const x=it.x,y=it.y;
@@ -8302,9 +8306,13 @@ function thGenIndoor(sty,nz){const W=OWW,H=OWH,S=THST[sty],g=new Uint8Array(W*H)
   for(const r of shuffle(quiet.slice()))if(chests.length<3)for(const[x,y]of[[r.x1-1,r.y1-1],[r.x0,r.y1-1],[r.x1-2,r.y0],[r.x0+1,r.y0+1]])if(ok(x,y)&&!res[I(x,y)]){chests.push({x:x*16+8,y:y*16+8});break}
   const sr=quiet.find(r=>r.type==='parlor'||r.type==='music'||r.type==='gallery'||r.type==='study')||quiet[0]||foyer;let stranger=null;
   for(let k=0;k<60&&!stranger;k++){const x=rint(sr.x0+1,sr.x1-2),y=rint(sr.y0+1,sr.y1-2);if(ok(x,y))stranger={x:x*16+8,y:y*16+8}}
+  const inter=[];let ii=0;
+  for(const f of furn)if(f.k==='longtable'||f.k==='dtable'||f.k==='counter'||f.k==='sideb'){const n=f.k==='longtable'?Math.max(2,Math.round(f.w/40)):1;for(let j=0;j<n;j++){const x=f.x+f.w*(j+.5)/n;if(ok(Math.floor(x/16),Math.floor((f.y+f.h+8)/16)))inter.push({id:ii++,k:'food',f:pick(THFOOD[sty]),x,y:f.y+f.h-3})}}
+  {const pref=['library','study','bedroom','vestry','gallery','dressing','chapel','parlor','music','observ','cells','clock','boudoir','dining','kitchen','aquar','bath','conserv','ballroom','foyer'],lr=rooms.filter(r=>r.type!=='hall'&&r.type!=='stage').sort((a,b)=>pref.indexOf(a.type)-pref.indexOf(b.type));let p=0;
+    for(const r of lr){if(p>=6)break;for(let t=0;t<40;t++){const x=rint(r.x0,r.x1-1),y=rint(r.y0+1,r.y1-1);if(ok(x,y)&&!res[I(x,y)]&&ok(x,y+1)){inter.push({id:ii++,k:'lore',p:p++,x:x*16+8,y:y*16+10});break}}}}
   const P0={camp:{x:Math.round(foyer.cx),y:foyer.y1-4},th:[{k:5,x:Math.round(stage.stageX||stage.cx),y:stage.stageY||stage.y0+4}],zones:halls.map(h=>({x:Math.round(h.cx),y:Math.round(h.cy)})),lair:{x:-999,y:-999},town:{x:-999,y:-999},grove:{x:-999,y:-999},shrine:{x:-999,y:-999}};
   const roomAt=new Int16Array(W*H).fill(-1);for(const r of rooms)for(let y=r.y0;y<r.y1;y++)for(let x=r.x0;x<r.x1;x++)roomAt[I(x,y)]=r.i;
-  return{g,roomAt,bio:new Uint8Array(W*H),trs:new Uint8Array(W*H),P0,bld:[],props:[],roads:[],docks:[],plots:[],houses:[],sec:{x:-99,y:-99},rooms,doors,furn,lights,wins,decos,chests,stranger,exitP:{x:foyer.cx*16,y:(foyer.y1-1)*16+10}}}
+  return{g,roomAt,inter,bio:new Uint8Array(W*H),trs:new Uint8Array(W*H),P0,bld:[],props:[],roads:[],docks:[],plots:[],houses:[],sec:{x:-99,y:-99},rooms,doors,furn,lights,wins,decos,chests,stranger,exitP:{x:foyer.cx*16,y:(foyer.y1-1)*16+10}}}
 
 /* ---- the painter */
 function thPaintIndoor(){const o=G.ow,S=THST[o.indoor],bs=owBgScale(),c=mk(OWW*OWT*bs,OWH*OWT*bs),x=c.getContext('2d');c.bgS=bs;x.scale(bs,bs);x.imageSmoothingEnabled=false;
@@ -8381,14 +8389,14 @@ function thPaintIndoor(){const o=G.ow,S=THST[o.indoor],bs=owBgScale(),c=mk(OWW*O
   /* sprites for everything that stands */
   thSprInit();return c}
 function thSprInit(){const o=G.ow,B=o.spr=Array.from({length:OWH},()=>[]);o.baked=new Set();o.lamps=[];o.glamps=[];
-  for(const f of o.furn){if(f.k==='gear')continue;const S=furSpr(f),r=clamp(Math.floor((f.y+f.h)/16),0,OWH-1);const q={x:f.x,y:f.y+f.h,s:{c:S.c,ox:6,oy:S.T+f.h,w:S.W,h:S.H},f};B[r].push(q);if(f.k==='prosc')o.proscQ=q}}
+  for(const f of o.furn){if(f.k==='gear')continue;if(f.k==='prosc')f.v=1;const S=furSpr(f),r=clamp(Math.floor((f.y+f.h)/16),0,OWH-1);const q={x:f.x,y:f.y+f.h,s:{c:S.c,ox:6,oy:S.T+f.h,w:S.W,h:S.H},f};B[r].push(q);if(f.k==='prosc')o.proscQ=q}}
 
 /* ---- light: the light map, then shafts through the windows, chandeliers, candles and each house's own effect */
 function thLightPuts(put,t){const o=G.ow,cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2},vis=(x,y,m)=>x>cam.x-m&&x<cam.x+VW+m&&y>cam.y-m&&y<cam.y+VH+m;
   for(const l of o.lights){if(!vis(l.x,l.y,l.r))continue;const fl=l.k==='candle'||l.k==='fire'||l.k==='sconce'?.86+.14*Math.sin(t*11+l.x)*Math.sin(t*6.7+l.y):l.k==='win'?.9+.1*Math.sin(t*.4+l.x*.01):1;put(l.x,l.y,l.r*fl,l.c,l.a)}
-  put(P.x,P.y-10,70,'#ffe8d0',.35);
+  put(P.x,P.y-10,70,'#ffe8d0',.35);if(o.inter)for(const it of o.inter)if(it.k==='lore'&&!thUsed('i'+it.id)&&vis(it.x,it.y,40))put(it.x,it.y,34,'#fff0c8',.5);
   for(const it of o.I){if(it.kind==='exitg')put(it.x,it.y-10,80,'#ffe0a0',.6);else if(it.kind==='theatre')put(it.x,it.y-20,thStageOpen()?160:90,'#ffb070',thStageOpen()?.8:.45)}}
-function thStageOpen(){const o=G.ow;if(!o||!o.isTh)return 0;const zs=o.I.filter(q=>q.kind==='thzone');return zs.filter(q=>q.done).length>=Math.max(1,zs.length-1)}
+function thStageOpen(){const o=G.ow;if(!o||!o.isTh)return 0;return 1;const zs=o.I.filter(q=>q.kind==='thzone');return zs.filter(q=>q.done).length>=Math.max(1,zs.length-1)}
 function thEpic(cam,t){const o=G.ow,S=THST[o.indoor],vis=(x,y,m)=>x>cam.x-m&&x<cam.x+VW+m&&y>cam.y-m&&y<cam.y+VH+m;ctx.save();
   /* drifting haze */ctx.globalCompositeOperation='source-over';for(let i=0;i<3;i++){const hx=cam.x+((i*311+t*(3+i))%(VW+400))-200,hy=cam.y+VH*(.3+.25*i)+Math.sin(t*.13+i)*16;ctx.globalAlpha=.06;ctx.drawImage(glow(S.dust),hx-150,hy-36,300,72)}
   /* shafts through the windows, slanting the same way all over the house */
@@ -8404,7 +8412,7 @@ function thEpic(cam,t){const o=G.ow,S=THST[o.indoor],vis=(x,y,m)=>x>cam.x-m&&x<c
     else if(l.k==='sconce'){ctx.globalAlpha=.28*fl;ctx.drawImage(glow(S.lit),l.x-12,l.y-12,24,24)}else if(l.k==='fire'){ctx.globalAlpha=.35*fl;ctx.drawImage(glow('#ff8a40'),l.x-30,l.y-34,60,50)}else if(l.k==='tank'){ctx.globalAlpha=.25+.08*Math.sin(t*1.3+l.x);ctx.drawImage(glow('#6ae8ff'),l.x-22,l.y-16,44,32)}}
   ctx.restore();
   /* chandeliers hang above everything */
-  for(const l of o.lights){if(l.k!=='chand'||!vis(l.x,l.y-60,80))continue;thChand(l.x,l.y-58,t,S,l.r>160)}}
+  for(const l of o.lights){if(l.k!=='chand'||!vis(l.x,l.y-60,80))continue;thChand(l.x,l.y-58,t,S,l.r>160)}thGlints(t)}
 function thChand(cx,cy,t,S,big){ctx.save();{const d=Math.hypot(P.x-cx,(P.y-20)-cy);if(d<70)ctx.globalAlpha=.3+.7*d/70}const sw=Math.sin(t*.8+cx)*.6;ctx.strokeStyle=hexA(S.trim,.55);ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(cx,cy-60);ctx.lineTo(cx+sw,cy-8);ctx.stroke();
   const n=big?8:6,R=big?15:11;ctx.fillStyle=hexA(S.trim,.9);ctx.beginPath();ctx.ellipse(cx+sw,cy,R,R*.32,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(cx+sw,cy+.6,R-2,R*.24,0,0,TAU);ctx.fill();
   ctx.fillStyle=hexA(S.trim,.95);ctx.beginPath();ctx.moveTo(cx+sw-2,cy-8);ctx.lineTo(cx+sw+2,cy-8);ctx.lineTo(cx+sw+1,cy+5);ctx.lineTo(cx+sw-1,cy+5);ctx.fill();
@@ -8469,11 +8477,64 @@ Object.assign(FURD,{
 /* ---- the theme record the open-world code expects (the minimap reads its colours) */
 function thTh(sty){const S=THST[sty],b=OWTH.night||OWTH.forest;return{...b,id:'in_'+sty,name:S.n,fr:S.song,sky:'indoor',monK:1,col:{...b.col,if:S.fl[0],iw:'#0c080a',ix:S.wood[1]}}}
 
+/* ---- 2.3 things to do inside a theatre: food on the tables, manuscripts that tell this theatre's story, and props that do
+   something when you hit them (once each; the house remembers what you used) */
+const THFOOD={candle:['cake','wine','bread'],aviary:['tea','bread','apple'],tide:['soup','tea','apple'],rose:['bread','wine','apple'],mirror:['tea','cake','candy'],gallery:['wine','cake','candy'],prison:['bread','soup','apple'],masque:['wine','cake','candy']};
+const THMECH={
+  candela:{h:'烛台倒了，火苗溅了一地',fx:(f,c)=>{thAoe(c,60,22,'#ff9a40');S.p('hit')}},
+  fireplace:{h:'炉火猛地窜了起来',fx:(f,c)=>{thAoe(c,90,30,'#ff7a30');shake(3)}},
+  clockt:{h:'落地钟敲了十二下，周围的人偶都停住了',fx:(f,c)=>{for(const e of G.en)if(!e.dead&&Math.hypot(e.x-c.x,e.y-c.y)<180)e.stun=Math.max(e.stun||0,3);thRing(c,'#f6dc8a');S.p('warn')}},
+  piano:{h:'琴键发出一声和弦，乐章值涨了',fx:(f,c)=>{feverAdd(fCap()*.18);thNotes(c)}},
+  gramo:{h:'唱针落下，一段旧旋律响了起来',fx:(f,c)=>{feverAdd(fCap()*.15);thNotes(c)}},
+  organ:{h:'管风琴轰鸣，声浪推开了四周',fx:(f,c)=>{feverAdd(fCap()*.12);thAoe(c,150,34,'#f6dc8a');thRing(c,'#f6dc8a');shake(4)}},
+  mirror:{h:'镜子碎了',fx:(f,c,sec)=>{burst(c.x,c.y-20,22,['#e8ecff','#8a90c0','#ffffff'],90,.6);S.p('shbreak');if(sec)thSecret(c,'镜子后面藏着一个暗格');else thPetals(c,6)}},
+  shelf:{h:'一本书掉了下来，书页间夹着干花瓣',fx:(f,c)=>{thPetals(c,8);if(G.mods)G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.06)}},
+  birdcage:{h:'笼门开了，一只黑鸟飞了出去，掉下一根发光的羽毛',fx:(f,c)=>{for(let i=0;i<8;i++)G.parts.push({x:c.x,y:c.y-30,vx:rnd(-40,40),vy:rnd(-60,-20),life:1,max:1,col:'#16141c',sz:2});dropRelic(c.x,c.y,.18);feverAdd(fCap()*.1)}},
+  cage:{h:'铁笼的锁断了，里面的人偶朝你鞠了一躬',fx:(f,c)=>{thPetals(c,10);feverAdd(fCap()*.1)}},
+  rosepot:{h:'花盆碎了，土里埋着一颗红色的东西',fx:(f,c)=>{burst(c.x,c.y-8,12,['#7a5a4a','#a8142a','#3a6a2a'],60,.5);G.picks.push({k:'hp',x:c.x,y:c.y+6,vx:rnd(-20,20),vy:-30,t:0})}},
+  tank:{h:'玻璃裂了，水母轻轻碰了碰你',fx:(f,c)=>{burst(c.x,c.y-14,16,['#8af0ff','#e0fff8'],70,.6);healP(.15)}},
+  altar:{h:'祭坛上的蜡烛一齐亮了',fx:(f,c)=>{healP(.2);P.sh=P.shMax;thRing(c,'#ffe0a0')}},
+  bust:{h:'石像的假面掉了下来',fx:(f,c,sec)=>{burst(c.x,c.y-24,10,['#e8e4dc','#a8a49c'],60,.5);if(sec)thSecret(c,'假面后面是一个机关，墙边的暗格打开了');else thPetals(c,5)}},
+  manne:{h:'人台转了半圈',fx:(f,c,sec)=>{if(sec)thSecret(c,'裙摆底下藏着一只小箱子');else thPetals(c,5)}},
+  easel:{h:'画布掉了下来',fx:(f,c,sec)=>{if(sec)thSecret(c,'画布后面的墙上有个暗格');else thPetals(c,5)}},
+  globe:{h:'地球仪转了起来，宅邸的格局浮现在脑海里',fx:(f,c)=>thReveal()},
+  orrery:{h:'天体仪转了起来，宅邸的格局浮现在脑海里',fx:(f,c)=>thReveal()},
+  telescope:{h:'镜筒里映出整座宅邸的样子',fx:(f,c)=>thReveal()}};
+function thAoe(c,r,dmg,col){const sc=1+.3*((G.ow&&G.ow.isTh||1)-1);for(const e of G.en)if(!e.dead&&!(e.intro>0)&&Math.hypot(e.x-c.x,e.y-c.y)<r)hurtEnemy(e,dmg*sc,{noMod:1});burst(c.x,c.y-8,26,[col,'#fff4d0'],r*1.2,.6);G.fx.push({k:'ring',x:c.x,y:c.y,r0:4,r1:r,t:0,d:.35,col})}
+function thRing(c,col){G.fx.push({k:'ring',x:c.x,y:c.y,r0:6,r1:120,t:0,d:.5,col})}
+function thNotes(c){for(let i=0;i<10;i++)G.parts.push({x:c.x+rnd(-10,10),y:c.y-24,vx:rnd(-20,20),vy:rnd(-50,-25),life:1.4,max:1.4,col:pick(['#f6dc8a','#ff9ad0','#9fd4ff']),sz:2})}
+function thPetals(c,n){for(let i=0;i<n;i++)G.picks.push({k:'petal',x:c.x,y:c.y-4,vx:rnd(-50,50),vy:rnd(-60,10),t:0,v:1})}
+function thSecret(c,msg){const q=owRandFree(c.x/OWT,c.y/OWT+1.5,2.5,1)||{x:c.x,y:c.y+20};G.picks.push({k:'chest',x:q.x,y:q.y,t:0,ow:1});burst(q.x,q.y-6,20,['#ffd27a','#fff'],70,.6);S.p('pick');later(.5,()=>toast(msg))}
+function thReveal(){const o=G.ow;for(let i=0;i<o.exp.length;i++)if(o.roomAt&&o.roomAt[i]>=0||o.g[i]===TL.IF){if(!o.exp[i]){o.exp[i]=1;o.expN=(o.expN||0)+1}}owFogTick(true);S.p('pick')}
+function thUsed(id){const st=G.ow&&G.ow.isTh&&thSt(G.ow.isTh);return!!(st&&st.used&&st.used[id])}
+function thUse(id){const st=thSt(G.ow.isTh);(st.used=st.used||{})[id]=1}
+/* a melee swing that reaches a prop sets it off */
+function thMelee(a,range){const o=G.ow;if(!o||!o.indoor||G.owArena)return;let best=null,bd=1e9;
+  o.furn.forEach((f,i)=>{if(!THMECH[f.k]||thUsed('f'+i))return;const nx=clamp(P.x,f.x,f.x+f.w),ny=clamp(P.y-4,f.y,f.y+f.h),d=Math.hypot(nx-P.x,ny-(P.y-4));if(d>range+10)return;
+    const ang=Math.atan2(ny-(P.y-4),nx-P.x);let da=Math.abs(((ang-a+Math.PI*3)%TAU)-Math.PI);if(d>10&&da>1.3)return;if(d<bd){bd=d;best=[f,i]}});
+  if(!best)return;const[f,i]=best,M=THMECH[f.k],c={x:f.x+f.w/2,y:f.y+f.h},sec=owHash(i*7+3,o.isTh*13)<.5;thUse('f'+i);S.p('hit');shake(2);M.fx(f,c,sec);toast(M.h);lvGain(4);
+  G.nums.push({x:c.x,y:c.y-30,v:'✦',t:0,say:1})}
+/* walking up to food eats it; walking up to a manuscript opens it */
+function thInterTick(){const o=G.ow;if(!o.inter||!modal.hidden||CUT.on||P.down)return;for(const it of o.inter){if(thUsed('i'+it.id)&&it.k==='food')continue;const d=Math.hypot(P.x-it.x,P.y-it.y);
+    if(it.k==='food'&&d<24){thUse('i'+it.id);const F=HFOOD[it.f];F.f();burst(it.x,it.y-12,10,['#fff4d8','#ffd27a'],40,.4);toast(`${F.n} · ${F.d}`);lvGain(2);continue}
+    if(it.k==='lore'){if(d>34)it.arm=1;if(d<18&&it.arm!==0){it.arm=0;thLore(it)}}}}
+function thLorePages(k){const A=ACTS[k-1]||ACTS[0],L=(A.secs||[]).map(([t,x])=>({t,x}));if(A.poem)L.push({t:'节目单上的诗',x:A.poem.replace(/\n/g,'<br>')});if(A.inter&&A.inter.a)L.push({t:A.inter.t||'幕间',x:A.inter.a+(A.inter.mj?'<br><br>'+A.inter.mj:'')});return L}
+function thLore(it){const k=G.ow.isTh,L=thLorePages(k),pg=L[it.p%L.length],first=!thUsed('i'+it.id);thUse('i'+it.id);if(first){lvGain(5);if(G.quests&&G.quests.pages)qProg('pages')}
+  const got=G.ow.inter.filter(q=>q.k==='lore'&&thUsed('i'+q.id)).length,tot=G.ow.inter.filter(q=>q.k==='lore').length;S.p('pick');
+  openModal('thlore',`<div class="thl"><div class="thl-eye">Manuscrit · ${ACTS[k-1].name}</div><h3>${pg.t}</h3><p>${pg.x}</p><div class="thl-ft"><span>散落的手稿 ${got}/${tot}</span><button class="cta" id="thlOk">合上</button></div></div>`);$('thlOk').onclick=()=>closeModal()}
+function thDrawInter(it,t){const used=thUsed('i'+it.id);
+  if(it.k==='food'){if(used)return;drawHDeco({k:'hfood',f:it.f,x:it.x,y:it.y,i:it.id},t);return}
+  const x=it.x,y=it.y;ctx.save();if(!used){ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.3+.15*Math.sin(t*2.4+it.id);ctx.drawImage(glow('#fff0c8'),x-12,y-10,24,20);ctx.globalCompositeOperation='source-over'}
+  ctx.globalAlpha=used?.55:1;ctx.translate(x,y);ctx.rotate(((it.id*37)%10-5)*.04);ctx.fillStyle='rgba(0,0,0,.35)';ctx.fillRect(-5,-2,11,7);ctx.fillStyle='#efe6d2';ctx.fillRect(-6,-4,11,7);ctx.fillStyle='#e2d6be';ctx.fillRect(-6,-4,11,1.2);ctx.fillStyle='#4a3a3a';for(let k=0;k<3;k++)ctx.fillRect(-5,-1.6+k*1.6,8-(k===2?3:0),.4);ctx.fillStyle='#8a0a1a';ctx.beginPath();ctx.arc(3.4,1.6,1.2,0,TAU);ctx.fill();ctx.restore()}
+/* hittable props glint now and then when you're near, so you learn to try them */
+function thGlints(t){const o=G.ow;if(!o.indoor)return;o.furn.forEach((f,i)=>{if(!THMECH[f.k]||thUsed('f'+i))return;const cx=f.x+f.w/2,cy=f.y-((FURT[f.k]||20)*.6);if(Math.abs(cx-P.x)>150||Math.abs(cy-P.y)>110)return;const ph=(t*.55+owHash(i,5))%1;if(ph>.12)return;const a=Math.sin(ph/.12*Math.PI);
+  ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.85*a;ctx.fillStyle='#fff4d0';ctx.fillRect(cx-.5,cy-3,1,6);ctx.fillRect(cx-3,cy-.5,6,1);ctx.globalAlpha=.4*a;ctx.drawImage(glow('#ffe0a0'),cx-7,cy-7,14,14);ctx.restore()})}
+
 function owTheatreTalk(it){if(it.stage){thStageTalk(it);return}const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
-  if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门缝里只剩下一点烛火的味道。',[owBye]);return}
+  if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门没有锁，里面的房间还亮着几盏灯。',[{ic:'↩',r:1,t:'再走进去看看',d:'没拿的东西、没打完的人偶，都还在里面',fn:()=>thEnter(k)},{ic:'…',t:'不了',d:'继续赶路',fn:()=>{}}]);return}
   const line=k===5?`剧场的大门半开着，门缝里飘出管风琴的声音。所有的线，都系在这里。${left?`<br><span style="color:#ffb3c0">还有 ${left} 座剧场没有演，你身边有 ${G.allies.length} 名同伴。走进去就是终幕。</span>`:''}`:
     ({fire:'门缝里透出烛光，还有一股蜡油烧焦的味道。',air:'台阶上落满了黑色的羽毛。门里传来很轻的脚步声。',water:'门缝里渗出水来，冰凉的，带一点咸味。',earth:'门框上缠着玫瑰，刺是新长的。门里很安静，安静得不对劲。'}[ACTS[k-1].sym]||'门口的海报被雨打湿了一半。门里有人在调弦，调了一遍又一遍。')+(G.caps&&G.caps[k-1]?`<br><span style="color:#d8c8c0">听说 ${cname(G.caps[k-1])} 被关在里面。</span>`:'');
-  owTalkModal({name:nm,talkN:0},line,[{ic:'⚔',r:2,t:'走进剧场',d:(G.ow.thm&&G.ow.thm[k]&&G.ow.thm[k].seen?'回到上次离开的地方 · ':'')+'里面是一片开阔的场地。打不过可以从入口撤出来，进度会保留',fn:()=>thEnter(k)},{ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}])}
+  owTalkModal({name:nm,talkN:0},line,[{ic:'⚔',r:2,t:'走进剧场',d:(G.ow.thm&&G.ow.thm[k]&&G.ow.thm[k].seen?'回到上次离开的地方 · ':'')+'里面是一座宅邸，舞台在最深处。打不过可以从入口撤出来，进度会保留',fn:()=>thEnter(k)},{ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}])}
 function owEnterTheatre(k,res){const o=G.ow;if(!o)return;
   const go=()=>{o.save={en:G.en,picks:G.picks,bg:G.bg,px:P.x,py:P.y};G.en=[];G.picks=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owArena=1;G.owTh=k;RW=512;RH=288;G.owTune=0;
     $('owMap').hidden=true;$('game').classList.remove('ow');o.inFight=0;feverCashOut();G.act=k;G.cleared=false;P.vx=P.vy=0;
@@ -8487,7 +8548,7 @@ function owBanner(small,big,sub){const el=$('owBan');el.querySelector('small').t
 function owGuards(k){if(owIsDone(k))return;const o=G.ow,it=o.I.find(q=>q.kind==='theatre'&&q.k===k);if(!it||!ACTS[k-1])return;const pool=ACTS[k-1].pool||['mari'],gid=-500-k;const sa=G.act;G.act=k;
   for(let j=0;j<Math.round((3+Math.min(2,k>>1))*ECNT());j++){const q=owRandFree(it.x/OWT,it.y/OWT+3,6,3);if(q){const e=owMake(pick(pool),q.x,q.y,j===0,gid);e.ow.home={x:it.x,y:it.y+40}}}G.act=sa;
   (o.queues=o.queues||[]).push({k,pts:Array.from({length:3},(_,j)=>({x:it.x+(k===5?30:24)+j*11,y:it.y+14+j*3,ph:Math.random()*6}))})}
-function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};lvGain(80);if(o.thm)delete o.thm[k];
+function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};lvGain(80);
   G.en=s.en||[];G.picks=s.picks||[];RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.bg=s.bg||owPaint();if(!s.bg)owFogInit();G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.cage=null;G.boss=null;G.waves=[];G.pending=0;G.npc=null;G.ots=null;G.vortex=null;
   try{setField(null)}catch(e){}$('bossBar').hidden=true;RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.owTh=0;o.save=null;G.type='ow';G.cleared=false;G.room=0;
   const D=owDoneL();if(!D.includes(k))D.push(k);G.owNext=D.length+1;G.act=Math.min(5,G.owNext);const it=o.I.find(q=>q.kind==='theatre'&&q.k===k);if(it)it.done=1;if(o.queues)o.queues=o.queues.filter(q=>q.k!==k);
