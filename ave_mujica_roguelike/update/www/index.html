@@ -421,6 +421,13 @@ body:not(.gp) #bSkill.ready::before,#gsSkill.ready::before,body:not(.gp) #bSkill
 #owMap{position:absolute;top:calc(env(safe-area-inset-top,0px) + 62px);right:calc(env(safe-area-inset-right,0px) + 12px);width:140px;height:105px;image-rendering:pixelated;border:1px solid rgba(201,164,92,.7);box-shadow:0 0 0 2px #000,0 4px 14px rgba(0,0,0,.6);background:#0a080c;opacity:.92;pointer-events:none;z-index:5}
 #game.cut #owMap,#game:not(.playing) #owMap{display:none}
 #owMap{transition:opacity .35s,transform .35s}#owMap.fight{opacity:0;transform:scale(.92);pointer-events:none}
+#owMap:not(.big){visibility:hidden;pointer-events:none}
+#owMap.big{position:fixed;left:50%;top:53%;right:auto;transform:translate(-50%,-50%)!important;width:min(88vw,calc(76vh*4/3));height:auto;aspect-ratio:4/3;z-index:62;opacity:1!important;visibility:visible;pointer-events:auto;border:1px solid #c9a45c;box-shadow:0 0 0 3px #000,0 0 0 4px rgba(201,164,92,.25),0 20px 60px rgba(0,0,0,.8)}
+#owMini{position:absolute;top:calc(env(safe-area-inset-top,0px) + 58px);right:calc(env(safe-area-inset-right,0px) + 12px);width:84px;height:63px;image-rendering:pixelated;border:1px solid rgba(201,164,92,.7);border-radius:2px;box-shadow:0 0 0 2px #000,0 3px 10px rgba(0,0,0,.6);background:#0a080c;opacity:.92;z-index:5;pointer-events:auto;cursor:pointer;transition:opacity .35s,transform .35s}
+#owMini.fight{opacity:0;transform:scale(.92);pointer-events:none}#game.cut #owMini,#game:not(.playing) #owMini{display:none}
+#owMapBg{position:fixed;inset:0;z-index:61;background:radial-gradient(ellipse at center,rgba(24,8,14,.78),rgba(4,2,4,.94));display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 6px) 0 calc(env(safe-area-inset-bottom,0px) + 8px)}
+#owMapBg[hidden]{display:none}.omb-h{text-align:center;color:#f4e6cc;line-height:1.2}.omb-h small{display:block;font:italic 11px var(--f-display);letter-spacing:.3em;color:rgba(201,164,92,.75)}.omb-h b{font-size:15px;letter-spacing:.5em;text-indent:.5em}.omb-h span{display:block;font-size:10px;color:#9a8c95;letter-spacing:.1em}
+.omb-l{display:flex;gap:6px 12px;flex-wrap:wrap;justify-content:center;font-size:10.5px;color:#c8bcc2;letter-spacing:.06em}.omb-l i{display:inline-block;width:6px;height:6px;margin-right:4px;background:var(--c);box-shadow:0 0 4px var(--c)}
 #game.ow #quests{display:none}
 .shopg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:6px;margin:6px 0 10px;max-height:calc(52*var(--vh,1vh));overflow-y:auto;padding:2px 4px 2px 2px;text-align:left}
 .shopi{display:grid;grid-template-columns:30px 1fr;grid-template-rows:auto auto auto;column-gap:8px;align-items:center;padding:7px 9px;background:linear-gradient(180deg,rgba(40,18,30,.92),rgba(18,10,18,.95));border:1px solid #4a2e3a;color:#ece2d2;font:inherit;cursor:pointer;text-align:left}
@@ -617,6 +624,9 @@ body.pc #hint{display:none!important}
   #go{min-width:130px;padding:8px 18px}
 }
 @media (max-width:640px){#select{grid-template-columns:minmax(0,34fr) minmax(0,66fr)}.sk-note{display:none}#select .hdiff>span,#select .hdiff small{display:none}}
+/* 2.2 the motorcycle's button */
+.ridebtn{position:absolute;z-index:6;right:calc(env(safe-area-inset-right,0px) + 228px);bottom:calc(env(safe-area-inset-bottom,0px) + 22px);min-width:62px;height:34px;padding:0 12px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(201,164,92,.7);border-radius:17px;background:linear-gradient(180deg,rgba(70,14,26,.85),rgba(20,8,12,.85));color:#f4e6cc;font:700 13px var(--f-body);letter-spacing:.2em;pointer-events:auto;box-shadow:0 2px 10px rgba(0,0,0,.5)}
+.ridebtn small{font:10px "Cinzel",serif;color:#c9a45c;letter-spacing:0;border:1px solid rgba(201,164,92,.5);border-radius:3px;padding:0 3px}body:not(.pc) .ridebtn small{display:none}
 /* 2.3 manuscripts found in the theatres */
 .panel:has(.thl){width:min(100%,30rem)!important;padding:20px 24px 14px!important;background:linear-gradient(180deg,rgba(40,30,24,.97),rgba(22,16,12,.98))!important;box-shadow:inset 0 0 0 1px rgba(201,164,92,.35),inset 0 0 40px rgba(0,0,0,.6),0 20px 60px rgba(0,0,0,.7)!important}
 .thl{display:flex;flex-direction:column;gap:8px}.thl-eye{font:italic 11px var(--f-display);letter-spacing:.3em;color:rgba(201,164,92,.75)}
@@ -879,6 +889,7 @@ body.pc .chpads{display:none}
   <div id="duet"></div>
   <div id="combo"><b></b><small>COMBO</small></div>
   <div id="stickZone" hidden><div id="stickBase"><div id="stickKnob"></div></div></div>
+  <button id="rideBtn" class="ridebtn" hidden><b>上车</b><small>F</small></button>
   <div id="pad" hidden>
     <button class="pb" data-k="Y" id="bSkill" aria-label="技能"><svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.6L21 9l-5 4.4L17.6 21 12 17.3 6.4 21 8 13.4 3 9l6.4-.4z"/></svg><i class="ico"></i><em>技能</em></button>
     <button class="pb" data-k="B" id="bDash" aria-label="闪避"><svg viewBox="0 0 24 24"><path d="M4 6l7 6-7 6M12 6l7 6-7 6"/></svg><i class="ico"></i><em>闪避</em></button>
@@ -939,7 +950,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 31, "name": "2.1"};</script>
+<script>window.GAME_VER={"v": 32, "name": "2.2"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -1863,7 +1874,9 @@ const QUIZ=[
   {q:'乐队里负责鼓的是？',a:'Amoris',w:['Doloris','Oblivionis']},{q:'乐队里负责键盘的是？',a:'Oblivionis',w:['Timoris','Mortis']},
   {q:'第一章「烛火之厅」对应的元素是？',a:'火',w:['水','风']},{q:'「泪之水底」里等着你的是？',a:'泣泪人偶',w:['烛台伯爵','荆棘王座']},
   {q:'鸦羽之后栖息在哪一章？',a:'第二章',w:['第三章','第四章']},{q:'假面之主的名字是？',a:'Mujica',w:['Oblivionis','Doloris']}];
-const UCAT={get off(){return UPS.filter(u=>u.s==='play').map(u=>u.id)},get def(){return UPS.filter(u=>u.s==='stage').map(u=>u.id)}};
+/* 2.2: the melodies were cut to sixty; the rest stay defined (old saves keep what they own) but are never offered again */
+const UPKEEP=new Set(["blade", "echo", "presto", "mask", "waltz", "petal", "tea", "fermata", "heavy", "wide", "bigshot", "shUp", "armor", "mark", "regen", "first", "momentum", "longf", "tremolo", "prelude", "embers", "agile", "owSight", "owStealth", "poly", "pierce", "kiss", "thorn", "canon", "blood", "encore", "bday", "critdmg", "exec", "split", "chain", "burn", "frost", "bossbane", "skillDmg", "dashBlast", "dash2", "evade", "low", "gramo", "detonate", "owRest", "owTreasure", "ave", "orbit", "moon", "symbol", "masq", "twin", "phoenix", "vortex", "aegis", "storm", "mirror", "fvDmg"]);for(const u of UPS)if(!UPKEEP.has(u.id))u.cut=1;
+const UCAT={get off(){return UPS.filter(u=>u.s==='play'&&!u.cut).map(u=>u.id)},get def(){return UPS.filter(u=>u.s==='stage'&&!u.cut).map(u=>u.id)}};
 const TRIALS={shadow:'镜中对决',timed:'限时独奏',gauntlet:'连战试炼',duel:'骑士决斗',survive:'暗幕'};
 
 /* =================================================================== state */
@@ -1882,7 +1895,8 @@ const SHBASE={doloris:30,mortis:20,timoris:28,amoris:42,oblivionis:22,uika:28,mu
 /* =================================================================== input */
 const IN={keys:{},sx:0,sy:0,melee:false,ranged:false,dashQ:false,skillQ:false,kMelee:false,kRanged:false};
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(CUT.on){if(k===' '||k==='enter'||k==='j'||k==='k'){cutNext();e.preventDefault()}else if(k==='escape')endCut();return}IN.keys[k]=true;if(G.state!=='play')return;
-  if(k==='j')IN.kMelee=true;if(k==='k')IN.kRanged=true;if(k==='l'||k==='shift'||k===' '){IN.dashQ=true;e.preventDefault()}if(k==='i'||k==='e'||k==='q')IN.skillQ=true;
+  if(k==='f'&&G.ow)vehToggle();if(k==='m'&&G.ow)owMapBig(!$('owMap').classList.contains('big'));if(k==='j')IN.kMelee=true;if(k==='k')IN.kRanged=true;if(k==='l'||k==='shift'||k===' '){IN.dashQ=true;e.preventDefault()}if(k==='i'||k==='e'||k==='q')IN.skillQ=true;
+  if((k==='escape'||k==='p')&&$('owMap')&&$('owMap').classList.contains('big')){owMapBig(0);return}
   if(k==='escape'||k==='p'){if(!$('modal').hidden&&G.modalKind==='pause')closeModal();else if($('modal').hidden)showPause()}});
 addEventListener('keydown',e=>{if(e.key==='F11'&&!isTouch&&/Electron/.test(navigator.userAgent)){e.preventDefault();try{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()}catch(er){}}});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();IN.keys[k]=false;if(k==='j')IN.kMelee=false;if(k==='k')IN.kRanged=false});
@@ -1899,7 +1913,7 @@ function bindBtn(id,down,up){const b=$(id);b.addEventListener('pointerdown',e=>{
   const u=()=>{b.classList.remove('down');up&&up()};b.addEventListener('pointerup',u);b.addEventListener('pointercancel',u);b.addEventListener('contextmenu',e=>e.preventDefault())}
 bindBtn('bMelee',()=>IN.melee=true,()=>IN.melee=false);
 bindBtn('bRanged',()=>IN.ranged=true,()=>IN.ranged=false);
-bindBtn('bDash',()=>IN.dashQ=true);
+bindBtn('bDash',()=>IN.dashQ=true);$('rideBtn').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();auInit();vehToggle()});
 bindBtn('bSkill',()=>IN.skillQ=true);
 $('bPause').addEventListener('click',()=>{if($('modal').hidden)showPause()});
 document.addEventListener('gesturestart',e=>e.preventDefault());
@@ -2686,7 +2700,7 @@ const skb=k=>G.skb&&G.skb.t>0&&G.skb[k]||0;
 function skHit(){if(G.time-(G.skHT||-9)<.06)return;G.skHT=G.time;feverAdd(1.6);comboUp()}
 function skHurt(){feverAdd(5);const id=ch().id;if(id==='uika')P.ustarN=Math.max(0,(P.ustarN||0)-2);if(id==='mutsumi'&&!(G.time<(P.mortCd||0))&&!P.down){P.mortT=5;P.mortCd=G.time+(G.perk==='mutsumi'?8:12);G.nums.push({x:P.x,y:P.y-40,v:'Mortis',t:0,say:1});S.p('mecho');burst(P.x,P.y-12,14,['#ff6fae','#cdd3c3'],60,.5)}if(G.mods.breath&&(G.breathN||0)<2*G.mods.breath){G.breathN=(G.breathN||0)+1;return}G.rc=0}
 function accent(chart){perfPassive();pfExtra();P.mPfT=G.time;G.beatGlow=1;bsGain(.3);if(!chart)G.nums.push({x:P.x,y:P.y-44,v:'强音',t:0,say:1,jc:'#9fd4ff'})}
-function skReady(){return(G.fever||0)>=fCap()&&!(G.feverT>0)&&G.state==='play'&&!P.down&&!CUT.on&&modal.hidden&&!G.ots}
+function skReady(){return!P.ride&&(G.fever||0)>=fCap()&&!(G.feverT>0)&&G.state==='play'&&!P.down&&!CUT.on&&modal.hidden&&!G.ots}
 /* ---- menu */
 /* input buffer: the finger that pressed the skill key lifts over the new menu and would click a card; a key pressed twice
    closes what it opened. Every menu button waits a moment and only takes presses that began after it appeared */
@@ -2892,7 +2906,7 @@ function aimAng(range){const ma=IN.aimA!=null?IN.aimA:mouseAim();if(ma!=null){P.
 function cdMul(){const id=ch().id;return(1-skb('cd'))/(G.mods.aspd*(P.frenzy>0?1.7:1)*(G.feverT>0?1.6:1)*(id==='sakiko'?1+.04*(P.tempoN||0):1)*(id==='mutsumi'&&P.mortT>0?1.35:1))}
 function novaTick(){P.atkN=(P.atkN||0)+1}
 function novaBurst(){const m=G.mods;{for(let i=0;i<14;i++)shoot({x:P.x,y:P.y-8,a:i/14*TAU,spd:160,dmg:9*m.nova*m.ranged,k:'note',pierce:2,col:'#f6dc8a',life:.9,r:3});G.fx.push({k:'ring',x:P.x,y:P.y,r0:4,r1:60,t:0,d:.3,col:'#f6dc8a'})}}
-function doMelee(){if(P.swim)return;if(G.ow)owNoise(P.x,P.y,130);const c=ch(),m=c.melee,id=c.id,M=G.mods;P.meleeCd=m.cd*cdMul();setAct('melee',Math.max(.24,Math.min(.42,P.meleeCd)));
+function doMelee(){if(P.swim||P.ride)return;if(G.ow)owNoise(P.x,P.y,130);const c=ch(),m=c.melee,id=c.id,M=G.mods;P.meleeCd=m.cd*cdMul();setAct('melee',Math.max(.24,Math.min(.42,P.meleeCd)));
   P.mc=(P.mcT>0?P.mc:0)+1;P.mcT=1.1;const fin=P.mc>=3;if(fin)P.mc=0;
   let range=m.range*M.mrange,arc=Math.min(6,m.arc*M.marc),dmg=m.dmg*M.melee*cr('mel'),kb=(id==='timoris'?150:85)*M.knock;
   const tgt=IN.aimA!=null?coneT(IN.aimA,range+60):nearest(range+60),a=IN.aimA!=null?IN.aimA:tgt?Math.atan2(tgt.y-P.y,tgt.x-P.x):Math.atan2(P.dy||0,P.dx||1);if(tgt)P.face=tgt.x<P.x?-1:1;P.atkAng=a;P.atkT=.18;novaTick();
@@ -2920,7 +2934,7 @@ function doMelee(){if(P.swim)return;if(G.ow)owNoise(P.x,P.y,130);const c=ch(),m=
   if(tgt){const gap=Math.sqrt(d2(tgt,P))-(tgt.r+range*.55);if(gap>4){const L=Math.min(gap,60);P.lvx=Math.cos(a)*L/.09;P.lvy=Math.sin(a)*L/.09;P.lungeT=.09;P.inv=Math.max(P.inv,.15);later(.09,go);return}}
   go()}
 function beat(){if(ch().id!=='amoris'||!(G.feverT>0))return false;P.beat=(P.beat||0)+1;if(P.beat%2===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
-function doRanged(){if(P.swim)return;if(G.ow)owNoise(P.x,P.y,150);const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*cdMul();if(!P.act||P.act.n!=='melee')setAct('ranged',.3);const a=aimAng(220);P.atkAng=a;P.atkT=.12;const crit=beat()||stillCrit(),J=P.jR&&G.time-P.jR.t<.45?P.jR:null;P.jR=null;const pf=!!J&&J.k==='P',jm=J?J.mul:1;
+function doRanged(){if(P.swim||P.ride)return;if(G.ow)owNoise(P.x,P.y,150);const c=ch(),rg=c.ranged,id=c.id,m=G.mods;P.rangedCd=rg.cd*cdMul();if(!P.act||P.act.n!=='melee')setAct('ranged',.3);const a=aimAng(220);P.atkAng=a;P.atkT=.12;const crit=beat()||stillCrit(),J=P.jR&&G.time-P.jR.t<.45?P.jR:null;P.jR=null;const pf=!!J&&J.k==='P',jm=J?J.mul:1;
   const n=1+m.proj,sp=id==='mortis'?.1:.14;const sh=o=>{o.life*=cr('range');o.spd*=m.pspd;o.r*=m.psize;o.bounce=(o.bounce||0)+m.bounce;o.pierce=(o.pierce||0)+(G.feverT>0?1:0);o.pf=pf;return shoot(o)};
   const volley=(base,mult)=>{const dmg=rg.dmg*m.ranged*mult*jm*cr('rng'),pos={x:P.x+Math.cos(base)*6,y:P.y-8+Math.sin(base)*6,crit};
     for(let i=0;i<n;i++){const aa=base+(i-(n-1)/2)*sp;
@@ -3089,6 +3103,7 @@ function updPlayer(dt){const c=ch(),m=G.mods;if(P.down){P.downT=(P.downT||0)+dt;
   if(fx('wither')&&!(G.feverT>0))P.hp=Math.max(1,P.hp-P.maxHp*.012*dt);
   if(P.lungeT>0){P.lungeT-=dt;P.x+=P.lvx*dt;P.y+=P.lvy*dt;if(!P.gt||G.time-P.gt>.025){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
   else if(P.dashT>0){P.x+=P.vx*dt;P.y+=P.vy*dt;if(!P.gt||G.time-P.gt>.03){P.gt=G.time;G.ghosts.push({x:P.x,y:P.y,face:P.face,t:0,...pFrame(true)})}}
+  else if(P.ride&&G.ow&&!G.owArena){IN.dashQ=false;vehMove(dt,mx,my)}
   else{const sp=95*c.spd*m.move*cr('spd')*(1+skb('spd'))*(P.swim?.55:1)*(P.frenzy>0?1.3:1)*(inWater(P)?.65:1)*(fx('charm')?.85:1)*(G.feverT>0?1.25:1);P.x+=mx*sp*dt;P.y+=my*sp*dt}
   if(l>.15){P.dx=mx/l;P.dy=my/l;if(Math.abs(mx)>.15&&P.atkT<=0)P.face=mx<0?-1:1;P.walk=(P.walk||0)+dt*l;P.frame=[1,0,2,0][Math.floor(P.walk*9)%4]}else P.frame=0;
   P.moving=l>.15;P.animT=(P.animT||0)+dt;if(P.act){P.act.t+=dt;if(P.act.t>=P.act.d)P.act=null}
@@ -3253,7 +3268,7 @@ const modal=$('modal'),panel=$('panel');
 function openModal(kind,html){if((kind==='dead'||kind==='win')&&!G.ow&&typeof lvSum==='function'){const q=lvSum();if(q)html=html.replace(/(<p class="sub">[\s\S]*?<\/p>)/,'$1'+q)}G.paused=true;G.modalKind=kind;releaseInputs();panel.innerHTML=html;modal.hidden=false;const f=panel.querySelector('button');f&&f.focus({preventScroll:true})}
 function closeModal(force){if(G.modalKind==='upd'&&UPD.lock&&!force)return;modal.hidden=true;G.paused=false;G.modalKind=null;panel.innerHTML='';last=performance.now()}
 /* rarity odds: common is the norm, legendary is rare (hard modes: legendary only from side quests) */
-function rollUps(n,minR,bias=0){bias+=.08*((G.mods&&G.mods.luck)||0);const res=[],df=G.diff?DF():DIFFS.norm,cap=noLeg()?1:2;minR=Math.min(minR,cap);const avail=UPS.filter(u=>u.r<=cap&&(!u.ow||(G.ow&&owUpOk(u)))&&(!u.char||u.char.includes(ch().id))&&(u.rep||(G.ups[u.id]||0)<(u.max||9)));
+function rollUps(n,minR,bias=0){bias+=.08*((G.mods&&G.mods.luck)||0);const res=[],df=G.diff?DF():DIFFS.norm,cap=noLeg()?1:2;minR=Math.min(minR,cap);const avail=UPS.filter(u=>!u.cut&&u.r<=cap&&(!u.ow||(G.ow&&owUpOk(u)))&&(!u.char||u.char.includes(ch().id))&&(u.rep||(G.ups[u.id]||0)<(u.max||9)));
   const lp=cap<2?0:(.02+bias*.15)*(df.leg==null?1:df.leg),rp=lp+(.16+bias*.55)*(df.rare||1);
   for(let k=0;k<n*10&&res.length<n;k++){const r=Math.random();let rar=r<lp?2:r<rp?1:0;rar=Math.max(rar,minR);const pool=avail.filter(u=>u.r===rar&&!res.includes(u));if(pool.length)res.push(pick(pool))}
   while(res.length<n){const pool=avail.filter(u=>!res.includes(u)&&u.r>=minR);const pl=pool.length?pool:avail.filter(u=>!res.includes(u));if(!pl.length)break;res.push(pick(pl))}
@@ -3318,7 +3333,7 @@ function startTrial(k){G.trialKind=k;if(G.trans)return;G.trans=1;$('fade').class
 function outcome(title,text){showStory(title,text,openDoors)}
 function offerUps(title,sub,cs){if(!cs.length){outcome(title,sub);return}openModal('reward',`<h3>${title}</h3><p class="sub">${sub}</p><div class="cards">${cs.map((u,i)=>upCard(u,i)).join('')}</div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{applyUp(cs[+b.dataset.i]);closeModal();openDoors()})}
-function rollFrom(ids,n,minR){const pool=UPS.filter(u=>ids.includes(u.id)&&u.r>=minR&&u.r<=(noLeg()?1:2)&&(u.rep||(G.ups[u.id]||0)<(u.max||9)));return shuffle(pool.slice()).slice(0,n)}
+function rollFrom(ids,n,minR){const pool=UPS.filter(u=>!u.cut&&ids.includes(u.id)&&u.r>=minR&&u.r<=(noLeg()?1:2)&&(u.rep||(G.ups[u.id]||0)<(u.max||9)));return shuffle(pool.slice()).slice(0,n)}
 const LEAVE={ic:'…',r:0,t:'离开',d:'点头致意，继续前行',fn:openDoors};
 function evChoices(s,ev,opts,text){if(s&&s.rep)opts=opts.map(o=>{let t=o.t;for(const[a,b]of s.rep)if(t===a)t=b;return{...o,t}});openModal('talk',talkHtml(ev,text||s.line,(s&&s.mood)||EVMOOD[G.act-1])+`<div class="cards">${opts.map((o,i)=>`<button class="card r${o.r||0}" data-i="${i}" ${o.can===false?'disabled':''}><span class="ic">${o.ic}</span><b>${o.t}</b><span class="d">${o.d||''}</span></button>`).join('')}</div>`);
   drawPortrait(ev);panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.i];if(o.can===false)return;closeModal();G.npc.done=1;o.fn()})}
@@ -3473,6 +3488,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.2',date:'2026-11-28',notes:["大世界扩大约 1.8 倍（192×144），城镇从 1 座变为 3 座，位置每局随机，每座都有面具店", "出生点随机：可能在城镇，也可能在野外，但不会离终幕剧场太近", "开局身边停着一辆夜行机车（按 F 或「上车」）：越骑越快，高速撞上树和石头会把它们撞碎，但你会被弹开并受伤；撞到敌人会把它撞飞并造成大量伤害", "每座剧场周围的景色跟着它的主题变：门口的积水、玫瑰、碎镜、蜡烛、羽毛、铁链、棋盘地砖，以及主题色的光柱和地灯", "终幕剧场里有四色追光、飘落的彩纸和变换的光晕，进去时的音乐也换了一首", "小地图收起时更小、只显示身边；点一下（或按 M）展开整张地图", "旋律精简为 60 个：普通 24、稀有 24、传说 12，其余的不再出现（已拿到的照常生效）"]},
  {name:'2.1',date:'2026-11-28',notes:["剧场改成室内宅邸：8 种以 Ave Mujica 歌曲为主题的风格（黒のバースデイ、天球のMúsica、Alter Ego、KiLLKiSS……），有房间、家具、吊灯和窗户的光", "剧场的舞台随时能上，直接打 Boss 救同伴；随时可以从入口撤退，进度保留；落幕后还能再进去收集", "剧场里多了能互动的东西：桌上的食物、讲述剧场故事的手稿、用近战敲会有动静的道具；大世界房屋里的家具也能敲", "新增个人等级（Lv 1–90），战斗、对话、事件和剧场都给经验，升级提高生命和伤害", "除专属技能外都变成传承技能，任何人偶都能带，登台前配置", "非专属技能重做：像专属技能一样只做一件事、持续 9 秒，强度对齐专属技能", "谱面倍率按判定累积；Amoris 和 Timoris 也有了专属 Fever 曲，从高潮开始", "同伴遇到密集弹幕会离开你身边，找掩体或躲开", "角色移动更快，配合跑步动作", "困难敌人数量 +25%、非常困难 +50%；所有战斗改为 2 波，终幕敌人减少", "选人界面和左上角状态栏重新设计；字体统一为思源宋体；旋律全部整理", "移除日语和英文，游戏只保留中文", "修复：剧场里的敌人打不到、剧场落幕后地形显示错乱、Fever 曲开头画面中断"]},
  {name:'2.0.3',date:'2026-11-28',notes:["专属 Fever 曲从高潮开始，并在高潮段落里循环；谱面锁定在曲子的节拍上", "走失的小人偶会绕开障碍物、游泳过河、跟着你走，送到营地后会一直待在营火旁", "大世界视野再收回一点"]},
  {name:'2.0.2',date:'2026-11-28',notes:["新难度「非常困难」：怪物生命和攻击力 +100%，攻击和放技能更频繁", "屋内精致化：家具和房间重画，窗光、火光、灯光和光晕", "专属 Fever 曲：Oblivionis / 祥子、Doloris / 初华、Mortis / 睦各有一首，谱面跟着它的节拍走", "集齐角色的全部回忆后，技能从三个变为四个（八个新技能）", "祥子之夜可以用便服祥子游玩；星之约的初华和镜中的睦的 Boss 改为便服形态", "大世界视野稍微收回一点"]},
@@ -3542,7 +3558,7 @@ function cdxThumb(cv){const x=cv.getContext('2d'),W=cv.width,H=cv.height;x.image
   const S0=SPR[sp];if(!S0)return;const c=S0.f[0],k=Math.min(W/c.width,H/c.height);x.imageSmoothingEnabled=k<1.5;x.drawImage(c,(W-c.width*k)/2,H-c.height*k,c.width*k,c.height*k)}
 function showMeta(tab){tab=tab||showMeta.tab||'end';showMeta.tab=tab;try{buildW34Art()}catch(e){}const end=best.endings||{};
   const list=cat=>Object.entries(CDX[cat]).sort((a,b)=>(a[1].w-b[1].w)||(a[1].o-b[1].o));
-  const TABS=[['end','结局',Object.keys(ENDS).filter(k=>end[k]).length],['boss','Boss',list('b').filter(([,v])=>v.k==='boss').length],['elite','精英',list('b').filter(([,v])=>v.k==='elite').length],['foe','怪物',list('e').length],['npc','NPC',list('n').length],['up','强化',`${list('u').filter(([k])=>UPS.some(u=>u.id===k)).length}/${UPS.length}`]];
+  const TABS=[['end','结局',Object.keys(ENDS).filter(k=>end[k]).length],['boss','Boss',list('b').filter(([,v])=>v.k==='boss').length],['elite','精英',list('b').filter(([,v])=>v.k==='elite').length],['foe','怪物',list('e').length],['npc','NPC',list('n').length],['up','强化',`${list('u').filter(([k])=>UPS.some(u=>u.id===k&&!u.cut)).length}/${UPS.filter(u=>!u.cut).length}`]];
   const card=(art,name,sub,txt,ex)=>`<div class="cdx-it">${art}<div class="cdx-tx"><b>${name}</b>${sub?`<em>${sub}</em>`:''}<p>${txt}</p>${ex?`<p class="cdx-x">${ex}</p>`:''}</div></div>`;
   const cvs=v=>`<canvas class="cdx-cv" width="48" height="48" data-spr="${v.spr||''}" ${v.cid?`data-cid="${v.cid}"`:''}></canvas>`;
   const grp=(rows,f)=>{let out='',lw=0;for(const r of rows){if(r[1].w!==lw){lw=r[1].w;out+=`<div class="cdx-w">${CDXW[lw]||''}</div>`}out+=f(r)}return out};
@@ -3553,7 +3569,7 @@ function showMeta(tab){tab=tab||showMeta.tab||'end';showMeta.tab=tab;try{buildW3
   else if(tab==='boss'||tab==='elite'){const rows=list('b').filter(([,v])=>v.k===tab);body=rows.length?grp(rows,([,v])=>{const tg=(v.sub||'').split(' · ');return card(cvs(v),v.n,v.sub?tg[0]:'',`${tg[1]?tg[1]+'。':''}${v.d}`,`初遇：${v.at}${v.x?'<br>'+v.x:''}`)}):empty('还没有遇见过。')}
   else if(tab==='foe'){const rows=list('e');body=rows.length?grp(rows,([,v])=>card(cvs(v),v.n,v.at,(CDXE[v.t]||['',''])[1],'')):empty('还没有遇见过。')}
   else if(tab==='npc'){const rows=list('n');body=rows.length?grp(rows,([,v])=>card(cvs(v),v.n,v.at,v.d||'',v.l)):empty('还没有和谁说过话。')}
-  else{const rows=list('u').filter(([k])=>UPS.some(u=>u.id===k));body=rows.length?`<div class="cdx-ups">${rows.map(([k])=>{const u=UPS.find(q=>q.id===k);return`<div class="cdx-up r${u.r||0}">${upIc(u)}<div class="cdx-tx"><b>${u.n}</b><p>${u.d}</p></div></div>`}).join('')}</div>`:empty('还没有获得过旋律。')}
+  else{const rows=list('u').filter(([k])=>UPS.some(u=>u.id===k&&!u.cut));body=rows.length?`<div class="cdx-ups">${rows.map(([k])=>{const u=UPS.find(q=>q.id===k);return`<div class="cdx-up r${u.r||0}">${upIc(u)}<div class="cdx-tx"><b>${u.n}</b><p>${u.d}</p></div></div>`}).join('')}</div>`:empty('还没有获得过旋律。')}
   openModal('meta',`<h3>幕后档案</h3><p class="sub">每一次落幕，都会在这里留下一行字。</p><div class="mtabs">${TABS.map(([k,l,n])=>`<button class="mtab${k===tab?' on':''}" data-t="${k}">${l}<small> ${n}</small></button>`).join('')}</div><div class="mbody cdx">${body}</div><div class="row"><button class="cta" id="metaOk">返回</button></div>`);
   panel.querySelectorAll('.cdx-cv').forEach(cdxThumb);panel.querySelectorAll('.mtab').forEach(b=>b.onclick=()=>{S.p('tick');showMeta(b.dataset.t)});
   $('metaOk').onclick=()=>{closeModal();toTitle()}}
@@ -6454,7 +6470,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   for(const d of G.deco)if(d.k==='piano'||d.k==='mannequin'||d.hs)list.push({y:d.sy!=null?d.sy:d.y,d});if(G.npc)list.push({y:G.npc.y,n:1});for(const a of G.allies)list.push({y:a.y,al:a});for(const q of (G.mirrors||[]))list.push({y:q.y,mi:q});if(G.cage)list.push({y:G.cage.y,cg:1});for(const tu of G.turrets)list.push({y:tu.y,tu});
   list.sort((a,b)=>a.y-b.y);
   for(const g of G.ghosts){ctx.globalAlpha=.35*(1-g.t/.25);drawSpr(g.c,g.x,g.y+g.dy,g.face,null,g.sc);ctx.globalAlpha=1}
-  for(const it of list){if(it.p){rimLight();drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
+  for(const it of list){if(it.p){rimLight();if(P.ride&&G.ow){vehDraw(P.x,P.y,P.face||1,1,t);ctx.save();ctx.translate(-(P.face||1)*3,-9);drawPlayer(t);ctx.restore()}else drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
   for(const b of G.pb)drawPB(b,t);
   for(const b of G.eb)drawEB(b,t);
   drawEnsemble(t);
@@ -6861,7 +6877,7 @@ const OWUP=[
   {id:'owTrust',n:'温柔的声音',d:'交涉成功率 +10%',r:0,ic:'☏',a:m=>m.owTrust=(m.owTrust||0)+1,max:2,ow:1},
   {id:'owCloneLife',n:'镜中余温',d:'分身多存在 5 秒，召唤冷却 -4 秒',r:1,ic:'◫',a:m=>m.owCloneLife=(m.owCloneLife||0)+1,max:2,ow:1,char:['mortis']},
   {id:'owTreasure',n:'寻宝直觉',d:'隐藏通道和宝箱会显示在小地图上',r:1,ic:'✧',a:m=>m.owTreasure=1,max:1,ow:1,unl:'treasure'}];
-UPS.push(...OWUP);
+UPS.push(...OWUP);for(const u of OWUP)if(!UPKEEP.has(u.id))u.cut=1;
 /* 2.1: every melody gets a line of its own (shown in Chinese), a few names that clashed with skills and mechanics are changed, the weak ones are stronger */
 const UPREV={"blade": {"fl": "琴弦断了，就用断口去唱。"}, "echo": {"fl": "声音走得比人更远。"}, "presto": {"fl": "心跳先一步对准了节拍。"}, "mask": {"fl": "只要戴着，就不会被看穿。"}, "waltz": {"fl": "一、二、三，转身。"}, "petal": {"fl": "散场后，满地都是没人捡的玫瑰。"}, "tea": {"fl": "演出之间，总要有一杯茶的时间。"}, "fermata": {"fl": "在这一拍上，多停留一会儿。"}, "poly": {"fl": "同一段旋律，有好几个声部。"}, "pierce": {"fl": "穿过人群，只唱给一个人听。"}, "kiss": {"fl": "吻落下的那一拍，躲不开。"}, "thorn": {"fl": "玫瑰从不主动刺人。"}, "canon": {"fl": "每一次挥击，都有回声追着跑。"}, "blood": {"fl": "契约写在血里，读的时候要小心。"}, "encore": {"fl": "台下在喊：再一曲。", "n": "再一曲"}, "bday": {"fl": "黑色的蛋糕上，没有点蜡烛。"}, "ave": {"fl": "帷幕落下之前，人偶不会倒下。"}, "orbit": {"fl": "银十字绕着你转，像一首没唱完的圣歌。"}, "moon": {"fl": "月亮碎了，碎片还在发光。"}, "symbol": {"fl": "这一个符号，就是全部。"}, "masq": {"fl": "换一张脸的瞬间，谁也碰不到你。"}, "rapid": {"fl": "错开半拍，反而刚刚好。"}, "heavy": {"fl": "这一下，要整个大厅都听见。"}, "wide": {"fl": "和弦张开双臂，把所有人都抱进去。"}, "bigshot": {"fl": "不用喊，整座剧场也听得见。", "n": "宏亮的音色"}, "shUp": {"fl": "镜面越亮，越照不出伤痕。"}, "armor": {"fl": "冰冷的铁，护着温热的心。"}, "regen": {"fl": "每一个装饰音，都是一次喘息。"}, "roomHeal": {"fl": "鞠躬的时候，顺便把伤口藏起来。"}, "greed": {"fl": "假面后面的笑，是讨价还价用的。"}, "first": {"fl": "第一个音符，最响。"}, "critdmg": {"fl": "终止式之后，没有下一句。"}, "exec": {"fl": "休止符也是乐谱的一部分。"}, "rebound": {"fl": "声音撞到墙，又回来找你。"}, "split": {"fl": "一个音，分成了两个声部。"}, "chain": {"fl": "一根弦响了，整架琴都在共鸣。"}, "burn": {"fl": "烧完的乐谱，只剩余温。"}, "frost": {"fl": "冬天的舞台，连呼吸都很慢。"}, "cresc": {"fl": "越往后，越响。"}, "bossbane": {"fl": "终幕的刀，留给最后的观众。"}, "skillDmg": {"fl": "华彩乐段，属于独奏者。"}, "eliteReset": {"fl": "强敌倒下的那一刻，台下在喊安可。"}, "dashBlast": {"fl": "你经过的地方，风还没停。"}, "dashShot": {"fl": "转身的时候，把音符撒向四周。"}, "dash2": {"fl": "舞伴不只一个。"}, "nova": {"fl": "第八拍，整个大厅一起震动。"}, "shBreak": {"fl": "镜子碎的时候，碎片也会伤人。"}, "shKill": {"fl": "每一阵掌声，都是一层护壁。"}, "evade": {"fl": "你看到的，只是残影。"}, "low": {"fl": "最后一首歌，要唱得最响。"}, "iframe": {"fl": "受伤之后，先站稳这一拍。"}, "luck": {"fl": "今晚的玫瑰，开得特别好。"}, "gramo": {"fl": "留声机会替你把歌唱完。"}, "twin": {"fl": "背后，还有一个你在演奏。"}, "echoL": {"fl": "同一句歌词，唱两遍。", "n": "叠句"}, "phoenix": {"fl": "灰烬里，有人在重新调音。"}, "vortex": {"fl": "终焉的声音，会把一切都卷进来。"}, "aegis": {"fl": "圣盾之下，演出继续。"}, "storm": {"fl": "雷声，是天空在打拍子。"}, "mirror": {"fl": "镜子里的你，会替你还手。"}, "slowmo": {"fl": "慢一点。再慢一点。"}, "tempo": {"fl": "稳住，别抢拍。", "d": "技能谱面的最终倍率 +0.1"}, "count": {"fl": "一、二、三、四，重新数一遍。"}, "comboX": {"fl": "音符连成线，线连成歌。"}, "maestro": {"fl": "指挥棒一挥，错音也变成了伏笔。"}, "impro": {"fl": "没写在谱上的，就即兴吧。"}, "absolute": {"fl": "每一个音，都在它该在的地方。"}, "longf": {"fl": "把最后一个音拉长。"}, "fvKeep": {"fl": "歌停了，余韵还在。"}, "fvDmg": {"fl": "狂热烧到了最旺。"}, "fvExt": {"fl": "只要节拍不停，舞台就不落幕。"}, "grace": {"fl": "在主音之前，先轻轻碰一下。"}, "tremolo": {"fl": "颤动的弦，挡下了冲击。"}, "cadenza": {"fl": "积攒到第三次，一口气唱出来。"}, "downbeat": {"fl": "第一拍，要踩得最重。"}, "legato": {"fl": "音与音之间，不留空隙。", "d": "所有技能的 Fever 持续时间 +15%"}, "harmonic": {"fl": "泛音会自己找到方向。"}, "resonance": {"fl": "共振之后，下一击更沉。"}, "beatShield": {"fl": "节奏稳了，人也就稳了。"}, "heartbeat": {"fl": "心跳和节拍合在一起。"}, "breath": {"fl": "换口气，继续唱。"}, "echoBeat": {"fl": "闪开之后，正好落在拍子上。"}, "ostinato": {"fl": "同一个音型，一遍又一遍。"}, "prelude": {"fl": "前奏响起，台下就安静了。"}, "accel": {"fl": "越来越快，停不下来。"}, "rapture": {"fl": "登场的那一刻，疼痛都忘了。"}, "harvest": {"fl": "狂热里倒下的，都化成了时间。"}, "embers": {"fl": "每一个倒下的敌人，都留下一点火。"}, "feverEye": {"fl": "狂热中的眼睛，只看得见要害。"}, "feverArmor": {"fl": "狂热是最好的铠甲。"}, "curtainFv": {"fl": "大幕落下，台下还在喊返场。", "d": "房间清空后，乐章值补充 35%", "r": 1}, "bloom": {"fl": "技能绽开的时候，音符像花瓣一样散开。"}, "gilded": {"fl": "镀金的时刻，连掉下的东西都闪闪发光。"}, "afterglow": {"fl": "聚光灯熄灭后，余晖还在。"}, "still": {"fl": "站定，开口，全场都在听。"}, "sweep": {"fl": "普通的观众，留不住你。"}, "giant": {"fl": "越高的墙，倒得越响。"}, "momentum": {"fl": "停下来，就会被追上。"}, "detonate": {"fl": "最后一个音，炸开了。"}, "mark": {"fl": "先看中的那一个，就不放过。"}, "stiletto": {"fl": "细针一样的高音，刺得最深。"}, "overkill": {"fl": "多出来的力气，留给下一个。"}, "agile": {"fl": "手指在弦上，比心跳还快。"}, "hammer": {"fl": "定音锤落下，地面都在震。"}, "finale": {"fl": "最后一个观众，享受全部的掌声。"}, "vibrato": {"fl": "揉一下弦，声音就多了一层。"}, "corset": {"fl": "束紧的腰身，撑得住一整场。"}, "ledger": {"fl": "每一片花瓣，都记在账上。"}, "bandage": {"fl": "下一幕开场前，把伤口缠好。"}, "quickstep": {"fl": "脚步越快，护壁越厚。"}, "danceDR": {"fl": "舞步之间，没有破绽。"}, "presence": {"fl": "站在台中央的人，气势不一样。"}, "bows": {"fl": "谢幕礼成，台下撒来花瓣。"}, "vampire": {"fl": "红色的华尔兹，越跳越有精神。"}, "wealth": {"fl": "口袋里的花瓣，也会唱歌。"}, "lastStand": {"fl": "倒下之前，再站起来一次。"}, "understudy": {"fl": "替身替你挨下了第一刀。"}, "sforzando": {"fl": "第一下，就要震住全场。"}, "coda": {"fl": "尾声，才是最响的地方。"}, "cloak": {"fl": "斗篷一甩，人已经不在原地。"}, "owSight": {"fl": "站高一点，就能看见更远的剧场。"}, "owStealth": {"fl": "脚步轻得像落下的羽毛。"}, "owForage": {"fl": "没人走过的路上，总有遗落的东西。"}, "owRest": {"fl": "篝火边坐一会儿，伤就好一点。"}, "owTrade": {"fl": "战利品要卖给识货的人。"}, "owSense": {"fl": "地底下有东西在唱歌。"}, "owTrust": {"fl": "温柔的声音，谁都愿意听。"}, "owCloneLife": {"fl": "镜子里的余温，散得慢一些。"}, "owTreasure": {"fl": "藏起来的东西，总会被你找到。"}};for(const u of UPS){const r=UPREV[u.id];if(r)Object.assign(u,r)}Object.assign(EMBUP,{owTrade:'coins',owSense:'notes',owTrust:'heart',owCloneLife:'masks',owSight:'eye',owStealth:'moon',owForage:'coins',owRest:'ember',owTreasure:'sparkle'});
 const owUpOk=u=>!u.unl||!!OWS.unl[u.unl];
@@ -6905,7 +6921,7 @@ function owGen(th,opt){const mini=!!(opt&&opt.stage);const g=new Uint8Array(OWW*
   const disc=(cx,cy,r,f)=>{for(let y=Math.floor(cy-r);y<=cy+r;y++)for(let x=Math.floor(cx-r);x<=cx+r;x++)if(inb(x,y)&&(x-cx)**2+(y-cy)**2<=r*r)f(x,y)};
   /* key places */
   const P0={camp:{x:rint(9,14),y:rint(OWH-15,OWH-10)},lair:{x:rint(OWW-(th.sea?34:22),OWW-(th.sea?28:16)),y:rint(10,14)},
-    town:{x:rint(Math.round(OWW*.42),Math.round(OWW*.52)),y:rint(Math.round(OWH*.44),Math.round(OWH*.56))},grove:{x:rint(10,16),y:rint(9,14)},shrine:{x:rint(Math.round(OWW*.3),Math.round(OWW*.42)),y:rint(9,14)}};
+    town:{x:rint(Math.round(OWW*.3),Math.round(OWW*.7)),y:rint(Math.round(OWH*.3),Math.round(OWH*.7))},grove:{x:rint(10,16),y:rint(9,14)},shrine:{x:rint(Math.round(OWW*.3),Math.round(OWW*.42)),y:rint(9,14)}};
   if(th.settle==='town'){P0.town={x:Math.round(OWW*.5),y:Math.round(OWH*.5)}}P0.towns=[P0.town];if(mini){P0.camp={x:rint(6,9),y:rint(OWH-9,OWH-6)};P0.town={x:-999,y:-999};P0.towns=[];P0.grove={x:-999,y:-999};P0.shrine={x:-999,y:-999}}
   /* --- water: the sea, a river, lakes */
   let seaEdge=null;if(th.sea){seaEdge=[];for(let y=0;y<OWH;y++){const e=OWW*.79+Math.sin(y*.17)*3+Math.sin(y*.05+1)*4+nR(80,y)*3;seaEdge[y]=e;for(let x=0;x<OWW;x++){if(x>e)g[I(x,y)]=TL.WA;else if(x>e-3.2-nM(x,y)*2){g[I(x,y)]=TL.SA}}}
@@ -6995,7 +7011,7 @@ function owGen(th,opt){const mini=!!(opt&&opt.stage);const g=new Uint8Array(OWW*
       /* a road to the beach */}
     if(th.settle==='hamlet'||th.settle==='ruin'){/* a few graves near the shrine and a ruined chapel */for(let k=0;k<(th.settle==='ruin'?9:5);k++){const p=owRandAround(g,res,P0.shrine.x,P0.shrine.y+2,2,th.settle==='ruin'?7:5);if(p)prop('grave',p.x,p.y,1)}}}
   /* 2.2: more towns (蓝夜之城): hamlets well away from the old town, the camp and the theatres */
-  for(let k=1;k<(mini?1:(th.towns||1));k++){for(let t=0;t<600;t++){const cx=rint(14,OWW-15),cy=rint(12,OWH-12);if(P0.towns.some(q=>Math.hypot(q.x-cx,q.y-cy)<(q===P0.town&&th.settle==='town'?36:28)))continue;
+  for(let k=1;k<(mini?1:Math.max(3,th.towns||1));k++){for(let t=0;t<900;t++){const cx=rint(14,OWW-15),cy=rint(12,OWH-12);if(P0.towns.some(q=>Math.hypot(q.x-cx,q.y-cy)<(q===P0.town&&th.settle==='town'?36:28)))continue;
       if(Math.hypot(cx-P0.camp.x,cy-P0.camp.y)<20||thSites.some(q=>Math.hypot(q.x-cx,q.y-cy)<13)||[P0.grove,P0.shrine].some(q=>Math.hypot(q.x-cx,q.y-cy)<12))continue;
       if(!area(cx-7,cy-6,14,12,(q,i)=>q===TL.GR&&!res[i]))continue;const Tk={x:cx,y:cy};P0.towns.push(Tk);vill(Tk,'hamlet',k,'timber');break}}
   /* one house in every town becomes a shop (the one nearest its square) */
@@ -7006,7 +7022,7 @@ function owGen(th,opt){const mini=!!(opt&&opt.stage);const g=new Uint8Array(OWW*
   const G0=P0.grove;disc(G0.x,G0.y,5.6,(x,y)=>{g[I(x,y)]=TL.GR;res[I(x,y)]=1;bio[I(x,y)]=BIO.MEADOW});for(let a=0;a<TAU;a+=.05){const x=Math.round(G0.x+Math.cos(a)*5),y=Math.round(G0.y+Math.sin(a)*4.4);set(x,y,TL.RK)}
   const sec={x:G0.x,y:Math.round(G0.y+4.4)};set(sec.x,sec.y,TL.SC);set(sec.x,sec.y+1,TL.GR);set(sec.x,sec.y+2,TL.GR);res[I(sec.x,sec.y+1)]=1;res[I(sec.x,sec.y+2)]=1;
   /* ruins in the woods */
-  for(let k=0;k<Math.round((th.ruins||0)*(mini?.5:1))+(mini?2:0);k++)for(let t=0;t<200;t++){const x0=rint(8,OWW-14),y0=rint(8,OWH-12),w=rint(5,7),h=rint(4,5);if([P0.camp,...P0.towns,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-x0,p.y-y0)<12))continue;
+  for(let k=0;k<Math.round((th.ruins||0)*(mini?.5:OWW*OWH/15552))+(mini?2:0);k++)for(let t=0;t<200;t++){const x0=rint(8,OWW-14),y0=rint(8,OWH-12),w=rint(5,7),h=rint(4,5);if([P0.camp,...P0.towns,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-x0,p.y-y0)<12))continue;
     if(!area(x0-1,y0-1,w+2,h+2,(q,i)=>q===TL.GR&&!res[i]))continue;for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++){const e=x===x0||y===y0||x===x0+w-1||y===y0+h-1;g[I(x,y)]=e?(Math.random()<.18&&y!==y0+h-1?TL.FL:TL.WL):TL.FL;res[I(x,y)]=1}
     const dx=x0+(w>>1);g[I(dx,y0+h-1)]=TL.FL;g[I(dx+1,y0+h-1)]=TL.FL;houses.push({x:x0+2,y:y0+2});break}
   /* --- roads: A* from the camp to the settlement, the theatres in order, the shrine and the grove; stored as smooth lines */
@@ -7357,10 +7373,11 @@ function owPaint(){const o=G.ow;if(!o.nonce){o.nonce=Date.now()%1e9;for(const k 
   if(!o.v2){const cp=o.P0.camp,fx=cp.x*OWT+8,fy=cp.y*OWT+8;x.fillStyle='#1e1612';x.beginPath();x.arc(fx,fy,8,0,TAU);x.fill()}
   /* bushes along forest edges (baked; low) */
   for(let ty=1;ty<OWH-1;ty++)for(let tx=1;tx<OWW-1;tx++){const t=g[I(tx,ty)];if(t!==TL.GR)continue;const nT=(at(tx+1,ty)===TL.TR)+(at(tx-1,ty)===TL.TR)+(at(tx,ty+1)===TL.TR)+(at(tx,ty-1)===TL.TR);const h=owHash(tx*3,ty*5);if(nT&&h<.32){const qx=tx*16+4+owHash(tx,ty*2)*8,qy=ty*16+8+owHash(tx*2,ty)*6;if(clsAt(qx,qy)!==0)continue;const s=owBushSpr(th,(h*100|0)%5,owGF(o,tx,ty)>.45);x.fillStyle='rgba(14,10,24,.25)';x.beginPath();x.ellipse(qx+2,qy,7,2.4,0,0,TAU);x.fill();x.drawImage(s.c,qx-s.ox,qy-s.oy,s.w,s.h)}}
+  try{if(!o.indoor)owThemeAround(x)}catch(e){console.warn('around',e)}
   owSprInit(x);
   o.paintMs=Math.round(performance.now()-t0);
   if(bs>1&&!owBgOk(c)){c.width=c.height=1;OWBGLOW=1;store.set('amj_bglow',1);return owPaint()}return c}
-let OWBGLOW=store.get('amj_bglow',0);const owBgScale=()=>OWBGLOW?1:OWBS;
+let OWBGLOW=store.get('amj_bglow',0);const owBgScale=()=>OWBGLOW?1:(G.ow&&!G.ow.indoor&&OWW*OWH>20000&&matchMedia('(pointer:coarse)').matches?1.5:OWBS);
 /* a canvas the device could not allocate reads back empty: sample a few points */
 function owBgOk(c){try{const x=c.getContext('2d');if(!x)return false;let any=0;for(const[fx,fy]of[[.5,.5],[.25,.3],[.75,.7]]){const d=x.getImageData(Math.floor(c.width*fx),Math.floor(c.height*fy),1,1).data;if(d[3]>0)any++}return any>0}catch(e){return false}}
 
@@ -7391,7 +7408,7 @@ const OWAMB_B=[[0,'#e8887a'],[.46,'#e48072'],[.52,'#c8584a'],[.58,'#5e2030'],[.9
 function owAmb(){if(G.ow&&G.ow.indoor&&!G.owArena)return THST[G.ow.indoor].amb;const a0=owAmb0(),gk=G.ow&&!G.owArena?owGF(G.ow,P.x/OWT,P.y/OWT):0;return gk>.02?mixRGB(a0,'#6a4a7a',gk*.45):a0}
 function owAmb0(){const p=((G.ow.clock%OWDAY)/OWDAY),sky=G.ow.th.sky,AM=sky==='blood'?OWAMB_B:sky==='blue'?OWAMB_N:OWAMB;let a=AM[0],b=AM[1];for(let i=0;i<AM.length-1;i++)if(p>=AM[i][0]&&p<=AM[i+1][0]){a=AM[i];b=AM[i+1];break}
   const k=(p-a[0])/Math.max(1e-4,b[0]-a[0]),c=(h,i)=>parseInt(h.slice(1+i*2,3+i*2),16),m=i=>Math.round(c(a[1],i)+(c(b[1],i)-c(a[1],i))*k);return`rgb(${m(0)},${m(1)},${m(2)})`}
-function owLightPuts(put,t){if(G.ow.indoor){thLightPuts(put,t);return}const o=G.ow,nf=owNight(),cp=o.P0.camp,fl=.85+.15*Math.sin(t*11)*Math.sin(t*6.7);for(const it of o.I)if(it.kind==='theatre'){const dn=owIsDone(it.k);put(it.x,it.y-14,dn?50:140,dn?'#8a7a90':it.k===5?'#ff8090':'#ffb070',dn?.35:.8*fl)}
+function owLightPuts(put,t){if(G.ow.indoor){thLightPuts(put,t);return}const o=G.ow,nf=owNight(),cp=o.P0.camp,fl=.85+.15*Math.sin(t*11)*Math.sin(t*6.7);for(const it of o.I)if(it.kind==='theatre'){const dn=owIsDone(it.k);put(it.x,it.y-14,dn?50:140,dn?'#8a7a90':thSiteCol(it.k),dn?.35:.8*fl);if(!dn)for(let q=0;q<5;q++){const a=q/5*TAU+t*.05;put(it.x+Math.cos(a)*90,it.y+30+Math.sin(a)*60,70*fl,thSiteCol(it.k),.45)}}
   put(cp.x*OWT+8,cp.y*OWT+4,(230+60*nf)*fl,'#ff9a40',.9);put(cp.x*OWT+8,cp.y*OWT+4,90*fl,'#ffe0a0',.7);
   if(nf>.2)put(P.x,P.y-12,120+40*nf,'#c8d4ff',.35*nf);
   {const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2};for(const l of o.glamps||[])if(l.x>cam.x-60&&l.x<cam.x+VW+60&&l.y>cam.y-60&&l.y<cam.y+VH+90)put(l.x,l.y,60*fl,'#b070ff',.45+.4*nf)}
@@ -7425,18 +7442,23 @@ function owAtmosOver(cam,t){const o=G.ow,nf=owNight(),p=(o.clock%OWDAY)/OWDAY,gk
 /* ------------------------------------------------------------------ start / reset */
 let OWLAST=0;
 function owFreeMap(o){const kill=c=>{if(c&&c.width){c.width=1;c.height=1}};if(G.bg&&G.bg.bgS)kill(G.bg);if(o){kill(o.gc);o.gc=null;kill(o.fog);if(o.save)kill(o.save.bg)}for(const k in OWSPR)if(k.startsWith('house:')){kill(OWSPR[k].c);delete OWSPR[k]}}
-function owReset(){P.swim=false;G.owIn=null;G.owW=null;if(G.ow)owFreeMap(G.ow);$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
+function owReset(){P.swim=false;P.ride=0;{const rb=$('rideBtn');if(rb)rb.hidden=true}G.owIn=null;G.owW=null;if(G.ow)owFreeMap(G.ow);$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
 function owStart(i){OWLAST=1;const ks=Object.keys(OWTH),last=store.get('amj_owlast','');let th=pick(ks);if(th===last&&ks.length>1)th=pick(ks.filter(k=>k!==last));store.set('amj_owlast',th);G.owTheme=th;WORLD=1;startRun(i,{ow:1})}
-function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res){const n=res.ow.g.length;OWW=res.ow.w||(n===112*84?112:144);OWH=res.ow.h||Math.round(n/OWW)}else{OWW=144;OWH=108}try{buildW34Art()}catch(e){}
+/* 2.2: you start somewhere new each time: in one of the towns or out in the wild, never near the last theatre */
+function owSpawnPoint(o){const L=(o.P0.th||[]).find(s=>s.k===5)||o.P0.lair,diag=Math.hypot(OWW,OWH),far=p=>Math.hypot(p.x/OWT-L.x,p.y/OWT-L.y)>diag*.38&&!(o.P0.th||[]).some(s=>Math.hypot(p.x/OWT-s.x,p.y/OWT-s.y)<10);
+  if(Math.random()<.5&&o.P0.towns&&o.P0.towns.length){for(const T of shuffle(o.P0.towns.slice())){const q=owRandFree(T.x,T.y+2,4,1);if(q&&far(q)){o.spawn='town';return q}}}
+  for(let t=0;t<800;t++){const tx=rint(6,OWW-7),ty=rint(6,OWH-7);if(!owFree(tx,ty)||owTile(tx,ty)===TL.WA)continue;const q={x:tx*OWT+8,y:ty*OWT+8};if(!far(q)||owTier(q)>2)continue;o.spawn='wild';return q}
+  const cp=o.P0.camp;o.spawn='camp';return{x:cp.x*OWT+8,y:cp.y*OWT+30}}
+function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res){const n=res.ow.g.length;OWW=res.ow.w||(n===112*84?112:144);OWH=res.ow.h||Math.round(n/OWW)}else{OWW=192;OWH=144}try{buildW34Art()}catch(e){}
   G.ow={th,g:null,P0:null,exp:new Uint8Array(OWW*OWH),clock:rnd(20,60),fogT:0,mapT:0,npcs:[],I:[],eng:0,engT:0,lastEng:0,mem:{},kills0:G.kills||0,t0:G.time,quiet:0};
   RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.owTh=0;G.owNext=1;G.owDone=[];G.type='ow';G.cleared=false;G.obs=[];G.deco=[];G.doors=[];G.en=[];G.picks=[];G.zones=[];G.npc=null;G.act=1;G.room=0;
   if(res){runRestoreG(res);if(!res.G.owDone)G.owDone=null;owDoneL();G.owNext=G.owDone.length+1;G.act=Math.min(5,G.owNext);G.room=0;owRestore(res.ow);allyRestore(res.allies)}else{const W=owGen(th);Object.assign(G.ow,W);G.ow.walk=0;for(const t of G.ow.g)if(!OWSOLID[t])G.ow.walk++;G.ow.walk++}
-  if(!res){const cp=G.ow.P0.camp;P.x=cp.x*OWT+8;P.y=cp.y*OWT+30;stats();P.sh=P.shMax}P.vx=P.vy=0;P.inv=1;
+  if(!res){const q=owSpawnPoint(G.ow);P.x=q.x;P.y=q.y;stats();P.sh=P.shMax;owVehInit(G.ow)}P.ride=0;P.vx=P.vy=0;P.inv=1;
   if(!res){owPopulate();owCaches()}owTheatres();if(!res)for(let k=1;k<=5;k++)owGuards(k);G.bg=owPaint();owFogInit();const m=$('owMap');if(m)m.hidden=false;$('game').classList.add('ow');
   setTrack('calm');updStage();$('hud').hidden=false;
   if(res){if(res.th){owEnterTheatre(res.th,res);return}if(res.thMap){try{thBuild(res.thMap.k,thSt(res.thMap.k),{tpx:res.thMap.px,tpy:res.thMap.py})}catch(e){console.warn('theatre resume',e);if(G.owW)thRestoreWorld(true)}later(.6,()=>toast('继续 · '+ACTS[res.thMap.k-1].name));return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
   playCut(cutPrologue(),()=>{later(.4,()=>toast(th.name+' · '+th.fr));later(2.8,()=>toast('五座剧场散落在这片土地上，地图上不会标出来——要自己去找。'));later(6.2,()=>toast('上空有光柱的就是剧场；亮着红光的那座是终幕，按什么顺序演都可以。'));later(9.6,()=>toast('剧场里关着同伴，救出的人越多，终幕越好打。路上遇到的人，也许知道剧场在哪。'));if(G.rareGot)later(13,()=>toast('试音 · 获得「'+G.rareGot+'」'))});
-  if(OWS.runs===0)later(10,()=>toast('提示：攻击会发出声音，附近的怪物会过来查看。'))}
+  if(OWS.runs===0)later(10,()=>toast('提示：攻击会发出声音，附近的怪物会过来查看。'));later(16,()=>toast('身边停着一辆夜行机车：按 F（或右下的「上车」）骑上它。地图很大，骑车快得多。'))}
 
 /* ------------------------------------------------------------------ population */
 const OWTYPE={mari:{det:85,wander:1},mask:{det:120,patrol:1,retreat:1},crow:{det:110,wander:1,retreat:1,flock:1},rose:{det:125,still:1},knight:{det:100,patrol:1}};
@@ -7445,12 +7467,12 @@ function owMake(t,x,y,elite,group){const sa=G.act;G.act=Math.min(5,Math.max(owTi
   if(OWTYPE[t]&&OWTYPE[t].patrol){const pts=[];for(let k=0;k<3;k++){const q=owRandFree(x/OWT,y/OWT,7,2);if(q)pts.push(q)}if(pts.length)e.ow.wp={pts,i:0}}return e}
 function owPopulate(){const o=G.ow,cp=o.P0.camp;let gid=0;
   const POOL=[['mari','crow'],['mari','crow','mask'],['mask','rose','knight','mari'],['knight','mask','rose','crow']];
-  const enCap=Math.round(62*OWW*OWH/9408*(o.th.monK||1)*ECNT());for(let k=0;k<300&&G.en.length<enCap;k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty))continue;if(Math.hypot(tx-cp.x,ty-cp.y)<14)continue;
+  const enCap=Math.round(62*Math.pow(OWW*OWH/9408,.85)*(o.th.monK||1)*ECNT());for(let k=0;k<1200&&G.en.length<enCap;k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty))continue;if(Math.hypot(tx-cp.x,ty-cp.y)<14)continue;
     if(Math.hypot(tx-o.P0.grove.x,ty-o.P0.grove.y)<7||Math.hypot(tx-o.P0.lair.x,ty-o.P0.lair.y)<8)continue;
     const x=tx*OWT+8,y=ty*OWT+8,tr=owTier({x,y}),pool=POOL[tr-1],t=pick(pool),n=(t==='rose'?1:t==='knight'?1:rint(2,tr>=3?4:3))+((o.th.monK||1)>2&&Math.random()<.5?1:0);gid++;
     for(let j=0;j<n;j++){const q=owRandFree(tx,ty,2.5);if(q)owMake(t,q.x,q.y,tr>=3&&Math.random()<.12*tr,gid)}}
   /* chests in quiet corners, one more in the grove */
-  for(let k=0,n=0;k<300&&n<Math.round(7*OWW*OWH/9408);k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty)||Math.hypot(tx-cp.x,ty-cp.y)<10)continue;let walls=0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(!owFree(tx+dx,ty+dy))walls++;if(walls<2)continue;G.picks.push({k:'chest',x:tx*OWT+8,y:ty*OWT+8,t:0,ow:1});n++}
+  for(let k=0,n=0;k<900&&n<Math.round(7*OWW*OWH/9408);k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty)||Math.hypot(tx-cp.x,ty-cp.y)<10)continue;let walls=0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(!owFree(tx+dx,ty+dy))walls++;if(walls<2)continue;G.picks.push({k:'chest',x:tx*OWT+8,y:ty*OWT+8,t:0,ow:1});n++}
   const gv=o.P0.grove;G.picks.push({k:'chest',x:gv.x*OWT+8,y:gv.y*OWT-6,t:0,ow:1,grove:1});
   owNpcs();owEvents()}
 
@@ -7711,7 +7733,8 @@ function owMapTick(){const cv2=$('owMap');if(!cv2||cv2.hidden)return;const o=G.o
   if(G.mods.owTreasure)for(const p of G.picks)if(p.k==='chest'&&!p.open)dot(p.x,p.y,'#ffd27a',2);
   for(const n of o.npcs)if(owNpcVisible(n)&&o.exp[owI(Math.floor(n.x/OWT),Math.floor(n.y/OWT))])dot(n.x,n.y,'#7af0c0',2);
   for(const e of G.en)if(!e.dead&&e.ow&&(e.ow.s==='chase'||e.ow.s==='alert'))dot(e.x,e.y,'#ff4050',2);
-  if(Math.floor(G.time*3)%2)dot(P.x,P.y,'#ffffff',3)}
+  if(Math.floor(G.time*3)%2||cv2.classList.contains('big'))dot(P.x,P.y,'#ffffff',3);
+  {const mi=$('owMini');if(mi&&!mi.hidden){const mx=mi.getContext('2d'),W=mi.width,H=mi.height,sx=clamp(Math.round(P.x/OWT-W/2),0,Math.max(0,OWW-W)),sy=clamp(Math.round(P.y/OWT-H/2),0,Math.max(0,OWH-H));mx.imageSmoothingEnabled=false;mx.fillStyle='#0a080c';mx.fillRect(0,0,W,H);mx.drawImage(cv2,sx,sy,Math.min(W,OWW),Math.min(H,OWH),0,0,Math.min(W,OWW),Math.min(H,OWH));mi.classList.toggle('fight',cv2.classList.contains('fight'))}}}
 function owExplorePct(){const o=G.ow;return Math.min(100,Math.round((o.expN||0)/o.walk*100))}
 
 /* ------------------------------------------------------------------ per-frame */
@@ -7720,7 +7743,7 @@ function owUpdate(dt){const o=G.ow;if(!o)return;if(!G.owArena)owSwimTick(dt);els
   if(G.owArena){o.clock+=dt;if(!G.owTh&&G.boss&&G.boss.dead&&!o.won){o.won=1;later(2.2,()=>owVictory())}return}owAllyLeash();
   o.clock+=dt;o.fogT-=dt;if(o.fogT<=0){o.fogT=.15;owFogTick()}o.mapT-=dt;if(o.mapT<=0){o.mapT=.3;owMapTick()}
   {const mm=$('owMap');if(mm)mm.classList.toggle('fight',!!o.inFight||modal.hidden===false&&G.modalKind==='chart')}
-  const eng=owEngaged();if(eng){o.engT=G.time;if(!o.inFight){o.inFight=1;setTrack('battle')}}else if(o.inFight&&G.time-o.engT>2.5){o.inFight=0;shRestore();if(G.mods.owRest){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.06*G.mods.owRest);S.p('heal')}setTrack('calm')}
+  const eng=owEngaged();if(eng){o.engT=G.time;if(!o.inFight){o.inFight=1;setTrack('battle')}}else if(o.inFight&&G.time-o.engT>2.5){o.inFight=0;shRestore();if(G.mods.owRest){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*.06*G.mods.owRest);S.p('heal')}setTrack(o.isTh===5?'audience':'calm')}
   owUpdNpcs(dt);owCacheTick(dt);if(o.eng)owCloneTick();
   G.owTune=0;const mus=o.npcs.find(n=>n.id==='musician');if(mus&&o.mem.tune&&owNight()<.5&&d2(mus,P)<(o.mem.tune>=1?999999:110*110))G.owTune=1;
   for(const it of o.I){if(it.done&&!it.fight&&it.kind!=='theatre')continue;const dd=d2(it,P);if(dd>48*48&&!it.skip)it.arm=1;if(it.skip&&dd>60*60){it.skip=0;it.arm=1}
@@ -7733,7 +7756,7 @@ function owUpdate(dt){const o=G.ow;if(!o)return;if(!G.owArena)owSwimTick(dt);els
   if(!o.groveOpen&&(P.atkT>0||P.dashT>0)){const s=o.sec,sx=s.x*OWT+8,sy=s.y*OWT+8;if((P.x-sx)**2+(P.y-sy)**2<26*26){o.groveOpen=1;o.g[owI(s.x,s.y)]=TL.GR;owRepaint(s.x,s.y);burst(sx,sy,24,['#55545c','#3a3940','#ffd27a'],80,.6);S.p('shbreak');shake(4);toast('石头裂开了，后面是一条窄缝。');if(!OWS.grove){OWS.grove=1;owSave()}}}
   if(o.helper){const h=o.helper,dx=P.x-(P.face||1)*16-h.x,dy=P.y+4-h.y,d=Math.hypot(dx,dy);if(d>3){h.x+=dx/d*Math.min(d,90*dt);h.y+=dy/d*Math.min(d,90*dt)}h.cd-=dt;
     if(h.cd<=0){let t=null,bd=150*150;for(const e of G.en)if(!e.dead&&e.ow&&e.ow.s==='chase'){const q=d2(e,h);if(q<bd){bd=q;t=e}}if(t){h.cd=1.1;shoot({x:h.x,y:h.y-8,a:Math.atan2(t.y-8-h.y+8,t.x-h.x),spd:180,dmg:6*G.mods.ranged,k:'note',pierce:0,col:'#d8c0ff',life:1,r:2.5,noMod:1,ally:1})}else h.cd=.3}}
-  if(o.isTh)thTick(dt);owDoorTick(dt);updStageOW()}
+  if(o.isTh)thTick(dt);owDoorTick(dt);vehBtn();updStageOW()}
 let owStageT=0;function updStageOW(){if((owStageT-=1/60)>0)return;owStageT=.5;owStage()}
 function owStage(){const o=G.ow;if(!o)return;if(o.isTh&&!G.owIn&&!G.owArena){const zs=o.I.filter(q=>q.kind==='thzone');setH('stage',`剧场 · ${ACTS[o.isTh-1].name} · 战场 ${zs.filter(q=>q.done).length}/${zs.length}${zs.some(q=>q.act)?' · 交战中':''} · 入口可撤退`);return}if(G.owIn){setH('stage',`漫游 · ${o.th.name} · ${G.owIn.b.shop?'面具店':G.owIn.ruin?'烧毁的屋子':'屋内'} · 往下走出门`);return}if(G.owArena){setH('stage',`漫游 · ${o.th.name} · 守护者`);return}setH('stage',`漫游 · ${o.th.name} · 探索 ${owExplorePct()}% · ${owTimeName()}${o.eng?' · 交战中':''}`)}
 
@@ -7763,10 +7786,10 @@ function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();con
     else if(it.kind==='grove'){ctx.fillStyle='#3a4a3a';ctx.fillRect(x-7,y-8,14,8);ctx.fillStyle='#5a7a50';ctx.fillRect(x-7,y-9,14,2);ctx.fillStyle='#ffd27a';ctx.fillRect(x-1,y-13+b,2,4)}
     else if(it.kind==='gate'){ctx.fillStyle='#2a0a12';ctx.fillRect(x-14,y-22,28,22);ctx.fillStyle='#6a1220';ctx.fillRect(x-12,y-20,11,20);ctx.fillRect(x+1,y-20,11,20);ctx.fillStyle=GOLD;ctx.fillRect(x-14,y-23,28,1.5);ctx.fillRect(x-1,y-12,2,2)}}}
 function owList(list){const o=G.ow;for(const n of o.npcs)if(owNpcVisible(n)&&Math.abs(n.x-P.x)<VW&&Math.abs(n.y-P.y)<VH)list.push({y:n.y,ow:n});
-  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll'||it.kind==='stranger'&&!it.done)&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});if(o.inter)for(const it of o.inter)if(Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH)list.push({y:it.k==='food'?it.y+4:it.y-3,ow:{thi:it}});for(const it of o.I)if(it.kind==='theatre'&&!o.indoor&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
+  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll'||it.kind==='stranger'&&!it.done)&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});if(o.veh&&!P.ride&&!o.isTh&&Math.abs(o.veh.x-P.x)<VW&&Math.abs(o.veh.y-P.y)<VH)list.push({y:o.veh.y,ow:{veh:1}});if(o.inter)for(const it of o.inter)if(Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH)list.push({y:it.k==='food'?it.y+4:it.y-3,ow:{thi:it}});for(const it of o.I)if(it.kind==='theatre'&&!o.indoor&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
   if(o.spr){const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2},r0=Math.max(0,Math.floor(cam.y/16)-1),r1=Math.min(OWH-1,Math.floor((cam.y+VH)/16)+6),x0=cam.x-60,x1=cam.x+VW+60;for(let r=r0;r<=r1;r++)for(const q of o.spr[r])if(q.x+(q.s.w||0)>x0&&q.x<x1)list.push({y:q.y,ow:{owsp:q}})}}
 function owSprH(k,h){const s=SPR[k];if(!s)return null;const c=s.f[0];return{c,sc:h/c.height,f:s.f}}
-function owDrawItem(it,t){if(it.thi){thDrawInter(it.thi,t);return}if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
+function owDrawItem(it,t){if(it.thi){thDrawInter(it.thi,t);return}if(it.veh){const v=G.ow.veh;vehDraw(v.x,v.y,v.face||1,0,t);return}if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
   if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':e.kind==='stranger'?(SPR.puppeteer?'puppeteer':'mask'):'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
   const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();if(n.swim)owSwimOver(n,t);
   if(d2(n,P)<40*40){ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';const nm=T(n.name),w=ctx.measureText(nm).width+6;ctx.fillRect(n.x-w/2,n.y-38,w,9);ctx.fillStyle='#ffe6b0';ctx.fillText(nm,n.x,n.y-31);ctx.textAlign='left'}}
@@ -7774,7 +7797,7 @@ function owDrawItem(it,t){if(it.thi){thDrawInter(it.thi,t);return}if(it.owsp){ow
 
 function owBeacon(cam,t){const o=G.ow;if(CUT.on)return;
   for(const it of o.I){if(it.kind!=='theatre'||owIsDone(it.k))continue;const big=it.k===5,top=it.y-8-(big?96:70);
-    if(it.x>cam.x-20&&it.x<cam.x+VW+20&&it.y>cam.y+10&&it.y-70<cam.y+VH){ctx.save();ctx.globalCompositeOperation='lighter';const c=big?'255,120,140':'255,190,110',g=ctx.createLinearGradient(0,top-160,0,top);g.addColorStop(0,`rgba(${c},0)`);g.addColorStop(1,`rgba(${c},${.16+.06*Math.sin(t*2+it.k)})`);ctx.fillStyle=g;ctx.fillRect(it.x-7,top-160,14,160);ctx.fillRect(it.x-2,top-160,4,160);ctx.restore()}}
+    if(it.x>cam.x-20&&it.x<cam.x+VW+20&&it.y>cam.y+10&&it.y-70<cam.y+VH){ctx.save();ctx.globalCompositeOperation='lighter';const hc=nc(thSiteCol(it.k)),c=[1,3,5].map(i=>parseInt(hc.slice(i,i+2),16)).join(','),g=ctx.createLinearGradient(0,top-160,0,top);g.addColorStop(0,`rgba(${c},0)`);g.addColorStop(1,`rgba(${c},${.16+.06*Math.sin(t*2+it.k)})`);ctx.fillStyle=g;ctx.fillRect(it.x-7,top-160,14,160);ctx.fillRect(it.x-2,top-160,4,160);ctx.restore()}}
   const it=null;if(!it)return;
   const cx=cam.x+VW/2,cy=cam.y+VH/2,dx=it.x-cx,dy=it.y-cy,m=16,k=Math.min((VW/2-m)/Math.abs(dx||1e-6),(VH/2-m)/Math.abs(dy||1e-6)),ax=cx+dx*k,ay=cy+dy*k,a=Math.atan2(dy,dx),pul=.7+.3*Math.sin(t*4),big=it.k===5;
   ctx.save();ctx.translate(ax,ay);ctx.globalAlpha=.85*pul;ctx.drawImage(glow(big?'#ff8090':'#ffb070'),-12,-12,24,24);ctx.rotate(a);ctx.fillStyle=big?'#ffb3c0':'#ffe07a';ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(-3,-5);ctx.lineTo(-1,0);ctx.lineTo(-3,5);ctx.closePath();ctx.fill();ctx.rotate(-a);
@@ -7805,7 +7828,7 @@ function owEpic(cam,t){const o=G.ow,K=owSkyK(),p=(o.clock%OWDAY)/OWDAY,sky=o.th.
   /* bloom: soft halos around every light worth seeing */
   const vis=(x,y,m)=>x>cam.x-m&&x<cam.x+VW+m&&y>cam.y-m&&y<cam.y+VH+m,halo=(x,y,r,col,a)=>{if(!vis(x,y,r))return;ctx.globalAlpha=a;ctx.drawImage(glow(col),x-r,y-r,r*2,r*2)},fl=.85+.15*Math.sin(t*11)*Math.sin(t*6.7);
   {const cp=o.P0.camp;halo(cp.x*OWT+8,cp.y*OWT+2,(46+20*nf)*fl,'#ff9a40',.3+.25*nf);halo(cp.x*OWT+8,cp.y*OWT+2,14*fl,'#fff0c0',.5)}
-  for(const it of o.I)if(it.kind==='theatre'&&!owIsDone(it.k)){halo(it.x,it.y-20,it.k===5?70:46,it.k===5?'#ff5070':'#ffb070',.22*fl+.12*nf)}
+  for(const it of o.I)if(it.kind==='theatre'&&!owIsDone(it.k)){halo(it.x,it.y-20,it.k===5?70:46,thSiteCol(it.k),.22*fl+.12*nf)}
   if(nf>.25){for(const l of o.lamps||[]){halo(l.x,l.y,34*fl,'#ffc870',.32*nf);halo(l.x,l.y,7,'#fff4d8',.7*nf)}for(const b of o.bld||[]){if(b.kind==='theatre'||!b.wins||!b.wins.length||owHash(b.id,3)>=.75)continue;for(const w of b.wins){const wx=b.x*16+w.x+w.w/2,wy=(b.y+b.h)*16+w.y+w.h/2;halo(wx,wy,14,'#ffb060',.4*nf)}}}
   for(const l of o.glamps||[])halo(l.x,l.y,26*fl,'#c080ff',.3+.3*nf);
   /* lens flare from the sun, only in clear daylight */
@@ -7837,7 +7860,7 @@ const HFOOD={bread:{n:'面包',d:'回复 15% 生命',f:()=>healP(.15)},soup:{n:'
 function healP(k){P.hp=Math.min(P.maxHp,P.hp+P.maxHp*k*cr('heal'));S.p('heal')}
 const HLINE=['「请进。……外面那么吵，你也是被剧场的光吸引来的吧？」','「坐吧，茶刚泡好。这屋子很久没来客人了。」','「嘘——孩子刚睡着。有事小声说哦。」','「你也是戴着面具的人啊。我年轻的时候，也想过站上那样的舞台。」','「门没锁，是因为我在等一个人。……不是你，不过也欢迎。」','「桌上的东西随便吃。反正今晚，大家都要去看戏。」'];
 const HHOST=['「……谁？！」屋里的人抄起了身边的东西。','「这屋子已经有主了。」几个戴着假面的人从暗处站了起来。','「来得正好，把花瓣留下。」'];
-function owDoorTick(dt){const o=G.ow;o.doorB=null;if(!o.bld||P.down||P.swim||o.entering)return;for(const b of o.bld){if(b.kind==='theatre')continue;const dx=b.door.x*OWT+8,dy=b.door.y*OWT;if(Math.abs(P.x-dx)<9&&P.y>=dy-2&&P.y<dy+13){o.doorB=b;break}}
+function owDoorTick(dt){const o=G.ow;o.doorB=null;if(!o.bld||P.down||P.swim||P.ride||o.entering)return;for(const b of o.bld){if(b.kind==='theatre')continue;const dx=b.door.x*OWT+8,dy=b.door.y*OWT;if(Math.abs(P.x-dx)<9&&P.y>=dy-2&&P.y<dy+13){o.doorB=b;break}}
   if(o.doorB&&(P.inMy||0)<-.45&&modal.hidden&&!CUT.on){o.doorT=(o.doorT||0)+dt;if(o.doorT>.22){o.doorT=0;owEnterHouse(o.doorB)}}else o.doorT=0}
 function owDoorLabel(t){const b=G.ow.doorB;if(!b||G.owArena)return;const x=b.door.x*OWT+8,y=b.door.y*OWT-22+Math.sin(t*4)*1.5,s=b.shop?'▲ 进入商店':'▲ 进屋';ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';const w=ctx.measureText(s).width+8;
   ctx.fillStyle='rgba(10,6,12,.72)';ctx.fillRect(x-w/2,y-7,w,10);ctx.fillStyle=b.shop?'#ffe08a':'#ffe6c8';ctx.fillText(s,x,y);ctx.textAlign='left'}
@@ -7896,7 +7919,7 @@ function owHouseTalk(d){const st=G.owIn.st,F=FOLK[d.fk]||FOLK.fan,n={name:d.name
     opts.push({ic:'✚',r:1,t:'坐下来歇一会儿',d:'回复 25% 生命',fn:()=>{st.gift=1;healP(.25)}});if(F.gift==='petal')opts.push({ic:'✿',t:'收下花瓣',d:'对方硬要塞给你',fn:()=>{st.gift=1;G.petals+=owCoin(15);S.p('pick')}})}
   opts.push(owBye);const line=st.met?(F.lines[1]||F.lines[0]):HLINE[st.line||0];st.met=1;owTalkModal(n,line,opts)}
 /* the shop: every melody you could learn right now, at a steep price */
-function owShopList(){const cap=noLeg()?1:2;return UPS.filter(u=>u.r<=cap&&(!u.ow||(G.ow&&owUpOk(u)))&&(!u.char||u.char.includes(ch().id))&&(u.rep||(G.ups[u.id]||0)<(u.max||9))&&!u.curse).sort((a,b)=>b.r-a.r||String(a.n).localeCompare(String(b.n),'zh'))}
+function owShopList(){const cap=noLeg()?1:2;return UPS.filter(u=>!u.cut&&u.r<=cap&&(!u.ow||(G.ow&&owUpOk(u)))&&(!u.char||u.char.includes(ch().id))&&(u.rep||(G.ups[u.id]||0)<(u.max||9))&&!u.curse).sort((a,b)=>b.r-a.r||String(a.n).localeCompare(String(b.n),'zh'))}
 function owShopPrice(u){return Math.round([130,260,460][u.r]*(1+.35*(G.ups[u.id]||0))*cr('buy')*(G.ow&&G.ow.th.sky==='blood'?1.25:1))}
 function owShop(d){const inv=owInvValue(),L=owShopList(),ic=u=>{const i=UPIDX(u.id);return UI.ups&&i>=0&&i<UI.upsN?`<i class="ci" style="${upPos(i)}"></i>`:`<span class="sic">${u.ic||'♪'}</span>`};
   openModal('shop',`<h3>${d.name}</h3><p class="sub">「想要什么就拿吧——只要你付得起。这里的旋律，都是从剧场后台流出来的。」<br><span class="spet">✿ ${Math.floor(G.petals)}</span></p>
@@ -8109,7 +8132,7 @@ const ECNT=()=>[1,1.25,1.5][HLV()];
 const thTheme=k=>k===5?'blood':({fire:'blood',water:'coast',air:'city',earth:'forest'})[ACTS[k-1]&&ACTS[k-1].sym]||'night';
 function thRng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 function thSt(k){const W=G.owW?G.owW.o:G.ow;W.thm=W.thm||{};return W.thm[k]||(W.thm[k]={seed:(Math.random()*2e9)|0,z:[],ch:[],ev:0,seen:0,exp:''})}
-function thEnter(k,res){const W=G.ow;if(!W||G.owW||G.owArena)return;const st=thSt(k);P.vx=P.vy=0;curtain(1);S.p('door');setTimeout(()=>S.p('clap',2),400);owLoadBar(1,'推开剧场的门……');
+function thEnter(k,res){const W=G.ow;if(!W||G.owW||G.owArena)return;vehOff();const st=thSt(k);P.vx=P.vy=0;curtain(1);S.p('door');setTimeout(()=>S.p('clap',2),400);owLoadBar(1,'推开剧场的门……');
   setTimeout(()=>{try{thBuild(k,st,res)}catch(e){console.warn('theatre map',e);if(G.owW)thRestoreWorld(true)}setTimeout(()=>{owLoadBar(0);curtain(0)},300)},750)}
 function thFreeGround(o){if(G.bg&&G.bg.bgS){G.bg.width=1;G.bg.height=1}G.bg=null;if(o&&o.gc){o.gc.width=1;o.gc.height=1;o.gc=null}for(const kk in OWSPR)if(kk.startsWith('house:')){OWSPR[kk].c.width=1;delete OWSPR[kk]}}
 function thMake(t,x,y,elite,g){const e=makeEnemy(t,x,y,elite);e.intro=0;e.ow={s:'chase',t:.3,home:{x,y},g,wp:null,lost:0};return e}
@@ -8130,7 +8153,7 @@ function thBuild(k,st,res){const W=G.ow;
   T.chests.forEach((c,i)=>{if(!st.ch[i])G.picks.push({k:'chest',x:c.x,y:c.y,t:0,ow:1,thc:i})});
   if(st.exp)for(let i=0;i<st.exp.length&&i<T.exp.length;i++)T.exp[i]=st.exp.charCodeAt(i)===49?1:0;
   if(res&&res.tpx!=null){P.x=res.tpx;P.y=res.tpy}else{P.x=T.exitP.x;P.y=T.exitP.y-30}P.vx=P.vy=0;P.inv=1.2;owPlaceAllies();
-  G.bg=T.indoor?thPaintIndoor():owPaint();owFogInit();$('owMap').hidden=false;$('game').classList.add('ow');T.inFight=0;setTrack('calm');updStage();
+  G.bg=T.indoor?thPaintIndoor():owPaint();owFogInit();$('owMap').hidden=false;$('game').classList.add('ow');T.inFight=0;setTrack(k===5?'audience':'calm');updStage();
   const nz=T.P0.zones.length,dn=st.z.filter(Boolean).length;
   if(!st.seen){st.seen=1;later(.3,()=>playCut(cutChapter(k),()=>showActCard(k,()=>later(.4,()=>toast('舞台在宅邸深处，随时可以去。房间里有吃的、散落的手稿，有些东西用近战敲一下会有动静。入口随时可以离开，进度会保留。')))))}
   else later(.5,()=>owBanner('Théâtre',`回到「${ACTS[k-1].name}」`,`已清理 ${dn}/${nz} 处`))}
@@ -8432,7 +8455,7 @@ function thEpic(cam,t){const o=G.ow,S=THST[o.indoor],vis=(x,y,m)=>x>cam.x-m&&x<c
     else if(l.k==='sconce'){ctx.globalAlpha=.28*fl;ctx.drawImage(glow(S.lit),l.x-12,l.y-12,24,24)}else if(l.k==='fire'){ctx.globalAlpha=.35*fl;ctx.drawImage(glow('#ff8a40'),l.x-30,l.y-34,60,50)}else if(l.k==='tank'){ctx.globalAlpha=.25+.08*Math.sin(t*1.3+l.x);ctx.drawImage(glow('#6ae8ff'),l.x-22,l.y-16,44,32)}}
   ctx.restore();
   /* chandeliers hang above everything */
-  for(const l of o.lights){if(l.k!=='chand'||!vis(l.x,l.y-60,80))continue;thChand(l.x,l.y-58,t,S,l.r>160)}thGlints(t)}
+  for(const l of o.lights){if(l.k!=='chand'||!vis(l.x,l.y-60,80))continue;thChand(l.x,l.y-58,t,S,l.r>160)}if(o.isTh===5)thFinaleFx(cam,t);thGlints(t)}
 function thChand(cx,cy,t,S,big){ctx.save();{const d=Math.hypot(P.x-cx,(P.y-20)-cy);if(d<70)ctx.globalAlpha=.3+.7*d/70}const sw=Math.sin(t*.8+cx)*.6;ctx.strokeStyle=hexA(S.trim,.55);ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(cx,cy-60);ctx.lineTo(cx+sw,cy-8);ctx.stroke();
   const n=big?8:6,R=big?15:11;ctx.fillStyle=hexA(S.trim,.9);ctx.beginPath();ctx.ellipse(cx+sw,cy,R,R*.32,0,0,TAU);ctx.fill();ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(cx+sw,cy+.6,R-2,R*.24,0,0,TAU);ctx.fill();
   ctx.fillStyle=hexA(S.trim,.95);ctx.beginPath();ctx.moveTo(cx+sw-2,cy-8);ctx.lineTo(cx+sw+2,cy-8);ctx.lineTo(cx+sw+1,cy+5);ctx.lineTo(cx+sw-1,cy+5);ctx.fill();
@@ -8582,6 +8605,65 @@ function allyCover(a,live){const src=G.boss&&!G.boss.dead?G.boss:nearTo(live,a,3
     let cov=0;for(let s=1;s<7;s++){const u=s/7;if(covSolid(sx+(x-sx)*u,sy+(y-8-sy)*u)){cov=1;break}}
     const ds=Math.hypot(x-sx,y-sy),dp=Math.hypot(x-P.x,y-P.y),sc=dn*3-cov*2.2+R*.004+(ds<70?1.5:0)+(dp<60?1.6*(1-dp/60):0)+Math.max(0,dp-260)*.02;if(sc<bs){bs=sc;best={x,y,cov}}}return best}
 
+/* 2.2: the land around each theatre takes on its song: a tint on the ground and the things its house would leave lying about */
+const thSiteCol=k=>{const S=THST[thStyleOf(k)];return k===5?'#ff5070':S.lit};
+function owThemeAround(x){const o=G.ow;for(const s of o.P0.th||[]){const sty=thStyleOf(s.k),S=THST[sty],cx=s.x*16+8,cy=s.y*16+8,R=s.k===5?13:10,Rp=R*16,rr=srand(s.k*977+o.nonce);
+    /* a wash of the house's colour, strongest at the door */
+    {const g=x.createRadialGradient(cx,cy+20,10,cx,cy+20,Rp);g.addColorStop(0,hexA(S.rug[0],.5));g.addColorStop(.55,hexA(S.wall[0],.24));g.addColorStop(1,hexA(S.wall[0],0));x.fillStyle=g;x.beginPath();x.ellipse(cx,cy+20,Rp,Rp*.8,0,0,TAU);x.fill()}
+    const ok=(px,py)=>{const tx=Math.floor(px/16),ty=Math.floor(py/16),t=owTile(tx,ty);return!OWSOLID[t]&&t!==TL.WA&&t!==TL.RD&&t!==TL.HS};
+    for(let n=0;n<(s.k===5?260:190);n++){const a=rr()*TAU,d=Math.sqrt(rr())*Rp,px=cx+Math.cos(a)*d,py=cy+20+Math.sin(a)*d*.8;if(!ok(px,py))continue;const v=rr();x.save();x.translate(px,py);x.scale(1.35,1.35);
+      if(sty==='candle'){if(v<.55){x.fillStyle='rgba(246,238,220,.85)';x.beginPath();x.ellipse(0,0,2+rr()*1.5,1,0,0,TAU);x.fill();if(v<.25){x.fillStyle='#f4ece0';x.fillRect(-.6,-3.4,1.2,3.4);x.fillStyle='#ffd27a';x.fillRect(-.3,-4.6,.6,1)}}else{x.strokeStyle='#a8102e';x.lineWidth=.6;x.beginPath();x.moveTo(-3,0);x.quadraticCurveTo(0,-2,3,.5);x.stroke()}}
+      else if(sty==='aviary'){if(v<.6){x.rotate(rr()*TAU);x.fillStyle='#14121a';x.beginPath();x.ellipse(0,0,3.6,1,0,0,TAU);x.fill();x.strokeStyle='#3a3a4a';x.lineWidth=.3;x.beginPath();x.moveTo(-3.6,0);x.lineTo(3.6,0);x.stroke()}else{x.fillStyle='rgba(232,208,140,.9)';x.fillRect(-.4,-1.6,.8,3.2);x.fillRect(-1.6,-.4,3.2,.8)}}
+      else if(sty==='tide'){if(v<.5){const g=x.createRadialGradient(0,0,0,0,0,6);g.addColorStop(0,'rgba(120,210,230,.45)');g.addColorStop(1,'rgba(120,210,230,0)');x.fillStyle=g;x.beginPath();x.ellipse(0,0,7,3.4,0,0,TAU);x.fill();x.strokeStyle='rgba(200,250,255,.35)';x.lineWidth=.3;x.beginPath();x.ellipse(0,0,4,1.8,0,0,TAU);x.stroke()}else{x.fillStyle='#e8dccc';x.beginPath();x.arc(0,0,1.2,Math.PI,0);x.fill();x.strokeStyle='#b8a890';x.lineWidth=.25;for(let q=-1;q<=1;q++){x.beginPath();x.moveTo(0,0);x.lineTo(q*1.1,-1);x.stroke()}}}
+      else if(sty==='rose'){if(v<.6){for(let q=0;q<5;q++){x.fillStyle=q%2?'#2a4a22':'#3a6a2a';x.beginPath();x.ellipse((rr()-.5)*5,(rr()-.5)*2.4,1.6,1.1,0,0,TAU);x.fill()}x.fillStyle='#a8142a';x.beginPath();x.arc(rr()*2-1,-.8,1.1,0,TAU);x.fill();x.fillStyle='#e84a5a';x.fillRect(-.3,-1.2,.6,.5)}else{x.strokeStyle='#2a3a22';x.lineWidth=.5;x.beginPath();x.moveTo(-4,0);x.quadraticCurveTo(0,-3,4,1);x.stroke();x.fillStyle='#2a3a22';for(let q=-3;q<4;q+=2)x.fillRect(q,-1.2,.4,.8)}}
+      else if(sty==='mirror'){if(v<.55){x.rotate(rr()*TAU);x.fillStyle='rgba(225,230,255,.8)';x.beginPath();x.moveTo(0,0);x.lineTo(2.8,.6);x.lineTo(.8,2);x.fill();x.fillStyle='rgba(255,255,255,.9)';x.fillRect(.6,.4,.6,.3)}else{x.fillStyle='#e8e4f0';for(let q=0;q<4;q++){const a2=q/4*TAU;x.fillRect(Math.cos(a2)*.8-.3,Math.sin(a2)*.6-1.5,.6,.6)}x.strokeStyle='#5a7a4a';x.lineWidth=.3;x.beginPath();x.moveTo(0,0);x.lineTo(0,-1.2);x.stroke()}}
+      else if(sty==='gallery'){if(v<.3){x.fillStyle='#ece4d8';x.beginPath();x.ellipse(0,-1,2.6,3,0,0,TAU);x.fill();x.fillStyle='#120a0e';x.beginPath();x.ellipse(-1,-1.6,.7,.45,0,0,TAU);x.ellipse(1,-1.6,.7,.45,0,0,TAU);x.fill();x.fillStyle='#c8103a';x.fillRect(-.8,.4,1.6,.4)}else{x.rotate(rr()*3);x.fillStyle=rr()<.5?'#c8103a':'#ff6a8a';x.beginPath();x.ellipse(0,0,1.4,.7,0,0,TAU);x.fill()}}
+      else if(sty==='prison'){if(v<.5){x.strokeStyle='rgba(150,150,140,.75)';x.lineWidth=.45;for(let q=0;q<5;q++){x.beginPath();x.ellipse(q*1.7-3.4,Math.sin(q)*.6,1,.6,q%2?1.2:0,0,TAU);x.stroke()}}else{x.fillStyle='#3a3a36';x.fillRect(-.5,-4,1,4);x.beginPath();x.moveTo(-1,-4);x.lineTo(0,-5.6);x.lineTo(1,-4);x.fill()}}
+      else{/* masque */if(v<.35){const k2=(Math.floor(px/8)+Math.floor(py/8))%2;x.fillStyle=k2?'rgba(20,10,14,.55)':'rgba(232,220,200,.35)';x.fillRect(-4,-4,8,8)}else{x.rotate(rr()*3);x.fillStyle=pick(['#ffd27a','#c8103a','#f8f0e0','#a060ff']);x.fillRect(-.7,-.3,1.4,.6)}}
+      x.restore()}}}
+/* the finale's house moves: coloured spotlights sweep, confetti drifts down, the light breathes in four colours */
+function thFinaleFx(cam,t){ctx.save();ctx.globalCompositeOperation='lighter';const cols=['#ff3060','#ffd27a','#a060ff','#40e0ff'];
+  for(let i=0;i<4;i++){const a=Math.sin(t*(.31+i*.07)+i*1.7),sx=cam.x+VW*(.15+.23*i)+a*VW*.18,sy=cam.y+VH*(.55+.12*Math.sin(t*.4+i));ctx.globalAlpha=.14;ctx.drawImage(glow(cols[i]),sx-60,sy-26,120,52);ctx.globalAlpha=.07;ctx.save();ctx.translate(sx,sy);ctx.rotate(Math.atan2(cam.y-80-sy,cam.x+VW*(i/3)-sx)+Math.PI/2);ctx.drawImage(shaftSpr(cols[i]),-24,-320,48,320);ctx.restore()}
+  const hue=cols[Math.floor(t*.5)%4];ctx.globalAlpha=.035+.025*Math.sin(t*2.2);ctx.fillStyle=hue;ctx.fillRect(cam.x,cam.y,VW,VH);
+  ctx.globalCompositeOperation='source-over';for(let i=0;i<46;i++){const h=owHash(i,77),ph=(t*(.06+h*.05)+h)%1,px=cam.x+((h*1531+Math.sin(t*.7+i)*20)%(VW+20))-10,py=cam.y-10+ph*(VH+20),rot=t*(2+h*3)+i;ctx.globalAlpha=.85*Math.min(1,(1-ph)*4);ctx.fillStyle=cols[i%4];ctx.save();ctx.translate(px,py);ctx.rotate(rot);ctx.fillRect(-1.2,-.5,2.4*Math.abs(Math.cos(rot*1.3))+.4,1);ctx.restore()}
+  ctx.restore()}
+
+/* ------------------------------------------------------------------ 2.2 the night motorcycle: a way to cross the big map
+   It waits beside you when the run starts. Ride it (F, or the button) and it builds up speed; at speed it smashes trees and
+   rocks (you're thrown back and hurt), and it sends enemies flying with heavy damage (a smaller jolt for you). It will not
+   go into water, houses or theatres: you get off at the door and it stays parked there. */
+const VEH={max:300,acc:2.1,coast:.9,smash:150};
+let VEHSPR=null;function vehSpr(){if(VEHSPR)return VEHSPR;const c=mk(84,52),x=c.getContext('2d');x.scale(2,2);const K=hkit(x);
+  /* wheels */for(const wx of[9,33]){K.el(wx,19,7,7,'#0c0a0e');K.el(wx,19,5.2,5.2,'#2a2630');x.strokeStyle='#c9a45c';x.lineWidth=.7;x.beginPath();x.arc(wx,19,5.6,0,TAU);x.stroke();x.strokeStyle='#6a6470';x.lineWidth=.35;for(let k=0;k<8;k++){const a=k/8*TAU;x.beginPath();x.moveTo(wx,19);x.lineTo(wx+Math.cos(a)*5,19+Math.sin(a)*5);x.stroke()}K.el(wx,19,1.3,1.3,'#c9a45c')}
+  /* frame, engine, exhaust */x.strokeStyle='#16141a';x.lineWidth=2;x.beginPath();x.moveTo(9,19);x.lineTo(17,11);x.lineTo(28,11);x.lineTo(33,19);x.stroke();K.rrv(15,12,11,7,1.5,'#3a3640','#16141a');for(let k=0;k<3;k++)K.r(16+k*3,13.4,2,4.4,'#5a5662');K.hz(5,16,14,2.2,'#6a6470','#d8d4de','#6a6470');K.el(4.6,17.1,1.2,1.1,'#2a2630');
+  /* tank and seat */K.rrv(17,6,12,6,3,'#c8203a','#6a0c1c');K.r(19,6.6,7,.8,'rgba(255,220,226,.55)');K.el(24,8.6,1.5,1.5,'#c9a45c');K.rrv(8,7,10,3.4,1.6,'#22181e','#0c080a');K.r(9,7.2,7,.6,'rgba(255,255,255,.18)');
+  /* forks, bars, lantern headlight */x.strokeStyle='#8a8494';x.lineWidth=1.1;x.beginPath();x.moveTo(33,19);x.lineTo(30,6);x.stroke();x.strokeStyle='#c9a45c';x.lineWidth=.8;x.beginPath();x.moveTo(29,5);x.lineTo(26,3.4);x.stroke();K.rr(31,6,5,5,1.6,'#c9a45c');K.el(34.6,8.5,1.8,1.8,'#fff4c8');K.el(35,8.4,.8,.8,'#ffffff');
+  /* fender with a rose */x.fillStyle='#16141a';x.beginPath();x.arc(33,19,7.6,Math.PI*1.05,Math.PI*1.75);x.lineTo(33,19);x.fill();K.el(31,12.6,1,1,'#c8203a');return VEHSPR={c,w:42,h:26}}
+function owVehInit(o){const q=owRandFree(P.x/OWT+1.5,P.y/OWT,3,1.2)||{x:P.x+20,y:P.y};o.veh={x:q.x,y:q.y,face:1}}
+const vehNear=()=>{const v=G.ow&&G.ow.veh;return!!(v&&!P.ride&&!G.owArena&&!G.owIn&&!(G.ow&&G.ow.isTh)&&Math.hypot(v.x-P.x,v.y-P.y)<30)};
+function vehToggle(){const o=G.ow;if(!o||!o.veh||G.state!=='play'||!modal.hidden||CUT.on)return;if(P.ride){vehOff();return}if(!vehNear()||P.swim||P.down)return;
+  P.ride=1;o.veh.vx=o.veh.vy=0;P.x=o.veh.x;P.y=o.veh.y;S.p('door');toast('骑上了夜行机车 · 再按一次下车');vehBtn()}
+function vehOff(){const o=G.ow;if(!P.ride)return;P.ride=0;if(o&&o.veh){o.veh.x=P.x;o.veh.y=P.y;o.veh.vx=o.veh.vy=0;const q=owRandFree(P.x/OWT,P.y/OWT,2,.8);if(q){P.x=q.x;P.y=q.y}}vehBtn()}
+function vehBtn(){const b=$('rideBtn');if(!b)return;const show=!!(G.ow&&!G.owArena&&!G.owIn&&!(G.ow&&G.ow.isTh)&&G.state==='play'&&(P.ride||vehNear()));b.hidden=!show;if(show)b.querySelector('b').textContent=P.ride?'下车':'上车'}
+/* riding: momentum, smashing, ramming */
+function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(!v){P.ride=0;return}const l=Math.hypot(mx,my),MAX=VEH.max*(G.feverT>0?1.1:1);
+  const tx=l>.12?mx/Math.max(1,l)*MAX:0,ty=l>.12?my/Math.max(1,l)*MAX:0,k=l>.12?VEH.acc:VEH.coast;v.vx+=(tx-v.vx)*Math.min(1,dt*k);v.vy+=(ty-v.vy)*Math.min(1,dt*k);
+  const sp=Math.hypot(v.vx,v.vy);if(Math.abs(v.vx)>8)P.face=v.vx<0?-1:1;v.face=P.face;P.moving=sp>12;P.walk=(P.walk||0)+dt*sp/90;
+  const nx=P.x+v.vx*dt,ny=P.y+v.vy*dt,hx=Math.floor((nx+(v.vx>0?9:v.vx<0?-9:0))/OWT),hy=Math.floor((ny-3+(v.vy>0?3:v.vy<0?-4:0))/OWT),t=owTile(hx,hy);
+  if(OWSOLID[t]||t===TL.WA){const edge=hx<2||hy<2||hx>OWW-3||hy>OWH-3;
+    if(!edge&&sp>VEH.smash&&(t===TL.TR||t===TL.RK)){if(t===TL.TR)owFell(hx,hy);else{o.g[owI(hx,hy)]=TL.GR;owRepaint(hx,hy);burst(hx*16+8,hy*16+4,22,['#6a6872','#9a98a0','#3a3840'],100,.6);S.p('shbreak');shake(5)}
+      const f=sp/VEH.max;vehRecoil(v,.45);vehHurt(P.maxHp*(.06+.1*f));toast(t===TL.TR?'撞断了一棵树':'把石头撞碎了');return}
+    if(sp>VEH.smash*1.1&&t!==TL.WA)vehHurt(P.maxHp*.05*(sp/VEH.max));vehRecoil(v,sp>120?.35:.05);return}
+  P.x=nx;P.y=ny;owBound(P);v.x=P.x;v.y=P.y;
+  if(sp>90)for(const e of G.en){if(e.dead||(e.intro>0)||e.boss)continue;const rr=e.r+11;if((e.x-P.x)**2+(e.y-6-(P.y-6))**2>rr*rr)continue;const f=sp/VEH.max,sc=1+.35*((G.act||1)-1);
+    hurtEnemy(e,(70+90*f)*sc*(e.elite?.7:1),{noMod:1});const a=Math.atan2(e.y-P.y,e.x-P.x)*.5+Math.atan2(v.vy,v.vx)*.5;e.kx=(e.kx||0)+Math.cos(a)*(260+260*f);e.ky=(e.ky||0)+Math.sin(a)*(260+260*f);e.stun=Math.max(e.stun||0,.8);
+    v.vx*=.72;v.vy*=.72;shake(3);S.p('hit');burst(e.x,e.y-8,14,['#fff','#ff6070',GOLD],110,.45);if(e.ow&&e.ow.s!=='chase'){e.ow.s='chase';e.ow.t=1}}
+  if(sp>170&&Math.random()<dt*30)G.parts.push({x:P.x-v.vx/sp*14+rnd(-3,3),y:P.y-1,vx:-v.vx*.15+rnd(-10,10),vy:rnd(-12,-2),life:.5,max:.5,col:pick(['rgba(200,190,170,.6)','rgba(150,140,130,.5)']),sz:rnd(1.2,2.4)})}
+function vehRecoil(v,k){v.vx*=-k;v.vy*=-k;P.x-=Math.sign(v.vx||1)*0;shake(6);S.p('slam');P.inv=Math.max(P.inv||0,.35)}
+function vehHurt(d){if(P.down||G.state!=='play')return;const i0=P.inv;P.inv=0;hurtPlayer(Math.round(d),'crash');if(P.inv<i0)P.inv=i0}
+function vehDraw(x,y,face,ride,t){const s=vehSpr(),sp=ride&&G.ow&&G.ow.veh?Math.hypot(G.ow.veh.vx||0,G.ow.veh.vy||0):0,bob=ride?Math.sin(t*30)*.3*Math.min(1,sp/100):0;shadow(x,y,14);ctx.save();ctx.translate(x,y-s.h+4+bob);if(face<0){ctx.scale(-1,1)}ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false;
+  if(ride&&sp>60){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5;ctx.drawImage(glow('#fff4c8'),x+face*18-10,y-21,20,14);ctx.globalAlpha=.12*Math.min(1,sp/200);const v=G.ow.veh;for(let k=0;k<4;k++){const ox=-v.vx/sp*(18+k*9),oy=-v.vy/sp*(18+k*9);ctx.fillStyle='#fff';ctx.fillRect(x+ox-6,y-12+oy+(k-1.5)*4,12,.6)}ctx.restore()}}
+
 function owTheatreTalk(it){if(it.stage){thStageTalk(it);return}const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
   if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门没有锁，里面的房间还亮着几盏灯。',[{ic:'↩',r:1,t:'再走进去看看',d:'没拿的东西、没打完的人偶，都还在里面',fn:()=>thEnter(k)},{ic:'…',t:'不了',d:'继续赶路',fn:()=>{}}]);return}
   const line=k===5?`剧场的大门半开着，门缝里飘出管风琴的声音。所有的线，都系在这里。${left?`<br><span style="color:#ffb3c0">还有 ${left} 座剧场没有演，你身边有 ${G.allies.length} 名同伴。走进去就是终幕。</span>`:''}`:
@@ -8634,7 +8716,14 @@ function owVictory(){runClear();G.state='win';S.p('win');setTrack('title');const
 function owDeath(){const got=owRunEnd(false),sum=owSummary(got);setTimeout(()=>{const p=G.modalKind==='dead'&&panel.querySelector('.sub');if(p)p.insertAdjacentHTML('afterend',sum)},1250)}
 
 /* ------------------------------------------------------------------ title entry */
-(function(){const mp=document.createElement('canvas');mp.id='owMap';mp.width=OWW;mp.height=OWH;mp.hidden=true;$('game').appendChild(mp)})();
+(function(){const mp=document.createElement('canvas');mp.id='owMap';mp.width=OWW;mp.height=OWH;mp.hidden=true;$('game').appendChild(mp);
+  /* 2.2: the corner shows a small window around you; tap it for the whole map */
+  const mi=document.createElement('canvas');mi.id='owMini';mi.width=48;mi.height=36;mi.hidden=true;$('game').appendChild(mi);
+  const bg=document.createElement('div');bg.id='owMapBg';bg.hidden=true;bg.innerHTML='<div class="omb-h"><small>Carte</small><b>地图</b><span>点击任意处关闭 · M</span></div><div class="omb-l"><i style="--c:#fff"></i>你 <i style="--c:#ffb060"></i>营地 <i style="--c:#c8a0ff"></i>事件 <i style="--c:#7af0c0"></i>路人 <i style="--c:#ff4050"></i>追来的敌人</div>';$('game').appendChild(bg);
+  new MutationObserver(()=>{mi.hidden=mp.hidden;if(mp.hidden)owMapBig(0)}).observe(mp,{attributes:true,attributeFilter:['hidden']});
+  mi.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();auInit();owMapBig(1)});
+  for(const el of[bg,mp])el.addEventListener('pointerdown',e=>{if(!mp.classList.contains('big'))return;e.preventDefault();e.stopPropagation();owMapBig(0)})})();
+function owMapBig(on){const mp=$('owMap'),bg=$('owMapBg');if(!mp||!bg)return;on=!!on&&!mp.hidden&&G.state==='play'&&!!G.ow&&modal.hidden&&!CUT.on;if(on===mp.classList.contains('big'))return;mp.classList.toggle('big',on);bg.hidden=!on;S.p('tick');if(on){releaseInputs();G.paused=true;owMapTick()}else if(modal.hidden&&!CUT.on){G.paused=false;last=performance.now()}}
 
 
 /* =================================================================== saving (2.1)
@@ -8671,7 +8760,7 @@ function runGuard(go){const sv=runHas();if(!sv){go();return}openModal('confirm',
 /* ---- open world snapshot */
 function owSnap(){const IW=G.owW,o=IW?IW.o:G.ow;if(!o||!o.g)return null;if(IW&&G.ow.isTh)thSave(G.ow,thSt(G.ow.isTh));const ar=!!G.owArena||!!IW,src=IW?IW:ar&&o.save?o.save:null,en=(src?src.en:G.en).filter(e=>!e.dead&&e.ow&&!e.shade),picks=(src?src.picks:G.picks).filter(p=>p.k==='chest'||p.k==='mat'||p.k==='hp');
   let exp='';for(let i=0;i<o.exp.length;i++)exp+=o.exp[i]?'1':'0';
-  return{th:o.th.id,w:IW?IW.W:OWW,h:IW?IW.H:OWH,g:Array.from(o.g),bio:o.bio?Array.from(o.bio):null,trs:o.trs?Array.from(o.trs):null,bld:o.bld?o.bld.map(b=>plain({...b,wins:null,smoke:null})):null,plots:plain(o.plots||null),props:plain(o.props||null),roads:o.roads?o.roads.map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>[Math.round(p.x*10)/10,Math.round(p.y*10)/10])})):null,docks:plain(o.docks||null),v2:o.v2||0,exp,expN:o.expN||0,walk:o.walk,P0:o.P0,houses:o.houses,sec:o.sec,groveOpen:o.groveOpen||0,clock:o.clock,mem:plain(o.mem),marks:plain(o.marks||{}),inv:plain(o.inv||{}),helper:o.helper?{x:o.helper.x,y:o.helper.y}:null,caches:plain(o.caches||[]),hs:plain(o.hs||{}),stumps:plain(o.stumps||[]),queues:plain(o.queues||null),thm:plain(o.thm||{}),t0:G.time-o.t0,kills0:(G.kills||0)-o.kills0,
+  return{th:o.th.id,w:IW?IW.W:OWW,h:IW?IW.H:OWH,g:Array.from(o.g),bio:o.bio?Array.from(o.bio):null,trs:o.trs?Array.from(o.trs):null,bld:o.bld?o.bld.map(b=>plain({...b,wins:null,smoke:null})):null,plots:plain(o.plots||null),props:plain(o.props||null),roads:o.roads?o.roads.map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>[Math.round(p.x*10)/10,Math.round(p.y*10)/10])})):null,docks:plain(o.docks||null),v2:o.v2||0,exp,expN:o.expN||0,walk:o.walk,P0:o.P0,houses:o.houses,sec:o.sec,groveOpen:o.groveOpen||0,clock:o.clock,mem:plain(o.mem),marks:plain(o.marks||{}),inv:plain(o.inv||{}),helper:o.helper?{x:o.helper.x,y:o.helper.y}:null,caches:plain(o.caches||[]),hs:plain(o.hs||{}),stumps:plain(o.stumps||[]),queues:plain(o.queues||null),thm:plain(o.thm||{}),veh:o.veh?{x:IW?o.veh.x:P.ride?P.x:o.veh.x,y:IW?o.veh.y:P.ride?P.y:o.veh.y,face:o.veh.face||1}:null,t0:G.time-o.t0,kills0:(G.kills||0)-o.kills0,
     px:src?src.px:P.x,py:src?src.py:P.y,
     npcs:o.npcs.map(n=>({...plain({...n,goods:null}),goods:n.goods?n.goods.map(u=>({id:u.id,sold:!!u.sold})):null})),
     I:o.I.map(it=>({...plain({...it,fight:null,shade:null,next:null}),done:it.fight?0:it.done,arm:1})),
@@ -8681,7 +8770,7 @@ function owRestore(S0){const o=G.ow;o.g=Uint8Array.from(S0.g);if(S0.bio)o.bio=Ui
   for(let i=0;i<S0.exp.length;i++)o.exp[i]=S0.exp.charCodeAt(i)===49?1:0;o.helper=S0.helper?{...S0.helper,cd:1}:null;o.t0=G.time-(S0.t0||0);o.kills0=(G.kills||0)-(S0.kills0||0);
   o.npcs=S0.npcs.map(n=>({...n,goods:n.goods?n.goods.map(g=>{const u=UPS.find(q=>q.id===g.id);return u?{...u,sold:g.sold}:null}).filter(Boolean):null,arm:1}));o.I=S0.I;
   G.picks=S0.picks.map(p=>({...p,t:1}));for(const e of S0.en){const q=owMake(e.t,e.x,e.y,e.elite,e.ow.g);q.mhp=e.mhp;q.hp=Math.min(e.hp,e.mhp);q.ow.home=e.ow.home;q.ow.wp=e.ow.wp}
-  P.x=S0.px;P.y=S0.py}
+  P.x=S0.px;P.y=S0.py;o.veh=S0.veh||null;if(!o.veh)owVehInit(o)}
 /* save when the game goes away (tab hidden, app paused, window closed) and every 20 seconds in the open world */
 document.addEventListener('visibilitychange',()=>{if(document.hidden)runSave('exit')});addEventListener('pagehide',()=>runSave('exit'));addEventListener('beforeunload',()=>runSave('exit'));
 window.runSave=runSave;setInterval(()=>{if(G.ow&&G.state==='play'&&modal.hidden&&!CUT.on)runSave('auto')},20000);
