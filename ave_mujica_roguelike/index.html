@@ -567,6 +567,47 @@ body.pc #hint{display:none!important}
 #owBan small{display:block;font:italic 13px var(--f-display);letter-spacing:.3em;color:var(--gold)}#owBan b{display:block;font:900 30px/1.3 var(--f-body);letter-spacing:.4em;text-indent:.4em}#owBan em{display:block;font-style:normal;font-size:13px;letter-spacing:.2em;color:#d8c8c0;margin-top:4px}
 @keyframes owBan{0%{opacity:0;transform:translate(-50%,-40%)}12%{opacity:1;transform:translate(-50%,-50%)}78%{opacity:1}100%{opacity:0;transform:translate(-50%,-56%)}}
 
+
+/* 2.2 legacy skills: the loadout page after choosing a doll */
+.panel:has(.lg){width:min(100%,62rem)!important;box-sizing:border-box;max-height:calc(var(--vh,1vh)*100 - 30px)!important;display:flex!important;flex-direction:column;overflow:hidden!important;padding:16px 20px 12px!important;background:radial-gradient(ellipse 80% 60% at 50% -10%,rgba(150,30,50,.38),transparent 60%),radial-gradient(ellipse 60% 50% at 50% 110%,rgba(201,164,92,.12),transparent 70%),linear-gradient(180deg,rgba(22,8,14,.98),rgba(8,4,7,.99))!important}
+.lg{display:flex;flex-direction:column;gap:10px;min-height:0;flex:1}
+.lg-top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center}
+.lg-hd{text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.lg-slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.lg-slot{--oc:#c9a45c;position:relative;width:158px;min-height:54px;display:flex;align-items:center;gap:8px;padding:7px 9px;border:0;color:#e8dccf;font-family:var(--f-body);text-align:left;background:linear-gradient(135deg,color-mix(in srgb,var(--oc) 22%,transparent),rgba(0,0,0,0) 60%),#140a10;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oc) 60%,transparent),inset 0 0 0 3px rgba(0,0,0,.5);cursor:pointer}
+.lg-slot.empty{justify-content:center;color:#7a6a72;box-shadow:inset 0 0 0 1px rgba(201,164,92,.25);background:repeating-linear-gradient(135deg,rgba(201,164,92,.05) 0 6px,transparent 6px 12px),#0e070b;cursor:default;font-size:11px;letter-spacing:.2em}
+.lg-slot.sig{cursor:default}
+.lg-slot b{display:block;font-size:12.5px;letter-spacing:.08em;color:#f6ead6;line-height:1.25}
+.lg-slot small{display:block;font-size:9.5px;letter-spacing:.14em;color:color-mix(in srgb,var(--oc) 80%,#fff)}
+.lg-slot .lg-x{position:absolute;top:3px;right:5px;font-size:10px;color:#a8949c}
+.lg-slot .ic.emb{width:34px!important;height:34px!important;flex:none}
+.lg-list{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:2px 4px 4px 2px;scrollbar-width:thin;scrollbar-color:#5a3a44 transparent}
+.lg-g{--oc:#c9a45c;position:relative;display:grid;grid-template-columns:132px 1fr;gap:10px;align-items:stretch;padding:8px 10px 8px 8px;background:linear-gradient(90deg,color-mix(in srgb,var(--oc) 14%,transparent),rgba(0,0,0,0) 38%);border-top:1px solid color-mix(in srgb,var(--oc) 35%,transparent)}
+.lg-g>header{display:flex;align-items:center;gap:7px;min-width:0}
+.lg-g>header .port{width:34px;height:51px;margin:0;flex:none}
+.lg-g>header small{display:block;font:italic 9px/1.2 var(--f-display);letter-spacing:.24em;color:color-mix(in srgb,var(--oc) 75%,#fff)}
+.lg-g>header b{display:block;font:20px/1.1 var(--f-display);color:#f4e6cc;text-shadow:0 2px 0 #000}
+.lg-g>header span{display:block;font-size:10px;color:#9a8a92;letter-spacing:.1em}
+.lg-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.lg-c{--oc:#c9a45c;--c1:#c9a45c;position:relative;display:flex;gap:9px;align-items:flex-start;text-align:left;padding:9px 10px 22px 9px;border:0;border-radius:2px;color:#e0d4d8;font-family:var(--f-body);cursor:pointer;background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,0)),#120910;box-shadow:inset 0 0 0 1px rgba(201,164,92,.2),0 6px 14px rgba(0,0,0,.45);transition:transform .12s,box-shadow .12s}
+.lg-c.atk{--c1:#ff8f7c}.lg-c.buff{--c1:#86e2d2}
+.lg-c:hover,.lg-c:focus-visible,body.gp .lg-c:focus{outline:none;transform:translateY(-2px);box-shadow:inset 0 0 0 1px var(--c1),0 0 18px -6px var(--c1),0 8px 16px rgba(0,0,0,.5)}
+.lg-c.on{background:linear-gradient(135deg,color-mix(in srgb,var(--oc) 26%,transparent),rgba(0,0,0,0) 70%),#1a0c13;box-shadow:inset 0 0 0 1px var(--oc),inset 0 0 0 3px rgba(0,0,0,.5),0 0 20px -6px var(--oc)}
+.lg-c.lock{cursor:not-allowed;filter:saturate(.25) brightness(.6)}
+.lg-c .ic.emb{width:38px!important;height:38px!important;flex:none}
+.lg-cb{min-width:0;display:flex;flex-direction:column;gap:3px}
+.lg-cb b{font-size:13.5px;letter-spacing:.12em;color:#f6ead6}
+.lg-cb .skm-tags{justify-content:flex-start}.lg-cb .skm-tags em{font-size:9px;padding:1px 5px 0}
+.lg-cb p{margin:0;font-size:11px;line-height:1.5;color:#bfb2b8}
+.lg-from{position:absolute;left:0;right:0;bottom:0;padding:3px 9px 3px;font-style:normal;font-size:9.5px;letter-spacing:.16em;color:color-mix(in srgb,var(--oc) 85%,#fff);background:linear-gradient(90deg,color-mix(in srgb,var(--oc) 22%,transparent),transparent 80%);border-top:1px solid color-mix(in srgb,var(--oc) 30%,transparent)}
+.lg-from:before{content:'❦ ';opacity:.8}
+.lg-chk{position:absolute;top:6px;right:7px;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:10px;color:#1a0a10;background:var(--oc);box-shadow:0 0 8px var(--oc)}
+.lg-lk{position:absolute;top:6px;right:7px;font-style:normal;font-size:9px;letter-spacing:.06em;color:#e8b0b8}
+.lg-ft{display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap;padding-top:6px;border-top:1px solid rgba(201,164,92,.18)}
+.lg-ft .lg-msg{margin-right:auto;font-size:11px;color:#b8a8b0;letter-spacing:.06em}.lg-ft .lg-msg.warn{color:#ff9cac}
+.lg-ft .cta{min-width:140px}
+.skm-from{--oc:#c9a45c;font-size:9.5px;letter-spacing:.14em;color:color-mix(in srgb,var(--oc) 85%,#fff);padding:1px 8px;border-top:1px solid color-mix(in srgb,var(--oc) 40%,transparent);border-bottom:1px solid color-mix(in srgb,var(--oc) 40%,transparent)}
+@media (max-width:640px),(max-height:460px){.lg-g{grid-template-columns:1fr;gap:6px}.lg-g>header .port{width:26px;height:39px}.lg-g>header b{font-size:16px}.lg-slot{width:136px;min-height:46px}.lg .skm-sub{display:none}.panel:has(.lg){padding:10px 12px 8px!important}.lg-cards{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}}
 /* skill menu (2.0 redesign): three tall cards like programme cards, a medallion, type tags and the multiplier rule */
 .panel:has(.skm){width:min(100%,58rem)!important;padding:18px 22px 14px!important;background:radial-gradient(ellipse 80% 70% at 50% -10%,rgba(150,30,50,.38),transparent 60%),radial-gradient(ellipse 60% 50% at 50% 110%,rgba(201,164,92,.12),transparent 70%),linear-gradient(180deg,rgba(22,8,14,.97),rgba(8,4,7,.98))!important}
 .skm{display:flex;flex-direction:column;gap:12px}
@@ -2556,8 +2597,41 @@ const SK4={doloris:{id:'aria',n:'一等星的咏叹',ic:'✧',t:'buff',tags:['bu
   oblivionis:{id:'crown',n:'忘却之冠',ic:'♛',t:'buff',tags:['buff'],dur:9,d:'9 秒：所有伤害 +40%'},
   sakiko:{id:'finale',n:'终章的指挥',ic:'♮',t:'atk',tags:['atk'],dur:9,ivl:1.5,d:'9 秒：每 1.5 秒抹去身边的敌弹，对 160 范围内的敌人造成 30 点伤害并击晕 1 秒'}};
 const SKEMB={aria:'sun',summer:'backstar',curtain:'crown',hothouse:'clover',sonar:'wavy',encore:'clap',crown:'crown',finale:'baton',doloris:'star8',mortis:'mirror2',timoris:'aegis',amoris:'heartF',oblivionis:'hglass',uika:'sparkle',mutsumi:'twin',sakiko:'scroll',meteor:'nova',requiem:'candle',waltz:'swords',strings:'doll',tide:'waves',wall:'shield',hearts:'heart',pulse:'pulse',erase:'vortex',hush:'breath'};
+
+/* ---- 2.2 legacy skills: every doll's skills except her signature are left behind for the others to use.
+   After choosing a doll you pick which ones to carry: two, or three once her memories are complete. */
+let LGS=Object.assign({},store.get('amj_legacy',{}));
+const lgUnl=id=>id==='doloris'||!!UNL[id];
+const lgSlots=id=>memDone(id)?3:2;
+const lgCh=id=>CHARS.find(c=>c.id===id)||CHARS[0];
+/* a doll can always use what she left behind herself, even where she is not unlocked yet (the forced dolls of the other stories) */
+function lgPool(me){const L=[];for(const c of CHARS){const b=bid(c.id),ok=lgUnl(c.id),own=!!me&&bid(me)===b;if(c.id===b)for(const s of SKX[b]||[])L.push({s,from:c.id,ok:ok||own,why:'未解锁'});
+    if(SK4[c.id])L.push({s:SK4[c.id],from:c.id,mem:1,ok:(ok||me===c.id)&&memDone(c.id),why:ok?'回忆 '+(MS.got[c.id]||0)+'/6':'未解锁'})}return L}
+const lgFind=(sid,me)=>lgPool(me).find(e=>e.s.id===sid);
+function lgDefault(id){const b=bid(id),L=[...(SKX[b]||[]).map(s=>s.id),...(SK4[id]&&memDone(id)?[SK4[id].id]:[])];return L.filter(q=>{const e=lgFind(q,id);return e&&e.ok}).slice(0,lgSlots(id))}
+function lgGet(id){const v=LGS[id];if(!Array.isArray(v))return lgDefault(id);return v.filter(q=>{const e=lgFind(q,id);return e&&e.ok}).slice(0,lgSlots(id))}
+function lgPort(id){const i=CHARS.findIndex(c=>c.id===bid(id));return `<i class="port" style="background-position:${Math.max(0,i)*25}% 0"></i>`}
+function lgOpen(go){const c=CHARS[G.charIdx],id=c.id,n=lgSlots(id);let sel=lgGet(id),msg='',warn=0;const pool=lgPool(id),find=q=>pool.find(e=>e.s.id===q);
+  const draw=()=>{const sc=panel.querySelector('.lg-list'),top=sc?sc.scrollTop:0;
+    const slot=i=>{const q=sel[i],e=q&&find(q);if(!e)return `<div class="lg-slot empty">传承 ${['Ⅰ','Ⅱ','Ⅲ'][i]} · 空</div>`;const oc=lgCh(e.from).col;
+      return `<button class="lg-slot" data-rm="${q}" style="--oc:${oc}">${embIc(SKEMB[q]||'star8',e.s.t==='atk'?3:4)}<span><small>传承自 ${lgCh(e.from).name}</small><b>${e.s.n}</b></span><i class="lg-x">✕</i></button>`};
+    const groups=CHARS.map(g=>{const es=pool.filter(e=>e.from===g.id);if(!es.length)return'';const un=lgUnl(g.id)||bid(g.id)===bid(id);
+      return `<section class="lg-g" style="--oc:${g.col}"><header>${lgPort(g.id)}<div><small>Héritage</small><b>${un?g.name:'？？？'}</b><span>${un?g.real:'尚未解锁'}</span></div></header><div class="lg-cards">${es.map(e=>{const on=sel.includes(e.s.id),em=SKEMB[e.s.id]||'star8';
+        return `<button class="lg-c ${e.s.t}${on?' on':''}${e.ok?'':' lock'}" data-s="${e.s.id}" style="--oc:${g.col}">${embIc(em,e.s.t==='atk'?3:4)}<span class="lg-cb"><b>${e.ok||un?e.s.n:'？？？'}</b><span class="skm-tags">${(e.s.tags||[e.s.t]).map(k=>`<em class="t-${k}">${SKT[k]}</em>`).join('')}${e.mem?'<em class="t-sig">回忆</em>':''}</span><p>${e.ok||un?e.s.d:'解锁这位人偶之后，才能继承她的技能。'}</p></span><em class="lg-from">${un?g.name:'？？？'} 的传承${e.from===id?' · 她自己的':''}</em>${on?'<i class="lg-chk">✓</i>':''}${e.ok?'':`<i class="lg-lk">🔒 ${e.mem&&un?'集齐回忆':e.why}</i>`}</button>`}).join('')}</div></section>`}).join('');
+    openModal('legacy',`<div class="lg"><div class="lg-top"><div class="lg-hd"><span class="skm-eye">Héritage</span><div class="skm-t">传承技能</div><div class="skm-sub">${cname(id)} 的专属技能永远跟着她。另外从人偶们留下的技能里，选 ${n} 个带上这一场${memDone(id)?'（回忆已集齐，多一个槽位）':'；集齐她的回忆可以多带一个'}。</div></div></div>
+      <div class="lg-slots"><div class="lg-slot sig" style="--oc:${c.col}">${embIc(SKEMB[id]||'star8',2)}<span><small>专属 · 不可替换</small><b>${SKN[id]}</b></span></div>${Array.from({length:n},(_,i)=>slot(i)).join('')}</div>
+      <div class="lg-list">${groups}</div>
+      <div class="lg-ft"><span class="lg-msg${warn?' warn':''}">${msg||`已选 ${sel.length}/${n} · 点技能卡带上或取下`}</span><button class="ghost" id="lgReset">恢复推荐</button><button class="ghost" id="lgBack">返回</button><button class="cta" id="lgGo">登 台</button></div></div>`);
+    const sc2=panel.querySelector('.lg-list');if(sc2)sc2.scrollTop=top;
+    panel.querySelectorAll('.lg-c').forEach(b=>b.onclick=()=>{const q=b.dataset.s,e=find(q);if(!e.ok){msg='这个传承还没有解锁';warn=1;S.p('tick');draw();return}
+      if(sel.includes(q))sel=sel.filter(x=>x!==q);else if(sel.length<n)sel.push(q);else{msg=`槽位已满（${n}/${n}），先点上面的槽位取下一个`;warn=1;S.p('tick');draw();return}msg='';warn=0;S.p('pick');draw();const f=panel.querySelector(`.lg-c[data-s="${q}"]`);f&&f.focus({preventScroll:true})});
+    panel.querySelectorAll('.lg-slot[data-rm]').forEach(b=>b.onclick=()=>{sel=sel.filter(x=>x!==b.dataset.rm);msg='';warn=0;S.p('tick');draw()});
+    $('lgReset').onclick=()=>{sel=lgDefault(id);msg='已恢复成她自己的技能';warn=0;S.p('tick');draw()};
+    $('lgBack').onclick=()=>{closeModal();S.p('tick')};
+    $('lgGo').onclick=()=>{LGS[id]=sel.slice();store.set('amj_legacy',LGS);closeModal();go()}};
+  draw()}
 function skSig(){const c=ch(),f=(c.ab||[]).find(a=>a[0]==='Fever'||a[0]==='技能 Ⅰ');return{id:'sig',n:SKN[c.id],t:'buff',ic:'✦',sig:1,d:f?f[1].replace(/^[^·]*·\s*/,''):'专属技能'}}
-function skSet(){const id=ch().id;return[skSig(),...(SKX[bid(id)]||SKX.doloris),...(SK4[id]&&memDone(id)?[SK4[id]]:[])]}
+function skSet(){const id=ch().id,L=(Array.isArray(G.legacy)?G.legacy:lgGet(id)).map(q=>{const e=lgFind(q,id);return e?{...e.s,from:e.from}:null}).filter(Boolean);return[skSig(),...L]}
 const skb=k=>G.skb&&G.skb.t>0&&G.skb[k]||0;
 /* gauge: hits (at most one gain per 0.06 s, so a wide swing counts once), kills and damage taken */
 function skHit(){if(G.time-(G.skHT||-9)<.06)return;G.skHT=G.time;feverAdd(1.6);comboUp()}
@@ -2575,7 +2649,7 @@ function skMenu(){if(!skReady()||uiFresh(UIB.closeT,900))return;UIB.menuT=perfor
     return `<button class="skm-c ${s.sig?'sig':s.t}" data-i="${i}"><span class="skm-key">${i+1}</span><span class="skm-orn"></span>
       <span class="skm-med">${embIc(em,tone,' skm-ic')}</span><b class="skm-n">${s.n}</b>
       <span class="skm-tags">${s.sig?'<em class="t-sig">专属</em>':''}${(s.tags||[s.t]).map(k=>`<em class="t-${k}">${SKT[k]}</em>`).join('')}</span>
-      <span class="skm-d">${s.d}</span><span class="skm-mul">${s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 伤害'} <i>×0.7–${settings.simple?'1.9':'3.25'}</i></span></button>`};
+      <span class="skm-d">${s.d}</span>${s.from?`<span class="skm-from" style="--oc:${lgCh(s.from).col}">传承自 ${lgCh(s.from).name}</span>`:''}<span class="skm-mul">${s.t==='buff'?'谱面加成 · 持续时间':'谱面加成 · 伤害'} <i>×0.7–${settings.simple?'1.9':'3.25'}</i></span></button>`};
   openModal('skill',`<div class="skm"><div class="skm-hd"><span class="skm-eye">Mouvement</span><div class="skm-t">选择技能</div><div class="skm-sub">乐章值已满 · 打完一段短谱面后释放：${settings.simple?'简化谱面，倍率最高 ×1.9':'PERFECT 大幅提高倍率，GREAT 中等，GOOD 少量，BAD 和 MISS 会扣倍率；全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25'}</div></div>
     <div class="skm-cards${set.length>3?' n4':''}">${set.map(card).join('')}</div>
     <div class="skm-ft"><label class="skm-sw"><input type="checkbox" id="skSkip"${settings.skSkip?' checked':''}><i></i><span>跳过谱面，直接以 ×1.0 释放</span></label><button class="skm-back" id="skNo">返回战斗<small>Esc</small></button></div></div>`);
@@ -3318,13 +3392,13 @@ function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{cons
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
 function selChar(i){G.charIdx=i;const c=CHARS[i];$('sName').textContent=c.name;$('sReal').textContent=`${c.real} · ${c.role}`;$('sMotto').textContent=`「${c.motto}」`;$('sLv').innerHTML=lvCard(c.id);$('sLv').hidden=false;
   $('sStats').innerHTML=Object.entries(c.st).map(([k,v])=>`<dt>${k}</dt><dd>${[1,2,3,4,5].map(j=>`<i class="${j<=v?'on':''}"></i>`).join('')}</dd>`).join('');
-  const ro=CROLE[c.id];$('sAbil').innerHTML=c.ab.map(([k,v])=>`<li><b>${k==='Fever'?'技能 Ⅰ':k}</b><span>${v}</span></li>`).join('')+(SKX[bid(c.id)]||[]).map((q,j)=>`<li><b>技能 ${j?'Ⅲ':'Ⅱ'}</b><span>${q.n}：${q.d}</span></li>`).join('')+(ro?`<li><b>探索</b><span>「${ro.pass.n}」${ro.pass.d}</span></li>`:'')+(MEMPERK[c.id]?`<li class="memrow${memDone(c.id)?' on':''}"><b>回忆</b><span>${memDone(c.id)?`「<i>${MEMPERK[c.id].n}</i>」<i>${MEMPERK[c.id].d}</i>`:`${MS.got[c.id]||0}/6 · 集齐后解锁「${MEMPERK[c.id].n}」`}</span></li>`:'');
+  const ro=CROLE[c.id];$('sAbil').innerHTML=c.ab.map(([k,v])=>`<li><b>${k==='Fever'?'技能 Ⅰ':k}</b><span>${v}</span></li>`).join('')+`<li class="lgrow"><b>传承</b><span>她留下的技能：${[...(c.id===bid(c.id)?SKX[c.id]||[]:[]),...(SK4[c.id]?[SK4[c.id]]:[])].map(q=>`「${q.n}」`).join('')}，任何人偶都能带上。登台前可以配置 ${lgSlots(c.id)} 个传承技能。</span></li>`+(ro?`<li><b>探索</b><span>「${ro.pass.n}」${ro.pass.d}</span></li>`:'')+(MEMPERK[c.id]?`<li class="memrow${memDone(c.id)?' on':''}"><b>回忆</b><span>${memDone(c.id)?`「<i>${MEMPERK[c.id].n}</i>」<i>${MEMPERK[c.id].d}</i>`:`${MS.got[c.id]||0}/6 · 集齐后解锁「${MEMPERK[c.id].n}」`}</span></li>`:'');
   const lk=!isUnl(c.id);if(lk){$('sAbil').innerHTML=WORLD===4?`<li class="lockrow"><b>镜中的睦</b><span>这是 Mortis 和若叶睦两个人的故事。在这里，只有 Mortis 能登台。</span></li>`:WORLD===3?`<li class="lockrow"><b>星之约</b><span>这是祥子和初华两个人的故事。祥子登台，初华会一直陪在她身边。</span></li>`:WORLD===2?`<li class="lockrow"><b>假面之下</b><span>这是丰川祥子一个人的故事。在这里，只有 Oblivionis 能登台。</span></li>`:`<li class="lockrow"><b>未解锁</b><span>解锁条件：${UNLOCKREQ[c.id]}</span></li>`;$('sMotto').textContent='「……」';$('sLv').hidden=true}
   $('sBs').innerHTML=lk?'':bsSel(c.id);$('go').disabled=lk;$('go').textContent=lk?'未 解 锁':'登 台';
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('on',j===i));G.selT=0}
 function runThemes(){const sa=G.act,ks=[];for(let a=1;a<=5;a++){G.act=a;try{ks.push(themeK())}catch(e){}}G.act=sa;return ks}
 function prepRooms(){if(!r3ok())return;const ks=runThemes();for(const k of Object.keys(R3.cache))if(!ks.includes(+k))delete R3.cache[k];for(const K of ks){if(R3.cache[K]||!R3T[K])continue;idbGet('room:'+K+':'+RW*R3F()+':v2').then(b=>b&&blobCv(b)).then(c=>{if(c&&!R3.cache[K])R3.cache[K]=c})}}
-function startRun(i,opt){if(updNeed()){updAsk();return}if(typeof owReset==='function')owReset();if(!(opt&&opt.resume)&&typeof runClear==='function')runClear();auInit();G.charIdx=i;G.world=WORLD;{const w=WORLD===2?'sk_idle':null;if(MF.name!==w||!w)mfCut(w)}if(WORLD===2)mfPreload(['sk_f1','sk_fever','sk_boss']);if(FVT[CHARS[i].id])mfPreload([FVT[CHARS[i].id]]);if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=WORLD>=2?1:nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.foeT=-9;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.mirrors=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CH5.filter(id=>id!==bid(CHARS[i].id)));if(opt&&opt.resume&&opt.resume.G.caps)G.caps=opt.resume.G.caps.slice();G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
+function startRun(i,opt){if(updNeed()){updAsk();return}if(typeof owReset==='function')owReset();if(!(opt&&opt.resume)&&typeof runClear==='function')runClear();auInit();G.charIdx=i;G.world=WORLD;{const w=WORLD===2?'sk_idle':null;if(MF.name!==w||!w)mfCut(w)}if(WORLD===2)mfPreload(['sk_f1','sk_fever','sk_boss']);if(FVT[CHARS[i].id])mfPreload([FVT[CHARS[i].id]]);if(document.body.classList.contains('gp'))setTimeout(gpHint,500);G.nl=WORLD>=2?1:nlW(WORLD).sel;G.diff='n'+G.nl;G.revUsed=0;G.bench=[];const c=CHARS[i];G.route=null;applyRoute();G.mods=baseMods();G.ups={};G.legacy=lgGet(c.id);G.bonds={};P.bsk=null;P.twinT=0;G.barrier=null;G.tsOwn=0;G.jNB={};G.pStreak=0;P.mQ=P.rQ=null;G.foeT=-9;G.memRun=[];G.memEnd=null;G.fvN=0;G.duetN=0;G.eliteK=0;G.slowT=0;G.pdN=0;G.grades=[];G.jc={P:0,GR:0,G:0,B:0,M:0};G.rc=0;jresReset();G.rc=0;G.rcMax=0;G.jc={P:0,GR:0,G:0,B:0,M:0};G.lastJ=null;G.encore=0;G.ensTip=0;G.says=[];ensReset();G.met={};G.curseAct=0;G.npc=null;G.quests={};G.qQueue=[];G.offered={};G.seenEv={};G.route=null;G.relics={};G.dark=0;G.audDone=0;G.reflOn=0;G.inter={};G.bossK=0;G.frags=0;G.allies=[];G.mirrors=[];G.turrets=[];G.zones=[];G.phx={};G.caps=shuffle(CH5.filter(id=>id!==bid(CHARS[i].id)));if(opt&&opt.resume&&opt.resume.G.caps)G.caps=opt.resume.G.caps.slice();G.petals=0;G.kills=0;G.runT=0;G.act=1;G.room=0;G.roomsDone=0;G.time=0;G.etime=0;G.amb=[];
   if(G.world>=3)G.caps=[];applyWorld();try{prepRooms()}catch(e){}
   G.skHT=-9;G.rcT=0;G.pfT=-9;G.echoT=0;G.skAtk=null;G.skb=null;Object.assign(P,{ustarN:0,mortT:0,mortCd:0,tempoN:0,down:0,downT:0,revT:0,hp:c.hp,maxHp:c.hp,sh:0,shT:9,dch:1,atkN:0,turT:3,stT:3,dx:0,dy:-1,face:1,meleeCd:0,rangedCd:0,dashCd:0,skillCd:2,skillMax:2,inv:0,frenzy:0,combo:0,beat:0,frame:0,walk:0});G.bsx=0;G.bsRun=0;bsApply();memPerkApply();stats();P.hp=P.maxHp;P.sh=P.shMax;P.dch=G.mods.dashCh;G.rareGot=null;G.score=0;
   feverReset();P.mc=0;P.lungeT=0;G.state='play';P.act=null;P.deathT=0;show(null);$('game').classList.add('playing');applyIcons();$('hud').hidden=false;$('hWho').textContent=cname(c.id);hudCache={};G.lvGot=0;G.lvUp=0;lvHud();
@@ -3432,7 +3506,8 @@ function showMeta(tab){tab=tab||showMeta.tab||'end';showMeta.tab=tab;try{buildW3
 $('selBack').onclick=()=>toTitle();
 function goLandscape(){if(!isTouch)return;try{const el=document.documentElement,rf=el.requestFullscreen||el.webkitRequestFullscreen;if(!rf||document.fullscreenElement)return;
   const pr=rf.call(el);pr&&pr.then&&pr.then(()=>screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})).catch(()=>{})}catch(e){}}
-$('go').onclick=()=>{if(!isUnl(CHARS[G.charIdx].id))return;auInit();goLandscape();if(WORLD===1){G.owSel=0;musThen(1,()=>owStart(G.charIdx));return}G.owSel=0;musThen(WORLD,()=>prepWorld(()=>startRun(G.charIdx)))};
+$('go').onclick=()=>{if(!isUnl(CHARS[G.charIdx].id))return;auInit();S.p('pick');lgOpen(lgGoNow)};
+function lgGoNow(){goLandscape();if(WORLD===1){G.owSel=0;musThen(1,()=>owStart(G.charIdx));return}G.owSel=0;musThen(WORLD,()=>prepWorld(()=>startRun(G.charIdx)))}
 
 /* =================================================================== cutscenes */
 const CUT={on:false,shots:[],i:0,t:0,parts:[],onEnd:null,typed:-1,lb:0,petals:0};
@@ -6535,7 +6610,7 @@ const MEM={
   ['幕后','帷幕落下以后，五个人摘下假面，挤进同一家深夜的家庭餐厅。为了点什么吵了很久——这才是她们真正的样子。','通关「假面之下」'],
   ['约定','星光落在雨夜的街上。两个女孩撑着同一把伞，谁也没有提起从前——可她们都还记得，那个夏天的约定。','通关「星之约」'],
   ['镜子','剧本的空白处，有人用很小的字写着：镜子里的那个人，也是我。请不要把她丢掉。','通关「镜中的睦」']]};
-const MEMPERK=Object.fromEntries(Object.entries(SK4).map(([k,q])=>[k,{n:q.n,d:`用她出战时：技能从三个变为四个。第四个技能「${q.n}」：${q.d}`}]));
+const MEMPERK=Object.fromEntries(Object.entries(SK4).map(([k,q])=>[k,{n:q.n,d:`解锁传承技能「${q.n}」（${q.d}），所有人偶都能带上；用她出战时可以多带一个传承技能`}]));
 /* the casual dolls' memories are found only while playing them; labels differ from the stage dolls' */
 const memMax=()=>MEMC.length*6+MEM.script.length,memLbl=(c,i)=>BASEOF[c]?(i<3?'台下的日常':'心底的话'):(i<3?'假面之上':'假面之下'),memOpen=(c,me)=>!BASEOF[c]||c===me;
 let MS=Object.assign({got:{},sc:{},nw:{},com:null},store.get('amj_mem',{}));
@@ -8122,7 +8197,7 @@ function w1Mode(){openModal('fork',`<div class="fork"><div class="fk-head"><div 
    whole (map, fog, monsters, NPCs, chests, loot) every 20 seconds and whenever the game is hidden or closed.
    Death, a win, or giving up clears the save; a new run asks before replacing it. */
 const RUNKEY='amj_run',RUNVER=1;
-const RUNG=['hardRun','owDone','owNext','world','nl','diff','revUsed','bench','route','mods','ups','bonds','fvN','duetN','eliteK','pdN','grades','jc','rc','rcMax','met','curseAct','quests','qQueue','offered','seenEv','relics','dark','audDone','reflOn','inter','bossK','frags','caps','petals','act','room','roomsDone','kills','score','w1order','w2order','owTheme','lsAct','uikaAct','underUsed'];
+const RUNG=['legacy','hardRun','owDone','owNext','world','nl','diff','revUsed','bench','route','mods','ups','bonds','fvN','duetN','eliteK','pdN','grades','jc','rc','rcMax','met','curseAct','quests','qQueue','offered','seenEv','relics','dark','audDone','reflOn','inter','bossK','frags','caps','petals','act','room','roomsDone','kills','score','w1order','w2order','owTheme','lsAct','uikaAct','underUsed'];
 const plain=v=>JSON.parse(JSON.stringify(v===undefined?null:v));
 function runHas(){const s=store.get(RUNKEY,null);return s&&s.ver===RUNVER?s:null}
 function runClear(){try{localStorage.removeItem(RUNKEY)}catch(e){}runTitleBtn()}
