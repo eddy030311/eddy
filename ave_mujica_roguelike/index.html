@@ -2000,9 +2000,9 @@ function enterRoom(type,noCount){
   if(type==='combat'||type==='elite'||type==='trial'){
     const n=rint(2,5);for(let i=0;i<n*6&&G.obs.length<n;i++){const ox=rint(3,RW/16-4)*16,oy=rint(5,RH/16-6)*16;
       if(Math.abs(ox+8-RW/2)<30)continue;if(G.obs.some(o=>Math.abs(o.x-ox)<40&&Math.abs(o.y-oy)<40))continue;G.obs.push({x:ox+1,y:oy+2,w:14,h:10})}
-    const budget=(3.5+G.act*1.9+G.room*.8)*(G.act===5?2.3:1)*(1+.09*(NL()-1));
+    const budget=(3.5+G.act*1.9+G.room*.8)*(G.act===5?1.6:1)*(1+.09*(NL()-1))*ECNT();
     if(type==='combat'&&G.world>=2){G.waves=[genWave(budget*.7),genWave(budget*.8)];G.waveTot=2;G.waveN=0}
-    else if(type==='combat'){G.waves=[genWave(budget),genWave(budget*1.15)];if(G.act>=3)G.waves.push(genWave(budget*.9));if(G.act>=5)G.waves.push(genWave(budget*1.2));if(NL()>=6)G.waves.push(genWave(budget*(.8+.05*NL())));G.waveTot=G.waves.length;G.waveN=0}
+    else if(type==='combat'){/* 2.2: every fight is two waves */G.waves=[genWave(budget*(NL()>=6?1.1:1)),genWave(budget*(NL()>=6?1.3:1.15))];G.waveTot=2;G.waveN=0}
     else if(type==='elite'){G.hard=1.5;G.hardDmg=1.4;G.waves=[];G.pending=1;setTrack(null);renderTrack('elite'+G.act,1);startOts('elite')}
     else{const k=G.trialKind;toast('试炼 · '+TRIALS[k]);
       if(k==='gauntlet'){G.hard=1.3;G.waves=[0,1,2,3].map(i=>genWave(budget*(.7+i*.15),true))}
@@ -3271,7 +3271,7 @@ function updHud(){{const c=G.rc||0,k=c>=5&&G.time-(G.rcT||-9)<2.5&&fightRoom()&&
   const sc=G.feverT>0?'0':(1-Math.min(1,(G.fever||0)/fCap())).toFixed(2);if(hudCache.sk!==sc+(G.feverT>0)){hudCache.sk=sc+(G.feverT>0);for(const id of['bSkill','gsSkill']){$(id).style.setProperty('--cd',sc);$(id).style.setProperty('--fp',(1-sc).toFixed(2));$(id).classList.toggle('ready',+sc===0&&!(G.feverT>0));$(id).classList.toggle('fvOn',G.feverT>0)}}
   const dc=P.dch>=1?'0':(1-P.dch).toFixed(2);if(hudCache.dc!==dc){hudCache.dc=dc;$('bDash').style.setProperty('--cd',dc);$('gsDash').style.setProperty('--cd',dc)}
   if(G.boss&&!G.boss.dead){const bf=(Math.max(0,G.boss.hp)/G.boss.mhp).toFixed(3);if(hudCache.bf!==bf){hudCache.bf=bf;$('bossFill').style.transform=`scaleX(${bf})`}}}
-function updStage(){if(G.ow&&!G.owTh){owStage();return}const a=ACTS[G.act-1];setH('stage',`${G.ow&&G.owTh?G.ow.th.name+' · ':''}${NL()>1?'【'+DF().n+'】':''}${inTh()?'':'第'+CN[G.act-1]+'章 · '}${a.name} · ${G.type==='trial'?'试炼':'第'+CN[(G.type==='boss'?5:G.room)-1]+'节'}${G.type==='combat'&&G.waveTot>1&&G.waveN?` · 第 ${G.waveN}/${G.waveTot} 波`:''}`)}
+function updStage(){if(G.ow&&(!G.owTh||!G.owArena)){owStage();return}const a=ACTS[G.act-1];setH('stage',`${G.ow&&G.owTh?G.ow.th.name+' · ':''}${NL()>1?'【'+DF().n+'】':''}${inTh()?'':'第'+CN[G.act-1]+'章 · '}${a.name} · ${G.type==='trial'?'试炼':'第'+CN[(G.type==='boss'?5:G.room)-1]+'节'}${G.type==='combat'&&G.waveTot>1&&G.waveN?` · 第 ${G.waveN}/${G.waveTot} 波`:''}`)}
 /* a short banner when the next wave comes in, so 3–5 wave rooms read as separate waves */
 function showWaveTag(){const el=$('secBanner');if(!el)return;el.innerHTML=`<small>Vague ${ROMN[G.waveN]||G.waveN}</small><b>第 ${G.waveN} 波</b><span>共 ${G.waveTot} 波</span>`;el.classList.add('on');clearTimeout(showWaveTag.t);showWaveTag.t=setTimeout(()=>el.classList.remove('on'),1500)}
 
@@ -6201,7 +6201,7 @@ function otsScene(t){if(!OC||OC.width!==cv.width||OC.height!==cv.height){OC=mk(c
   for(let sy=Math.ceil(hy+1);sy<VH;sy++){const z=H*f/(sy-hy),wy=cy-z;if(wy<TOP||wy>RH)continue;const hw=VW/2*z/f;x.drawImage(G.bg,Math.max(0,(cx-hw)*(G.bg.bgS||2)),wy*(G.bg.bgS||2),Math.min(RW*(G.bg.bgS||2),hw*2*(G.bg.bgS||2)),G.bg.bgS||2,(cx-hw)<0?-(cx-hw)*f/z:0,sy,Math.min(VW,RW*f/z),1.05)}
   let g=x.createLinearGradient(0,hy,0,VH*.75);g.addColorStop(0,'rgba(4,2,4,.95)');g.addColorStop(.35,'rgba(4,2,4,.5)');g.addColorStop(1,'rgba(4,2,4,0)');x.fillStyle=g;x.fillRect(0,0,VW,VH*.75);
   const proj=(wx,wy)=>{const z=cy-wy;if(z<4)return null;const s=f/z;return{X:VW/2+(wx-cx)*s,Y:hy+H*s,s}};
-  const o=G.ots;if(o&&o.kind!=='event'){const q=proj(o.tx,o.ty);if(q){const al=otsReveal(o),K=q.s*(o.K||.9),hh=(o.b?(o.b.spr==='mujica'?110:o.b.spr==='refl'?60:o.b.h||48):30)*K;
+  const o=G.ots;if(o&&o.kind!=='event'){const q=proj(o.tx,o.ty);if(q&&isFinite(q.X+q.Y+q.s)){const al=otsReveal(o),K=q.s*(o.K||.9),hh=(o.b?(o.b.spr==='mujica'?110:o.b.spr==='refl'?60:o.b.h||48):30)*K;
       x.save();x.globalCompositeOperation='lighter';x.globalAlpha=(.35+.6*al)*(.8+.2*Math.sin(t*2));const r=hh*1.1;x.drawImage(glow(o.col),q.X-r,q.Y-hh*.55-r,r*2,r*2);x.globalAlpha=.28;const cone=x.createLinearGradient(0,0,0,q.Y);cone.addColorStop(0,'rgba(255,243,220,0)');cone.addColorStop(1,'rgba(255,243,220,.55)');x.fillStyle=cone;x.beginPath();x.moveTo(q.X-6,0);x.lineTo(q.X+6,0);x.lineTo(q.X+hh*.6,q.Y);x.lineTo(q.X-hh*.6,q.Y);x.fill();x.restore();
       x.fillStyle='rgba(0,0,0,.55)';x.beginPath();x.ellipse(q.X,q.Y,hh*.38,hh*.08,0,0,TAU);x.fill();
       if(al>0){const rs=.86+.14*ease(al),k2=K*rs;x.save();x.translate(q.X,q.Y);x.scale(k2,k2*(o.door?1.7:1));x.translate(-o.tx,-o.ty);const sv=ctx;ctx=x;try{otsDrawTarget(o,t,al)}finally{ctx=sv}x.restore()}
@@ -6710,7 +6710,8 @@ function owAStar(cost,a,b){const N=OWW*OWH,gs=new Float32Array(N).fill(1e9),from
 function owChaikin(pts,n=3){let p=pts;for(let k=0;k<n;k++){if(p.length<3)break;const q=[p[0]];for(let i=0;i<p.length-1;i++){const a=p[i],b=p[i+1];q.push({x:a.x*.75+b.x*.25,y:a.y*.75+b.y*.25},{x:a.x*.25+b.x*.75,y:a.y*.25+b.y*.75})}q.push(p[p.length-1]);p=q}return p}
 
 /* ------------------------------------------------------------------ the generator */
-function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),trs=new Uint8Array(OWW*OWH),res=new Uint8Array(OWW*OWH),
+/* 2.2: owGen(th,{stage:k}) builds the inside of theatre k: a smaller map with an entrance (the camp), a few encounter clearings (P0.zones) and the stage building, no towns, shrine or grove */
+function owGen(th,opt){const mini=!!(opt&&opt.stage);const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),trs=new Uint8Array(OWW*OWH),res=new Uint8Array(OWW*OWH),
     I=owI,inb=(x,y)=>x>=1&&y>=1&&x<OWW-1&&y<OWH-1,set=(x,y,t)=>{if(x>=0&&y>=0&&x<OWW&&y<OWH)g[I(x,y)]=t},get=(x,y)=>x<0||y<0||x>=OWW||y>=OWH?TL.RK:g[I(x,y)],
     bld=[],plots=[],props=[],roads=[],docks=[];
   const nF=owNoiseG(18,14),nF2=owNoiseG(40,30),nM=owNoiseG(12,9),nR=owNoiseG(22,17);
@@ -6721,7 +6722,7 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
   /* key places */
   const P0={camp:{x:rint(9,14),y:rint(OWH-15,OWH-10)},lair:{x:rint(OWW-(th.sea?34:22),OWW-(th.sea?28:16)),y:rint(10,14)},
     town:{x:rint(Math.round(OWW*.42),Math.round(OWW*.52)),y:rint(Math.round(OWH*.44),Math.round(OWH*.56))},grove:{x:rint(10,16),y:rint(9,14)},shrine:{x:rint(Math.round(OWW*.3),Math.round(OWW*.42)),y:rint(9,14)}};
-  if(th.settle==='town'){P0.town={x:Math.round(OWW*.5),y:Math.round(OWH*.5)}}P0.towns=[P0.town];
+  if(th.settle==='town'){P0.town={x:Math.round(OWW*.5),y:Math.round(OWH*.5)}}P0.towns=[P0.town];if(mini){P0.camp={x:rint(6,9),y:rint(OWH-9,OWH-6)};P0.town={x:-999,y:-999};P0.towns=[];P0.grove={x:-999,y:-999};P0.shrine={x:-999,y:-999}}
   /* --- water: the sea, a river, lakes */
   let seaEdge=null;if(th.sea){seaEdge=[];for(let y=0;y<OWH;y++){const e=OWW*.79+Math.sin(y*.17)*3+Math.sin(y*.05+1)*4+nR(80,y)*3;seaEdge[y]=e;for(let x=0;x<OWW;x++){if(x>e)g[I(x,y)]=TL.WA;else if(x>e-3.2-nM(x,y)*2){g[I(x,y)]=TL.SA}}}
     /* a tidal creek */let y=Math.round(rnd(OWH*.36,OWH*.58));for(let x=Math.round(OWW*.55);x<OWW*.8;x++){y=clamp(y+Math.round(rnd(-1,1)*.7),10,OWH-12);set(x,y,TL.WA);set(x,y+1,TL.WA)}}
@@ -6738,20 +6739,23 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
   for(let y=0;y<OWH;y++)for(let x=0;x<OWW;x++){const m=nM(x,y),i=I(x,y);bio[i]=m>.64?BIO.MEADOW:m<(th.id==='vale'?.42:.3)?BIO.DRY:BIO.GRASS}
   /* --- key-place clearings */
   const clear=(cx,cy,r)=>disc(cx,cy,r,(x,y)=>{const i=I(x,y);if(g[i]===TL.WA)g[i]=TL.BR;else if(g[i]!==TL.SA)g[i]=TL.GR;res[i]=1});
-  clear(P0.camp.x,P0.camp.y,6);clear(P0.shrine.x,P0.shrine.y,4);
+  clear(P0.camp.x,P0.camp.y,6);if(!mini)clear(P0.shrine.x,P0.shrine.y,4);
   /* --- theatres: five buildings along a line from the camp to the north-east, footprint solid, a forecourt in front */
   const thSites=[];{const a=P0.camp,diag=Math.hypot(OWW,OWH);
     const site=(cx,dy,w,h,k,strict)=>{const x0=cx-(w>>1),y0=dy-h;if(x0<4||y0<4||x0+w>OWW-4||dy+3>OWH-4)return null;
       if(!area(x0-1,y0-1,w+2,h+4,(t,i)=>t===TL.GR&&!res[i]))return null;if(thSites.some(s=>Math.hypot(s.x-cx,s.y-dy)<(strict?18:12)))return null;
       if(th.settle==='town'&&Math.abs(cx-P0.town.x)<=24&&Math.abs(dy-P0.town.y)<=18)return null;if([P0.town,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-cx,p.y-dy)<10))return null;
       if(Math.hypot(a.x-cx,a.y-dy)<(k===5?diag*(strict?.5:.38):14))return null;return{k,x:cx,y:dy,w,h,x0,y0}};
-    for(const k of[5,1,2,3,4]){const big=k===5,w=big?7:5,h=big?4:3;let best=null;for(let t=0;t<4000&&!best;t++)best=site(rint(6,OWW-7),rint(8,OWH-6),w,h,k,t<2500);
+    for(const k of(mini?[5]:[5,1,2,3,4])){const big=k===5,w=big?7:5,h=big?4:3;let best=null;for(let t=0;t<4000&&!best;t++)best=site(rint(6,OWW-7),rint(8,OWH-6),w,h,k,t<2500);
       if(!best){for(let t=0;t<400&&!best;t++){const cx=rint(8,OWW-9),dy=rint(10,OWH-8);if(Math.hypot(a.x-cx,a.y-dy)<(k===5?diag*.38:14)||thSites.some(s=>Math.hypot(s.x-cx,s.y-dy)<12))continue;best={k,x:cx,y:dy,w,h,x0:cx-(w>>1),y0:dy-h};disc(cx,dy-1,4.5,(x,y)=>{const i=I(x,y);if(g[i]===TL.WA)g[i]=TL.BR;else g[i]=TL.GR;res[i]=0})}}
       fillA(best.x0,best.y0,w,h,TL.HS);for(let y=best.y;y<best.y+2;y++)for(let x=best.x-2;x<=best.x+2;x++)if(inb(x,y)){g[I(x,y)]=TL.PL;res[I(x,y)]=1}
       for(let y=best.y0-2;y<best.y+3;y++)for(let x=best.x0-2;x<best.x0+w+2;x++)if(inb(x,y))res[I(x,y)]=1;
-      thSites.push(best);bld.push({kind:'theatre',k,x:best.x0,y:best.y0,w,h,door:{x:best.x,y:best.y}})}
+      thSites.push(best);bld.push({kind:'theatre',k:mini?opt.stage:k,x:best.x0,y:best.y0,w,h,door:{x:best.x,y:best.y}})}
     thSites.sort((p,q)=>p.k-q.k)}
-  P0.th=thSites.map(s=>({k:s.k,x:s.x,y:s.y}));P0.lair={x:thSites[4].x,y:thSites[4].y-3};
+  P0.th=thSites.map(s=>({k:s.k,x:s.x,y:s.y}));{const fin=thSites.find(q=>q.k===5)||thSites[0];P0.lair={x:fin.x,y:fin.y-3}}
+  /* theatre maps: the encounter clearings, spread between the entrance and the stage */
+  if(mini){P0.zones=[];const st=thSites[0],nz=opt.zones||4;for(let t=0;t<3000&&P0.zones.length<nz;t++){const x=rint(7,OWW-8),y=rint(7,OWH-8);if(Math.hypot(x-P0.camp.x,y-P0.camp.y)<11||Math.hypot(x-st.x,y-st.y)<9)continue;if(P0.zones.some(z=>Math.hypot(z.x-x,z.y-y)<(t<2000?14:10)))continue;
+      if(!area(x-3,y-3,7,7,(q,i)=>q!==TL.WA&&q!==TL.HS&&!res[i]))continue;P0.zones.push({x,y});disc(x,y,4.2,(xx,yy)=>{const i=I(xx,yy);if(g[i]===TL.WA)g[i]=TL.BR;else g[i]=TL.GR;res[i]=1})}}
   /* --- settlements */
   const houses=[];let hid=0;
   const addHouse=(x0,y0,w,h,style,kind='house',tight)=>{const door={x:x0+(w>>1)+(w%2===0&&Math.random()<.5?-1:0),y:y0+h};
@@ -6764,7 +6768,7 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
     if(fence){const gate=rint(0,w-1);for(let x=x0-1;x<=x0+w;x++){if(x!==x0+gate)set(x,y0+h,TL.FN);set(x,y0-1,TL.FN)}for(let y=y0;y<y0+h;y++){set(x0-1,y,TL.FN);set(x0+w,y,TL.FN)}
       for(let y=y0-1;y<=y0+h;y++)for(let x=x0-1;x<=x0+w;x++)if(inb(x,y))res[I(x,y)]=Math.max(res[I(x,y)],1)}return p};
   const T=P0.town;
-  if(th.settle==='town'){/* the walled old town: walls with four gates, a cross of main streets, a grid of lanes, blocks of houses, a fountain square, a market, a park */
+  if(!mini&&th.settle==='town'){/* the walled old town: walls with four gates, a cross of main streets, a grid of lanes, blocks of houses, a fountain square, a market, a park */
     const W2=19,H2=13,x0=T.x-W2,y0=T.y-H2,x1=T.x+W2,y1=T.y+H2;
     for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const i=I(x,y);if(g[i]===TL.WA){continue}g[i]=TL.GR;bio[i]=BIO.GARDEN;res[i]=1}
     for(let x=x0;x<=x1;x++){for(const y of[y0,y1]){if(Math.abs(x-T.x)<=1)continue;if(g[I(x,y)]===TL.WA)continue;g[I(x,y)]=TL.WL}}
@@ -6796,7 +6800,7 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
       const x0=Math.round(T.x+Math.cos(a)*r-w/2),y0=Math.round(T.y+Math.sin(a)*r*.8-h);const b=addHouse(x0,y0,w,h,hs||th.house,stl==='farm'&&k===0?'barn':'house');if(b){k++;b.tw=ti;if(ruin&&Math.random()<.85)b.ruin=1}}
     if(!ruin)for(const b of bld.slice(h0))if(b.kind!=='theatre'&&Math.random()<.5){const side=Math.random()<.5?-1:1,gx=side<0?b.x-4:b.x+b.w+1;plot(gx,b.y,3,Math.max(2,b.h),pick(['cabbage','flowers','pumpkin']),1)}
     for(let k=0;k<6;k++){const p=owRandAround(g,res,T.x,T.y,4,9);if(p)prop(ruin?pick(['column','grave','crates','cart','gothlamp','mask']):pick(['hay','barrels','crates','cart','lamp','lamp']),p.x,p.y,1)}};
-  if(th.settle!=='town'){vill(T,th.settle,0);
+  if(!mini&&th.settle!=='town'){vill(T,th.settle,0);
     if(th.settle==='farm'){/* big fields, fenced, and the windmill on a rise */
       for(let k=0,t=0;k<9&&t<300;t++){const a=rnd(TAU),r=rnd(12,22),w=rint(5,8),h=rint(3,5);if(plot(Math.round(T.x+Math.cos(a)*r*1.2-w/2),Math.round(T.y+Math.sin(a)*r*.75-h/2),w,h,pick(['wheat','wheat','sunflower','lavender','cabbage']),Math.random()<.6))k++}
       for(let t=0;t<200;t++){const a=rnd(TAU),r=rnd(8,13),mx=Math.round(T.x+Math.cos(a)*r),my=Math.round(T.y+Math.sin(a)*r*.8);if(!area(mx-1,my-1,4,4,(q,i)=>q===TL.GR&&!res[i]))continue;fillA(mx,my,2,2,TL.PR);props.push({k:'mill',x:mx,y:my,solid:1,w:2,h:2});resv(mx,my,1);break}
@@ -6807,18 +6811,18 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
       /* a road to the beach */}
     if(th.settle==='hamlet'||th.settle==='ruin'){/* a few graves near the shrine and a ruined chapel */for(let k=0;k<(th.settle==='ruin'?9:5);k++){const p=owRandAround(g,res,P0.shrine.x,P0.shrine.y+2,2,th.settle==='ruin'?7:5);if(p)prop('grave',p.x,p.y,1)}}}
   /* 2.2: more towns (蓝夜之城): hamlets well away from the old town, the camp and the theatres */
-  for(let k=1;k<(th.towns||1);k++){for(let t=0;t<600;t++){const cx=rint(14,OWW-15),cy=rint(12,OWH-12);if(P0.towns.some(q=>Math.hypot(q.x-cx,q.y-cy)<(q===P0.town&&th.settle==='town'?36:28)))continue;
+  for(let k=1;k<(mini?1:(th.towns||1));k++){for(let t=0;t<600;t++){const cx=rint(14,OWW-15),cy=rint(12,OWH-12);if(P0.towns.some(q=>Math.hypot(q.x-cx,q.y-cy)<(q===P0.town&&th.settle==='town'?36:28)))continue;
       if(Math.hypot(cx-P0.camp.x,cy-P0.camp.y)<20||thSites.some(q=>Math.hypot(q.x-cx,q.y-cy)<13)||[P0.grove,P0.shrine].some(q=>Math.hypot(q.x-cx,q.y-cy)<12))continue;
       if(!area(cx-7,cy-6,14,12,(q,i)=>q===TL.GR&&!res[i]))continue;const Tk={x:cx,y:cy};P0.towns.push(Tk);vill(Tk,'hamlet',k,'timber');break}}
   /* one house in every town becomes a shop (the one nearest its square) */
   P0.towns.forEach((Tk,ti)=>{let best=null,bd=1e9;for(const b of bld){if(b.kind!=='house'||(b.tw||0)!==ti)continue;const d=Math.hypot(b.door.x-Tk.x,b.door.y-Tk.y);if(d<bd){bd=d;best=b}}if(best){best.shop=1;best.ruin=0}});
   /* shrine, camp, grove */
-  {const s=P0.shrine;if(get(s.x,s.y-2)!==TL.WA){fillA(s.x-1,s.y-2,2,1,TL.PR);props.push({k:'shrine',x:s.x-1,y:s.y-2,solid:1,w:2,h:1})}disc(s.x,s.y,1.6,(x,y)=>{if(g[I(x,y)]===TL.GR)g[I(x,y)]=TL.PL})}
-  {const c=P0.camp;prop('tent',c.x-4,c.y-2,1);prop('tent',c.x+3,c.y-3,1);prop('logs',c.x+3,c.y+2,1);prop('crates',c.x-3,c.y+3,1);props.push({k:'fire',x:c.x,y:c.y,solid:0})}
+  if(!mini){const s=P0.shrine;if(get(s.x,s.y-2)!==TL.WA){fillA(s.x-1,s.y-2,2,1,TL.PR);props.push({k:'shrine',x:s.x-1,y:s.y-2,solid:1,w:2,h:1})}disc(s.x,s.y,1.6,(x,y)=>{if(g[I(x,y)]===TL.GR)g[I(x,y)]=TL.PL})}
+  {const c=P0.camp;if(mini){prop('gothlamp',c.x-3,c.y-2,1);prop('gothlamp',c.x+3,c.y-2,1);prop('column',c.x-4,c.y+2,1);prop('column',c.x+4,c.y+2,1)}else{prop('tent',c.x-4,c.y-2,1);prop('tent',c.x+3,c.y-3,1);prop('logs',c.x+3,c.y+2,1);prop('crates',c.x-3,c.y+3,1)}props.push({k:'fire',x:c.x,y:c.y,solid:0})}
   const G0=P0.grove;disc(G0.x,G0.y,5.6,(x,y)=>{g[I(x,y)]=TL.GR;res[I(x,y)]=1;bio[I(x,y)]=BIO.MEADOW});for(let a=0;a<TAU;a+=.05){const x=Math.round(G0.x+Math.cos(a)*5),y=Math.round(G0.y+Math.sin(a)*4.4);set(x,y,TL.RK)}
   const sec={x:G0.x,y:Math.round(G0.y+4.4)};set(sec.x,sec.y,TL.SC);set(sec.x,sec.y+1,TL.GR);set(sec.x,sec.y+2,TL.GR);res[I(sec.x,sec.y+1)]=1;res[I(sec.x,sec.y+2)]=1;
   /* ruins in the woods */
-  for(let k=0;k<(th.ruins||0);k++)for(let t=0;t<200;t++){const x0=rint(8,OWW-14),y0=rint(8,OWH-12),w=rint(5,7),h=rint(4,5);if([P0.camp,...P0.towns,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-x0,p.y-y0)<12))continue;
+  for(let k=0;k<Math.round((th.ruins||0)*(mini?.5:1))+(mini?2:0);k++)for(let t=0;t<200;t++){const x0=rint(8,OWW-14),y0=rint(8,OWH-12),w=rint(5,7),h=rint(4,5);if([P0.camp,...P0.towns,P0.grove,P0.shrine].some(p=>Math.hypot(p.x-x0,p.y-y0)<12))continue;
     if(!area(x0-1,y0-1,w+2,h+2,(q,i)=>q===TL.GR&&!res[i]))continue;for(let y=y0;y<y0+h;y++)for(let x=x0;x<x0+w;x++){const e=x===x0||y===y0||x===x0+w-1||y===y0+h-1;g[I(x,y)]=e?(Math.random()<.18&&y!==y0+h-1?TL.FL:TL.WL):TL.FL;res[I(x,y)]=1}
     const dx=x0+(w>>1);g[I(dx,y0+h-1)]=TL.FL;g[I(dx+1,y0+h-1)]=TL.FL;houses.push({x:x0+2,y:y0+2});break}
   /* --- roads: A* from the camp to the settlement, the theatres in order, the shrine and the grove; stored as smooth lines */
@@ -6829,8 +6833,8 @@ function owGen(th){const g=new Uint8Array(OWW*OWH),bio=new Uint8Array(OWW*OWH),t
         for(let ty=Math.floor((y-r)/OWT);ty<=Math.floor((y+r)/OWT);ty++)for(let tx=Math.floor((x-r)/OWT);tx<=Math.floor((x+r)/OWT);tx++){if(!inb(tx,ty))continue;const cx=tx*OWT+8,cy=ty*OWT+8;if((cx-x)**2+(cy-y)**2>(r+4)**2)continue;const i2=I(tx,ty),t=g[i2];
           if(t===TL.WA)g[i2]=TL.BR;else if(t===TL.GR||t===TL.SA||t===TL.FD&&!main)g[i2]=TL.RD;if(t!==TL.HS)res[i2]=Math.max(res[i2],1)}}}};
   const doorOf=k=>({x:thSites[k-1].x,y:thSites[k-1].y+1});
-  {const nodes=[{x:T.x,y:T.y+3},...[1,2,3,4,5].map(doorOf)],con=[P0.camp];while(nodes.length){let bi=0,bj=0,bd=1e9;for(let i=0;i<nodes.length;i++)for(let j=0;j<con.length;j++){const d=Math.hypot(nodes[i].x-con[j].x,nodes[i].y-con[j].y);if(d<bd){bd=d;bi=i;bj=j}}route(con[bj],nodes[bi],con.length<3?22:19,1);con.push(nodes.splice(bi,1)[0])}}
-  route(P0.camp,{x:T.x-3,y:T.y+2},14,0);route({x:T.x,y:T.y-3},{x:P0.shrine.x,y:P0.shrine.y+2},12,0);route(P0.camp,{x:G0.x+1,y:G0.y+8},10,0);
+  {const nodes=mini?[...P0.zones.map(z=>({x:z.x,y:z.y})),{x:thSites[0].x,y:thSites[0].y+1}]:[{x:T.x,y:T.y+3},...[1,2,3,4,5].map(doorOf)],con=[P0.camp];while(nodes.length){let bi=0,bj=0,bd=1e9;for(let i=0;i<nodes.length;i++)for(let j=0;j<con.length;j++){const d=Math.hypot(nodes[i].x-con[j].x,nodes[i].y-con[j].y);if(d<bd){bd=d;bi=i;bj=j}}route(con[bj],nodes[bi],con.length<3?22:19,1);con.push(nodes.splice(bi,1)[0])}}
+  if(!mini){route(P0.camp,{x:T.x-3,y:T.y+2},14,0);route({x:T.x,y:T.y-3},{x:P0.shrine.x,y:P0.shrine.y+2},12,0);route(P0.camp,{x:G0.x+1,y:G0.y+8},10,0)}
   if(th.settle==='fishing'&&docks.length)route({x:T.x+3,y:T.y},{x:docks[1].x-1,y:docks[1].y},14,0);
   for(let k=1;k<P0.towns.length;k++){const Tk=P0.towns[k];route({x:T.x,y:T.y+3},{x:Tk.x,y:Tk.y+3},16,1)}
   for(const b of bld)if(b.kind!=='theatre'&&(th.settle!=='town'||b.tw)&&Math.random()<.7){const d=b.door,C=P0.towns[b.tw||0]||T;if(Math.hypot(d.x-C.x,d.y-C.y)>3.5)route({x:d.x,y:d.y},{x:C.x,y:C.y+(d.y>C.y?2:-2)},8,0)}
@@ -7237,7 +7241,7 @@ function owAtmosOver(cam,t){const o=G.ow,nf=owNight(),p=(o.clock%OWDAY)/OWDAY,gk
 /* ------------------------------------------------------------------ start / reset */
 let OWLAST=0;
 function owFreeMap(o){const kill=c=>{if(c&&c.width){c.width=1;c.height=1}};if(G.bg&&G.bg.bgS)kill(G.bg);if(o){kill(o.gc);o.gc=null;kill(o.fog);if(o.save)kill(o.save.bg)}for(const k in OWSPR)if(k.startsWith('house:')){kill(OWSPR[k].c);delete OWSPR[k]}}
-function owReset(){P.swim=false;G.owIn=null;if(G.ow)owFreeMap(G.ow);$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
+function owReset(){P.swim=false;G.owIn=null;G.owW=null;if(G.ow)owFreeMap(G.ow);$('game').classList.remove('ow');try{curtain(0,1);$('owBan').hidden=true}catch(e){}if(G.ow||G.owArena){G.ow=null;G.owArena=0;RW=512;RH=288;const m=$('owMap');if(m)m.hidden=true}}
 function owStart(i){OWLAST=1;const ks=Object.keys(OWTH),last=store.get('amj_owlast','');let th=pick(ks);if(th===last&&ks.length>1)th=pick(ks.filter(k=>k!==last));store.set('amj_owlast',th);G.owTheme=th;WORLD=1;startRun(i,{ow:1})}
 function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res){const n=res.ow.g.length;OWW=res.ow.w||(n===112*84?112:144);OWH=res.ow.h||Math.round(n/OWW)}else{OWW=144;OWH=108}try{buildW34Art()}catch(e){}
   G.ow={th,g:null,P0:null,exp:new Uint8Array(OWW*OWH),clock:rnd(20,60),fogT:0,mapT:0,npcs:[],I:[],eng:0,engT:0,lastEng:0,mem:{},kills0:G.kills||0,t0:G.time,quiet:0};
@@ -7246,7 +7250,7 @@ function owBegin(res){const th=OWTH[res?res.ow.th:G.owTheme]||OWTH.forest;if(res
   if(!res){const cp=G.ow.P0.camp;P.x=cp.x*OWT+8;P.y=cp.y*OWT+30;stats();P.sh=P.shMax}P.vx=P.vy=0;P.inv=1;
   if(!res){owPopulate();owCaches()}owTheatres();if(!res)for(let k=1;k<=5;k++)owGuards(k);G.bg=owPaint();owFogInit();const m=$('owMap');if(m)m.hidden=false;$('game').classList.add('ow');
   setTrack('calm');updStage();$('hud').hidden=false;
-  if(res){if(res.th){owEnterTheatre(res.th,res);return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
+  if(res){if(res.th){owEnterTheatre(res.th,res);return}if(res.thMap&&!owIsDone(res.thMap.k)){try{thBuild(res.thMap.k,thSt(res.thMap.k),{tpx:res.thMap.px,tpy:res.thMap.py})}catch(e){console.warn('theatre resume',e);if(G.owW)thRestoreWorld(true)}later(.6,()=>toast('继续 · '+ACTS[res.thMap.k-1].name));return}owPlaceAllies();later(.6,()=>toast('继续漫游 · '+th.name));return}
   playCut(cutPrologue(),()=>{later(.4,()=>toast(th.name+' · '+th.fr));later(2.8,()=>toast('五座剧场散落在这片土地上，地图上不会标出来——要自己去找。'));later(6.2,()=>toast('上空有光柱的就是剧场；亮着红光的那座是终幕，按什么顺序演都可以。'));later(9.6,()=>toast('剧场里关着同伴，救出的人越多，终幕越好打。路上遇到的人，也许知道剧场在哪。'));if(G.rareGot)later(13,()=>toast('试音 · 获得「'+G.rareGot+'」'))});
   if(OWS.runs===0)later(10,()=>toast('提示：攻击会发出声音，附近的怪物会过来查看。'))}
 
@@ -7257,7 +7261,7 @@ function owMake(t,x,y,elite,group){const sa=G.act;G.act=Math.min(5,Math.max(owTi
   if(OWTYPE[t]&&OWTYPE[t].patrol){const pts=[];for(let k=0;k<3;k++){const q=owRandFree(x/OWT,y/OWT,7,2);if(q)pts.push(q)}if(pts.length)e.ow.wp={pts,i:0}}return e}
 function owPopulate(){const o=G.ow,cp=o.P0.camp;let gid=0;
   const POOL=[['mari','crow'],['mari','crow','mask'],['mask','rose','knight','mari'],['knight','mask','rose','crow']];
-  const enCap=Math.round(62*OWW*OWH/9408*(o.th.monK||1));for(let k=0;k<300&&G.en.length<enCap;k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty))continue;if(Math.hypot(tx-cp.x,ty-cp.y)<14)continue;
+  const enCap=Math.round(62*OWW*OWH/9408*(o.th.monK||1)*ECNT());for(let k=0;k<300&&G.en.length<enCap;k++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty))continue;if(Math.hypot(tx-cp.x,ty-cp.y)<14)continue;
     if(Math.hypot(tx-o.P0.grove.x,ty-o.P0.grove.y)<7||Math.hypot(tx-o.P0.lair.x,ty-o.P0.lair.y)<8)continue;
     const x=tx*OWT+8,y=ty*OWT+8,tr=owTier({x,y}),pool=POOL[tr-1],t=pick(pool),n=(t==='rose'?1:t==='knight'?1:rint(2,tr>=3?4:3))+((o.th.monK||1)>2&&Math.random()<.5?1:0);gid++;
     for(let j=0;j<n;j++){const q=owRandFree(tx,ty,2.5);if(q)owMake(t,q.x,q.y,tr>=3&&Math.random()<.12*tr,gid)}}
@@ -7459,7 +7463,8 @@ const OWEV={
     {ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}]},
   grove:{n:'石圈里的祭坛',line:'石头围着一小块空地，中间是一座长满青苔的祭坛。上面放着一段被人藏起来的旋律。',opts:it=>[
     {ic:'✦',r:2,t:'取下旋律',d:'传说旋律',fn:()=>{it.done=1;if(!OWS.unl.treasure){OWS.unl.treasure=1;owSave();later(1.4,()=>toast('解锁新旋律：寻宝直觉（以后的漫游里可能出现）'))}offerUps('藏起来的旋律','祭坛上的青苔底下，刻着一行字：「给下一个找到这里的人偶」。',rollUps(3,2))}},owBye]}};
-function owEventTalk(it){if(it.kind==='theatre'){owTheatreTalk(it);return}const E=OWEV[it.kind];if(!E)return;owTalkModal({name:E.n,talkN:0},typeof E.line==='function'?E.line(it):E.line,E.opts(it).map(o=>({...o,fn:()=>{if(o!==owBye&&it.kind!=='gate'&&!it.skip&&!o.keep)it.done=it.kind==='nest'||it.kind==='anomaly'||it.kind==='bench'?it.done:1;o.fn&&o.fn()}})))}
+function owEventTalk(it){if(it.kind==='theatre'){owTheatreTalk(it);return}if(it.kind==='thzone')return;if(it.kind==='stranger'){thStranger(it);return}
+  if(it.kind==='exitg'){const T=G.ow,zs=T.I.filter(q=>q.kind==='thzone'),dn=zs.filter(q=>q.done).length;owTalkModal({name:'剧场的入口',talkN:0},`门外是来时的路。<br><span style="color:#d8c8c0">已清理 ${dn}/${zs.length} 处战场。离开之后，清理过的地方、打开的箱子都会保留。</span>`,[{ic:'↩',r:1,t:'离开剧场',d:'战术撤退，整装之后再回来',fn:()=>thLeave()},{ic:'…',t:'留下',d:'还想再看看',fn:()=>{}}]);return}const E=OWEV[it.kind];if(!E)return;owTalkModal({name:E.n,talkN:0},typeof E.line==='function'?E.line(it):E.line,E.opts(it).map(o=>({...o,fn:()=>{if(o!==owBye&&it.kind!=='gate'&&!it.skip&&!o.keep)it.done=it.kind==='nest'||it.kind==='anomaly'||it.kind==='bench'?it.done:1;o.fn&&o.fn()}})))}
 function owSpawnNear(it,t,n){for(let k=0;k<n;k++){const q=owRandFree(it.x/OWT,it.y/OWT,4,1.5);if(q){const e=owMake(t,q.x,q.y,false,-1);e.ow.s='alert';e.ow.t=.4}}}
 function owNestFight(it){it.fight={wave:0,ids:[]};const wave=()=>{it.fight.wave++;const tr=owTier(it)+1;for(let k=0;k<(it.fight.wave===1?4:5);k++){const q=owRandFree(it.x/OWT,it.y/OWT,4,1);if(q){const sa=G.act;const e=owMake(pick(['mari','crow','mask','knight']),q.x,q.y,k===0&&it.fight.wave===2,-2);G.act=sa;e.ow.s='chase';it.fight.ids.push(e)}}toast(`巢穴 · 第 ${it.fight.wave} 波`)};wave();it.fight.next=wave}
 function owShade(it){it.done=1;const e=makeEnemy('mask',it.x,it.y-20,true);e.shade=1;e.hp*=2.6;e.mhp=e.hp;e.sc=1;e.r=7;e.spd=50;e.d={...EN.mask,h:30,fire:1.15,float:0};e.intro=0;e.ow={s:'chase',t:0,home:{x:it.x,y:it.y},g:-3,lost:0};it.shade=e;S.p('boss');toast('水里的你爬了出来。')}
@@ -7543,9 +7548,9 @@ function owUpdate(dt){const o=G.ow;if(!o)return;if(!G.owArena)owSwimTick(dt);els
   if(!o.groveOpen&&(P.atkT>0||P.dashT>0)){const s=o.sec,sx=s.x*OWT+8,sy=s.y*OWT+8;if((P.x-sx)**2+(P.y-sy)**2<26*26){o.groveOpen=1;o.g[owI(s.x,s.y)]=TL.GR;owRepaint(s.x,s.y);burst(sx,sy,24,['#55545c','#3a3940','#ffd27a'],80,.6);S.p('shbreak');shake(4);toast('石头裂开了，后面是一条窄缝。');if(!OWS.grove){OWS.grove=1;owSave()}}}
   if(o.helper){const h=o.helper,dx=P.x-(P.face||1)*16-h.x,dy=P.y+4-h.y,d=Math.hypot(dx,dy);if(d>3){h.x+=dx/d*Math.min(d,90*dt);h.y+=dy/d*Math.min(d,90*dt)}h.cd-=dt;
     if(h.cd<=0){let t=null,bd=150*150;for(const e of G.en)if(!e.dead&&e.ow&&e.ow.s==='chase'){const q=d2(e,h);if(q<bd){bd=q;t=e}}if(t){h.cd=1.1;shoot({x:h.x,y:h.y-8,a:Math.atan2(t.y-8-h.y+8,t.x-h.x),spd:180,dmg:6*G.mods.ranged,k:'note',pierce:0,col:'#d8c0ff',life:1,r:2.5,noMod:1,ally:1})}else h.cd=.3}}
-  owDoorTick(dt);updStageOW()}
+  if(o.isTh)thTick(dt);owDoorTick(dt);updStageOW()}
 let owStageT=0;function updStageOW(){if((owStageT-=1/60)>0)return;owStageT=.5;owStage()}
-function owStage(){const o=G.ow;if(!o)return;if(G.owIn){setH('stage',`漫游 · ${o.th.name} · ${G.owIn.b.shop?'面具店':G.owIn.ruin?'烧毁的屋子':'屋内'} · 往下走出门`);return}if(G.owArena){setH('stage',`漫游 · ${o.th.name} · 守护者`);return}setH('stage',`漫游 · ${o.th.name} · 探索 ${owExplorePct()}% · ${owTimeName()}${o.eng?' · 交战中':''}`)}
+function owStage(){const o=G.ow;if(!o)return;if(o.isTh&&!G.owIn&&!G.owArena){const zs=o.I.filter(q=>q.kind==='thzone');setH('stage',`剧场 · ${ACTS[o.isTh-1].name} · 战场 ${zs.filter(q=>q.done).length}/${zs.length}${zs.some(q=>q.act)?' · 交战中':''} · 入口可撤退`);return}if(G.owIn){setH('stage',`漫游 · ${o.th.name} · ${G.owIn.b.shop?'面具店':G.owIn.ruin?'烧毁的屋子':'屋内'} · 往下走出门`);return}if(G.owArena){setH('stage',`漫游 · ${o.th.name} · 守护者`);return}setH('stage',`漫游 · ${o.th.name} · 探索 ${owExplorePct()}% · ${owTimeName()}${o.eng?' · 交战中':''}`)}
 
 /* ------------------------------------------------------------------ drawing (world space) */
 const OWPERS=['tearfount','bloodalt','piano','mirror','telescope','gramophone','costume','cucumber','poster','bench'];
@@ -7563,7 +7568,7 @@ function owDrawProp2(it,t){const x=it.x,y=it.y,k=it.kind;if(!it.done){ctx.save()
   else if(k==='bench'){ctx.fillStyle='#5a3a22';ctx.fillRect(x-9,y-5,18,2);ctx.fillRect(x-9,y-9,18,1.4);ctx.fillStyle='#3a2416';ctx.fillRect(x-8,y-3,1.2,3);ctx.fillRect(x+7,y-3,1.2,3);ctx.fillRect(x-8,y-9,1,4);ctx.fillRect(x+7,y-9,1,4)}}
 function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();const o=G.ow,cp=o.P0.camp,fx0=cp.x*OWT+8,fy0=cp.y*OWT+8,fl=.6+.4*Math.sin(t*13);
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.55+.15*fl;ctx.drawImage(glow('#ff9a40'),fx0-40,fy0-44,80,80);ctx.restore();ctx.fillStyle=fl>.5?'#ffb040':'#ff7a2a';ctx.fillRect(fx0-3,fy0-6-(fl>.7?1:0),6,6);ctx.fillStyle='#fff0b0';ctx.fillRect(fx0-1,fy0-4,2,3);
-  for(const it of o.I){const pers=OWPERS.includes(it.kind);if(it.done&&!it.fight&&!pers||it.kind==='theatre')continue;if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;const x=it.x,y=it.y,b=Math.sin(t*3+x)*1.2;if(pers){owDrawProp2(it,t);continue}
+  for(const it of o.I){if(it.kind==='thzone'||it.kind==='exitg'){thDrawItem(it,t);continue}if(it.kind==='stranger')continue;const pers=OWPERS.includes(it.kind);if(it.done&&!it.fight&&!pers||it.kind==='theatre')continue;if(it.kind==='anomaly'&&owNight()<.55)continue;if(it.kind==='grove'&&!o.groveOpen)continue;const x=it.x,y=it.y,b=Math.sin(t*3+x)*1.2;if(pers){owDrawProp2(it,t);continue}
     ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.15*Math.sin(t*2+y);ctx.drawImage(glow(it.kind==='nest'?'#ff4050':it.kind==='gate'?'#ff6080':'#c8a0ff'),x-20,y-26,40,40);ctx.restore();
     if(it.kind==='score'){ctx.fillStyle='#ece4d0';ctx.fillRect(x-5,y-8+b,10,7);ctx.fillStyle='#3a2a30';for(let k=0;k<3;k++)ctx.fillRect(x-4,y-7+b+k*2,8,.6)}
     else if(it.kind==='nest'){ctx.fillStyle='#1a0e14';ctx.beginPath();ctx.ellipse(x,y-4,12,8,0,0,TAU);ctx.fill();ctx.fillStyle='#ff4050';ctx.fillRect(x-4,y-6,1.5,1.5);ctx.fillRect(x+3,y-5,1.5,1.5)}
@@ -7573,11 +7578,11 @@ function owDrawUnder(t){owAtmosUnder(G.cam,t);owDrawCaches(t);owDrawStumps();con
     else if(it.kind==='grove'){ctx.fillStyle='#3a4a3a';ctx.fillRect(x-7,y-8,14,8);ctx.fillStyle='#5a7a50';ctx.fillRect(x-7,y-9,14,2);ctx.fillStyle='#ffd27a';ctx.fillRect(x-1,y-13+b,2,4)}
     else if(it.kind==='gate'){ctx.fillStyle='#2a0a12';ctx.fillRect(x-14,y-22,28,22);ctx.fillStyle='#6a1220';ctx.fillRect(x-12,y-20,11,20);ctx.fillRect(x+1,y-20,11,20);ctx.fillStyle=GOLD;ctx.fillRect(x-14,y-23,28,1.5);ctx.fillRect(x-1,y-12,2,2)}}}
 function owList(list){const o=G.ow;for(const n of o.npcs)if(owNpcVisible(n)&&Math.abs(n.x-P.x)<VW&&Math.abs(n.y-P.y)<VH)list.push({y:n.y,ow:n});
-  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll')&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});for(const it of o.I)if(it.kind==='theatre'&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
+  for(const it of o.I)if((it.kind==='traveler'||it.kind==='doll'||it.kind==='stranger'&&!it.done)&&!(it.kind==='doll'&&it.done&&o.helper))list.push({y:it.y,ow:{ev:it}});if(o.helper)list.push({y:o.helper.y,ow:{helper:o.helper}});for(const q of o.queues||[])if(!owIsDone(q.k)&&Math.abs(q.pts[0].x-P.x)<VW&&Math.abs(q.pts[0].y-P.y)<VH)list.push({y:q.pts[0].y,ow:{queue:q}});for(const it of o.I)if(it.kind==='theatre'&&Math.abs(it.x-P.x)<VW&&Math.abs(it.y-P.y)<VH+90)list.push({y:it.y-8.5,ow:{th:it}});
   if(o.spr){const cam=G.cam||{x:P.x-VW/2,y:P.y-VH/2},r0=Math.max(0,Math.floor(cam.y/16)-1),r1=Math.min(OWH-1,Math.floor((cam.y+VH)/16)+6),x0=cam.x-60,x1=cam.x+VW+60;for(let r=r0;r<=r1;r++)for(const q of o.spr[r])if(q.x>x0&&q.x<x1)list.push({y:q.y,ow:{owsp:q}})}}
 function owSprH(k,h){const s=SPR[k];if(!s)return null;const c=s.f[0];return{c,sc:h/c.height,f:s.f}}
 function owDrawItem(it,t){if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
-  if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
+  if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':e.kind==='stranger'?(SPR.puppeteer?'puppeteer':'mask'):'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
   const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();if(n.swim)owSwimOver(n,t);
   if(d2(n,P)<40*40){ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';const nm=T(n.name),w=ctx.measureText(nm).width+6;ctx.fillRect(n.x-w/2,n.y-38,w,9);ctx.fillStyle='#ffe6b0';ctx.fillText(nm,n.x,n.y-31);ctx.textAlign='left'}}
 
@@ -7908,11 +7913,95 @@ function owDrawTheatre(it,t){const k=it.k,big=k===5,W=big?112:80,Hf=big?64:48,do
     ctx.globalAlpha=behind?.5:.6+.4*Math.sin(t*4);ctx.fillStyle='#ffe07a';ctx.font='bold 9px \"Noto Serif SC\",serif';ctx.textAlign='center';ctx.fillText('▼',cx,by-Hf-34+Math.sin(t*3)*2.5);ctx.textAlign='left'}
   else if(done){ctx.fillStyle='#5a1a24';ctx.beginPath();ctx.moveTo(cx-dw/2+1,by);ctx.lineTo(cx-dw/2+1,by-dh+dw/2);ctx.arc(cx,by-dh+dw/2,dw/2-1,Math.PI,0);ctx.lineTo(cx+dw/2-1,by);ctx.fill();ctx.fillStyle='rgba(0,0,0,.3)';for(let q=-dw/2+3;q<dw/2-1;q+=3)ctx.fillRect(cx+q,by-dh+4,.8,dh-4)}
   ctx.restore()}
-function owTheatreTalk(it){const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
+/* ------------------------------------------------------------------ 2.2 the inside of every theatre is an open map
+   Walking into a theatre builds a smaller map with the same generator, tiles and sprites as the world (seeded, so it is the
+   same place every visit). It has a few clearings where the chapter's monsters come at you in two waves, one clearing with an
+   elite, a stranger with an encounter, chests, the stage building and the way out at the entrance. You can walk out at any
+   time; what you cleared, opened and explored stays as it was. Once enough clearings are quiet the stage opens; the stage
+   itself is still the classic room, because the bosses' patterns are made for it. */
+const THW=80,THH=60;
+const ECNT=()=>[1,1.25,1.5][HLV()];
+const thTheme=k=>k===5?'blood':({fire:'blood',water:'coast',air:'city',earth:'forest'})[ACTS[k-1]&&ACTS[k-1].sym]||'night';
+function thRng(seed){let a=seed>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function thSt(k){const W=G.owW?G.owW.o:G.ow;W.thm=W.thm||{};return W.thm[k]||(W.thm[k]={seed:(Math.random()*2e9)|0,z:[],ch:[],ev:0,seen:0,exp:''})}
+function thEnter(k,res){const W=G.ow;if(!W||G.owW||G.owArena)return;const st=thSt(k);P.vx=P.vy=0;curtain(1);S.p('door');setTimeout(()=>S.p('clap',2),400);owLoadBar(1,'推开剧场的门……');
+  setTimeout(()=>{try{thBuild(k,st,res)}catch(e){console.warn('theatre map',e);if(G.owW)thRestoreWorld(true)}setTimeout(()=>{owLoadBar(0);curtain(0)},300)},750)}
+function thFreeGround(o){if(G.bg&&G.bg.bgS){G.bg.width=1;G.bg.height=1}G.bg=null;if(o&&o.gc){o.gc.width=1;o.gc.height=1;o.gc=null}for(const kk in OWSPR)if(kk.startsWith('house:')){OWSPR[kk].c.width=1;delete OWSPR[kk]}}
+function thMake(t,x,y,elite,g){const e=makeEnemy(t,x,y,elite);e.intro=.4;e.ow={s:'chase',t:.3,home:{x,y},g,wp:null,lost:0};return e}
+function thBuild(k,st,res){const W=G.ow;
+  G.owW={o:W,en:G.en,picks:G.picks,deco:G.deco,px:res&&res.wpx!=null?res.wpx:P.x,py:res&&res.wpy!=null?res.wpy:P.y,W:OWW,H:OWH};
+  thFreeGround(W);/* the world's big ground image is let go while you are inside; it is painted again on the way out */
+  OWW=THW;OWH=THH;const th=OWTH[thTheme(k)],fin=k===5,R0=Math.random;Math.random=thRng(st.seed);let T;
+  try{const g=owGen(th,{stage:k,zones:fin?3:4});
+    T={th,...g,exp:new Uint8Array(OWW*OWH),clock:W.clock,fogT:0,mapT:0,npcs:[],I:[],eng:0,engT:0,lastEng:0,mem:W.mem,inv:W.inv,kills0:W.kills0,t0:W.t0,quiet:0,isTh:k,nonce:900+k,groveOpen:1,caches:[],stumps:[],queues:[],helper:null};
+    T.walk=0;for(const t of T.g)if(!OWSOLID[t])T.walk++;G.ow=T;
+    const z=T.P0.zones,eI=z.length-1;z.forEach((q,i)=>T.I.push({kind:'thzone',i,x:q.x*OWT+8,y:q.y*OWT+8,r:84,elite:i===eI,done:st.z[i]?1:0,arm:0,wave:0,ids:[]}));
+    const cp=T.P0.camp;T.I.push({kind:'exitg',x:cp.x*OWT+8,y:(cp.y+3)*OWT+4,arm:1,done:0});
+    const sp=T.P0.th[0];T.I.push({kind:'theatre',k,stage:1,x:sp.x*OWT+8,y:sp.y*OWT+8,arm:1,done:0,bld:1});
+    {const q=owRandFree(OWW*.45,OWH*.5,12,2);if(q)T.I.push({kind:'stranger',x:q.x,y:q.y,arm:1,done:st.ev?1:0})}
+    T.chests=[];for(let i=0,t=0;i<3&&t<600;t++){const tx=rint(3,OWW-4),ty=rint(3,OWH-4);if(!owFree(tx,ty)||!owFree(tx,ty+1)||Math.hypot(tx-cp.x,ty-cp.y)<8)continue;let walls=0;for(const[dx,dy]of[[1,0],[-1,0],[0,1],[0,-1]])if(!owFree(tx+dx,ty+dy))walls++;if(walls<1)continue;T.chests.push({x:tx*OWT+8,y:ty*OWT+8});i++}
+  }finally{Math.random=R0}
+  G.owArena=0;G.owTh=k;G.act=k;G.type='ow';G.cleared=false;RW=OWW*OWT;RH=OWH*OWT;G.en=[];G.picks=[];G.deco=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.npc=null;G.boss=null;
+  T.chests.forEach((c,i)=>{if(!st.ch[i])G.picks.push({k:'chest',x:c.x,y:c.y,t:0,ow:1,thc:i})});
+  if(st.exp)for(let i=0;i<st.exp.length&&i<T.exp.length;i++)T.exp[i]=st.exp.charCodeAt(i)===49?1:0;
+  const cp=T.P0.camp;if(res&&res.tpx!=null){P.x=res.tpx;P.y=res.tpy}else{P.x=cp.x*OWT+8;P.y=cp.y*OWT+30}P.vx=P.vy=0;P.inv=1.2;owPlaceAllies();
+  G.bg=owPaint();owFogInit();$('owMap').hidden=false;$('game').classList.add('ow');T.inFight=0;setTrack('calm');updStage();
+  const nz=T.P0.zones.length,dn=st.z.filter(Boolean).length;
+  if(!st.seen){st.seen=1;later(.3,()=>playCut(cutChapter(k),()=>showActCard(k,()=>later(.4,()=>toast('剧场里有几处战场，清理之后舞台的幕布才会拉开。入口的大门随时可以离开，进度会保留。')))))}
+  else later(.5,()=>owBanner('Théâtre',`回到「${ACTS[k-1].name}」`,`已清理 ${dn}/${nz} 处`))}
+function thSave(T,st){if(!T||!T.exp)return;let e='';for(let i=0;i<T.exp.length;i++)e+=T.exp[i]?'1':'0';st.exp=e;for(const it of T.I)if(it.kind==='thzone'&&it.done)st.z[it.i]=1}
+function thRestoreWorld(paint){const T=G.ow,W=G.owW;if(!W)return;if(T&&T.clock)W.o.clock=T.clock;thFreeGround(T);
+  G.ow=W.o;OWW=W.W;OWH=W.H;RW=OWW*OWT;RH=OWH*OWT;G.en=W.en;G.picks=W.picks;G.deco=W.deco||[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.npc=null;G.boss=null;P.x=W.px;P.y=W.py;G.owW=null;
+  if(paint){G.bg=owPaint();owFogInit();$('owMap').hidden=false;$('game').classList.add('ow')}}
+/* walking out through the entrance: everything is kept for next time */
+function thLeave(){const T=G.ow;if(!G.owW||!T||!T.isTh)return;const k=T.isTh,st=thSt(k);curtain(1);S.p('door');owLoadBar(1,'回到外面……');
+  setTimeout(()=>{thSave(T,st);for(const e of G.en)e.dead=1;thRestoreWorld(true);const it=G.ow.I.find(q=>q.kind==='theatre'&&q.k===k);if(it){P.x=it.x;P.y=it.y+30;owBound(P)}
+    P.vx=P.vy=0;P.inv=1.2;owPlaceAllies();G.owTh=0;G.act=Math.min(5,owDoneL().length+1);G.type='ow';G.ow.inFight=0;setTrack('calm');updStage();
+    setTimeout(()=>{owLoadBar(0);curtain(0);owBanner('Entracte',`离开了「${ACTS[k-1].name}」`,`已清理 ${st.z.filter(Boolean).length} 处 · 整装之后再回来`)},250);later(1,()=>runSave('auto'))},650)}
+/* the stage: the classic boss room; afterwards the chapter closes as it always did (owLeaveTheatre) */
+function thStageGo(k){const T=G.ow,W=G.owW;if(!W)return;const st=thSt(k);thSave(T,st);st.stg=1;curtain(1);S.p('door');setTimeout(()=>S.p('clap',3),400);
+  setTimeout(()=>{const wx=W.px,wy=W.py;thRestoreWorld(false);const o=G.ow;o.save={en:G.en,picks:G.picks,bg:null,px:wx,py:wy};
+    G.en=[];G.picks=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owArena=1;G.owTh=k;RW=512;RH=288;G.owTune=0;$('owMap').hidden=true;$('game').classList.remove('ow');o.inFight=0;feverCashOut();
+    G.act=k;G.cleared=false;P.vx=P.vy=0;G.room=3;jresReset();try{preloadTracks(k===5?['mj1','mj2','mj3','mj4','mj5']:[])}catch(e){}$('fade').classList.remove('on');enterRoom('boss');setTimeout(()=>curtain(0),250)},800)}
+function thStageTalk(it){const k=it.k,T=G.ow,zs=T.I.filter(q=>q.kind==='thzone'),need=Math.max(1,zs.length-1),dn=zs.filter(q=>q.done).length,nm=ACTS[k-1].name;
+  if(dn<need){owTalkModal({name:'舞台 · '+nm,talkN:0},`幕布还垂着。台下的观众在等这一场里别的戏先演完。<br><span style="color:#ffb3c0">还要清理 ${need-dn} 处战场（已清理 ${dn}/${zs.length}）。</span>`,[owBye]);return}
+  owTalkModal({name:'舞台 · '+nm,talkN:0},k===5?'所有的线，都系在这里。走上舞台就是终幕，演完之前下不来。':'幕布拉开了。这座剧场的主人，在舞台中央等你。走上去以后，演完之前下不来。',
+    [{ic:'⚔',r:2,t:'走上舞台',d:k===5?'开演终幕':'与这座剧场的主人对决',fn:()=>thStageGo(k)},{ic:'…',t:'还没准备好',d:'先去别处看看，或者从入口离开',fn:()=>{}}])}
+/* the stranger: one encounter per theatre (the old puppeteer, once you carry three relics) */
+function thStranger(it){if(it.done)return;const ev=relicN()>=3&&!G.route&&G.world<2?{stranger:PUPPETEER}:{stranger:pick(STRANGERS.filter(s=>['wheel','quiz','musicbox'].includes(s.ev)))};
+  it.done=1;thSt(G.ow.isTh).ev=1;G.npc={ev,done:0,x:it.x,y:it.y};openTalk()}
+/* clearings: two waves each, the last one holds the elite; walk far away and the fight resets */
+function thWave(it){const k=G.ow.isTh,fin=k===5;it.wave++;const budget=(3.5+k*1.9+1.6)*(fin?1.35:1)*ECNT()*(it.wave===2?1.15:1);let list=genWave(budget);
+  if(it.elite&&it.wave===2){list=list.slice(0,Math.ceil(list.length/2));list.push({t:pick(['knight','mask','rose']),elite:1})}
+  it.ids=[];for(const w of list){const q=owRandFree(it.x/OWT,it.y/OWT,5,1.5)||{x:it.x,y:it.y};const e=thMake(w.t,q.x,q.y,!!w.elite,-900-it.i);if(e)it.ids.push(e);burst(q.x,q.y-8,8,['#c8102e','#fff'],50,.4)}
+  toast(it.elite?(it.wave===2?'精英现身了':'精英的随从冲了出来'):`第 ${it.wave}/2 波`);S.p(it.wave===2?'boss':'warn')}
+function thTick(dt){const T=G.ow,k=T.isTh,st=thSt(k);
+  for(const it of T.I){if(it.kind!=='thzone'||it.done)continue;const d=Math.hypot(P.x-it.x,P.y-it.y);
+    if(!it.act){if(d<it.r&&!P.down&&!CUT.on&&modal.hidden){it.act=1;it.wave=0;thWave(it)}continue}
+    it.ids=it.ids.filter(e=>!e.dead);
+    if(d>it.r*5&&it.ids.length){for(const e of it.ids)e.dead=1;it.act=0;it.wave=0;it.ids=[];toast('你离开了，那里的敌人散去了');continue}
+    if(!it.ids.length&&!it.wait){if(it.wave<2){it.wait=1;later(.9,()=>{it.wait=0;if(it.act&&!it.done)thWave(it)})}else{it.done=1;it.act=0;st.z[it.i]=1;thReward(it)}}}
+  {const have=new Set(G.picks.filter(p=>p.thc!=null&&!p.open&&!p.dead).map(p=>p.thc));(T.chests||[]).forEach((c,i)=>{if(!have.has(i))st.ch[i]=1})}}
+function thReward(it){const k=G.ow.isTh,T=G.ow,dn=T.I.filter(q=>q.kind==='thzone'&&q.done).length,nz=T.P0.zones.length;S.p('win');G.fever=Math.min(fCap(),(G.fever||0)+fCap()*.25);G.petals+=owCoin(10+k*3);
+  if(G.quests.pages)qProg('pages');if(it.elite&&G.quests.elites)qProg('elites');dropRelic(it.x,it.y,it.elite?.35:.12);if(typeof lvGain==='function')lvGain(it.elite?60:30,it.elite?'精英清场':'清场');
+  owBanner('Scène',it.elite?'精英倒下了':'这一处安静了',dn>=Math.max(1,nz-1)?'舞台的幕布拉开了':`已清理 ${dn}/${nz} 处`);
+  later(1,()=>offerUps(it.elite?'精英倒下了':'这一幕结束了',it.elite?'它留下的东西里，有一段旋律还在发光。':'台下没有掌声。地上有一段被踩过的旋律。',rollUps(nCh(),it.elite?1:0)));
+  if(dn>=2&&!(G.inter||{})[k]){(G.inter=G.inter||{})[k]=1;later(2.6,()=>{if(modal.hidden&&!CUT.on)playCut(cutInter(k),()=>{})})}}
+function thDrawItem(it,t){const x=it.x,y=it.y;
+  if(it.kind==='thzone'){const on=it.act,done=it.done,r=on?it.r:40,a=done?.18:on?.55+.2*Math.sin(t*6):.35+.1*Math.sin(t*2);ctx.save();ctx.strokeStyle=done?'#8a7a90':it.elite?'#ffb050':'#e0283c';ctx.globalAlpha=a;ctx.lineWidth=1.2;
+      ctx.beginPath();ctx.ellipse(x,y,r,r*.55,0,0,TAU);ctx.stroke();ctx.setLineDash([3,4]);ctx.beginPath();ctx.ellipse(x,y,r*.7,r*.38,0,0,TAU);ctx.stroke();ctx.setLineDash([]);
+      if(!done){for(let i=0;i<6;i++){const q=i/6*TAU+t*.2,cx=x+Math.cos(q)*30,cy=y+Math.sin(q)*16;ctx.globalAlpha=1;ctx.fillStyle='#ece4d4';ctx.fillRect(cx-1,cy-4,2,4);ctx.fillStyle='#ffb040';ctx.fillRect(cx-.5,cy-6-Math.sin(t*9+i)*.6,1,1.6)}
+        ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.4;ctx.drawImage(glow(it.elite?'#ffb050':'#ff4050'),x-24,y-20,48,30)}ctx.restore();return}
+  if(it.kind==='exitg'){ctx.save();ctx.fillStyle='#2a1a1e';ctx.fillRect(x-16,y-30,32,30);ctx.fillStyle='#120a0c';ctx.beginPath();ctx.moveTo(x-11,y);ctx.lineTo(x-11,y-18);ctx.arc(x,y-18,11,Math.PI,0);ctx.lineTo(x+11,y);ctx.fill();
+    ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35+.15*Math.sin(t*2);ctx.drawImage(glow('#ffe0a0'),x-14,y-26,28,26);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.fillStyle='#c9a45c';ctx.fillRect(x-17,y-31,34,2);
+    ctx.font='6px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='#f0e2c8';ctx.fillText('出 口',x,y-33);ctx.textAlign='left';ctx.restore();return}
+}
+
+function owTheatreTalk(it){if(it.stage){thStageTalk(it);return}const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
   if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门缝里只剩下一点烛火的味道。',[owBye]);return}
   const line=k===5?`剧场的大门半开着，门缝里飘出管风琴的声音。所有的线，都系在这里。${left?`<br><span style="color:#ffb3c0">还有 ${left} 座剧场没有演，你身边有 ${G.allies.length} 名同伴。走进去就是终幕。</span>`:''}`:
     ({fire:'门缝里透出烛光，还有一股蜡油烧焦的味道。',air:'台阶上落满了黑色的羽毛。门里传来很轻的脚步声。',water:'门缝里渗出水来，冰凉的，带一点咸味。',earth:'门框上缠着玫瑰，刺是新长的。门里很安静，安静得不对劲。'}[ACTS[k-1].sym]||'门口的海报被雨打湿了一半。门里有人在调弦，调了一遍又一遍。')+(G.caps&&G.caps[k-1]?`<br><span style="color:#d8c8c0">听说 ${cname(G.caps[k-1])} 被关在里面。</span>`:'');
-  owTalkModal({name:nm,talkN:0},line,[{ic:'⚔',r:2,t:'走进剧场',d:k===5?'开演终幕。演完之前出不来':'演完之前出不来',fn:()=>owEnterTheatre(k)},{ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}])}
+  owTalkModal({name:nm,talkN:0},line,[{ic:'⚔',r:2,t:'走进剧场',d:(G.ow.thm&&G.ow.thm[k]&&G.ow.thm[k].seen?'回到上次离开的地方 · ':'')+'里面是一片开阔的场地。打不过可以从入口撤出来，进度会保留',fn:()=>thEnter(k)},{ic:'…',t:'还没准备好',d:'先去别处转转',fn:()=>{}}])}
 function owEnterTheatre(k,res){const o=G.ow;if(!o)return;
   const go=()=>{o.save={en:G.en,picks:G.picks,bg:G.bg,px:P.x,py:P.y};G.en=[];G.picks=[];G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.owArena=1;G.owTh=k;RW=512;RH=288;G.owTune=0;
     $('owMap').hidden=true;$('game').classList.remove('ow');o.inFight=0;feverCashOut();G.act=k;G.cleared=false;P.vx=P.vy=0;
@@ -7924,9 +8013,9 @@ function curtain(on,fast){const c=$('curtain');if(!c)return;c.classList.toggle('
 function owBanner(small,big,sub){const el=$('owBan');el.querySelector('small').textContent=small;el.querySelector('b').textContent=big;el.querySelector('em').textContent=sub||'';el.hidden=false;el.style.animation='none';void el.offsetWidth;el.style.animation='';clearTimeout(owBanner.t);owBanner.t=setTimeout(()=>el.hidden=true,3500)}
 /* the next theatre: a few masked guards from its chapter and a silent queue of puppet audience at the door */
 function owGuards(k){if(owIsDone(k))return;const o=G.ow,it=o.I.find(q=>q.kind==='theatre'&&q.k===k);if(!it||!ACTS[k-1])return;const pool=ACTS[k-1].pool||['mari'],gid=-500-k;const sa=G.act;G.act=k;
-  for(let j=0;j<3+Math.min(2,k>>1);j++){const q=owRandFree(it.x/OWT,it.y/OWT+3,6,3);if(q){const e=owMake(pick(pool),q.x,q.y,j===0,gid);e.ow.home={x:it.x,y:it.y+40}}}G.act=sa;
+  for(let j=0;j<Math.round((3+Math.min(2,k>>1))*ECNT());j++){const q=owRandFree(it.x/OWT,it.y/OWT+3,6,3);if(q){const e=owMake(pick(pool),q.x,q.y,j===0,gid);e.ow.home={x:it.x,y:it.y+40}}}G.act=sa;
   (o.queues=o.queues||[]).push({k,pts:Array.from({length:3},(_,j)=>({x:it.x+(k===5?30:24)+j*11,y:it.y+14+j*3,ph:Math.random()*6}))})}
-function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};
+function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};if(o.thm)delete o.thm[k];
   G.en=s.en||[];G.picks=s.picks||[];G.bg=s.bg||owPaint();G.eb=[];G.pb=[];G.fx=[];G.zones=[];G.obs=[];G.doors=[];G.cage=null;G.boss=null;G.waves=[];G.pending=0;G.npc=null;G.ots=null;G.vortex=null;
   try{setField(null)}catch(e){}$('bossBar').hidden=true;RW=OWW*OWT;RH=OWH*OWT;G.owArena=0;G.owTh=0;o.save=null;G.type='ow';G.cleared=false;G.room=0;
   const D=owDoneL();if(!D.includes(k))D.push(k);G.owNext=D.length+1;G.act=Math.min(5,G.owNext);const it=o.I.find(q=>q.kind==='theatre'&&q.k===k);if(it)it.done=1;if(o.queues)o.queues=o.queues.filter(q=>q.k!==k);
@@ -7937,7 +8026,7 @@ function owLeaveTheatre(){const o=G.ow,k=G.owTh,s=o.save||{};
 function owPlaceAllies(){G.allies.forEach((a,i)=>{const q=owRandFree(P.x/OWT,P.y/OWT,2.5,.5);a.x=q?q.x:P.x+(i%2?14:-14);a.y=q?q.y:P.y+6;a.vx=a.vy=0})}
 /* the road between chapters gets more crowded */
 function owReinforce(k){const o=G.ow,POOL=[['mari','crow','mask'],['mask','rose','knight','mari'],['knight','mask','rose','crow'],['knight','rose','mask','crow']];let n=0;
-  for(let t=0;t<200&&n<3+k;t++){const tx=rint(4,OWW-5),ty=rint(4,OWH-5);if(!owFree(tx,ty)||Math.hypot(tx*OWT-P.x,ty*OWT-P.y)<26*OWT)continue;const pool=POOL[Math.min(3,k-1)],c=rint(2,3),gid=-100-k*10-n;n++;
+  for(let t=0;t<200&&n<Math.round((3+k)*ECNT());t++){const tx=rint(4,OWW-5),ty=rint(4,OWH-5);if(!owFree(tx,ty)||Math.hypot(tx*OWT-P.x,ty*OWT-P.y)<26*OWT)continue;const pool=POOL[Math.min(3,k-1)],c=rint(2,3),gid=-100-k*10-n;n++;
     for(let j=0;j<c;j++){const q=j?owRandFree(tx,ty,3,1):{x:tx*OWT+8,y:ty*OWT+8};if(q)owMake(pick(pool),q.x,q.y,j===0&&Math.random()<.25,gid)}}}
 /* allies on the map stay close; one that falls far behind catches up */
 function owAllyLeash(){for(const a of G.allies){if(a.down)continue;const d=Math.hypot(a.x-P.x,a.y-P.y);if(d>260){const q=owRandFree(P.x/OWT,P.y/OWT,3,1);if(q){a.x=q.x;a.y=q.y;burst(a.x,a.y-10,8,['#fff',GOLD],40,.4)}}}}
@@ -7985,8 +8074,8 @@ function runHas(){const s=store.get(RUNKEY,null);return s&&s.ver===RUNVER?s:null
 function runClear(){try{localStorage.removeItem(RUNKEY)}catch(e){}runTitleBtn()}
 function runSnapG(){const g={};for(const k of RUNG)if(G[k]!==undefined)g[k]=plain(G[k]);return g}
 function runSave(why){try{if(G.state!=='play'||!G.mods)return;
-    if(G.ow&&G.owTh){if(why!=='room')return;const sv={ver:RUNVER,kind:'ow',th:G.owTh,thName:ACTS[G.owTh-1].name,type:G.type,charIdx:G.charIdx,t:Date.now(),G:runSnapG(),P:{hp:P.hp,sh:P.sh,dch:P.dch},allies:allySnap(),ow:owSnap()};if(sv.ow)store.set(RUNKEY,sv);return}
-    if(G.ow){if(why==='room'||G.owArena)return;const sv={ver:RUNVER,kind:'ow',charIdx:G.charIdx,t:Date.now(),G:runSnapG(),P:{hp:P.hp,sh:P.sh,x:P.x,y:P.y,dch:P.dch},allies:allySnap(),ow:owSnap()};if(sv.ow)store.set(RUNKEY,sv);return}
+    if(G.ow&&G.owTh&&G.owArena){if(why!=='room')return;const sv={ver:RUNVER,kind:'ow',th:G.owTh,thName:ACTS[G.owTh-1].name,type:G.type,charIdx:G.charIdx,t:Date.now(),G:runSnapG(),P:{hp:P.hp,sh:P.sh,dch:P.dch},allies:allySnap(),ow:owSnap()};if(sv.ow)store.set(RUNKEY,sv);return}
+    if(G.ow){if(why==='room'||G.owArena)return;const tm=G.owW&&G.ow.isTh?{k:G.ow.isTh,px:P.x,py:P.y}:null;const sv={ver:RUNVER,kind:'ow',charIdx:G.charIdx,t:Date.now(),G:runSnapG(),P:{hp:P.hp,sh:P.sh,x:P.x,y:P.y,dch:P.dch},allies:allySnap(),thMap:tm,ow:owSnap()};if(sv.ow)store.set(RUNKEY,sv);return}
     if(why!=='room')return;/* room worlds: only the room-start checkpoint is written */
     const sv={ver:RUNVER,kind:'room',charIdx:G.charIdx,t:Date.now(),type:G.type,G:runSnapG(),P:{hp:P.hp,sh:P.sh,dch:P.dch},allies:allySnap()};store.set(RUNKEY,sv)}catch(e){console.warn('save',e)}runTitleBtn()}
 function runRestoreG(sv){for(const k of RUNG)if(sv.G[k]!==undefined&&k!=='caps')G[k]=plain(sv.G[k]);stats();P.hp=Math.min(P.maxHp,sv.P.hp);P.sh=Math.min(P.shMax,sv.P.sh||0);if(sv.P.dch!=null)P.dch=sv.P.dch;window.__w1o=undefined}
@@ -8005,15 +8094,15 @@ function runGuard(go){const sv=runHas();if(!sv){go();return}openModal('confirm',
   $('rgNo').onclick=()=>{closeModal();toTitle()};$('rgGo').onclick=()=>{closeModal();runClear();go()}}
 
 /* ---- open world snapshot */
-function owSnap(){const o=G.ow;if(!o||!o.g)return null;const ar=!!G.owArena,src=ar&&o.save?o.save:null,en=(src?src.en:G.en).filter(e=>!e.dead&&e.ow&&!e.shade),picks=(src?src.picks:G.picks).filter(p=>p.k==='chest'||p.k==='mat'||p.k==='hp');
+function owSnap(){const IW=G.owW,o=IW?IW.o:G.ow;if(!o||!o.g)return null;if(IW&&G.ow.isTh)thSave(G.ow,thSt(G.ow.isTh));const ar=!!G.owArena||!!IW,src=IW?IW:ar&&o.save?o.save:null,en=(src?src.en:G.en).filter(e=>!e.dead&&e.ow&&!e.shade),picks=(src?src.picks:G.picks).filter(p=>p.k==='chest'||p.k==='mat'||p.k==='hp');
   let exp='';for(let i=0;i<o.exp.length;i++)exp+=o.exp[i]?'1':'0';
-  return{th:o.th.id,w:OWW,h:OWH,g:Array.from(o.g),bio:o.bio?Array.from(o.bio):null,trs:o.trs?Array.from(o.trs):null,bld:o.bld?o.bld.map(b=>plain({...b,wins:null,smoke:null})):null,plots:plain(o.plots||null),props:plain(o.props||null),roads:o.roads?o.roads.map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>[Math.round(p.x*10)/10,Math.round(p.y*10)/10])})):null,docks:plain(o.docks||null),v2:o.v2||0,exp,expN:o.expN||0,walk:o.walk,P0:o.P0,houses:o.houses,sec:o.sec,groveOpen:o.groveOpen||0,clock:o.clock,mem:plain(o.mem),marks:plain(o.marks||{}),inv:plain(o.inv||{}),helper:o.helper?{x:o.helper.x,y:o.helper.y}:null,caches:plain(o.caches||[]),hs:plain(o.hs||{}),stumps:plain(o.stumps||[]),queues:plain(o.queues||null),t0:G.time-o.t0,kills0:(G.kills||0)-o.kills0,
+  return{th:o.th.id,w:IW?IW.W:OWW,h:IW?IW.H:OWH,g:Array.from(o.g),bio:o.bio?Array.from(o.bio):null,trs:o.trs?Array.from(o.trs):null,bld:o.bld?o.bld.map(b=>plain({...b,wins:null,smoke:null})):null,plots:plain(o.plots||null),props:plain(o.props||null),roads:o.roads?o.roads.map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>[Math.round(p.x*10)/10,Math.round(p.y*10)/10])})):null,docks:plain(o.docks||null),v2:o.v2||0,exp,expN:o.expN||0,walk:o.walk,P0:o.P0,houses:o.houses,sec:o.sec,groveOpen:o.groveOpen||0,clock:o.clock,mem:plain(o.mem),marks:plain(o.marks||{}),inv:plain(o.inv||{}),helper:o.helper?{x:o.helper.x,y:o.helper.y}:null,caches:plain(o.caches||[]),hs:plain(o.hs||{}),stumps:plain(o.stumps||[]),queues:plain(o.queues||null),thm:plain(o.thm||{}),t0:G.time-o.t0,kills0:(G.kills||0)-o.kills0,
     px:src?src.px:P.x,py:src?src.py:P.y,
     npcs:o.npcs.map(n=>({...plain({...n,goods:null}),goods:n.goods?n.goods.map(u=>({id:u.id,sold:!!u.sold})):null})),
     I:o.I.map(it=>({...plain({...it,fight:null,shade:null,next:null}),done:it.fight?0:it.done,arm:1})),
     picks:picks.map(p=>plain({k:p.k,m:p.m,x:p.x,y:p.y,open:p.open,ow:p.ow,grove:p.grove,special:p.special})),
     en:en.map(e=>({t:e.t,x:e.x,y:e.y,hp:e.hp,mhp:e.mhp,elite:!!e.elite,ow:plain({s:'idle',t:1,home:e.ow.home,g:e.ow.g,wp:e.ow.wp})}))}}
-function owRestore(S0){const o=G.ow;o.g=Uint8Array.from(S0.g);if(S0.bio)o.bio=Uint8Array.from(S0.bio);if(S0.trs)o.trs=Uint8Array.from(S0.trs);o.bld=S0.bld||[];o.plots=S0.plots||[];o.props=S0.props||[];o.roads=(S0.roads||[]).map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>({x:p[0],y:p[1]}))}));o.docks=S0.docks||[];o.v2=S0.v2||0;o.P0=S0.P0;o.houses=S0.houses;o.sec=S0.sec;o.groveOpen=S0.groveOpen;o.clock=S0.clock;o.mem=S0.mem||{};o.marks=S0.marks;o.inv=S0.inv;o.caches=S0.caches;o.hs=S0.hs||{};o.stumps=S0.stumps||[];o.queues=S0.queues||null;o.expN=S0.expN;o.walk=S0.walk;
+function owRestore(S0){const o=G.ow;o.g=Uint8Array.from(S0.g);if(S0.bio)o.bio=Uint8Array.from(S0.bio);if(S0.trs)o.trs=Uint8Array.from(S0.trs);o.bld=S0.bld||[];o.plots=S0.plots||[];o.props=S0.props||[];o.roads=(S0.roads||[]).map(r=>({w:r.w,main:r.main,pts:r.pts.map(p=>({x:p[0],y:p[1]}))}));o.docks=S0.docks||[];o.v2=S0.v2||0;o.P0=S0.P0;o.houses=S0.houses;o.sec=S0.sec;o.groveOpen=S0.groveOpen;o.clock=S0.clock;o.mem=S0.mem||{};o.marks=S0.marks;o.inv=S0.inv;o.caches=S0.caches;o.hs=S0.hs||{};o.stumps=S0.stumps||[];o.queues=S0.queues||null;o.thm=S0.thm||{};o.expN=S0.expN;o.walk=S0.walk;
   for(let i=0;i<S0.exp.length;i++)o.exp[i]=S0.exp.charCodeAt(i)===49?1:0;o.helper=S0.helper?{...S0.helper,cd:1}:null;o.t0=G.time-(S0.t0||0);o.kills0=(G.kills||0)-(S0.kills0||0);
   o.npcs=S0.npcs.map(n=>({...n,goods:n.goods?n.goods.map(g=>{const u=UPS.find(q=>q.id===g.id);return u?{...u,sold:g.sold}:null}).filter(Boolean):null,arm:1}));o.I=S0.I;
   G.picks=S0.picks.map(p=>({...p,t:1}));for(const e of S0.en){const q=owMake(e.t,e.x,e.y,e.elite,e.ow.g);q.mhp=e.mhp;q.hp=Math.min(e.hp,e.mhp);q.ow.home=e.ow.home;q.ow.wp=e.ow.wp}
