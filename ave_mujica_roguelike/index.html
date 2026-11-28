@@ -802,7 +802,7 @@ body.pc .chpads{display:none}
   </div>
   <div class="selR">
   <ul class="abil" id="sAbil"></ul>
-  <div class="diff" hidden><span>难度</span><div class="nls" id="nls"></div><small id="dTxt"></small></div><div class="hdiff" id="hdiff"><span>难度</span><button type="button" data-h="0">默认</button><button type="button" data-h="1">困难</button><small id="hTxt"></small></div>
+  <div class="diff" hidden><span>难度</span><div class="nls" id="nls"></div><small id="dTxt"></small></div><div class="hdiff" id="hdiff"><span>难度</span><button type="button" data-h="0">默认</button><button type="button" data-h="1">困难</button><button type="button" data-h="2">非常困难</button><small id="hTxt"></small></div>
   <div class="kbd" id="kbdHint">手机：左半屏拖动移动，右下按钮攻击</div>
   <div class="gobar"><button class="cta" id="go">登 台</button></div>
   </div>
@@ -1524,7 +1524,7 @@ const nlW=w=>{const o=NLS[w]||(NLS[w]={sel:1,max:9});o.max=9;return o};
 /* the N difficulty levels were removed in 2.1: every run plays at the base level */
 const NL=()=>1;
 /* each chapter adds monster HP on top of the base curve: N1 +25% per chapter (chapter 5 = +100%), +3% more per chapter for each N level above 1 */
-const actGrowRate=()=>0,actGrow=()=>1,EHP=()=>settings.hard?1.5:1,EDM=()=>settings.hard?1.5:1;
+const actGrowRate=()=>0,actGrow=()=>1,HLV=()=>Math.min(2,+settings.hard||0),EHP=()=>[1,1.5,2][HLV()],EDM=()=>[1,1.5,2][HLV()],EFQ=()=>HLV()===2?1.35:1;
 /* the 假面之下 worlds are about the story: softer enemies and bosses, two waves a room */
 const STORYK=()=>G.world>=2?.7:1,STORYD=()=>G.world>=2?.7:1;
 const DIFFC={};function DF(){const lv=NL();if(DIFFC[lv])return DIFFC[lv];const k=lv-1;return DIFFC[lv]={n:'N'+lv,pet:1-.04*k,shop:1+.05*k,dmg:1+.06*k,ehp:1+.06*k,ap:1+.4*k,pick:0,leg:lv>=5?0:1,rare:lv>=5?1-.05*(lv-5):1,txt:NLR[lv].d}}
@@ -2949,15 +2949,15 @@ function updEnemy0(e,dt){
   const SP=e.spd*(e.slowT>0?.65:1)*(inWater(e)?.65:1);const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1,ux=dx/dist,uy=dy/dist;e.face=dx<0?-1:1;const ai=e.d.ai;
   if(ai==='chase'){e.x+=ux*SP*dt+Math.cos(e.an*2)*6*dt;e.y+=uy*SP*dt}
   else if(ai==='ranged'){const want=e.elite?80:95,s=dist>want+15?1:dist<want-15?-1:0;e.x+=(ux*s+(-uy)*.6*Math.sin(e.an*.7))*SP*dt;e.y+=(uy*s+ux*.6*Math.sin(e.an*.7))*SP*dt;
-    e.fire-=dt;if(e.fire<=0){e.fire=e.d.fire*rnd(.85,1.15)*(e.elite?.8:1)*(1-.07*(G.act-1));const a=Math.atan2(dy,dx);if(e.elite){for(let i=-2;i<=2;i++)eshoot(e.x,e.y-8,a+i*.22,80)}else eshoot(e.x,e.y-8,a,78)}}
-  else if(ai==='turret'){e.fire-=dt;if(e.fire<=0){e.fire=e.d.fire*rnd(.9,1.1);const n=e.elite?14:8,o=e.an;for(let i=0;i<n;i++)eshoot(e.x,e.y-8,o+i/n*TAU,55);burst(e.x,e.y-10,5,['#e05a70'],30,.3)}}
-  else if(ai==='dasher'){e.stT-=dt;
+    e.fire-=dt*EFQ();if(e.fire<=0){e.fire=e.d.fire*rnd(.85,1.15)*(e.elite?.8:1)*(1-.07*(G.act-1));const a=Math.atan2(dy,dx);if(e.elite){for(let i=-2;i<=2;i++)eshoot(e.x,e.y-8,a+i*.22,80)}else eshoot(e.x,e.y-8,a,78)}}
+  else if(ai==='turret'){e.fire-=dt*EFQ();if(e.fire<=0){e.fire=e.d.fire*rnd(.9,1.1);const n=e.elite?14:8,o=e.an;for(let i=0;i<n;i++)eshoot(e.x,e.y-8,o+i/n*TAU,55);burst(e.x,e.y-10,5,['#e05a70'],30,.3)}}
+  else if(ai==='dasher'){e.stT-=dt*EFQ();
     if(e.st==='idle'){const a=Math.atan2(e.y-P.y,e.x-P.x)+dt*1.2;const tx=P.x+Math.cos(a)*65,ty=P.y+Math.sin(a)*65;e.x+=(tx-e.x)*dt*2;e.y+=(ty-e.y)*dt*2;
       if(e.stT<=0){e.st='wind';e.stT=.45;e.da=Math.atan2(dy,dx);G.fx.push({k:'line',x:e.x,y:e.y,a:e.da,len:90,t:0,d:.45,en:1})}}
     else if(e.st==='wind'){e.x+=rnd(-1,1)*.6;if(e.stT<=0){e.st='dash';e.stT=.42}}
     else if(e.st==='dash'){e.x+=Math.cos(e.da)*175*dt;e.y+=Math.sin(e.da)*175*dt;if(e.stT<=0){e.st='idle';e.stT=rnd(1,1.8)*(e.elite?.6:1)}}}
-  else if(ai==='slammer'){e.stT-=dt;
-    if(e.st==='idle'){e.x+=ux*SP*dt;e.y+=uy*SP*dt;if(e.duel){e.fire-=dt;if(e.fire<=0){e.fire=1.8;const a=Math.atan2(dy,dx);for(let i=-3;i<=3;i++)eshoot(e.x,e.y-14,a+i*.16,85)}}if(dist<38*e.sc/1.4&&e.stT<=0){e.st='wind';e.stT=.65;G.fx.push({k:'warnC',x:e.x,y:e.y,r:32*e.sc,t:0,d:.65,en:1});S.p('warn')}}
+  else if(ai==='slammer'){e.stT-=dt*EFQ();
+    if(e.st==='idle'){e.x+=ux*SP*dt;e.y+=uy*SP*dt;if(e.duel){e.fire-=dt*EFQ();if(e.fire<=0){e.fire=1.8;const a=Math.atan2(dy,dx);for(let i=-3;i<=3;i++)eshoot(e.x,e.y-14,a+i*.16,85)}}if(dist<38*e.sc/1.4&&e.stT<=0){e.st='wind';e.stT=.65;G.fx.push({k:'warnC',x:e.x,y:e.y,r:32*e.sc,t:0,d:.65,en:1});S.p('warn')}}
     else if(e.st==='wind'){if(e.stT<=0){e.st='idle';e.stT=1.3;S.p('slam');shake(3);G.fx.push({k:'ring',x:e.x,y:e.y,r0:4,r1:32*e.sc,t:0,d:.25,col:'#c8ccd8'});
       if(d2(e,P)<(32*e.sc+P.r)**2)hurtPlayer(e.dmg);if(G.act>=4||e.elite)for(let i=0;i<8;i++)eshoot(e.x,e.y-6,i/8*TAU+e.an,60)}}}
   for(const o of G.en){if(o===e||o.dead||o.boss)continue;const ddx=e.x-o.x,ddy=e.y-o.y,dd=ddx*ddx+ddy*ddy,rr=e.r+o.r;if(dd<rr*rr&&dd>.01){const d=Math.sqrt(dd),p=(rr-d)*.5;e.x+=ddx/d*p;e.y+=ddy/d*p}}
@@ -2967,14 +2967,14 @@ function eshoot(x,y,a,spd,o={}){if(G.bossShot===1){G.bsc=(G.bsc||0)+1;if(G.bsc%6
 function updBoss(e,dt){const b=e.boss;e.fl=Math.max(0,e.fl-dt);e.an+=dt;if(e.mj){updHands(e,dt);e.castT=Math.max(0,(e.castT||0)-dt)}
   if(e.intro>0){e.intro-=dt;return}if(e.trans)return;
   if(e.mini&&!e.enr&&e.hp<e.mhp*.5){e.enr=1;shake(4);S.p('boss');toast('精英 · 暴走');G.fx.push({k:'ring',x:e.x,y:e.y-10,r0:6,r1:64,t:0,d:.4,col:'#ff4a5a'})}
-  if(!e.mj&&FINAL[b.spr]&&e.phase>=3&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.2-.2*e.phase)*1.15;const a=Math.atan2(P.y-8-(e.y-30),P.x-e.x),n=1+e.phase;for(let i=0;i<n;i++)eshoot(e.x,e.y-30,a+(i-(n-1)/2)*.14,95,{dmg:8.9*EDM(),col:p2col(e)})}}
-  if(e.mj&&!CUT.on){e.amb-=dt;if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.05-.15*e.form)*1.15;const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:8.9*EDM(),col:MJF[e.form-1].col})}}
+  if(!e.mj&&FINAL[b.spr]&&e.phase>=3&&!CUT.on){e.amb-=dt*EFQ();if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.2-.2*e.phase)*1.15;const a=Math.atan2(P.y-8-(e.y-30),P.x-e.x),n=1+e.phase;for(let i=0;i<n;i++)eshoot(e.x,e.y-30,a+(i-(n-1)/2)*.14,95,{dmg:8.9*EDM(),col:p2col(e)})}}
+  if(e.mj&&!CUT.on){e.amb-=dt*EFQ();if(e.amb<=0&&G.bE2){e.amb=Math.max(.3,1.05-.15*e.form)*1.15;const q=mjEye(e),a=Math.atan2(P.y-8-q.y,P.x-q.x),n=2+e.form;for(let i=0;i<n;i++)eshoot(q.x,q.y,a+(i-(n-1)/2)*.15,95,{dmg:8.9*EDM(),col:MJF[e.form-1].col})}}
   const ph2=e.mj?(e.form>=3||e.hp<e.mhp*.5):e.phase===2;if(ph2&&!e.ph2){e.ph2=1;shake(6);G.eb.forEach(x=>x.dead=1)}
   if(e.dashT>0){e.dashT-=dt;e.x+=e.vx*dt;e.y+=e.vy*dt;if(b.spr==='queen'&&Math.random()<dt*20)eshoot(e.x,e.y-10,rnd(TAU),30,{k:'feather'});bound(e)}
-  else if(e.busy>0){e.busy-=dt}
+  else if(e.busy>0){e.busy-=dt*EFQ()}
   else{const dx=P.x-e.x,dy=P.y-e.y,dist=Math.hypot(dx,dy)||1;
     if(b.spd>0){const want=90,s=dist>want?1:-.5;e.x+=(dx/dist*s+Math.cos(e.an*.8)*.6)*b.spd*dt;e.y+=(dy/dist*s*.6)*b.spd*dt;e.y=Math.min(e.y,RH*.62);if(e.mj)e.y=Math.max(e.y,TOP+118)}
-    e.stT-=dt;if(e.stT<=0&&((e.mj||ph2||e.phase>=3)?G.bE2:G.bE1)){const p=b.pats[e.pi++%b.pats.length];if(e.mj)e.castT=.5;G.bossShot=e.mini?2:1;e.busy=pattern(e,p,ph2)*(e.mj?.55:e.phase>=3?.45:ph2?.55:1)*(e.mini?(e.enr?.55:.8):1.15);G.bossShot=0;e.stT=e.mj?.12:e.phase>=3?.08:ph2?.15:1}}
+    e.stT-=dt*EFQ();if(e.stT<=0&&((e.mj||ph2||e.phase>=3)?G.bE2:G.bE1)){const p=b.pats[e.pi++%b.pats.length];if(e.mj)e.castT=.5;G.bossShot=e.mini?2:1;e.busy=pattern(e,p,ph2)*(e.mj?.55:e.phase>=3?.45:ph2?.55:1)*(e.mini?(e.enr?.55:.8):1.15);G.bossShot=0;e.stT=e.mj?.12:e.phase>=3?.08:ph2?.15:1}}
   bound(e);if(e.mj)e.y=Math.max(e.y,TOP+118);e.face=P.x<e.x?-1:1;
   if(d2(e,P)<(e.r+P.r)**2)hurtPlayer(e.dmg)}
 function pattern(e,p,ph2){const aim=()=>Math.atan2(P.y-e.y,P.x-e.x),bs=6+G.act*2.9,ox=()=>e.x,oy=()=>e.y-(e.mj?55:12);
@@ -3270,7 +3270,7 @@ function showWaveTag(){const el=$('secBanner');if(!el)return;el.innerHTML=`<smal
 function show(id){['title','select'].forEach(s=>$(s).hidden=s!==id)}
 function toTitle(){if(typeof runTitleBtn==='function')setTimeout(runTitleBtn,0);G.owSel=0;if(typeof owReset==='function')owReset();feverReset();$('gpBar').hidden=true;G.state='title';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('title');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');G.amb=[];
   $('w2btn').hidden=!Object.keys(best.endings||{}).length;const ne=Object.keys(best.endings||{}).length;$('best').textContent=(best.wins?`通关 ${best.wins} 次 · 结局 ${ne}/4 · `:best.act?`最远抵达第${CN[Math.min(best.act,5)-1]}章 · `:'')+`回忆 ${memTotal()}/${memMax()}`;$('memBtn').classList.toggle('hasnew',memNew()>0);updBadge();if(UPD.pending)setTimeout(updMaybeAsk,600)}
-function hdiffSync(){const h=!!settings.hard;document.querySelectorAll('#hdiff button').forEach(b=>b.classList.toggle('on',(b.dataset.h==='1')===h));const t=$('hTxt');if(t)t.textContent=h?'所有怪物的生命和攻击力 +50%':'怪物不会随剧场或同伴数量变强'}
+function hdiffSync(){const h=HLV();document.querySelectorAll('#hdiff button').forEach(b=>b.classList.toggle('on',+b.dataset.h===h));const t=$('hTxt');if(t)t.textContent=['怪物不会随剧场或同伴数量变强','所有怪物的生命和攻击力 +50%','所有怪物的生命和攻击力 +100%，攻击和放技能的频率 +35%'][h]}
 function toSelect(){try{renderNL()}catch(e){}hdiffSync();{const dv=document.querySelector('.selR .diff');if(dv)dv.style.display='none'}$('selH').textContent=WORLD===4?'镜中的睦 · Mortis':WORLD===3?'星之约 · 丰川祥子 × 三角初华':WORLD===2?'假面之下 · 丰川祥子':'选择人偶';buildTabs();if(WORLD>=2)G.charIdx=CHARS.findIndex(c=>c.id===(WORLD===4?'mortis':'oblivionis'));feverReset();$('gpBar').hidden=true;if(!isUnl(CHARS[G.charIdx].id))G.charIdx=0;G.state='select';$('game').classList.remove('playing');$('tint').style.opacity=0;tintKey='';show('select');$('hud').hidden=$('pad').hidden=$('stickZone').hidden=$('hint').hidden=true;$('bossBar').hidden=true;setTrack('title');selChar(G.charIdx)}
 function buildTabs(){const t=$('tabs');t.innerHTML='';CHARS.forEach((c,i)=>{const b=document.createElement('button');const lk=!isUnl(c.id);b.className='tab'+(lk?' lock':'');b.innerHTML=`<canvas width="40" height="58"></canvas><span>${lk&&WORLD<2?'？？？':c.name}</span>${lk?`<em class="lk">${WORLD===4?'仅限睦':WORLD>=2?'仅限祥子':'未解锁'}</em>`:''}`;
   const x=b.querySelector('canvas').getContext('2d');const art=ART.fr[c.id];if(art){x.imageSmoothingQuality='high';x.drawImage(art.idle[0],27,0,54,72,-4,2,48,64)}else{x.imageSmoothingEnabled=false;x.drawImage(SPR['ch_'+c.id].f[0],0,0,20,29,0,0,40,58)}b.onclick=()=>{auInit();S.p('tick');selChar(i)};t.appendChild(b)})}
@@ -3292,7 +3292,7 @@ function startRun(i,opt){if(updNeed()){updAsk();return}if(typeof owReset==='func
   if(opt&&opt.ow){owBegin(opt.resume);return}
   if(opt&&opt.resume){runRestoreRoom(opt.resume);return}
   G.zones=[];G.bg=buildBg();playCut(G.world===4?cutPrologue4().concat(cutChapter4(1)):G.world===3?cutPrologue3().concat(cutChapter3(1)):G.world===2?cutPrologue2().concat(cutChapter2(1)):cutPrologue().concat(cutChapter(1)),()=>showActCard(1,()=>{enterRoom('combat');if(G.rareGot)later(1.2,()=>toast('试音 · 获得「'+G.rareGot+'」'))}))}
-document.querySelectorAll('#hdiff button').forEach(b=>b.onclick=()=>{settings.hard=b.dataset.h==='1'?1:0;store.set('amj_settings',settings);S.p('tick');hdiffSync()});
+document.querySelectorAll('#hdiff button').forEach(b=>b.onclick=()=>{settings.hard=+b.dataset.h||0;store.set('amj_settings',settings);S.p('tick');hdiffSync()});
 $('start').onclick=()=>{auInit();runGuard(()=>{WORLD=1;goLandscape();S.p('door');G.owSel=1;toSelect();$('selH').textContent='假面回廊'})};
 $('w2btn').onclick=()=>{auInit();runGuard(()=>{S.p('door');w3Branch()})};
 $('meta').onclick=()=>{auInit();showMeta()};
@@ -3301,6 +3301,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.0.2',date:'2026-11-28',notes:["新难度「非常困难」：怪物生命和攻击力 +100%，攻击和放技能更频繁", "屋内精致化：家具和房间重画，窗光、火光、灯光和光晕", "专属 Fever 曲：Oblivionis / 祥子、Doloris / 初华、Mortis / 睦各有一首，谱面跟着它的节拍走", "集齐角色的全部回忆后，技能从三个变为四个（八个新技能）", "祥子之夜可以用便服祥子游玩；星之约的初华和镜中的睦的 Boss 改为便服形态", "大世界视野稍微收回一点"]},
  {name:'2.0.1',date:'2026-11-28',notes:["修复：游泳时画面的光影、迷雾和水下效果全部消失（水花的颜色格式让灯光计算出错，整帧后半段都没画出来）","修复：从房子里出来后，大地图上会出现屋里的地板和门垫", "大世界视野更宽，画面四周的黑边和暗角都减少了", "谱面判定窗口加宽 15%"]},
  {name:'2.0',date:'2026-11-28',notes:["「假面回廊」变成一整片开放世界：每局随机进入六片土地之一——血色森林、沉没海岸、金麦谷、雾都旧城，以及新的「血月废都」（血红的天空、遍地废墟、几乎没有友善的人、怪物成群）和「蓝夜之城」（永不结束的蓝色夜晚、三座城镇、人多怪少）", "五座剧场就是五个章节，每局随机散落在地图上，按什么顺序演都可以：全部演完把同伴都救出来，只演几座，或者直接去终幕碰碰运气。小地图不标剧场，要靠剧场上空的光柱和路人的消息去找", "越靠近终幕剧场，周围越哥特、越荒诞：枯树和黑红色的树、墓碑、紫火路灯、半埋在土里的巨大假面、野地里的剧院座椅和棋盘地板", "大世界里的每栋房子都能进去：客厅或客厅加厨房，每栋都不一样；桌上的食物能回血、回护盾或加乐章值；有时有人住，偶尔是敌对的人", "每座城镇都有一家面具店：当前能学的旋律全都买得到，传说也有，就是很贵；柜台也收战利品", "城镇里有友善的路人走来走去，野外偶尔能碰到黑猫、看星星的人、巫女和船长；大世界的人物和事件都按 Ave Mujica 的世界写：戴面具的引座员、一个人的乐队、提灯的观众、提线的人……", "新增可以互动的东西：野地里的钢琴、穿衣镜、望远镜、留声机、戏服箱、小温室、海报墙、长椅；泪之泉和血之祭坛也在大地图上，第三结局需要的「黑暗的选择」更容易凑齐", "可以游泳过河（水下看不远、移动变慢、不能攻击，怪物不会下水）；近战可以直接砍树开路", "战争迷雾、小地图（战斗中会淡出）和昼夜变化；怪物会巡逻，听到动静会过来查看；宝箱、埋藏宝物和可以卖钱的战利品", "画面和光影大幅升级：地面、道路、河流、树林、房屋都画得很细，角色可以走到树和房子后面；体积光束、灯光泛光、地面雾气、按时间变化的调色，血月和月光；走进剧场时大幕合上，演完出来时拉开", "踩拍判定取消了，普通攻击想怎么打就怎么打。打怪、击倒敌人、受伤都会攒「乐章值」，攒满后打开技能菜单（游戏暂停），每个人偶有 3 个技能；菜单刚弹出时不会误选卡片", "选好技能后打一段四键下落式谱面（D F J K，手机直接点轨道，多指同时按都会判定），有点击、长按和滑键。越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25；按住 0.8 秒可以跳过。设置里可以改为「简化谱面」（只有点击音符，加成明显减少）", "技能和 Fever 同步：Fever 有多长，增益就持续多久，攻击技能在 Fever 期间会自动反复释放", "「强音」：连击每满 8 下，或在谱面里打出 PERFECT，都算一次强音。原来靠 PERFECT 触发的人偶被动和旋律，现在都靠强音触发", "五名人偶按定位重新设计（交涉、分身、潜行、寻宝、讲价各有所长）；便服的三角初华、若叶睦、丰川祥子重做了被动和攻击方式；同伴更聪明，会护住你、救倒下的队友、收掉残血的敌人", "怪物不再随剧场位置、章节或同伴数量变强；新增默认 / 困难难度，困难下怪物生命和攻击 +50%；取消 N 难度等级", "通往第二结局的信物改为击败强敌、剧场 Boss 或完成委托时概率获得", "新的主菜单音乐；「祥子之夜」全部换成录制配乐：探索、Fever、Boss 战，以及最终战四个阶段（骄傲 → 孤注一掷 → 疲惫 → 放手）各一首，谱面跟着曲子的节拍走", "「假面之下」的剧情按动画重新校正：Ave Mujica 解散之后的祥子之夜、「把你们剩下的人生交给我」、睦与 Mortis、CRYCHIC 的那一句话", "加入存档：标题画面可以「继续演出」，地图上和剧场里都会自动存档；在线更新改为强制更新", "修复：失败后重新开局黑屏、谱面没打完就进入技能、反复碰到 NPC 一直弹对话、开局后主菜单音乐要过几秒才换掉等问题"]},
  {name:'1.3.3',date:'2026-11-27',notes:["重写了约 330 句剧情、过场和开场幕的文字，旁白更自然，每个角色说话更像她自己"]},
