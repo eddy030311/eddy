@@ -2315,6 +2315,8 @@ function allyThreat(a){for(const f of G.fx){if(f.k!=='warnC')continue;const left
   let best=null,bt=1e9;const ay=a.y-8;for(const b of G.eb){if(b.dead)continue;const rx=a.x-b.x,ry=ay-b.y;if(rx*rx+ry*ry>75*75)continue;const v2=b.vx*b.vx+b.vy*b.vy;if(v2<1)continue;
     const t=clamp((rx*b.vx+ry*b.vy)/v2,0,.55),cx=b.x+b.vx*t,cy=b.y+b.vy*t,md=Math.hypot(a.x-cx,ay-cy);if(md<b.r+6&&t<bt){bt=t;const vl=Math.sqrt(v2);let px=-b.vy/vl,py=b.vx/vl;if(px*(a.x-cx)+py*(ay-cy)<0){px=-px;py=-py}best={id:b,dx:px,dy:py}}}return best}
 function allyBrain(a,i,live,rt,tx,ty){const now=G.time,hpk=a.hp/a.mhp;
+  {const nb=allyBarrage(a);if(nb>=7&&!(rt&&rt[0]===P&&nb<12)){if(!a.cov||now>a.cov.next){const q=allyCover(a,live);a.cov=q?{x:q.x,y:q.y,c:q.cov,next:now+.4,until:now+1}:a.cov;if(q&&a.mode!=='cover'&&Math.random()<.35)callout(a,'retreat')}else a.cov.until=now+1}
+    if(a.cov&&now<a.cov.until){const th=allyThreat(a);if(th){a.mode='dodge';return[a.x+th.dx*28,a.y+th.dy*28,1.5]}a.mode='cover';return[a.cov.x,a.cov.y,1.45]}a.cov=null}
   const th=allyThreat(a);if(th){if(a.thId!==th.id){a.thId=th.id;a.thSeen=now;a.thMiss=Math.random()<MISS[a.id];a.rx=REACT[a.id]*rnd(.7,1.4)}if(!a.thMiss&&now-a.thSeen>a.rx){a.mode='dodge';return[a.x+th.dx*28,a.y+th.dy*28,1.4]}}
   if(rt){if(a.mode!=='revive'){a.mode='revive';callout(a,rt[0]===P?'pdown':'revive')}return null}
   const near=nearTo(live,a,58);
@@ -2912,7 +2914,7 @@ function doMelee(){if(P.swim)return;if(G.ow)owNoise(P.x,P.y,130);const c=ch(),m=
     if(id==='sakiko')for(let i=0;i<4;i++){const aa=a+rnd(-arc/2,arc/2);G.parts.push({x:P.x+Math.cos(aa)*range*.7,y:P.y-6+Math.sin(aa)*range*.7,vx:Math.cos(aa)*30,vy:Math.sin(aa)*30-10,life:.6,max:.6,col:pick(['#f4f0ff','#c8b8f0']),sz:2,g:40})}
     if(id==='oblivionis')for(let i=0;i<6;i++){const aa=a+rnd(-arc/2,arc/2);G.parts.push({x:P.x+Math.cos(aa)*range*.7,y:P.y-6+Math.sin(aa)*range*.7,vx:Math.cos(aa)*30,vy:Math.sin(aa)*30,life:.6,max:.6,col:pick(['#ff5a78','#c8304a','#ffd0da']),sz:1.5,g:30})}
     if(M.wave>0)for(let i=0;i<M.wave;i++){const aa=a+(i-(M.wave-1)/2)*.25;shoot({x:P.x,y:P.y-6,a:aa,spd:200,dmg:dmg*.5,k:'wave',pierce:3,col:m.col,life:.45,r:5})}};
-  if(G.ow&&!G.owArena)later(.08,()=>G.ow&&G.ow.indoor?thMelee(a,range):owChop(a,range));
+  if(G.ow&&!G.owArena)later(.08,()=>G.ow&&G.ow.indoor?thMelee(a,range):owChop(a,range));else if(G.owIn)later(.08,()=>thHouseMelee(a,range));
   if(tgt){const gap=Math.sqrt(d2(tgt,P))-(tgt.r+range*.55);if(gap>4){const L=Math.min(gap,60);P.lvx=Math.cos(a)*L/.09;P.lvy=Math.sin(a)*L/.09;P.lungeT=.09;P.inv=Math.max(P.inv,.15);later(.09,go);return}}
   go()}
 function beat(){if(ch().id!=='amoris'||!(G.feverT>0))return false;P.beat=(P.beat||0)+1;if(P.beat%2===0){burst(P.x,P.y-14,6,['#ff6a9a','#ffc4d8'],30,.5);return true}return false}
@@ -7979,7 +7981,7 @@ const FURD={
     /* glass case with masks */K.rr(8,-24,52,10,1,'rgba(180,210,230,.22)','rgba(220,240,255,.5)',.4);for(let k=0;k<4;k++){const mc=['#f4ece0','#c9a45c','#2a1a22','#d8c8e8'][k],mx=14+k*12;K.el(mx,-18.6,3.6,4.2,mc);K.el(mx-1.3,-19.4,.8,.7,'#100808');K.el(mx+1.3,-19.4,.8,.7,'#100808');K.el(mx-1,-20.6,1,.6,'rgba(255,255,255,.5)')}K.ln(10,-23.4,20,-14.6,'rgba(255,255,255,.35)',.5);
     /* register */K.rrv(w-26,-22,16,8,1.2,'#c9a45c','#7a5a24');K.r(w-24,-21,12,3,'#2a3a2a');K.r(w-23,-20.4,6,1.6,'#8ae0a0');for(let k=0;k<4;k++)K.r(w-25+k*3.4,-16.6,2.4,1.6,'#f4ece0')}};
 function drawFur(o,t){const H=G.owIn||{};if(!o.c&&(o.k==='sofa'||o.k==='armchair'))o.c=pick(o.k==='sofa'?['#7a2a36','#2e4a6e','#4e6a4a','#6a4a6a','#8a5a30']:['#8a5a2a','#5a2a3a','#2a4a4a','#6a2a2a']);
-  const S=furSpr(o);ctx.save();if(H.ruin)ctx.filter='brightness(.68) saturate(.55) sepia(.2)';ctx.imageSmoothingEnabled=true;ctx.drawImage(S.c,o.x-6,o.y-S.T,S.W,S.H);ctx.restore();ctx.imageSmoothingEnabled=false;
+  const S=furSpr(o);ctx.save();if(H.ruin)ctx.filter='brightness(.68) saturate(.55) sepia(.2)';ctx.imageSmoothingEnabled=true;ctx.drawImage(S.c,o.x-6,o.y-S.T,S.W,S.H);ctx.restore();ctx.imageSmoothingEnabled=false;houseGlint(o,t);
   /* the moving parts */
   if(o.k==='fireplace'){const x=o.x,y=o.y,w=o.w,h=o.h,bx=x+w/2,by=y+h-7;ctx.save();ctx.globalCompositeOperation='lighter';const fl=.75+.25*Math.sin(t*13)*Math.sin(t*7.7);ctx.globalAlpha=.8*fl;ctx.drawImage(glow('#ff7a20'),bx-16,by-18,32,26);
       for(let k=0;k<7;k++){const ph=t*(7+k)+k*1.9,fx=bx+(k-3)*2.6+Math.sin(ph)*.8,fh=6+5*Math.abs(Math.sin(ph*.7+k));ctx.globalAlpha=.85;ctx.fillStyle=k%2?'#ff8a2a':'#ff5a1a';ctx.beginPath();ctx.moveTo(fx-2,by+2);ctx.quadraticCurveTo(fx-1.6,by-fh*.5,fx+Math.sin(ph)*1.2,by-fh);ctx.quadraticCurveTo(fx+1.6,by-fh*.5,fx+2,by+2);ctx.fill();
@@ -8510,7 +8512,7 @@ function thUse(id){const st=thSt(G.ow.isTh);(st.used=st.used||{})[id]=1}
 function thMelee(a,range){const o=G.ow;if(!o||!o.indoor||G.owArena)return;let best=null,bd=1e9;
   o.furn.forEach((f,i)=>{if(!THMECH[f.k]||thUsed('f'+i))return;const nx=clamp(P.x,f.x,f.x+f.w),ny=clamp(P.y-4,f.y,f.y+f.h),d=Math.hypot(nx-P.x,ny-(P.y-4));if(d>range+10)return;
     const ang=Math.atan2(ny-(P.y-4),nx-P.x);let da=Math.abs(((ang-a+Math.PI*3)%TAU)-Math.PI);if(d>10&&da>1.3)return;if(d<bd){bd=d;best=[f,i]}});
-  if(!best)return;const[f,i]=best,M=THMECH[f.k],c={x:f.x+f.w/2,y:f.y+f.h},sec=owHash(i*7+3,o.isTh*13)<.5;thUse('f'+i);S.p('hit');shake(2);M.fx(f,c,sec);toast(M.h);lvGain(4);
+  if(!best)return;const[f,i]=best,M=THMECH[f.k],c={x:f.x+f.w/2,y:f.y+f.h};thUse('f'+i);S.p('hit');shake(2);mechOutcome(mechRoll(),c,()=>{M.fx(f,c,false);toast(M.h)});
   G.nums.push({x:c.x,y:c.y-30,v:'✦',t:0,say:1})}
 /* walking up to food eats it; walking up to a manuscript opens it */
 function thInterTick(){const o=G.ow;if(!o.inter||!modal.hidden||CUT.on||P.down)return;for(const it of o.inter){if(thUsed('i'+it.id)&&it.k==='food')continue;const d=Math.hypot(P.x-it.x,P.y-it.y);
@@ -8527,6 +8529,37 @@ function thDrawInter(it,t){const used=thUsed('i'+it.id);
 /* hittable props glint now and then when you're near, so you learn to try them */
 function thGlints(t){const o=G.ow;if(!o.indoor)return;o.furn.forEach((f,i)=>{if(!THMECH[f.k]||thUsed('f'+i))return;const cx=f.x+f.w/2,cy=f.y-((FURT[f.k]||20)*.6);if(Math.abs(cx-P.x)>150||Math.abs(cy-P.y)>110)return;const ph=(t*.55+owHash(i,5))%1;if(ph>.12)return;const a=Math.sin(ph/.12*Math.PI);
   ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.85*a;ctx.fillStyle='#fff4d0';ctx.fillRect(cx-.5,cy-3,1,6);ctx.fillRect(cx-3,cy-.5,6,1);ctx.globalAlpha=.4*a;ctx.drawImage(glow('#ffe0a0'),cx-7,cy-7,14,14);ctx.restore()})}
+
+/* hitting things rarely pays: mostly nothing happens, often a few petals fall out, now and then the prop does its trick,
+   and only seldom is there a hidden box behind it */
+const THEMPTY=['什么也没有发生。','它晃了晃，又站稳了。','只落下了一点灰尘。','回音在房间里转了一圈，又安静了。','好像有什么东西动了一下……是错觉。','它比看上去结实。'];
+function mechRoll(){const r=Math.random();return r<.04?'chest':r<.26?'trick':r<.6?'petal':'empty'}
+function mechOutcome(kind,c,trick){const o=kind==='trick'?null:kind;if(kind==='chest'){thSecret(c,'后面藏着一个暗格');lvGain(3);return}
+  if(kind==='trick'){trick();lvGain(3);return}if(kind==='petal'){thPetals(c,rint(3,7));burst(c.x,c.y-12,6,['#ffd0da','#c8103a'],40,.4);toast('掉出了几片花瓣');lvGain(1);return}
+  burst(c.x,c.y-12,5,['#8a7a70','#c8b8a8'],30,.35);toast(pick(THEMPTY))}
+/* houses in the world: their furniture can be hit too (a smaller set of tricks) */
+const HMECH={fireplace:()=>{healP(.1);return'炉火暖烘烘的，回复了一点生命'},clockt:()=>{feverAdd(fCap()*.08);return'挂钟响了一声，乐章值涨了一点'},lamp:()=>{P.sh=P.shMax;return'灯泡闪了一下，护盾回满了'},
+  plant:()=>{healP(.08);return'叶子上的露水落在手背上，回复了一点生命'},shelf:()=>{feverAdd(fCap()*.06);return'一本乐谱掉了下来，乐章值涨了一点'},shopshelf:()=>{feverAdd(fCap()*.06);return'一只音乐盒掉下来响了几声'}};
+function thHouseMelee(a,range){const H=G.owIn;if(!H||!H.st)return;const st=H.st;st.used=st.used||{};let best=null,bd=1e9;
+  G.obs.forEach((f,i)=>{if(!f.fur||st.used[i])return;const nx=clamp(P.x,f.x,f.x+f.w),ny=clamp(P.y-4,f.y,f.y+f.h),d=Math.hypot(nx-P.x,ny-(P.y-4));if(d>range+10)return;
+    const ang=Math.atan2(ny-(P.y-4),nx-P.x),da=Math.abs(((ang-a+Math.PI*3)%TAU)-Math.PI);if(d>10&&da>1.3)return;if(d<bd){bd=d;best=[f,i]}});
+  if(!best)return;const[f,i]=best,c={x:f.x+f.w/2,y:f.y+f.h};st.used[i]=1;S.p('hit');shake(1.5);const r=Math.random(),k=r<.03?'chest':r<.1&&HMECH[f.k]?'trick':r<.5?'petal':'empty';
+  mechOutcome(k,c,()=>toast(HMECH[f.k]()));G.nums.push({x:c.x,y:c.y-24,v:'✦',t:0,say:1})}
+function houseGlint(o,t){const H=G.owIn;if(!H||!H.st||!o.fur)return;const i=G.obs.indexOf(o);if(i<0||(H.st.used||{})[i])return;const cx=o.x+o.w/2,cy=o.y-((FURT[o.k]||20)*.6);if(Math.abs(cx-P.x)>120||Math.abs(cy-P.y)>90)return;
+  const ph=(t*.5+owHash(i,9))%1;if(ph>.1)return;const a=Math.sin(ph/.1*Math.PI);ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.8*a;ctx.fillStyle='#fff4d0';ctx.fillRect(cx-.5,cy-3,1,6);ctx.fillRect(cx-3,cy-.5,6,1);ctx.globalAlpha=.35*a;ctx.drawImage(glow('#ffe0a0'),cx-7,cy-7,14,14);ctx.restore()}
+
+/* allies under a barrage: leave the player's side, get something solid between them and the shooter, or simply get out
+   of where the bullets are going; they come back once it thins out */
+function allyBarrage(a){let n=0;const ay=a.y-8;for(const b of G.eb){if(b.dead)continue;const dx=b.x-a.x,dy=b.y-ay;if(dx*dx+dy*dy<120*120)n++}return n}
+function covFree(x,y){if(G.ow&&!G.owArena)return owFree(Math.floor(x/OWT),Math.floor(y/OWT))&&owFree(Math.floor(x/OWT),Math.floor((y-6)/OWT));
+  if(x<SIDE+8||x>RW-SIDE-8||y<TOP+8||y>RH-SIDE-8)return false;return!G.obs.some(o=>x>o.x-7&&x<o.x+o.w+7&&y>o.y-5&&y<o.y+o.h+7)}
+function covSolid(x,y){if(G.ow&&!G.owArena)return!owFree(Math.floor(x/OWT),Math.floor(y/OWT));return G.obs.some(o=>x>o.x&&x<o.x+o.w&&y>o.y-10&&y<o.y+o.h)}
+function allyCover(a,live){const src=G.boss&&!G.boss.dead?G.boss:nearTo(live,a,300);let sx,sy;if(src){sx=src.x;sy=src.y-8}else{let cx=0,cy=0,vx=0,vy=0,n=0;for(const b of G.eb){if(b.dead||Math.hypot(b.x-a.x,b.y-a.y)>200)continue;cx+=b.x;cy+=b.y;vx+=b.vx;vy+=b.vy;n++}if(!n)return null;sx=cx/n-vx/n*.6;sy=cy/n-vy/n*.6}
+  let best=null,bs=1e9;const near=G.eb.filter(b=>!b.dead&&Math.hypot(b.x-a.x,b.y-a.y)<260);
+  for(const R of[0,46,82,120,160])for(let k=0;k<(R?16:1);k++){const g=k/16*TAU,x=a.x+Math.cos(g)*R,y=a.y+Math.sin(g)*R*.8;if(!covFree(x,y))continue;
+    let dn=0;for(const b of near)for(const t of[.12,.3,.55]){const px=b.x+b.vx*t,py=b.y+b.vy*t,dd=(px-x)**2+(py-(y-8))**2;if(dd<34*34)dn+=1-Math.sqrt(dd)/34}
+    let cov=0;for(let s=1;s<7;s++){const u=s/7;if(covSolid(sx+(x-sx)*u,sy+(y-8-sy)*u)){cov=1;break}}
+    const ds=Math.hypot(x-sx,y-sy),dp=Math.hypot(x-P.x,y-P.y),sc=dn*3-cov*2.2+R*.004+(ds<70?1.5:0)+(dp<60?1.6*(1-dp/60):0)+Math.max(0,dp-260)*.02;if(sc<bs){bs=sc;best={x,y,cov}}}return best}
 
 function owTheatreTalk(it){if(it.stage){thStageTalk(it);return}const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
   if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门没有锁，里面的房间还亮着几盏灯。',[{ic:'↩',r:1,t:'再走进去看看',d:'没拿的东西、没打完的人偶，都还在里面',fn:()=>thEnter(k)},{ic:'…',t:'不了',d:'继续赶路',fn:()=>{}}]);return}
