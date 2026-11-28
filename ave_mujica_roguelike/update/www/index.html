@@ -820,7 +820,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 21, "name": "2.0.2"};</script>
+<script>window.GAME_VER={"v": 22, "name": "2.0.3"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -1029,6 +1029,8 @@ const MUSF={title:'assets/music/menu.mp3',sk_idle:'assets/music/sk_idle.mp3',sk_
   sk_f1:'assets/music/sk_final1.mp3',fv_doloris:'assets/music/fv_doloris.mp3',fv_mortis:'assets/music/fv_mortis.mp3',sk_f2:'assets/music/sk_final2.mp3',sk_f3:'assets/music/sk_final3.mp3',sk_f4:'assets/music/sk_final4.mp3'};
 /* 2.1: 祥子之夜 (world 2) has its own recorded score: exploring, Fever, the chapter bosses, and the four phases of the final duel with yourself.
    [bpm, first beat in seconds], measured from the files, so charts and beat-timed skills follow the recording */
+/* 2.0.3: Fever songs start at their climax and loop inside it (start/end in seconds, both on bar lines so the beat never slips) */
+const MUSC={sk_fever:[147.303,172.903],fv_doloris:[118.108,144.108],fv_mortis:[144.107,168.107]};
 const MUSB={fv_doloris:[120,.108],fv_mortis:[80,.107],sk_idle:[80,.086],sk_fever:[150,.103],sk_boss:[150,.104],sk_f1:[150,.103],sk_f2:[180,.156],sk_f3:[80,.096],sk_f4:[160,.092]};
 /* 2.1.1: everything that plays inside 祥子之夜 comes from these seven recordings (the title screen keeps the menu theme) */
 const SKMAP={calm:'sk_idle',calm2:'sk_idle',battle:'sk_f1',battle2:'sk_f1',fever:'sk_fever',boss:'sk_boss',w2final:'sk_f1',death:'sk_f3',title:'sk_f4',mj:'sk_boss'};
@@ -1041,8 +1043,10 @@ const MF={el:null,name:null,cache:{},want:null,vol:.5,fadeT:null,bpm:0,off:0};
 const mfLive=()=>!!(MF.el&&MF.bpm&&settings.music&&!MF.el.paused&&MF.el.readyState>2);
 const mfVol=()=>settings.music?MF.vol:0;
 function mfFade(el,to,ms,done){clearInterval(el._fi);const from=el.volume,t0=performance.now();el._fi=setInterval(()=>{const k=Math.min(1,(performance.now()-t0)/ms);try{el.volume=Math.max(0,Math.min(1,from+(to-from)*k))}catch(e){}if(k>=1){clearInterval(el._fi);done&&done()}},40)}
+function mfSegStart(el,n){const c=MUSC[n];if(!c)return;const go=()=>{try{el.currentTime=c[0]}catch(e){}};if(el.readyState>=1)go();else el.addEventListener('loadedmetadata',go,{once:true})}
+function mfSegTick(){const c=MF.el&&MUSC[MF.name];if(c&&MF.el.currentTime>=c[1])try{MF.el.currentTime=c[0]+(MF.el.currentTime-c[1]);MF.wrapB=(MF.wrapB||0)+(c[1]-c[0])*MF.bpm/60}catch(e){}}
 function mfPlay(n){if(n==='sk_f1')setTimeout(()=>mfPreload(['sk_f2','sk_f3','sk_f4']),0);if(MF.name===n&&MF.el){if(MF.el.paused){const p=MF.el.play();if(p&&p.catch)p.catch(()=>{MF.want=n})}mfFade(MF.el,mfVol(),500);return}mfStop();let el=MF.cache[n];if(!el){el=new Audio(MUSF[n]);el.loop=true;el.preload='auto';MF.cache[n]=el}
-  MF.el=el;MF.name=n;{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),600)}
+  MF.el=el;MF.name=n;MF.wrapB=0;mfSegStart(el,n);{const b=MUSB[n];MF.bpm=b?b[0]:0;MF.off=b?b[1]:0;if(b)MUS.bpm=b[0]}el.volume=0;const p=el.play();if(p&&p.catch)p.catch(()=>{MF.want=n});mfFade(el,mfVol(),600)}
 function mfStop(){const el=MF.el;MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;if(!el)return;mfFade(el,0,300,()=>{try{el.pause()}catch(e){}})}
 /* switch without fades: building the world blocks the page for a few seconds, which froze the fade timers and kept the menu theme playing at full volume */
 function mfCut(n){const o=MF.el;if(o){clearInterval(o._fi);try{o.pause()}catch(e){}}MF.el=null;MF.name=null;MF.bpm=0;MF.want=null;MUS.name=null;if(!n)return;stopMus();MUS.name=n;MUS.src=null;mfPlay(n);if(MF.el){clearInterval(MF.el._fi);MF.el.volume=mfVol()}}
@@ -2380,7 +2384,7 @@ function showSection(){if(G.type==='trial')return;const sec=G.type==='boss'?5:G.
 /* =================================================================== rhythm + fever */
 const FEVER_T=9,FCAP={mortis:100,doloris:100,amoris:100,oblivionis:100,timoris:100,uika:100,mutsumi:100,sakiko:100},FDUR={mortis:9,doloris:9,amoris:9,oblivionis:9,timoris:9,uika:9,mutsumi:9,sakiko:9};
 const fCap=()=>FCAP[ch().id]||100;
-function beatPos(){if(mfLive())return(MF.el.currentTime-MF.off)*MF.bpm/60;if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
+function beatPos(){if(mfLive())return(MF.el.currentTime-MF.off)*MF.bpm/60+(MF.wrapB||0);if(A.ctx&&MUS.src&&settings.music&&MUS.bpm)return(A.ctx.currentTime-MUS.t0)*MUS.bpm/60;return G.time*2}
 function onBeat(){const b=beatPos(),f=b-Math.floor(b);return Math.min(f,1-f)<.13}
 /* rhythm judgement (light): every attack press is judged against the beat */
 const JUD={P:{t:'PERFECT',c:'#9fd4ff',mul:1.5,fv:8},GR:{t:'GREAT',c:'#ffe07a',mul:1.25,fv:6},G:{t:'GOOD',c:'#ff9ad0',mul:1,fv:4},B:{t:'BAD',c:'#9ab0d0',mul:.6,fv:0},M:{t:'MISS',c:'#ff4a5a',mul:.35,fv:-3}};
@@ -2555,7 +2559,10 @@ const CHT={on:0};
    slide— a chain of small diamonds across lanes: keep a finger (or key) on the lane as each one passes, or tap it.
    Every finger is tracked on its own, so two thumbs pressing at once both count. */
 const CHL=4,CHCOL=['#ff7ab8','#f6d27a','#7fe0d0','#b98cff'],CHKEY=['D','F','J','K'];
-function chClock(){const now=performance.now();if(!CHT.ck){const live=mfLive()||!!(A.ctx&&MUS.src&&settings.music&&MUS.bpm),bps=mfLive()?MF.bpm/60:live?MUS.bpm/60:2;CHT.ck={b:live?beatNow():-(settings.lat||0)/1000*bps,bps,t:now,live:live?1:0}}
+function chClock(){const now=performance.now();if(!CHT.ck){const mk=!!(MF.el&&MF.bpm&&settings.music),live=mfLive()||!!(A.ctx&&MUS.src&&settings.music&&MUS.bpm),bps=mk?MF.bpm/60:live?MUS.bpm/60:2;
+    CHT.ck={b:live?beatNow():mk?(MF.el.currentTime-MF.off)*MF.bpm/60-(settings.lat||0)/1000*bps:-(settings.lat||0)/1000*bps,bps,t:now,live:live?1:0,mk}}
+  /* a recorded song that was still seeking when the chart opened: lock onto it as soon as it plays */if(CHT.ck.mk&&!CHT.ck.live&&mfLive()&&Math.abs(MF.bpm/60-CHT.ck.bps)<1e-6){CHT.ck.b=beatNow();CHT.ck.live=1;CHT.ck.t=now}
+  if(CHT.ck.mk&&CHT.ck.live&&mfLive()){const d=beatNow()-CHT.ck.b;if(d>-.5){CHT.ck.b=CHT.ck.b+d;CHT.ck.t=now;return{b:CHT.ck.b,bps:CHT.ck.bps,live:1}}}
   const k=CHT.ck,dt=Math.min(.1,Math.max(0,(now-k.t)/1000));k.b+=dt*k.bps;k.t=now;return{b:k.b,bps:k.bps,live:k.live}}
 function chPattern(bps){const span=Math.max(10,Math.min(14,Math.round(6*bps))),ns=[];let t=0,last=rint(0,3),g=0,hadHold=0,hadSlide=0;
   const other=p=>{let l;do{l=rint(0,3)}while(l===p);return l};
@@ -3303,6 +3310,7 @@ $('updT').onclick=()=>{auInit();S.p('tick');if(UPD.m)updAsk();else updCheck(true
 /* settings: frame rate, language, music, sound effects */
 /* 更新日志 · newest first. tools/release/release.sh adds the new version's entry here when it bumps the version */
 const CHANGELOG=[
+ {name:'2.0.3',date:'2026-11-28',notes:["专属 Fever 曲从高潮开始，并在高潮段落里循环；谱面锁定在曲子的节拍上", "走失的小人偶会绕开障碍物、游泳过河、跟着你走，送到营地后会一直待在营火旁", "大世界视野再收回一点"]},
  {name:'2.0.2',date:'2026-11-28',notes:["新难度「非常困难」：怪物生命和攻击力 +100%，攻击和放技能更频繁", "屋内精致化：家具和房间重画，窗光、火光、灯光和光晕", "专属 Fever 曲：Oblivionis / 祥子、Doloris / 初华、Mortis / 睦各有一首，谱面跟着它的节拍走", "集齐角色的全部回忆后，技能从三个变为四个（八个新技能）", "祥子之夜可以用便服祥子游玩；星之约的初华和镜中的睦的 Boss 改为便服形态", "大世界视野稍微收回一点"]},
  {name:'2.0.1',date:'2026-11-28',notes:["修复：游泳时画面的光影、迷雾和水下效果全部消失（水花的颜色格式让灯光计算出错，整帧后半段都没画出来）","修复：从房子里出来后，大地图上会出现屋里的地板和门垫", "大世界视野更宽，画面四周的黑边和暗角都减少了", "谱面判定窗口加宽 15%"]},
  {name:'2.0',date:'2026-11-28',notes:["「假面回廊」变成一整片开放世界：每局随机进入六片土地之一——血色森林、沉没海岸、金麦谷、雾都旧城，以及新的「血月废都」（血红的天空、遍地废墟、几乎没有友善的人、怪物成群）和「蓝夜之城」（永不结束的蓝色夜晚、三座城镇、人多怪少）", "五座剧场就是五个章节，每局随机散落在地图上，按什么顺序演都可以：全部演完把同伴都救出来，只演几座，或者直接去终幕碰碰运气。小地图不标剧场，要靠剧场上空的光柱和路人的消息去找", "越靠近终幕剧场，周围越哥特、越荒诞：枯树和黑红色的树、墓碑、紫火路灯、半埋在土里的巨大假面、野地里的剧院座椅和棋盘地板", "大世界里的每栋房子都能进去：客厅或客厅加厨房，每栋都不一样；桌上的食物能回血、回护盾或加乐章值；有时有人住，偶尔是敌对的人", "每座城镇都有一家面具店：当前能学的旋律全都买得到，传说也有，就是很贵；柜台也收战利品", "城镇里有友善的路人走来走去，野外偶尔能碰到黑猫、看星星的人、巫女和船长；大世界的人物和事件都按 Ave Mujica 的世界写：戴面具的引座员、一个人的乐队、提灯的观众、提线的人……", "新增可以互动的东西：野地里的钢琴、穿衣镜、望远镜、留声机、戏服箱、小温室、海报墙、长椅；泪之泉和血之祭坛也在大地图上，第三结局需要的「黑暗的选择」更容易凑齐", "可以游泳过河（水下看不远、移动变慢、不能攻击，怪物不会下水）；近战可以直接砍树开路", "战争迷雾、小地图（战斗中会淡出）和昼夜变化；怪物会巡逻，听到动静会过来查看；宝箱、埋藏宝物和可以卖钱的战利品", "画面和光影大幅升级：地面、道路、河流、树林、房屋都画得很细，角色可以走到树和房子后面；体积光束、灯光泛光、地面雾气、按时间变化的调色，血月和月光；走进剧场时大幕合上，演完出来时拉开", "踩拍判定取消了，普通攻击想怎么打就怎么打。打怪、击倒敌人、受伤都会攒「乐章值」，攒满后打开技能菜单（游戏暂停），每个人偶有 3 个技能；菜单刚弹出时不会误选卡片", "选好技能后打一段四键下落式谱面（D F J K，手机直接点轨道，多指同时按都会判定），有点击、长按和滑键。越准倍率越高，全连（FC）最高 ×2.0，全 PERFECT（AP）×3.25；按住 0.8 秒可以跳过。设置里可以改为「简化谱面」（只有点击音符，加成明显减少）", "技能和 Fever 同步：Fever 有多长，增益就持续多久，攻击技能在 Fever 期间会自动反复释放", "「强音」：连击每满 8 下，或在谱面里打出 PERFECT，都算一次强音。原来靠 PERFECT 触发的人偶被动和旋律，现在都靠强音触发", "五名人偶按定位重新设计（交涉、分身、潜行、寻宝、讲价各有所长）；便服的三角初华、若叶睦、丰川祥子重做了被动和攻击方式；同伴更聪明，会护住你、救倒下的队友、收掉残血的敌人", "怪物不再随剧场位置、章节或同伴数量变强；新增默认 / 困难难度，困难下怪物生命和攻击 +50%；取消 N 难度等级", "通往第二结局的信物改为击败强敌、剧场 Boss 或完成委托时概率获得", "新的主菜单音乐；「祥子之夜」全部换成录制配乐：探索、Fever、Boss 战，以及最终战四个阶段（骄傲 → 孤注一掷 → 疲惫 → 放手）各一首，谱面跟着曲子的节拍走", "「假面之下」的剧情按动画重新校正：Ave Mujica 解散之后的祥子之夜、「把你们剩下的人生交给我」、睦与 Mortis、CRYCHIC 的那一句话", "加入存档：标题画面可以「继续演出」，地图上和剧场里都会自动存档；在线更新改为强制更新", "修复：失败后重新开局黑屏、谱面没打完就进入技能、反复碰到 NPC 一直弹对话、开局后主菜单音乐要过几秒才换掉等问题"]},
@@ -6231,7 +6239,7 @@ portraitMQ.addEventListener&&portraitMQ.addEventListener('change',()=>releaseInp
 let lastDraw=0,slow=0;
 function audioWatch(now){if(!A.ctx||A.ctx.state!=='running'||document.hidden)return;if(now-(A.wT||0)<1000)return;const ct=A.ctx.currentTime;
   if(A.wC!=null&&Math.abs(ct-A.wC)<1e-4){A.stall=(A.stall||0)+1;if(A.stall===1){A.ctx.suspend().then(()=>A.ctx.resume()).catch(()=>{})}else if(A.stall>=3){A.stall=0;try{A.ctx.close()}catch(e){}A.ctx=null;MUS.src=null;A.wC=null;auInit()}}else A.stall=0;A.wC=ct;A.wT=now}
-function frame(now){requestAnimationFrame(frame);try{audioWatch(now)}catch(e){}if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
+function frame(now){requestAnimationFrame(frame);try{mfSegTick()}catch(e){}try{audioWatch(now)}catch(e){}if(now-lastDraw<(settings.fps===120?7:15))return;lastDraw=now;pollPad();const dt=clamp((now-last)/1000,0,.05);last=now;
   if(CUT.on){updCut(dt);renderCut();return}
   if(G.state==='play'&&!G.paused){if(dt>.027)slow++;else slow=Math.max(0,slow-.5);if(slow>90&&QUAL>1){QUAL=1;slow=0;resize()}}
   if(G.state==='dead')P.deathT=(P.deathT||0)+dt;
@@ -6673,7 +6681,7 @@ const owI=(x,y)=>y*OWW+x;
 function owTile(tx,ty){const o=G.ow;if(!o||tx<0||ty<0||tx>=OWW||ty>=OWH)return TL.RK;return o.g[owI(tx,ty)]}
 function owSolidPx(x,y){const t=owTile(Math.floor(x/OWT),Math.floor(y/OWT));return OWSOLID[t]===1&&t!==TL.WA}
 const owInWater=o=>G.ow&&!G.owArena&&owTile(Math.floor(o.x/OWT),Math.floor(o.y/OWT))===TL.WA;
-function owBound(o){const r=o.r||4;o.x=clamp(o.x,r+2,RW-r-2);o.y=clamp(o.y,r+2,RH-r-2);const tx=Math.floor(o.x/OWT),ty=Math.floor(o.y/OWT),sw=o===P||G.allies.includes(o);
+function owBound(o){const r=o.r||4;o.x=clamp(o.x,r+2,RW-r-2);o.y=clamp(o.y,r+2,RH-r-2);const tx=Math.floor(o.x/OWT),ty=Math.floor(o.y/OWT),sw=o===P||!!o.swimmer||G.allies.includes(o);
   for(let yy=ty-1;yy<=ty+1;yy++)for(let xx=tx-1;xx<=tx+1;xx++){const tt=owTile(xx,yy);if(!OWSOLID[tt]||sw&&tt===TL.WA)continue;const rx=xx*OWT,ry=yy*OWT,cx=clamp(o.x,rx,rx+OWT),cy=clamp(o.y,ry,ry+OWT),dx=o.x-cx,dy=o.y-cy,dd=dx*dx+dy*dy;
     if(dd<r*r){if(dd<1e-4){const ox=o.x-(rx+8),oy=o.y-(ry+8);if(Math.abs(ox)>Math.abs(oy))o.x=ox>0?rx+OWT+r:rx-r;else o.y=oy>0?ry+OWT+r:ry-r;continue}const d=Math.sqrt(dd);o.x=cx+dx/d*r;o.y=cy+dy/d*r}}}
 function owFree(tx,ty){const t=owTile(tx,ty);return !OWSOLID[t]}
@@ -7293,16 +7301,27 @@ function owUpdNpcs(dt){const o=G.ow,nf=owNight();
     const threat=G.en.find(e=>!e.dead&&e.ow&&(e.ow.s==='chase'||e.ow.s==='alert')&&d2(e,n)<70*70);
     if(n.id==='musician'){const tgt=nf>.5?n.night:n.work;tx=tgt.x;ty=tgt.y;if(nf<=.5&&Math.random()<dt*3)G.parts.push({x:n.x+rnd(-6,6),y:n.y-24,vx:rnd(-6,6),vy:-14,life:1.2,max:1.2,col:pick(['#ffe9a0','#f6dc8a']),sz:1})}
     else if(n.id==='wanderer'){const w=n.route[n.ri];tx=w.x;ty=w.y;if(d2(n,w)<10*10){if(!n.wait)n.wait=4;n.wait-=dt;if(n.wait<=0){n.wait=0;n.ri=(n.ri+1)%n.route.length}tx=null}}
-    else if(n.id==='refugee'){if(n.follow&&!n.done){const d=Math.hypot(P.x-n.x,P.y-n.y);if(d>22){tx=P.x-(P.face||1)*14;ty=P.y+6;sp=58}const cp=o.P0.camp;if(Math.hypot(n.x-(cp.x*OWT+8),n.y-(cp.y*OWT+8))<46)owRefugeeSafe(n);
+    else if(n.id==='refugee'){n.swimmer=1;const cp=o.P0.camp,cx=cp.x*OWT+8,cy=cp.y*OWT+8;
+      if(n.done){/* safe at the camp: she stays by the fire and potters about a little */if(!n.campPos)n.campPos={x:cx+22,y:cy+12};if(!n.cw||n.t>n.cw.t)n.cw={x:n.campPos.x+rnd(-10,10),y:n.campPos.y+rnd(-6,6),t:n.t+rnd(4,8)};if(d2(n,n.cw)>9){tx=n.cw.x;ty=n.cw.y;sp=14}}
+      else if(n.follow){const d=Math.hypot(P.x-n.x,P.y-n.y);if(d>320){const q=owRandFree(P.x/OWT,P.y/OWT,3,1);if(q){n.x=q.x;n.y=q.y;n.path=null;burst(n.x,n.y-10,8,['#fff','#d8c0ff'],40,.4)}}
+        if(d>24){const w=owNpcPath(n,P.x,P.y+4);tx=w.x;ty=w.y;sp=d>90?66:56}if(Math.hypot(n.x-cx,n.y-cy)<46)owRefugeeSafe(n);
         if(threat&&d2(threat,n)<14*14&&(n.hitT||0)<G.time){n.hitT=G.time+1.2;n.hits=(n.hits||0)+1;burst(n.x,n.y-10,6,['#e0283c'],40,.3);if(n.hits>=3){n.follow=0;n.fail=1;toast('小人偶吓坏了，跑回了废墟里。');}}}
       else{tx=n.hide.x;ty=n.hide.y}}
     else if(n.id==='folk'){if(!n.tgt||n.t>(n.wait||0)){n.t=0;n.wait=rnd(3,9);const q=Math.random()<.35?null:owRandFree(n.home.x/OWT,n.home.y/OWT,n.rad,0);n.tgt=q||{x:n.x,y:n.y}}if(d2(n,n.tgt)>9){tx=n.tgt.x;ty=n.tgt.y;sp=n.fk==='cat'?26:18}}
     else if(n.id==='merchant'){if(n.t>6){n.t=0;n.tgt={x:n.home.x+rnd(-14,14),y:n.home.y+rnd(-6,6)}}if(n.tgt){tx=n.tgt.x;ty=n.tgt.y;sp=16}}
-    if(threat&&n.id!=='merchant'&&!(n.id==='refugee'&&n.follow)){const a=Math.atan2(n.y-threat.y,n.x-threat.x);tx=n.x+Math.cos(a)*40;ty=n.y+Math.sin(a)*40;sp=60}
+    if(threat&&n.id!=='merchant'&&!(n.id==='refugee'&&(n.follow||n.done))){const a=Math.atan2(n.y-threat.y,n.x-threat.x);tx=n.x+Math.cos(a)*40;ty=n.y+Math.sin(a)*40;sp=60}
+    n.swim=n.swimmer&&owInWater(n);if(n.swim)sp*=.6;
     if(tx!=null){const dx=tx-n.x,dy=ty-n.y,d=Math.hypot(dx,dy);if(d>2){n.x+=dx/d*Math.min(d,sp*dt);n.y+=dy/d*Math.min(d,sp*dt);n.face=dx<0?-1:1;n.walk=(n.walk||0)+dt}}
     n.r=4;owBound(n);
     if(!owNpcVisible(n))continue;const dd=d2(n,P);if(dd>46*46)n.arm=1;if(n.arm&&dd<18*18&&modal.hidden&&!CUT.on&&G.time>(n.cool||0)){n.arm=0;n.cool=G.time+(n.id==='folk'?10:6);owTalk(n)}}}
-function owRefugeeSafe(n){n.done=1;n.follow=0;S.p('win');toast('她到营地了。');later(.6,()=>offerUps('谢谢你送我回来','小人偶把一直攥在手里的东西塞给你：「这是我从戏服上掉下来的纽扣……送你。」',rollUps(3,1)));G.ow.mem.refugee='saved'}
+/* a path for someone following you: straight at you when the way is clear, otherwise A* over the tiles (water allowed, at a cost), re-planned every 0.6 s */
+function owClear(x0,y0,x1,y1){const L=Math.hypot(x1-x0,y1-y0),n=Math.ceil(L/6);for(let i=1;i<n;i++){const x=x0+(x1-x0)*i/n,y=y0+(y1-y0)*i/n,t=owTile(Math.floor(x/OWT),Math.floor(y/OWT));if(OWSOLID[t]&&t!==TL.WA)return false;for(const[ox,oy]of[[3,0],[-3,0],[0,3],[0,-3]]){const t2=owTile(Math.floor((x+ox)/OWT),Math.floor((y+oy)/OWT));if(OWSOLID[t2]&&t2!==TL.WA)return false}}return true}
+function owNpcPath(n,gx,gy){const o=G.ow;if(owClear(n.x,n.y,gx,gy)){n.path=null;return{x:gx,y:gy}}
+  const a=owTP(n),b={x:Math.floor(gx/OWT),y:Math.floor(gy/OWT)},key=b.x+','+b.y;
+  if(!n.path||n.pathKey!==key||G.time>(n.pathT||0)){n.pathKey=key;n.pathT=G.time+.6;const p=owAStar(i=>{const t=o.g[i];return t===TL.WA?2.5:OWSOLID[t]?Infinity:1},a,b);n.path=p?p.slice(1):null}
+  const P2=n.path;if(P2&&P2.length){while(P2.length>1&&owClear(n.x,n.y,P2[1].x*OWT+8,P2[1].y*OWT+8))P2.shift();while(P2.length&&Math.hypot(P2[0].x*OWT+8-n.x,P2[0].y*OWT+8-n.y)<5)P2.shift();if(P2.length)return{x:P2[0].x*OWT+8,y:P2[0].y*OWT+8}}
+  return{x:gx,y:gy}}
+function owRefugeeSafe(n){n.done=1;n.follow=0;n.path=null;S.p('win');toast('她到营地了。');later(.6,()=>offerUps('谢谢你送我回来','小人偶把一直攥在手里的东西塞给你：「这是我从戏服上掉下来的纽扣……送你。」',rollUps(3,1)));G.ow.mem.refugee='saved'}
 function owTalkModal(n,line,opts){n.talkN++;openModal('owtalk',`<h3>${n.name}</h3><p class="sub">${line}</p><div class="cards">${opts.map((o,i)=>`<button class="card r${o.r||0}" data-i="${i}" ${o.dis?'disabled':''}><span class="ic">${o.ic||'…'}</span><b>${o.t}</b><span class="d">${o.d||''}</span></button>`).join('')}</div>`);
   panel.querySelectorAll('.card').forEach(b=>b.onclick=()=>{const o=opts[+b.dataset.i];if(o.dis)return;closeModal();S.p('tick');o.fn&&o.fn()})}
 const owBye={ic:'…',t:'告辞',d:'点点头，继续赶路'};
@@ -7481,11 +7500,11 @@ function owTimeName(){const o=G.ow,p=(o.clock%OWDAY)/OWDAY;if(o.th.sky==='blue')
 
 /* ------------------------------------------------------------------ fog of war and minimap */
 function owFogInit(){const o=G.ow;{const m=$('owMap');if(m&&(m.width!==OWW||m.height!==OWH)){m.width=OWW;m.height=OWH;o.mapImg=null}}o.fog=mk(OWW,OWH);o.fogX=o.fog.getContext('2d');o.fogD=o.fogX.createImageData(OWW,OWH);o.vis=new Uint8Array(OWW*OWH);owFogTick(true)}
-function owSightR(){return(10.5+2.3*((G.mods&&G.mods.owSight)||0))*(1-.15*owNight())*(P.swim?.3:1)}
+function owSightR(){return(9+2.3*((G.mods&&G.mods.owSight)||0))*(1-.15*owNight())*(P.swim?.3:1)}
 function owFogTick(force){const o=G.ow,R=owSightR(),c=owTP(P),r2=R*R,D=o.fogD.data;o.vis.fill(0);let fresh=0;
   for(let y=Math.max(0,Math.floor(c.y-R-1));y<=Math.min(OWH-1,Math.ceil(c.y+R+1));y++)for(let x=Math.max(0,Math.floor(c.x-R-1));x<=Math.min(OWW-1,Math.ceil(c.x+R+1));x++){if((x-c.x)**2+(y-c.y)**2>r2)continue;const i=owI(x,y);o.vis[i]=1;if(!o.exp[i]){o.exp[i]=1;fresh++;if(!OWSOLID[o.g[i]])o.expN=(o.expN||0)+1}}
   if(fresh&&G.mods.owForage&&Math.random()<.012*fresh*G.mods.owForage)G.picks.push({k:'petal',x:P.x+rnd(-20,20),y:P.y+rnd(-14,14),vx:0,vy:-20,t:0,v:1});
-  for(let i=0;i<OWW*OWH;i++){D[i*4+3]=o.vis[i]?0:o.exp[i]?70:255}o.fogX.putImageData(o.fogD,0,0)}
+  for(let i=0;i<OWW*OWH;i++){D[i*4+3]=o.vis[i]?0:o.exp[i]?85:255}o.fogX.putImageData(o.fogD,0,0)}
 function owMapTick(){const cv2=$('owMap');if(!cv2||cv2.hidden)return;const o=G.ow,x=cv2.getContext('2d'),C=o.th.col,img=o.mapImg||(o.mapImg=x.createImageData(OWW,OWH)),D=img.data;
   const col={[TL.HS]:C.hs||'#5a3030',[TL.PL]:C.pl||C.rd,[TL.FD]:C.fd||C.sa,[TL.DK]:C.br,[TL.FN]:C.br,[TL.PR]:C.pl||C.rk[1],[TL.GR]:C.gr[1],[TL.FW]:C.gr[2],[TL.SA]:C.sa,[TL.RD]:C.rd,[TL.WA]:C.wa[1],[TL.BR]:C.br,[TL.FL]:C.fl,[TL.WL]:C.wl[0],[TL.RK]:C.rk[1],[TL.SC]:(G.mods.owTreasure?'#ffd27a':C.rk[1]),[TL.TR]:C.tr[1]};const rgb=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
   const cache=o.rgb||(o.rgb={});for(let i=0;i<OWW*OWH;i++){if(!o.exp[i]){D[i*4]=10;D[i*4+1]=8;D[i*4+2]=12;D[i*4+3]=230;continue}const h=col[o.g[i]]||'#000',c=cache[h]||(cache[h]=rgb(h));const b=o.vis[i]?1.35:1;D[i*4]=Math.min(255,c[0]*b+12);D[i*4+1]=Math.min(255,c[1]*b+10);D[i*4+2]=Math.min(255,c[2]*b+12);D[i*4+3]=255}
@@ -7553,7 +7572,7 @@ function owList(list){const o=G.ow;for(const n of o.npcs)if(owNpcVisible(n)&&Mat
 function owSprH(k,h){const s=SPR[k];if(!s)return null;const c=s.f[0];return{c,sc:h/c.height,f:s.f}}
 function owDrawItem(it,t){if(it.owsp){owDrawSpr(it.owsp,t);return}if(it.queue){owQueueDraw(it.queue,t);return}if(it.th){owDrawTheatre(it.th,t);return}if(it.helper){const s=owSprH('doll',16);if(s){shadow(it.helper.x,it.helper.y,4);drawSpr(s.c,it.helper.x,it.helper.y+Math.sin(t*6)*1,P.x<it.helper.x?-1:1,null,s.sc)}return}
   if(it.ev){const e=it.ev,s=owSprH(e.kind==='doll'?'doll':'knight',e.kind==='doll'?18:28);if(!s)return;shadow(e.x,e.y,6);ctx.save();if(e.kind==='doll'&&!e.done)ctx.filter='grayscale(1) brightness(.7)';drawSpr(s.c,e.x,e.y,1,null,s.sc);ctx.restore();return}
-  const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();
+  const n=it,s=owSprH(n.spr,n.h||(n.id==='refugee'?20:28));if(!s)return;shadow(n.x,n.y,6);const fr=s.f[s.f.length>1?Math.floor((n.walk||0)*6)%s.f.length:0];ctx.save();if(n.night)ctx.globalAlpha=Math.min(1,(owNight()-.55)*3);drawSpr(fr,n.x,n.y+Math.sin(t*2+n.x)*.6,n.face,null,s.sc);ctx.restore();if(n.swim)owSwimOver(n,t);
   if(d2(n,P)<40*40){ctx.font='7px "Noto Serif SC",serif';ctx.textAlign='center';ctx.fillStyle='rgba(0,0,0,.6)';const nm=T(n.name),w=ctx.measureText(nm).width+6;ctx.fillRect(n.x-w/2,n.y-38,w,9);ctx.fillStyle='#ffe6b0';ctx.fillText(nm,n.x,n.y-31);ctx.textAlign='left'}}
 
 
@@ -7567,7 +7586,7 @@ function owBeacon(cam,t){const o=G.ow;if(CUT.on)return;
   ctx.font='5px "Noto Serif SC",serif';ctx.fillStyle='rgba(244,230,204,.7)';ctx.fillText(Math.round(Math.hypot(dx,dy)/16)+'步',lx,ly+7);ctx.textAlign='left';ctx.restore()}
 function owQueueDraw(q,t){const s=owSprH('doll',18);if(!s)return;for(const p of q.pts){shadow(p.x,p.y,4);ctx.save();ctx.filter='grayscale(.85) brightness(.75)';drawSpr(s.c,p.x,p.y+Math.sin(t*1.2+p.ph)*.4,-1,null,s.sc);ctx.restore()}}
 function owOverlay(cam,t){const o=G.ow;owAtmosOver(cam,t);owEpic(cam,t);owBeacon(cam,t);ctx.save();ctx.imageSmoothingEnabled=true;ctx.drawImage(o.fog,0,0,OWW,OWH,0,0,OWW*OWT,OWH*OWT);ctx.restore();ctx.imageSmoothingEnabled=false;
-  const nf=owNight();if(nf>0){const r0=75+45*(1-nf),r1=220+55*(1-nf)+((G.mods.owSight||0)*30);const g=ctx.createRadialGradient(P.x,P.y-8,r0,P.x,P.y-8,r1);g.addColorStop(0,'rgba(8,10,28,0)');g.addColorStop(1,`rgba(6,8,24,${(.42*nf).toFixed(3)})`);ctx.fillStyle=g;ctx.fillRect(cam.x-10,cam.y-10,VW+20,VH+20)}
+  const nf=owNight();if(nf>0){const r0=65+40*(1-nf),r1=195+50*(1-nf)+((G.mods.owSight||0)*30);const g=ctx.createRadialGradient(P.x,P.y-8,r0,P.x,P.y-8,r1);g.addColorStop(0,'rgba(8,10,28,0)');g.addColorStop(1,`rgba(6,8,24,${(.42*nf).toFixed(3)})`);ctx.fillStyle=g;ctx.fillRect(cam.x-10,cam.y-10,VW+20,VH+20)}
   else{ctx.fillStyle=`rgba(255,160,90,${(.04).toFixed(3)})`;ctx.fillRect(cam.x,cam.y,VW,VH)}
   owGrade(cam,t);owUnderwater(cam,t);owDoorLabel(t)}
 /* 2.2 lighting: volumetric shafts with dust in them, bloom halos on every light, drifting haze, a lens flare by day,
