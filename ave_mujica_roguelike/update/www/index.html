@@ -950,7 +950,7 @@ body.pc .chpads{display:none}
   <b>请将手机横过来</b><span>本游戏为横屏设计，竖屏时自动暂停</span></div>
 
 <script src="vendor/three.min.js"></script>
-<script>window.GAME_VER={"v": 33, "name": "2.2"};</script>
+<script>window.GAME_VER={"v": 34, "name": "2.2"};</script>
 <script>
 'use strict';
 /* =================================================================== i18n: Chinese source text is translated on output
@@ -6470,7 +6470,7 @@ function render(){ctx.setTransform(1,0,0,1,0,0);ctx.fillStyle='#050305';ctx.fill
   for(const d of G.deco)if(d.k==='piano'||d.k==='mannequin'||d.hs)list.push({y:d.sy!=null?d.sy:d.y,d});if(G.npc)list.push({y:G.npc.y,n:1});for(const a of G.allies)list.push({y:a.y,al:a});for(const q of (G.mirrors||[]))list.push({y:q.y,mi:q});if(G.cage)list.push({y:G.cage.y,cg:1});for(const tu of G.turrets)list.push({y:tu.y,tu});
   list.sort((a,b)=>a.y-b.y);
   for(const g of G.ghosts){ctx.globalAlpha=.35*(1-g.t/.25);drawSpr(g.c,g.x,g.y+g.dy,g.face,null,g.sc);ctx.globalAlpha=1}
-  for(const it of list){if(it.p){rimLight();if(P.ride&&G.ow){const fc=P.face||1,v=G.ow.veh,sp=v?Math.hypot(v.vx||0,v.vy||0):0,seat=P.y-13;vehDraw(P.x,P.y,fc,1,t);ctx.save();ctx.beginPath();ctx.rect(P.x-40,P.y-90,80,90-13+1.5);ctx.clip();ctx.translate(P.x-fc*10,seat);ctx.rotate(fc*.07*Math.min(1,sp/VEH.max));ctx.translate(-P.x,-seat+1+Math.sin(t*26)*.25*Math.min(1,sp/120));drawPlayer(t);ctx.restore();vehFront(P.x,P.y,fc)}else drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
+  for(const it of list){if(it.p){rimLight();if(P.ride&&G.ow&&rideImg(ch().id))rideDraw(t);else if(P.ride&&G.ow){const fc=P.face||1,v=G.ow.veh,sp=v?Math.hypot(v.vx||0,v.vy||0):0,seat=P.y-13;vehDraw(P.x,P.y,fc,1,t);ctx.save();ctx.beginPath();ctx.rect(P.x-40,P.y-90,80,90-12.6);ctx.clip();ctx.translate(P.x-fc*10,seat);ctx.rotate(fc*.07*Math.min(1,sp/VEH.max));ctx.translate(-P.x,-seat-1+Math.sin(t*26)*.25*Math.min(1,sp/120));drawPlayer(t);ctx.restore();vehFront(P.x,P.y,fc);vehLegs(P.x,P.y,fc,sp,t)}else drawPlayer(t);if(P.swim)owSwimOver(P,t)}else if(it.e)drawEnemy(it.e,t);else if(it.o)drawObs(it.o,t);else if(it.n)drawNpc(t);else if(it.al){drawAlly(it.al,t);if(it.al.swim)owSwimOver(it.al,t)}else if(it.mi)drawMirror(it.mi,t);else if(it.cg)drawCage(G.cage,t);else if(it.tu)drawTurret(it.tu,t);else if(it.ow)owDrawItem(it.ow,t);else drawDeco(it.d,t)}
   for(const b of G.pb)drawPB(b,t);
   for(const b of G.eb)drawEB(b,t);
   drawEnsemble(t);
@@ -8643,7 +8643,7 @@ function vehToggle(){const o=G.ow;if(!o||!o.veh||G.state!=='play'||!modal.hidden
 function vehOff(){const o=G.ow;if(!P.ride)return;P.ride=0;if(o&&o.veh){o.veh.x=P.x;o.veh.y=P.y;o.veh.vx=o.veh.vy=0;const q=owRandFree(P.x/OWT,P.y/OWT,2,.8);if(q){P.x=q.x;P.y=q.y}}vehBtn()}
 function vehBtn(){const b=$('rideBtn');if(!b)return;const show=!!(G.ow&&!G.owArena&&!G.owIn&&!(G.ow&&G.ow.isTh)&&G.state==='play'&&(P.ride||vehNear()));b.hidden=!show;if(show)b.querySelector('b').textContent=P.ride?'下车':'上车'}
 /* riding: momentum, smashing, ramming */
-function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(!v){P.ride=0;return}const l=Math.hypot(mx,my),MAX=VEH.max*(G.feverT>0?1.1:1);
+function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(P.vehCrash>0)P.vehCrash-=dt;if(!v){P.ride=0;return}const l=Math.hypot(mx,my),MAX=VEH.max*(G.feverT>0?1.1:1);
   const tx=l>.12?mx/Math.max(1,l)*MAX:0,ty=l>.12?my/Math.max(1,l)*MAX:0,k=l>.12?VEH.acc:VEH.coast;v.vx+=(tx-v.vx)*Math.min(1,dt*k);v.vy+=(ty-v.vy)*Math.min(1,dt*k);
   const sp=Math.hypot(v.vx,v.vy);if(Math.abs(v.vx)>8)P.face=v.vx<0?-1:1;v.face=P.face;P.moving=false;
   const nx=P.x+v.vx*dt,ny=P.y+v.vy*dt,hx=Math.floor((nx+(v.vx>0?9:v.vx<0?-9:0))/OWT),hy=Math.floor((ny-3+(v.vy>0?3:v.vy<0?-4:0))/OWT),t=owTile(hx,hy);
@@ -8656,11 +8656,29 @@ function vehMove(dt,mx,my){const o=G.ow,v=o.veh;if(!v){P.ride=0;return}const l=M
     hurtEnemy(e,(70+90*f)*sc*(e.elite?.7:1),{noMod:1});const a=Math.atan2(e.y-P.y,e.x-P.x)*.5+Math.atan2(v.vy,v.vx)*.5;e.kx=(e.kx||0)+Math.cos(a)*(260+260*f);e.ky=(e.ky||0)+Math.sin(a)*(260+260*f);e.stun=Math.max(e.stun||0,.8);
     v.vx*=.72;v.vy*=.72;shake(3);S.p('hit');burst(e.x,e.y-8,14,['#fff','#ff6070',GOLD],110,.45);if(e.ow&&e.ow.s!=='chase'){e.ow.s='chase';e.ow.t=1}}
   if(sp>170&&Math.random()<dt*30)G.parts.push({x:P.x-v.vx/sp*14+rnd(-3,3),y:P.y-1,vx:-v.vx*.15+rnd(-10,10),vy:rnd(-12,-2),life:.5,max:.5,col:pick(['rgba(200,190,170,.6)','rgba(150,140,130,.5)']),sz:rnd(1.2,2.4)})}
-function vehRecoil(v,k){v.vx*=-k;v.vy*=-k;P.x-=Math.sign(v.vx||1)*0;shake(6);S.p('slam');P.inv=Math.max(P.inv||0,.35)}
+function vehRecoil(v,k){if(k>.2)P.vehCrash=.8;v.vx*=-k;v.vy*=-k;P.x-=Math.sign(v.vx||1)*0;shake(6);S.p('slam');P.inv=Math.max(P.inv||0,.35)}
 function vehHurt(d){if(P.down||G.state!=='play')return;const i0=P.inv;P.inv=0;hurtPlayer(Math.round(d),'crash');if(P.inv<i0)P.inv=i0}
+/* the rider's legs: skirt over the seat, thigh along the tank, shin down to the footpeg */
+function vehLegs(x,y,fc,sp,t){const c=ch(),acc=(c&&c.col)||'#c8203a',lean=.07*Math.min(1,sp/VEH.max),b=Math.sin(t*26)*.25*Math.min(1,sp/120);ctx.save();ctx.translate(x,y+b);ctx.scale(fc,1);
+  ctx.fillStyle='#120c12';ctx.beginPath();ctx.moveTo(-15,-14.5);ctx.quadraticCurveTo(-9,-17.5,-4.5,-14.2);ctx.lineTo(-5,-11.4);ctx.lineTo(-14,-11.2);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#1c1018';ctx.beginPath();ctx.moveTo(-15.5,-14.2);ctx.quadraticCurveTo(-11,-16.6,-6,-14.6);ctx.lineTo(-7,-12.6);ctx.quadraticCurveTo(-11,-11.6,-15,-12.4);ctx.closePath();ctx.fill();ctx.fillStyle=hexA(acc,.7);ctx.fillRect(-15,-12.9,8,.5);
+  ctx.strokeStyle='#1e1622';ctx.lineCap='round';ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(-8,-13.4);ctx.lineTo(-3+lean*8,-13.4);ctx.stroke();ctx.lineWidth=2.3;ctx.beginPath();ctx.moveTo(-3+lean*8,-13.2);ctx.lineTo(-1.6,-8.2);ctx.stroke();
+  ctx.strokeStyle='rgba(255,236,220,.18)';ctx.lineWidth=.6;ctx.beginPath();ctx.moveTo(-7,-14.5);ctx.lineTo(-3.4+lean*8,-14.5);ctx.stroke();
+  ctx.fillStyle='#0a070b';ctx.beginPath();ctx.moveTo(-3,-8.6);ctx.lineTo(.2,-8.8);ctx.lineTo(1.4,-6.6);ctx.lineTo(-3.2,-6.3);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(255,255,255,.22)';ctx.fillRect(-2,-8.5,2,.4);
+  ctx.fillStyle='#8a8494';ctx.fillRect(-3.6,-6.4,5.6,.9);ctx.restore()}
 function vehFront(x,y,face){const s=vehSpr();ctx.save();ctx.translate(x,y-s.h+4);if(face<0)ctx.scale(-1,1);ctx.beginPath();ctx.rect(-s.w/2+17.5,0,s.w-17.5,s.h*.62);ctx.clip();ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false}
-function vehDraw(x,y,face,ride,t){const s=vehSpr(),sp=ride&&G.ow&&G.ow.veh?Math.hypot(G.ow.veh.vx||0,G.ow.veh.vy||0):0,bob=ride?Math.sin(t*30)*.3*Math.min(1,sp/100):0;shadow(x,y,14);ctx.save();ctx.translate(x,y-s.h+4+bob);if(face<0){ctx.scale(-1,1)}ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false;
-  if(ride&&sp>60){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5;ctx.drawImage(glow('#fff4c8'),x+face*18-10,y-21,20,14);ctx.globalAlpha=.12*Math.min(1,sp/200);const v=G.ow.veh;for(let k=0;k<4;k++){const ox=-v.vx/sp*(18+k*9),oy=-v.vy/sp*(18+k*9);ctx.fillStyle='#fff';ctx.fillRect(x+ox-6,y-12+oy+(k-1.5)*4,12,.6)}ctx.restore()}}
+/* drawn riding sheets (assets/ride_<id>.png): 8 frames of 208x150 at 3x, wheels' contact point at (104,148).
+   frames 0-1 parked, 2-3 crash, 4-7 riding. assets/veh_bike.png: the bike alone, frame 0 on its kickstand. */
+const RIDE={K:3,W:208,H:150,AY:148,sc:.85,im:{}};['bike','doloris','mortis','timoris','amoris','oblivionis','uika','mutsumi','sakiko'].forEach(id=>{const im=new Image();im.onload=()=>RIDE.im[id]=im;im.src='assets/'+(id==='bike'?'veh_bike':'ride_'+id)+'.png'});
+const rideImg=id=>RIDE.im[id]||null;
+function rideBlit(im,f,x,y,face){const R=RIDE;ctx.save();ctx.translate(x,y);ctx.scale(face<0?-R.sc:R.sc,R.sc);ctx.imageSmoothingEnabled=SC*R.sc<R.K*1.25;ctx.drawImage(im,f*R.W,0,R.W,R.H,-R.W/2/R.K,-R.AY/R.K,R.W/R.K,R.H/R.K);ctx.restore();ctx.imageSmoothingEnabled=false}
+function vehFx(x,y,face,sp,hy,hx=18){if(sp<=60)return;ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.5;ctx.drawImage(glow('#fff4c8'),x+face*hx-10,y-hy-7,20,14);ctx.globalAlpha=.12*Math.min(1,sp/200);const v=G.ow.veh;for(let k=0;k<4;k++){const ox=-v.vx/sp*(18+k*9),oy=-v.vy/sp*(18+k*9);ctx.fillStyle='#fff';ctx.fillRect(x+ox-6,y-12+oy+(k-1.5)*4,12,.6)}ctx.restore()}
+function rideDraw(t){const v=G.ow.veh,sp=v?Math.hypot(v.vx||0,v.vy||0):0,fc=P.face||1,im=rideImg(ch().id),c=P.vehCrash||0;
+  const f=c>0?(c>.45?3:2):sp<25?Math.floor(t*1.6)%2:4+Math.floor(t*(6+8*Math.min(1,sp/VEH.max)))%4,bob=f>=4?Math.sin(t*26)*.3*Math.min(1,sp/120):0;
+  shadow(P.x,P.y,13);if(P.blink>0&&Math.floor(t*16)%2)return;rideBlit(im,f,P.x,P.y+3+bob,fc);
+  if(P.hurtT>.15){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=.35;rideBlit(im,f,P.x,P.y+3+bob,fc);ctx.restore()}vehFx(P.x,P.y,fc,sp,21,14)}
+function vehDraw(x,y,face,ride,t){const bk=!ride&&rideImg('bike');if(bk){shadow(x,y,13);rideBlit(bk,0,x,y+3,face);return}const s=vehSpr(),sp=ride&&G.ow&&G.ow.veh?Math.hypot(G.ow.veh.vx||0,G.ow.veh.vy||0):0,bob=ride?Math.sin(t*30)*.3*Math.min(1,sp/100):0;shadow(x,y,14);ctx.save();ctx.translate(x,y-s.h+4+bob);if(face<0){ctx.scale(-1,1)}ctx.imageSmoothingEnabled=true;ctx.drawImage(s.c,-s.w/2,0,s.w,s.h);ctx.restore();ctx.imageSmoothingEnabled=false;
+  if(ride)vehFx(x,y,face,sp,14)}
 
 function owTheatreTalk(it){if(it.stage){thStageTalk(it);return}const k=it.k,nm=ACTS[k-1].name,left=[1,2,3,4,5].filter(q=>q!==5&&!owIsDone(q)).length;
   if(owIsDone(k)){owTalkModal({name:nm,talkN:0},'帷幕已经落下了。门没有锁，里面的房间还亮着几盏灯。',[{ic:'↩',r:1,t:'再走进去看看',d:'没拿的东西、没打完的人偶，都还在里面',fn:()=>thEnter(k)},{ic:'…',t:'不了',d:'继续赶路',fn:()=>{}}]);return}
